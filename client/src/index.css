@@ -58,6 +58,42 @@
   --destructive: hsl(0, 62.8%, 30.6%);
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(240, 4.9%, 83.9%);
+  
+  /* Custom dark theme colors */
+  --neutral: hsl(240, 5%, 6%);
+  --text-primary: hsl(0, 0%, 95%);
+}
+
+.blue-light-filter {
+  --background: hsl(28, 30%, 94%);
+  --foreground: hsl(25, 20%, 20%);
+  --muted: hsl(28, 25%, 88%);
+  --muted-foreground: hsl(25, 15%, 45%);
+  --popover: hsl(28, 30%, 94%);
+  --popover-foreground: hsl(25, 20%, 20%);
+  --card: hsl(28, 30%, 96%);
+  --card-foreground: hsl(25, 20%, 20%);
+  --border: hsl(28, 20%, 82%);
+  --input: hsl(28, 20%, 82%);
+  --primary: hsl(35, 60%, 50%);
+  --primary-foreground: hsl(0, 0%, 98%);
+  --secondary: hsl(45, 50%, 45%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(35, 70%, 55%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 72%, 51%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(35, 60%, 50%);
+  
+  /* Custom blue light filter colors */
+  --neutral: hsl(28, 35%, 96%);
+  --text-primary: hsl(25, 25%, 25%);
+  
+  /* Reduced blue family colors for blue light filter */
+  --member-mom: hsl(15, 72%, 55%);
+  --member-dad: hsl(35, 60%, 50%);
+  --member-child1: hsl(45, 50%, 45%);
+  --member-child2: hsl(40, 55%, 50%);
 }
 
 @layer base {

@@ -15,7 +15,7 @@ export default function Dashboard() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-neutral">
+    <div className="min-h-screen bg-neutral dark:bg-background blue-light-filter:bg-neutral">
       <Header onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
       <MobileNav />
       
