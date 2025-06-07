@@ -91,6 +91,10 @@ export async function generateMealSuggestions(preferences: {
   familySize?: number;
   kidFriendly?: boolean;
 }): Promise<string[]> {
+  if (!openai) {
+    return ["Spaghetti with marinara", "Chicken stir fry", "Tacos", "Grilled cheese and soup", "Baked chicken with vegetables"];
+  }
+
   const prompt = `Suggest 5 family-friendly meal ideas based on these preferences:
 - Dietary restrictions: ${preferences.dietary?.join(", ") || "None"}
 - Cooking time: ${preferences.cookingTime || "Any"}
@@ -118,6 +122,13 @@ export async function smartTaskCreation(voiceInput: string, familyMembers: Array
   tasks: Array<{ title: string; assignedTo?: number; dueDate?: Date; priority: string }>;
   interpretation: string;
 }> {
+  if (!openai) {
+    return {
+      tasks: [],
+      interpretation: "Smart task creation requires OpenAI API key. Please add your key to enable this feature."
+    };
+  }
+
   const prompt = `Parse this voice input from a parent and extract actionable tasks:
 "${voiceInput}"
 

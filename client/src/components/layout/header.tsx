@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Home, Bell, Mic, Settings, Crown, User } from "lucide-react";
+import { Home, Bell, Mic, Settings, Crown, User, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -73,6 +73,13 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
             >
               <Mic className="h-4 w-4" />
             </Button>
+
+            {/* AI Assistant Button */}
+            <Button asChild className="bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white p-2 rounded-full transition-colors" size="icon">
+              <Link href="/ai-assistant">
+                <Bot className="h-4 w-4" />
+              </Link>
+            </Button>
             
             {/* Notifications */}
             <div className="relative">
@@ -106,16 +113,22 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
+                  <Link href="/ai-assistant" className="w-full flex items-center">
+                    <Bot className="mr-2 h-4 w-4" />
+                    AI Assistant
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link href="/subscription" className="w-full flex items-center">
                     <Crown className="mr-2 h-4 w-4" />
                     Subscription
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <User className="mr-2 h-4 w-4" />
                   Family Settings
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <Settings className="mr-2 h-4 w-4" />
                   App Settings
