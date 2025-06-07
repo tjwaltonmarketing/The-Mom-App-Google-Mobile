@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { processAIRequest, generateMealSuggestions, smartTaskCreation } from "./ai";
 import { 
   insertEventSchema,
   insertTaskSchema,
@@ -269,6 +270,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         res.status(500).json({ message: "Failed to create task with notification" });
       }
+    }
+  });
+
+  // AI Assistant Routes
+  app.post("/api/ai/chat", async (req, res) => {
+    try {
+      const { message } = req.body;
+      
+      // Get family context for AI
+      const familyMembers = await storage.getFamilyMembers();
+      const upcomingEvents = await storage.getEvents();
+      const pendingTasks = await storage.getPendingTasks();
+      
+      const response = await processAIRequest({
+        message,
+        familyContext: {
+          members: familyMembers,
+          upcomingEvents,
+          pendingTasks
+        }
+      });
+      
+      res.json(response);
+    } catch (error) {
+      console.error("AI chat error:", error);
+      res.status(500).json({ message: "AI assistant temporarily unavailable" });
+    }
+  });
+
+  app.post("/api/ai/meal-suggestions", async (req, res) => {
+    try {
+      const { dietary, cookingTime, familySize, kidFriendly } = req.body;
+      
+      const suggestions = await generateMealSuggestions({
+        dietary,
+        cookingTime,
+        familySize,
+        kidFriendly
+      });
+      
+      res.json({ suggestions });
+    } catch (error) {
+      console.error("Meal suggestions error:", error);
+      res.status(500).json({ message: "Unable to generate meal suggestions" });
+    }
+  });
+
+  app.post("/api/ai/smart-task-creation", async (req, res) => {
+    try {
+      const { voiceInput } = req.body;
+      const familyMembers = await storage.getFamilyMembers();
+      
+      const result = await smartTaskCreation(voiceInput, familyMembers);
+      
+      // Optionally auto-create the tasks
+      if (result.tasks.length > 0) {
+        const createdTasks = [];
+        for (const taskData of result.tasks) {
+          try {
+            const task = await storage.createTask(taskData);
+            createdTasks.push(task);
+          } catch (error) {
+            console.error("Failed to create task:", error);
+          }
+        }
+        res.json({ ...result, createdTasks });
+      } else {
+        res.json(result);
+      }
+    } catch (error) {
+      console.error("Smart task creation error:", error);
+      res.status(500).json({ message: "Unable to process voice input" });
     }
   });
 
