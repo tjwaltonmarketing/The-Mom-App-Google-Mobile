@@ -4,6 +4,7 @@ import {
   tasks, 
   voiceNotes, 
   deadlines,
+  notifications,
   type FamilyMember, 
   type InsertFamilyMember,
   type Event,
@@ -13,10 +14,12 @@ import {
   type VoiceNote,
   type InsertVoiceNote,
   type Deadline,
-  type InsertDeadline
+  type InsertDeadline,
+  type Notification,
+  type InsertNotification
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lt, desc } from "drizzle-orm";
+import { eq, and, gte, lt, desc, isNull, or } from "drizzle-orm";
 
 export interface IStorage {
   // Family Members
@@ -46,6 +49,12 @@ export interface IStorage {
   getDeadlines(): Promise<Deadline[]>;
   getUpcomingDeadlines(): Promise<Deadline[]>;
   createDeadline(deadline: InsertDeadline): Promise<Deadline>;
+  
+  // Notifications
+  getNotifications(recipientId?: number): Promise<Notification[]>;
+  getPendingNotifications(): Promise<Notification[]>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  markNotificationSent(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -162,6 +171,60 @@ export class DatabaseStorage implements IStorage {
   async createDeadline(insertDeadline: InsertDeadline): Promise<Deadline> {
     const [deadline] = await db.insert(deadlines).values(insertDeadline).returning();
     return deadline;
+  }
+
+  async getNotifications(recipientId?: number): Promise<Notification[]> {
+    if (recipientId) {
+      return await db.select().from(notifications)
+        .where(eq(notifications.recipientId, recipientId))
+        .orderBy(desc(notifications.createdAt));
+    }
+    return await db.select().from(notifications).orderBy(desc(notifications.createdAt));
+  }
+
+  async getPendingNotifications(): Promise<Notification[]> {
+    return await db.select().from(notifications)
+      .where(and(
+        eq(notifications.status, "pending"),
+        gte(notifications.scheduledFor, new Date())
+      ))
+      .orderBy(notifications.scheduledFor);
+  }
+
+  async createNotification(insertNotification: InsertNotification): Promise<Notification> {
+    const [notification] = await db.insert(notifications).values(insertNotification).returning();
+    return notification;
+  }
+
+  async markNotificationSent(id: number): Promise<void> {
+    await db.update(notifications)
+      .set({ status: "sent", sentAt: new Date() })
+      .where(eq(notifications.id, id));
+  }
+
+  // Helper method to automatically create notifications when tasks are assigned
+  async createTaskWithNotification(insertTask: InsertTask): Promise<Task> {
+    const task = await this.createTask(insertTask);
+    
+    if (task.assignedTo) {
+      const assignedMember = await this.getFamilyMember(task.assignedTo);
+      if (assignedMember && assignedMember.notificationPreference !== "none") {
+        const notification: InsertNotification = {
+          type: "task_assigned",
+          title: "New Task Assigned",
+          message: `You've been assigned: ${task.title}`,
+          recipientId: task.assignedTo,
+          relatedTaskId: task.id,
+          relatedEventId: null,
+          scheduledFor: new Date(), // Send immediately
+          deliveryMethod: assignedMember.notificationPreference === "email" ? "email" : "sms",
+          status: "pending"
+        };
+        await this.createNotification(notification);
+      }
+    }
+    
+    return task;
   }
 }
 

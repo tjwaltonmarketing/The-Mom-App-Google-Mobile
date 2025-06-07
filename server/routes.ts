@@ -5,7 +5,8 @@ import {
   insertEventSchema,
   insertTaskSchema,
   insertVoiceNoteSchema,
-  insertDeadlineSchema
+  insertDeadlineSchema,
+  insertNotificationSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -203,6 +204,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  // Notifications
+  app.get("/api/notifications", async (req, res) => {
+    try {
+      const recipientId = req.query.recipientId ? parseInt(req.query.recipientId as string) : undefined;
+      const notifications = await storage.getNotifications(recipientId);
+      res.json(notifications);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.get("/api/notifications/pending", async (req, res) => {
+    try {
+      const notifications = await storage.getPendingNotifications();
+      res.json(notifications);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch pending notifications" });
+    }
+  });
+
+  app.post("/api/notifications", async (req, res) => {
+    try {
+      const validatedData = insertNotificationSchema.parse(req.body);
+      const notification = await storage.createNotification(validatedData);
+      res.status(201).json(notification);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid notification data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create notification" });
+      }
+    }
+  });
+
+  app.patch("/api/notifications/:id/sent", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.markNotificationSent(id);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to mark notification as sent" });
+    }
+  });
+
+  // Enhanced task creation with automatic notification
+  app.post("/api/tasks/with-notification", async (req, res) => {
+    try {
+      const validatedData = insertTaskSchema.parse(req.body);
+      if ('createTaskWithNotification' in storage) {
+        const task = await (storage as any).createTaskWithNotification(validatedData);
+        res.status(201).json(task);
+      } else {
+        // Fallback to regular task creation
+        const task = await storage.createTask(validatedData);
+        res.status(201).json(task);
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid task data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create task with notification" });
+      }
     }
   });
 
