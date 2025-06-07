@@ -31,12 +31,12 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
     <header className="bg-white dark:bg-card blue-light-filter:bg-card shadow-sm border-b border-gray-200 dark:border-border blue-light-filter:border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-3 hover:opacity-90 transition-opacity">
-              <Logo className="h-10 w-10 flex-shrink-0" />
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white blue-light-filter:text-gray-900">The Mom App</h1>
+          <div className="flex items-center space-x-2 md:space-x-4">
+            <Link href="/" className="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+              <Logo className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" />
+              <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 dark:text-white blue-light-filter:text-gray-900 truncate">The Mom App</h1>
             </Link>
-            <nav className="hidden md:flex space-x-6">
+            <nav className="hidden lg:flex space-x-4 xl:space-x-6">
               <Link href="/" className={location === "/" ? "text-primary font-medium border-b-2 border-primary pb-1" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors"}>
                 Dashboard
               </Link>
@@ -52,9 +52,9 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
             </nav>
           </div>
           
-          <div className="flex items-center space-x-4">
-            {/* Do Not Disturb Toggle */}
-            <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* Do Not Disturb Toggle - Hidden on mobile */}
+            <div className="hidden md:flex items-center space-x-2">
               <span className="text-sm text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600">DND</span>
               <Switch
                 checked={dndEnabled}
@@ -63,8 +63,10 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
               />
             </div>
             
-            {/* Theme Toggle */}
-            <ThemeToggle />
+            {/* Theme Toggle - Hidden on mobile */}
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
             
             {/* Voice Note Button */}
             <Button
@@ -82,8 +84,8 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
               </Link>
             </Button>
             
-            {/* Notifications */}
-            <div className="relative">
+            {/* Notifications - Hidden on mobile */}
+            <div className="relative hidden sm:block">
               <Button variant="ghost" size="icon" className="text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-primary blue-light-filter:text-gray-600 blue-light-filter:hover:text-primary">
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 bg-error text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -92,8 +94,8 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
               </Button>
             </div>
             
-            {/* Family Members Quick Access */}
-            <div className="flex items-center space-x-1">
+            {/* Family Members Quick Access - Hidden on mobile */}
+            <div className="hidden md:flex items-center space-x-1">
               {familyMembers.map((member) => (
                 <div
                   key={member.id}
