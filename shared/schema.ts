@@ -9,6 +9,9 @@ export const familyMembers = pgTable("family_members", {
   role: text("role").notNull(), // "mom", "dad", "child"
   color: text("color").notNull(), // hex color for UI
   avatar: text("avatar").notNull(), // initial letter
+  phone: text("phone"), // for SMS notifications
+  email: text("email"), // for email notifications
+  notificationPreference: text("notification_preference").default("sms"), // "sms", "email", "both", "none"
 });
 
 export const events = pgTable("events", {
@@ -53,6 +56,21 @@ export const deadlines = pgTable("deadlines", {
   relatedTo: integer("related_to").references(() => familyMembers.id),
 });
 
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(), // "task_assigned", "task_due", "event_reminder"
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  recipientId: integer("recipient_id").notNull().references(() => familyMembers.id),
+  relatedTaskId: integer("related_task_id").references(() => tasks.id),
+  relatedEventId: integer("related_event_id").references(() => events.id),
+  scheduledFor: timestamp("scheduled_for").notNull(),
+  sentAt: timestamp("sent_at"),
+  deliveryMethod: text("delivery_method").notNull(), // "sms", "email"
+  status: text("status").notNull().default("pending"), // "pending", "sent", "failed"
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertFamilyMemberSchema = createInsertSchema(familyMembers).omit({
   id: true,
 });
@@ -75,6 +93,12 @@ export const insertVoiceNoteSchema = createInsertSchema(voiceNotes).omit({
 
 export const insertDeadlineSchema = createInsertSchema(deadlines).omit({
   id: true,
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  sentAt: true,
+  createdAt: true,
 });
 
 // Relations
@@ -120,6 +144,21 @@ export const deadlinesRelations = relations(deadlines, ({ one }) => ({
   }),
 }));
 
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+  recipient: one(familyMembers, {
+    fields: [notifications.recipientId],
+    references: [familyMembers.id],
+  }),
+  relatedTask: one(tasks, {
+    fields: [notifications.relatedTaskId],
+    references: [tasks.id],
+  }),
+  relatedEvent: one(events, {
+    fields: [notifications.relatedEventId],
+    references: [events.id],
+  }),
+}));
+
 export type FamilyMember = typeof familyMembers.$inferSelect;
 export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
 
@@ -134,3 +173,6 @@ export type InsertVoiceNote = z.infer<typeof insertVoiceNoteSchema>;
 
 export type Deadline = typeof deadlines.$inferSelect;
 export type InsertDeadline = z.infer<typeof insertDeadlineSchema>;
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
