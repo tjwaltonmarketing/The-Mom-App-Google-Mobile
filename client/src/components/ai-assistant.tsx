@@ -22,7 +22,7 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
     {
       id: "welcome",
       type: "assistant",
-      content: "Hi! I'm your family AI assistant. I can help you create tasks, plan meals, organize schedules, and answer questions about managing your household. What can I help you with today?",
+      content: "Hi! I'm your family AI assistant. I can help you create tasks, plan meals, organize schedules, and answer questions about managing your household. I understand your family context and can automatically assign tasks to the right people. What can I help you with today?",
       timestamp: new Date()
     }
   ]);
