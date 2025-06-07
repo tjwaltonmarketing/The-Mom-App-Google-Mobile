@@ -21,12 +21,12 @@ export function Logo({ className = "h-10 w-10", size = 40 }: LogoProps) {
       <img 
         src={logoPath} 
         alt="The Mom App" 
-        className={className}
+        className={`${className} object-contain`}
         onError={handleImageError}
       />
       {/* SVG Fallback */}
       <svg 
-        className={`${className} hidden`}
+        className={`${className} hidden object-contain`}
         viewBox="0 0 100 100" 
         fill="none" 
         xmlns="http://www.w3.org/2000/svg"
