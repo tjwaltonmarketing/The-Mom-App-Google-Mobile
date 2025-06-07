@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -75,6 +76,49 @@ export const insertVoiceNoteSchema = createInsertSchema(voiceNotes).omit({
 export const insertDeadlineSchema = createInsertSchema(deadlines).omit({
   id: true,
 });
+
+// Relations
+export const familyMembersRelations = relations(familyMembers, ({ many }) => ({
+  events: many(events),
+  assignedTasks: many(tasks, { relationName: "assignedTo" }),
+  completedTasks: many(tasks, { relationName: "completedBy" }),
+  voiceNotes: many(voiceNotes),
+  deadlines: many(deadlines),
+}));
+
+export const eventsRelations = relations(events, ({ one }) => ({
+  assignedMember: one(familyMembers, {
+    fields: [events.assignedTo],
+    references: [familyMembers.id],
+  }),
+}));
+
+export const tasksRelations = relations(tasks, ({ one }) => ({
+  assignedMember: one(familyMembers, {
+    fields: [tasks.assignedTo],
+    references: [familyMembers.id],
+    relationName: "assignedTo",
+  }),
+  completedByMember: one(familyMembers, {
+    fields: [tasks.completedBy],
+    references: [familyMembers.id],
+    relationName: "completedBy",
+  }),
+}));
+
+export const voiceNotesRelations = relations(voiceNotes, ({ one }) => ({
+  createdBy: one(familyMembers, {
+    fields: [voiceNotes.createdBy],
+    references: [familyMembers.id],
+  }),
+}));
+
+export const deadlinesRelations = relations(deadlines, ({ one }) => ({
+  relatedMember: one(familyMembers, {
+    fields: [deadlines.relatedTo],
+    references: [familyMembers.id],
+  }),
+}));
 
 export type FamilyMember = typeof familyMembers.$inferSelect;
 export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;

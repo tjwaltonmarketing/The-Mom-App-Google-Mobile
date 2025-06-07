@@ -15,6 +15,8 @@ import {
   type Deadline,
   type InsertDeadline
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, gte, lt, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Family Members
@@ -44,6 +46,123 @@ export interface IStorage {
   getDeadlines(): Promise<Deadline[]>;
   getUpcomingDeadlines(): Promise<Deadline[]>;
   createDeadline(deadline: InsertDeadline): Promise<Deadline>;
+}
+
+export class DatabaseStorage implements IStorage {
+  async getFamilyMembers(): Promise<FamilyMember[]> {
+    return await db.select().from(familyMembers);
+  }
+
+  async getFamilyMember(id: number): Promise<FamilyMember | undefined> {
+    const [member] = await db.select().from(familyMembers).where(eq(familyMembers.id, id));
+    return member || undefined;
+  }
+
+  async createFamilyMember(insertMember: InsertFamilyMember): Promise<FamilyMember> {
+    const [member] = await db.insert(familyMembers).values(insertMember).returning();
+    return member;
+  }
+
+  async getEvents(): Promise<Event[]> {
+    return await db.select().from(events);
+  }
+
+  async getTodayEvents(): Promise<Event[]> {
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    return await db.select().from(events)
+      .where(and(
+        gte(events.startTime, todayStart),
+        lt(events.startTime, todayEnd)
+      ));
+  }
+
+  async createEvent(insertEvent: InsertEvent): Promise<Event> {
+    const [event] = await db.insert(events).values(insertEvent).returning();
+    return event;
+  }
+
+  async getTasks(): Promise<Task[]> {
+    return await db.select().from(tasks);
+  }
+
+  async getTasksForToday(): Promise<Task[]> {
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    return await db.select().from(tasks)
+      .where(and(
+        gte(tasks.dueDate, todayStart),
+        lt(tasks.dueDate, todayEnd)
+      ));
+  }
+
+  async getPendingTasks(): Promise<Task[]> {
+    return await db.select().from(tasks).where(eq(tasks.isCompleted, false));
+  }
+
+  async createTask(insertTask: InsertTask): Promise<Task> {
+    const [task] = await db.insert(tasks).values(insertTask).returning();
+    return task;
+  }
+
+  async updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined> {
+    const [task] = await db.update(tasks).set(updates).where(eq(tasks.id, id)).returning();
+    return task || undefined;
+  }
+
+  async completeTask(id: number, completedBy: number): Promise<Task | undefined> {
+    const [task] = await db.update(tasks)
+      .set({ 
+        isCompleted: true, 
+        completedBy,
+        completedAt: new Date()
+      })
+      .where(eq(tasks.id, id))
+      .returning();
+    return task || undefined;
+  }
+
+  async getVoiceNotes(): Promise<VoiceNote[]> {
+    return await db.select().from(voiceNotes);
+  }
+
+  async getRecentVoiceNotes(): Promise<VoiceNote[]> {
+    return await db.select().from(voiceNotes)
+      .orderBy(desc(voiceNotes.createdAt))
+      .limit(5);
+  }
+
+  async createVoiceNote(insertNote: InsertVoiceNote): Promise<VoiceNote> {
+    const [note] = await db.insert(voiceNotes).values({
+      ...insertNote,
+      createdAt: new Date(),
+      isProcessed: false
+    }).returning();
+    return note;
+  }
+
+  async getDeadlines(): Promise<Deadline[]> {
+    return await db.select().from(deadlines);
+  }
+
+  async getUpcomingDeadlines(): Promise<Deadline[]> {
+    const now = new Date();
+    return await db.select().from(deadlines)
+      .where(and(
+        eq(deadlines.isCompleted, false),
+        gte(deadlines.dueDate, now)
+      ))
+      .orderBy(deadlines.dueDate);
+  }
+
+  async createDeadline(insertDeadline: InsertDeadline): Promise<Deadline> {
+    const [deadline] = await db.insert(deadlines).values(insertDeadline).returning();
+    return deadline;
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -379,4 +498,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
