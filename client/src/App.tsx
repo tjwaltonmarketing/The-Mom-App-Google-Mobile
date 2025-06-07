@@ -5,12 +5,18 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import Dashboard from "@/pages/dashboard";
+import CalendarPage from "@/pages/calendar";
+import TasksPage from "@/pages/tasks";
+import MealPlanPage from "@/pages/meal-plan";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/calendar" component={CalendarPage} />
+      <Route path="/tasks" component={TasksPage} />
+      <Route path="/meal-plan" component={MealPlanPage} />
       <Route component={NotFound} />
     </Switch>
   );

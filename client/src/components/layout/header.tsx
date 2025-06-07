@@ -4,6 +4,7 @@ import { Home, Bell, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Link, useLocation } from "wouter";
 import type { FamilyMember } from "@shared/schema";
 
 interface HeaderProps {
@@ -12,6 +13,7 @@ interface HeaderProps {
 
 export function Header({ onStartVoiceNote }: HeaderProps) {
   const [dndEnabled, setDndEnabled] = useState(false);
+  const [location] = useLocation();
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
@@ -27,18 +29,18 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
               <h1 className="text-xl font-bold text-primary">The Mom App</h1>
             </div>
             <nav className="hidden md:flex space-x-6">
-              <a href="#" className="text-primary font-medium border-b-2 border-primary pb-1">
+              <Link href="/" className={location === "/" ? "text-primary font-medium border-b-2 border-primary pb-1" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors"}>
                 Dashboard
-              </a>
-              <a href="#" className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors">
+              </Link>
+              <Link href="/calendar" className={location === "/calendar" ? "text-primary font-medium border-b-2 border-primary pb-1" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors"}>
                 Calendar
-              </a>
-              <a href="#" className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors">
+              </Link>
+              <Link href="/tasks" className={location === "/tasks" ? "text-primary font-medium border-b-2 border-primary pb-1" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors"}>
                 Tasks
-              </a>
-              <a href="#" className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors">
+              </Link>
+              <Link href="/meal-plan" className={location === "/meal-plan" ? "text-primary font-medium border-b-2 border-primary pb-1" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors"}>
                 Meal Plan
-              </a>
+              </Link>
             </nav>
           </div>
           
