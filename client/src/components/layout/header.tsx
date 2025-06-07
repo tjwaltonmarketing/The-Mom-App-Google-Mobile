@@ -31,10 +31,14 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Home className="text-primary text-2xl" />
-              <h1 className="text-xl font-bold text-primary">The Mom App</h1>
-            </div>
+            <Link href="/" className="flex items-center space-x-3 hover:opacity-90 transition-opacity">
+              <img 
+                src="/attached_assets/The Mom app_20250607_125224_0002_1749322541390.png" 
+                alt="The Mom App" 
+                className="h-10 w-10"
+              />
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white blue-light-filter:text-gray-900">The Mom App</h1>
+            </Link>
             <nav className="hidden md:flex space-x-6">
               <Link href="/" className={location === "/" ? "text-primary font-medium border-b-2 border-primary pb-1" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors"}>
                 Dashboard
