@@ -11,6 +11,7 @@ import MealPlanPage from "@/pages/meal-plan";
 import SubscriptionPage from "@/pages/subscription";
 import AIAssistantPage from "@/pages/ai-assistant";
 import SettingsPage from "@/pages/settings";
+import TutorialsPage from "@/pages/tutorials";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/subscription" component={SubscriptionPage} />
       <Route path="/ai-assistant" component={AIAssistantPage} />
       <Route path="/settings" component={SettingsPage} />
+      <Route path="/tutorials" component={TutorialsPage} />
       <Route component={NotFound} />
     </Switch>
   );

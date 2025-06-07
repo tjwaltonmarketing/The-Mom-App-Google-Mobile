@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Home, Bell, Mic, Settings, Crown, User, Bot } from "lucide-react";
+import { Home, Bell, Mic, Settings, Crown, User, Bot, HelpCircle, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -75,6 +75,13 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
               size="icon"
             >
               <Mic className="h-4 w-4" />
+            </Button>
+
+            {/* Help/Tutorials Button */}
+            <Button asChild className="bg-amber-500 hover:bg-amber-600 text-white p-2 rounded-full transition-colors" size="icon">
+              <Link href="/tutorials">
+                <HelpCircle className="h-4 w-4" />
+              </Link>
             </Button>
 
             {/* AI Assistant Button */}
