@@ -83,6 +83,27 @@ const faqItems: FAQItem[] = [
     answer: "Set break intervals in Settings > Mindful Usage. The app will gently remind you to take breaks with encouraging messages designed for busy moms. You can customize the frequency, messages, and even disable reminders during important family time.",
     category: "features",
     tags: ["mindful", "breaks", "reminders", "wellness"]
+  },
+  {
+    id: "password-vault-security",
+    question: "How secure is the family password vault?",
+    answer: "The password vault uses bank-level encryption to protect your family's login credentials. All passwords are encrypted before storage and can only be accessed with your master password. We never store your master password - only you can decrypt your data.",
+    category: "features",
+    tags: ["password", "vault", "security", "encryption"]
+  },
+  {
+    id: "password-vault-access",
+    question: "How do I access and use the password vault?",
+    answer: "From the dashboard, click the 'Passwords' tab to access your secure vault. You can add new passwords, organize them by categories (Kids, Banking, Entertainment), mark favorites, and search through all entries. Perfect for storing school portal logins, streaming services, and family account credentials.",
+    category: "getting-started",
+    tags: ["password", "vault", "access", "categories", "family"]
+  },
+  {
+    id: "password-sharing",
+    question: "Can I share passwords with family members?",
+    answer: "The password vault is designed for secure family password management. You can organize passwords by categories and share access with trusted family members. However, each person should have their own account for better security and individual access tracking.",
+    category: "features",
+    tags: ["password", "sharing", "family", "security", "access"]
   }
 ];
 

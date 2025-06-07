@@ -8,7 +8,8 @@ import {
   Mic,
   Brain,
   Calendar,
-  ChevronRight
+  ChevronRight,
+  Shield
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -39,6 +40,15 @@ const quickTutorials = [
     difficulty: "intermediate" as const,
     icon: Brain,
     color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
+  },
+  {
+    id: "password-vault",
+    title: "Password Vault",
+    description: "Securely store family passwords",
+    duration: "4 min",
+    difficulty: "intermediate" as const,
+    icon: Shield,
+    color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
   }
 ];
 

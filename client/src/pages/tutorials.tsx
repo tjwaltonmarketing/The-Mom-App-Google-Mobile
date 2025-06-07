@@ -192,6 +192,37 @@ const tutorials: Tutorial[] = [
         tips: ["Tell kids when you're taking a phone break", "Use break time for family interaction"]
       }
     ]
+  },
+  {
+    id: "password-vault",
+    title: "Family Password Vault",
+    description: "Securely store and manage family passwords",
+    duration: "4 min",
+    difficulty: "intermediate",
+    icon: Settings,
+    category: "advanced-features",
+    steps: [
+      {
+        title: "Access Password Vault",
+        description: "From the dashboard, switch to the 'Passwords' tab to view your secure password storage.",
+        action: "Click the 'Passwords' tab at the top of the dashboard"
+      },
+      {
+        title: "Add New Passwords",
+        description: "Store login credentials for family accounts like school portals, streaming services, and online banking.",
+        tips: ["Use categories to organize passwords", "Mark frequently used passwords as favorites"]
+      },
+      {
+        title: "Search and Filter",
+        description: "Quickly find passwords using the search bar or filter by categories like 'Kids', 'Banking', or 'Entertainment'.",
+        tips: ["Search works on website names and usernames", "Use favorites for quick access to important accounts"]
+      },
+      {
+        title: "Security Features",
+        description: "All passwords are encrypted and stored securely. Never share your master password with others.",
+        tips: ["Regularly update passwords for better security", "Use strong, unique passwords for each account"]
+      }
+    ]
   }
 ];
 
