@@ -164,9 +164,9 @@ const tutorials: Tutorial[] = [
   },
   {
     id: "mindful-usage",
-    title: "Mindful Usage & Breaks",
-    description: "Set healthy boundaries with gentle usage reminders",
-    duration: "3 min",
+    title: "Mindful Usage & Wellness",
+    description: "Set healthy boundaries and protect your eyes during screen time",
+    duration: "4 min",
     difficulty: "beginner",
     icon: Clock,
     category: "getting-started",
@@ -175,6 +175,12 @@ const tutorials: Tutorial[] = [
         title: "Enable Break Reminders",
         description: "Go to Settings > Mindful Usage to set up gentle reminders to take breaks.",
         action: "Choose reminder intervals that work for your schedule"
+      },
+      {
+        title: "Activate Blue Light Filter",
+        description: "Switch to the blue light filter theme to reduce eye strain during evening use.",
+        action: "Click the theme toggle and select 'Blue Light Filter' for easier nighttime viewing",
+        tips: ["Perfect for late-night planning sessions", "Reduces sleep disruption from screen time"]
       },
       {
         title: "Customize Messages",

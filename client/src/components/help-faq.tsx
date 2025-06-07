@@ -85,6 +85,20 @@ const faqItems: FAQItem[] = [
     tags: ["mindful", "breaks", "reminders", "wellness"]
   },
   {
+    id: "blue-light-filter",
+    question: "What is the blue light filter and when should I use it?",
+    answer: "The blue light filter theme reduces harsh blue light from your screen, making it easier on your eyes during evening use. Perfect for late-night planning sessions or when checking tasks before bed. This can help reduce eye strain and minimize sleep disruption from screen time.",
+    category: "features",
+    tags: ["blue light", "filter", "eye strain", "sleep", "wellness"]
+  },
+  {
+    id: "theme-switching",
+    question: "How do I switch between light, dark, and blue light filter themes?",
+    answer: "Click the theme toggle button in the header (looks like a sun/moon icon) to cycle between light mode, dark mode, and blue light filter. Each theme is designed for different times of day and lighting conditions to optimize your comfort and eye health.",
+    category: "getting-started",
+    tags: ["theme", "light", "dark", "blue light", "settings"]
+  },
+  {
     id: "password-vault-security",
     question: "How secure is the family password vault?",
     answer: "The password vault uses bank-level encryption to protect your family's login credentials. All passwords are encrypted before storage and can only be accessed with your master password. We never store your master password - only you can decrypt your data.",
