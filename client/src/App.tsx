@@ -8,6 +8,7 @@ import Dashboard from "@/pages/dashboard";
 import CalendarPage from "@/pages/calendar";
 import TasksPage from "@/pages/tasks";
 import MealPlanPage from "@/pages/meal-plan";
+import SubscriptionPage from "@/pages/subscription";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/calendar" component={CalendarPage} />
       <Route path="/tasks" component={TasksPage} />
       <Route path="/meal-plan" component={MealPlanPage} />
+      <Route path="/subscription" component={SubscriptionPage} />
       <Route component={NotFound} />
     </Switch>
   );

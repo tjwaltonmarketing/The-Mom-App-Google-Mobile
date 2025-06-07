@@ -87,6 +87,23 @@ export const passwords = pgTable("passwords", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  familyId: integer("family_id").references(() => familyMembers.id).notNull(),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  status: text("status").notNull().default("trial"), // "trial", "active", "canceled", "past_due"
+  plan: text("plan").notNull().default("family"), // "family"
+  billingCycle: text("billing_cycle").notNull().default("monthly"), // "monthly", "yearly"
+  trialStartDate: timestamp("trial_start_date").defaultNow(),
+  trialEndDate: timestamp("trial_end_date").notNull(),
+  subscriptionStartDate: timestamp("subscription_start_date"),
+  subscriptionEndDate: timestamp("subscription_end_date"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertFamilyMemberSchema = createInsertSchema(familyMembers).omit({
   id: true,
 });
@@ -121,6 +138,12 @@ export const insertPasswordSchema = createInsertSchema(passwords).omit({
   id: true,
   lastUpdated: true,
   createdAt: true,
+});
+
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Relations
@@ -188,6 +211,13 @@ export const passwordsRelations = relations(passwords, ({ one }) => ({
   }),
 }));
 
+export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
+  family: one(familyMembers, {
+    fields: [subscriptions.familyId],
+    references: [familyMembers.id],
+  }),
+}));
+
 export type FamilyMember = typeof familyMembers.$inferSelect;
 export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
 
@@ -208,3 +238,6 @@ export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
 export type Password = typeof passwords.$inferSelect;
 export type InsertPassword = z.infer<typeof insertPasswordSchema>;
+
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
