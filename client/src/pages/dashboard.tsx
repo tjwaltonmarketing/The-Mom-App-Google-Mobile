@@ -11,6 +11,7 @@ import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines";
 import { NotificationDemo } from "@/components/dashboard/notification-demo";
 import { PasswordVault } from "@/components/dashboard/password-vault";
 import { TrialBanner } from "@/components/dashboard/trial-banner";
+import { TutorialCards } from "@/components/dashboard/tutorial-cards";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { MindfulUsage } from "@/components/mindful-usage";
 import { useState } from "react";
@@ -48,6 +49,7 @@ export default function Dashboard() {
 
               {/* Right Column */}
               <div className="space-y-6">
+                <TutorialCards />
                 <NotificationDemo />
                 <WeatherWidget />
                 <FamilyProgress />

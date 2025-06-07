@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { HelpFAQ } from "@/components/help-faq";
 import { 
   Play, 
   CheckCircle, 
@@ -198,6 +199,18 @@ export default function TutorialsPage() {
   const [selectedTutorial, setSelectedTutorial] = useState<Tutorial | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+
+  // Handle URL parameters for direct tutorial access
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tutorialId = urlParams.get('tutorial');
+    if (tutorialId) {
+      const tutorial = tutorials.find(t => t.id === tutorialId);
+      if (tutorial) {
+        setSelectedTutorial(tutorial);
+      }
+    }
+  }, []);
 
   const handleStepComplete = (stepIndex: number) => {
     setCompletedSteps(prev => {

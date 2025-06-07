@@ -123,6 +123,12 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem asChild>
+                  <Link href="/tutorials" className="w-full flex items-center">
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Tutorials & Help
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link href="/ai-assistant" className="w-full flex items-center">
                     <Bot className="mr-2 h-4 w-4" />
                     AI Assistant
