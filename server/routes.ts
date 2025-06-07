@@ -286,9 +286,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const response = await processAIRequest({
         message,
         familyContext: {
-          members: familyMembers,
-          upcomingEvents,
-          pendingTasks
+          members: familyMembers.map(m => ({ id: m.id, name: m.name, role: m.role })),
+          upcomingEvents: upcomingEvents.map(e => ({ 
+            title: e.title, 
+            startTime: e.startTime, 
+            assignedTo: e.assignedTo ?? undefined 
+          })),
+          pendingTasks: pendingTasks.map(t => ({ 
+            title: t.title, 
+            assignedTo: t.assignedTo ?? undefined, 
+            dueDate: t.dueDate ?? undefined 
+          }))
         }
       });
       

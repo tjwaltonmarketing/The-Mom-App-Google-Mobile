@@ -214,6 +214,8 @@ export function CalendarSync() {
             )}
           </div>
         )}
+
+        {!isConnected && <CalendarSetupGuide />}
       </CardContent>
     </Card>
   );
