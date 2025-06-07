@@ -71,6 +71,22 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const passwords = pgTable("passwords", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(), // "Netflix", "School Portal", "Bank of America"
+  category: text("category").notNull(), // "streaming", "banking", "school", "shopping", "utilities"
+  website: text("website"), // "netflix.com"
+  username: text("username"),
+  email: text("email"),
+  password: text("password").notNull(), // Encrypted in real implementation
+  notes: text("notes"), // Additional info, security questions, etc.
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  createdBy: integer("created_by").references(() => familyMembers.id),
+  sharedWith: text("shared_with"), // JSON array of family member IDs who can access
+  isFavorite: boolean("is_favorite").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertFamilyMemberSchema = createInsertSchema(familyMembers).omit({
   id: true,
 });
@@ -98,6 +114,12 @@ export const insertDeadlineSchema = createInsertSchema(deadlines).omit({
 export const insertNotificationSchema = createInsertSchema(notifications).omit({
   id: true,
   sentAt: true,
+  createdAt: true,
+});
+
+export const insertPasswordSchema = createInsertSchema(passwords).omit({
+  id: true,
+  lastUpdated: true,
   createdAt: true,
 });
 
@@ -159,6 +181,13 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   }),
 }));
 
+export const passwordsRelations = relations(passwords, ({ one }) => ({
+  creator: one(familyMembers, {
+    fields: [passwords.createdBy],
+    references: [familyMembers.id],
+  }),
+}));
+
 export type FamilyMember = typeof familyMembers.$inferSelect;
 export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
 
@@ -176,3 +205,6 @@ export type InsertDeadline = z.infer<typeof insertDeadlineSchema>;
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+export type Password = typeof passwords.$inferSelect;
+export type InsertPassword = z.infer<typeof insertPasswordSchema>;
