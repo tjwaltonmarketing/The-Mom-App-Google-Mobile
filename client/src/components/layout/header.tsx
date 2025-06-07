@@ -30,13 +30,13 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
               <a href="#" className="text-primary font-medium border-b-2 border-primary pb-1">
                 Dashboard
               </a>
-              <a href="#" className="text-gray-600 hover:text-primary transition-colors">
+              <a href="#" className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors">
                 Calendar
               </a>
-              <a href="#" className="text-gray-600 hover:text-primary transition-colors">
+              <a href="#" className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors">
                 Tasks
               </a>
-              <a href="#" className="text-gray-600 hover:text-primary transition-colors">
+              <a href="#" className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors">
                 Meal Plan
               </a>
             </nav>
