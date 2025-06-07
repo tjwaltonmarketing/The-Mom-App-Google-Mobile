@@ -12,6 +12,7 @@ import { NotificationDemo } from "@/components/dashboard/notification-demo";
 import { PasswordVault } from "@/components/dashboard/password-vault";
 import { TrialBanner } from "@/components/dashboard/trial-banner";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
+import { MindfulUsage } from "@/components/mindful-usage";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -66,6 +67,8 @@ export default function Dashboard() {
         isOpen={isVoiceModalOpen} 
         onClose={() => setIsVoiceModalOpen(false)} 
       />
+      
+      <MindfulUsage />
     </div>
   );
 }
