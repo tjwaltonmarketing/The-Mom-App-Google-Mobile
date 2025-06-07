@@ -8,6 +8,7 @@ import { WeatherWidget } from "@/components/dashboard/weather-widget";
 import { FamilyProgress } from "@/components/dashboard/family-progress";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines";
+import { NotificationDemo } from "@/components/dashboard/notification-demo";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { useState } from "react";
 
@@ -32,6 +33,7 @@ export default function Dashboard() {
 
           {/* Right Column */}
           <div className="space-y-6">
+            <NotificationDemo />
             <WeatherWidget />
             <FamilyProgress />
             <QuickActions />
