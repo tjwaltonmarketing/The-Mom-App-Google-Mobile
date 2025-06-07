@@ -410,10 +410,11 @@ export default function TutorialsPage() {
       </div>
 
       <Tabs defaultValue="getting-started" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="getting-started">Getting Started</TabsTrigger>
           <TabsTrigger value="family-coordination">Family Coordination</TabsTrigger>
           <TabsTrigger value="advanced-features">Advanced Features</TabsTrigger>
+          <TabsTrigger value="faq">FAQ & Help</TabsTrigger>
         </TabsList>
 
         <TabsContent value="getting-started" className="space-y-6">
@@ -513,6 +514,10 @@ export default function TutorialsPage() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="faq">
+          <HelpFAQ />
         </TabsContent>
       </Tabs>
     </div>
