@@ -128,13 +128,15 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="w-full flex items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    App Settings
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem>
                   <User className="mr-2 h-4 w-4" />
                   Family Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  App Settings
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
