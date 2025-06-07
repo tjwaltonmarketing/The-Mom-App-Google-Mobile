@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Smartphone, Heart, Clock, Bell, Palette, User } from "lucide-react";
+import { CalendarSync } from "@/components/calendar-sync";
 
 export default function SettingsPage() {
   const [mindfulUsageEnabled, setMindfulUsageEnabled] = useState(true);
@@ -38,6 +39,9 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-6">
+          {/* Calendar Integration */}
+          <CalendarSync />
+
           {/* Mindful Usage Settings */}
           <Card>
             <CardHeader>

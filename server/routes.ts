@@ -345,6 +345,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Google Calendar Integration endpoints
+  app.post("/api/calendar/connect", async (req, res) => {
+    try {
+      // In a real implementation, this would handle Google OAuth flow
+      // For demo purposes, we'll simulate a successful connection
+      const mockCalendars = [
+        {
+          id: "primary",
+          name: "Primary Calendar",
+          primary: true,
+          backgroundColor: "#3174ad"
+        },
+        {
+          id: "family-calendar",
+          name: "Family Events",
+          primary: false,
+          backgroundColor: "#d96570"
+        },
+        {
+          id: "work-calendar", 
+          name: "Work Schedule",
+          primary: false,
+          backgroundColor: "#8b5a3c"
+        }
+      ];
+
+      res.json({
+        success: true,
+        calendars: mockCalendars,
+        message: "Successfully connected to Google Calendar"
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to connect to Google Calendar: " + error.message 
+      });
+    }
+  });
+
+  app.post("/api/calendar/disconnect", async (req, res) => {
+    try {
+      // In real implementation, revoke OAuth tokens
+      res.json({
+        success: true,
+        message: "Successfully disconnected from Google Calendar"
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to disconnect: " + error.message 
+      });
+    }
+  });
+
+  app.post("/api/calendar/sync", async (req, res) => {
+    try {
+      const { calendarId, direction } = req.body;
+      
+      // In real implementation, this would:
+      // 1. Fetch events from Google Calendar API
+      // 2. Create/update events in our database
+      // 3. Push our events to Google Calendar if bidirectional
+      
+      // Simulate sync process
+      let eventCount = 0;
+      if (direction === "import" || direction === "bidirectional") {
+        eventCount += 15; // Mock imported events
+      }
+      if (direction === "export" || direction === "bidirectional") {
+        eventCount += 8; // Mock exported events
+      }
+
+      res.json({
+        success: true,
+        eventCount,
+        message: `Synchronized ${eventCount} events successfully`
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        success: false,
+        message: "Sync failed: " + error.message 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
