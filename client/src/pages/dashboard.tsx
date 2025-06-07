@@ -10,6 +10,7 @@ import { QuickActions } from "@/components/dashboard/quick-actions";
 import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines";
 import { NotificationDemo } from "@/components/dashboard/notification-demo";
 import { PasswordVault } from "@/components/dashboard/password-vault";
+import { TrialBanner } from "@/components/dashboard/trial-banner";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,6 +33,10 @@ export default function Dashboard() {
           </TabsList>
           
           <TabsContent value="dashboard">
+            <div className="mb-6">
+              <TrialBanner />
+            </div>
+            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column */}
               <div className="lg:col-span-2 space-y-6">
