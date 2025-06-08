@@ -20,7 +20,58 @@ export interface AIResponse {
   }>;
 }
 
+// Fallback responses for common support questions
+function getFallbackResponse(message: string): string | null {
+  const lowerMessage = message.toLowerCase();
+  
+  // Theme and display questions
+  if (lowerMessage.includes('dark mode') || lowerMessage.includes('theme') || lowerMessage.includes('brightness')) {
+    return "To switch themes: Click the theme toggle button in the header (sun/moon icon). You can choose between Light Mode, Dark Mode, and Blue Light Filter. The Blue Light Filter is perfect for evening use as it reduces eye strain and helps maintain better sleep patterns.";
+  }
+  
+  // Google Calendar sync questions
+  if (lowerMessage.includes('google') && (lowerMessage.includes('sync') || lowerMessage.includes('calendar'))) {
+    return "To sync Google Calendar: Go to Settings > Calendar Sync and click 'Connect Google Calendar'. Sign in with your Google account, grant permissions, then choose your sync preferences (import only, export only, or two-way sync). You can select which calendars to sync and enable automatic updates.";
+  }
+  
+  // Voice notes troubleshooting
+  if (lowerMessage.includes('voice') && (lowerMessage.includes('not working') || lowerMessage.includes('problem') || lowerMessage.includes('issue'))) {
+    return "For voice note issues: 1) Check microphone permissions in your browser settings, 2) Ensure you're using a supported browser (Chrome, Safari, Edge), 3) Try refreshing the page, 4) Make sure no other apps are using your microphone. The voice-to-task feature converts your speech into organized tasks automatically.";
+  }
+  
+  // Password vault questions
+  if (lowerMessage.includes('password') && (lowerMessage.includes('vault') || lowerMessage.includes('security') || lowerMessage.includes('how to'))) {
+    return "To use Password Vault: From the dashboard, click the 'Passwords' tab. Add new passwords by clicking the '+' button. Organize them using categories like 'Kids', 'Banking', or 'Entertainment'. Mark frequently used ones as favorites. All passwords are encrypted with bank-level security - only you have access with your master password.";
+  }
+  
+  // Notifications setup
+  if (lowerMessage.includes('notification') || (lowerMessage.includes('sms') || lowerMessage.includes('email')) && lowerMessage.includes('setup')) {
+    return "To set up notifications: Go to Settings > Notifications. Add phone numbers for SMS alerts and email addresses for each family member. You can customize notification types, timing, and frequency. Family members will receive alerts about their assigned tasks and upcoming events.";
+  }
+  
+  // Adding family members
+  if (lowerMessage.includes('add') && (lowerMessage.includes('family') || lowerMessage.includes('member'))) {
+    return "To add family members: Go to Settings > Family Settings. Click 'Add Member' and enter their name, role (mom, dad, child), and assign a color for easy identification. Each member can have their own task assignments and notification preferences.";
+  }
+  
+  // Blue light filter specific
+  if (lowerMessage.includes('blue light') || lowerMessage.includes('filter') || lowerMessage.includes('eye strain')) {
+    return "The Blue Light Filter reduces harsh blue light from your screen, making it easier on your eyes during evening use. Access it through the theme toggle button in the header. It's perfect for late-night planning sessions and helps reduce sleep disruption from screen time.";
+  }
+  
+  return null;
+}
+
 export async function processAIRequest(request: AIRequest): Promise<AIResponse> {
+  // Check for fallback responses first
+  const fallbackResponse = getFallbackResponse(request.message);
+  if (fallbackResponse) {
+    return {
+      message: fallbackResponse,
+      actions: []
+    };
+  }
+  
   // If no OpenAI key is available, provide helpful guidance to connect
   if (!openai) {
     return {
@@ -91,10 +142,19 @@ If the user wants to create tasks, events, or reminders, include them in your re
       message: result.message || "I'm here to help with your family coordination!",
       actions: result.actions || []
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("AI processing error:", error);
+    
+    // Handle quota exceeded or rate limiting
+    if (error?.status === 429 || error?.code === 'insufficient_quota') {
+      return {
+        message: "I'm currently experiencing high demand. For immediate help with app features, please check the FAQ section in tutorials or ask me specific questions about using The Mom App - I have built-in knowledge about themes, calendar sync, password vault, voice notes, and notifications.",
+        actions: []
+      };
+    }
+    
     return {
-      message: "I'm having trouble processing that request right now. Could you try rephrasing it?",
+      message: "I'm having trouble processing that request right now. For app support questions, try asking about specific features like 'dark mode', 'google calendar', 'password vault', or 'voice notes' - I have built-in help for common topics.",
       actions: []
     };
   }
