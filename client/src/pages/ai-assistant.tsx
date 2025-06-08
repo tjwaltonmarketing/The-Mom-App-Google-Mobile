@@ -84,19 +84,19 @@ export default function AIAssistantPage() {
               <CardContent className="space-y-3">
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 blue-light-filter:bg-blue-25 rounded-lg">
                   <p className="text-sm text-blue-800 dark:text-blue-200 blue-light-filter:text-blue-800">
-                    💡 Use family member names in your requests for automatic task assignment
+                    Use family member names for automatic task assignment
                   </p>
                 </div>
                 
                 <div className="p-3 bg-green-50 dark:bg-green-900/20 blue-light-filter:bg-green-25 rounded-lg">
                   <p className="text-sm text-green-800 dark:text-green-200 blue-light-filter:text-green-800">
-                    🗓️ Mention specific times or dates for automatic scheduling
+                    Ask specific questions about app features for detailed help
                   </p>
                 </div>
                 
                 <div className="p-3 bg-purple-50 dark:bg-purple-900/20 blue-light-filter:bg-purple-25 rounded-lg">
                   <p className="text-sm text-purple-800 dark:text-purple-200 blue-light-filter:text-purple-800">
-                    🍽️ Ask about meal planning with dietary preferences or time constraints
+                    Include context for troubleshooting issues effectively
                   </p>
                 </div>
               </CardContent>
