@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,15 @@ export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importType, setImportType] = useState<"tasks" | "notes" | "passwords" | "events">("tasks");
+  const [activeTab, setActiveTab] = useState("general");
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam === 'family') {
+      setActiveTab('family');
+    }
+  }, []);
 
   const handleSaveSettings = () => {
     localStorage.setItem('mindfulUsageSettings', JSON.stringify({
@@ -41,7 +50,7 @@ export default function SettingsPage() {
           <p className="text-muted-foreground">Customize your family coordination experience</p>
         </div>
 
-        <Tabs defaultValue="general" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="family">Family</TabsTrigger>
