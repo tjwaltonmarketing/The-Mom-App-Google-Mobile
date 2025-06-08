@@ -18,20 +18,17 @@ import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
-    <>
-      <PageLoadingHandler />
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/calendar" component={CalendarPage} />
-        <Route path="/tasks" component={TasksPage} />
-        <Route path="/meal-plan" component={MealPlanPage} />
-        <Route path="/subscription" component={SubscriptionPage} />
-        <Route path="/ai-assistant" component={AIAssistantPage} />
-        <Route path="/settings" component={SettingsPage} />
-        <Route path="/tutorials" component={TutorialsPage} />
-        <Route component={NotFound} />
-      </Switch>
-    </>
+    <Switch>
+      <Route path="/" component={Dashboard} />
+      <Route path="/calendar" component={CalendarPage} />
+      <Route path="/tasks" component={TasksPage} />
+      <Route path="/meal-plan" component={MealPlanPage} />
+      <Route path="/subscription" component={SubscriptionPage} />
+      <Route path="/ai-assistant" component={AIAssistantPage} />
+      <Route path="/settings" component={SettingsPage} />
+      <Route path="/tutorials" component={TutorialsPage} />
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
