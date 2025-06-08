@@ -7,8 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Smartphone, Heart, Clock, Bell, Palette, User } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users } from "lucide-react";
 import { CalendarSync } from "@/components/calendar-sync";
+import { ImportExportModal } from "@/components/import-export-modal";
 
 export default function SettingsPage() {
   const [mindfulUsageEnabled, setMindfulUsageEnabled] = useState(true);
@@ -16,9 +18,10 @@ export default function SettingsPage() {
   const [breakDuration, setBreakDuration] = useState([5]);
   const [dailyLimit, setDailyLimit] = useState([120]);
   const [notifications, setNotifications] = useState(true);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importType, setImportType] = useState<"tasks" | "notes" | "passwords" | "events">("tasks");
 
   const handleSaveSettings = () => {
-    // Save settings to localStorage or send to API
     localStorage.setItem('mindfulUsageSettings', JSON.stringify({
       enabled: mindfulUsageEnabled,
       reminderInterval: parseInt(reminderInterval),
@@ -38,157 +41,257 @@ export default function SettingsPage() {
           <p className="text-muted-foreground">Customize your family coordination experience</p>
         </div>
 
-        <div className="space-y-6">
-          {/* Calendar Integration */}
-          <CalendarSync />
+        <Tabs defaultValue="general" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="family">Family</TabsTrigger>
+            <TabsTrigger value="account">Account</TabsTrigger>
+          </TabsList>
 
-          {/* Mindful Usage Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Smartphone className="h-5 w-5 text-primary" />
-                Mindful Usage
-              </CardTitle>
-              <CardDescription>
-                Gentle reminders to take breaks and maintain healthy app usage habits
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="mindful-usage">Enable mindful usage reminders</Label>
-                <Switch
-                  id="mindful-usage"
-                  checked={mindfulUsageEnabled}
-                  onCheckedChange={setMindfulUsageEnabled}
-                />
-              </div>
+          <TabsContent value="general" className="space-y-6">
+            <CalendarSync />
 
-              {mindfulUsageEnabled && (
-                <div className="space-y-4 pl-4 border-l-2 border-primary/20">
-                  <div className="space-y-2">
-                    <Label>Reminder interval</Label>
-                    <Select value={reminderInterval} onValueChange={setReminderInterval}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10">Every 10 minutes</SelectItem>
-                        <SelectItem value="15">Every 15 minutes</SelectItem>
-                        <SelectItem value="20">Every 20 minutes</SelectItem>
-                        <SelectItem value="30">Every 30 minutes</SelectItem>
-                        <SelectItem value="45">Every 45 minutes</SelectItem>
-                      </SelectContent>
-                    </Select>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Smartphone className="h-5 w-5 text-primary" />
+                  Mindful Usage
+                </CardTitle>
+                <CardDescription>
+                  Gentle reminders to take breaks and maintain healthy app usage habits
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="mindful-usage">Enable mindful usage reminders</Label>
+                  <Switch
+                    id="mindful-usage"
+                    checked={mindfulUsageEnabled}
+                    onCheckedChange={setMindfulUsageEnabled}
+                  />
+                </div>
+
+                {mindfulUsageEnabled && (
+                  <div className="space-y-4 pl-4 border-l-2 border-primary/20">
+                    <div className="space-y-2">
+                      <Label>Reminder interval</Label>
+                      <Select value={reminderInterval} onValueChange={setReminderInterval}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">Every 10 minutes</SelectItem>
+                          <SelectItem value="15">Every 15 minutes</SelectItem>
+                          <SelectItem value="20">Every 20 minutes</SelectItem>
+                          <SelectItem value="30">Every 30 minutes</SelectItem>
+                          <SelectItem value="45">Every 45 minutes</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Suggested break duration: {breakDuration[0]} minutes</Label>
+                      <Slider
+                        value={breakDuration}
+                        onValueChange={setBreakDuration}
+                        max={15}
+                        min={2}
+                        step={1}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Daily usage goal: {dailyLimit[0]} minutes</Label>
+                      <Slider
+                        value={dailyLimit}
+                        onValueChange={setDailyLimit}
+                        max={300}
+                        min={30}
+                        step={15}
+                        className="w-full"
+                      />
+                    </div>
                   </div>
+                )}
+              </CardContent>
+            </Card>
 
-                  <div className="space-y-2">
-                    <Label>Suggested break duration: {breakDuration[0]} minutes</Label>
-                    <Slider
-                      value={breakDuration}
-                      onValueChange={setBreakDuration}
-                      max={15}
-                      min={2}
-                      step={1}
-                      className="w-full"
-                    />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 text-primary" />
+                  Notifications
+                </CardTitle>
+                <CardDescription>
+                  Manage your notification preferences
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="notifications">Push notifications</Label>
+                  <Switch
+                    id="notifications"
+                    checked={notifications}
+                    onCheckedChange={setNotifications}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-primary" />
+                  Appearance
+                </CardTitle>
+                <CardDescription>
+                  Customize how the app looks and feels
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center p-3 border rounded-lg cursor-pointer hover:border-primary">
+                    <div className="w-full h-8 bg-white border rounded mb-2"></div>
+                    <span className="text-sm">Light</span>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label>Daily usage goal: {dailyLimit[0]} minutes</Label>
-                    <Slider
-                      value={dailyLimit}
-                      onValueChange={setDailyLimit}
-                      max={300}
-                      min={30}
-                      step={15}
-                      className="w-full"
-                    />
+                  <div className="text-center p-3 border rounded-lg cursor-pointer hover:border-primary">
+                    <div className="w-full h-8 bg-gray-900 rounded mb-2"></div>
+                    <span className="text-sm">Dark</span>
+                  </div>
+                  <div className="text-center p-3 border border-primary rounded-lg">
+                    <div className="w-full h-8 bg-gradient-to-r from-orange-100 to-yellow-100 rounded mb-2"></div>
+                    <span className="text-sm">Blue Light</span>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Notification Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-primary" />
-                Notifications
-              </CardTitle>
-              <CardDescription>
-                Manage your notification preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="notifications">Push notifications</Label>
-                <Switch
-                  id="notifications"
-                  checked={notifications}
-                  onCheckedChange={setNotifications}
-                />
-              </div>
-            </CardContent>
-          </Card>
+            <Button onClick={handleSaveSettings} className="w-full">
+              Save Settings
+            </Button>
+          </TabsContent>
 
-          {/* App Preferences */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5 text-primary" />
-                Appearance
-              </CardTitle>
-              <CardDescription>
-                Customize how the app looks and feels
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center p-3 border rounded-lg cursor-pointer hover:border-primary">
-                  <div className="w-full h-8 bg-white border rounded mb-2"></div>
-                  <span className="text-sm">Light</span>
-                </div>
-                <div className="text-center p-3 border rounded-lg cursor-pointer hover:border-primary">
-                  <div className="w-full h-8 bg-gray-900 rounded mb-2"></div>
-                  <span className="text-sm">Dark</span>
-                </div>
-                <div className="text-center p-3 border border-primary rounded-lg">
-                  <div className="w-full h-8 bg-gradient-to-r from-orange-100 to-yellow-100 rounded mb-2"></div>
-                  <span className="text-sm">Blue Light</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <TabsContent value="family" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  Family Members
+                </CardTitle>
+                <CardDescription>
+                  Manage your family member profiles and permissions
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button variant="outline" className="w-full justify-start">
+                  Add Family Member
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Edit Member Roles
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Manage Permissions
+                </Button>
+              </CardContent>
+            </Card>
 
-          {/* Account Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
-                Account
-              </CardTitle>
-              <CardDescription>
-                Manage your account and family settings
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button variant="outline" className="w-full justify-start">
-                Family Member Management
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Data Export
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Privacy Settings
-              </Button>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Download className="h-5 w-5 text-primary" />
+                  Data Management
+                </CardTitle>
+                <CardDescription>
+                  Import and export your family's data
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setImportType("tasks");
+                    setShowImportModal(true);
+                  }}
+                >
+                  Import/Export Tasks
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setImportType("notes");
+                    setShowImportModal(true);
+                  }}
+                >
+                  Import/Export Notes
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setImportType("passwords");
+                    setShowImportModal(true);
+                  }}
+                >
+                  Import/Export Passwords
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-          <Button onClick={handleSaveSettings} className="w-full">
-            Save Settings
-          </Button>
-        </div>
+          <TabsContent value="account" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5 text-primary" />
+                  Account Settings
+                </CardTitle>
+                <CardDescription>
+                  Manage your account preferences and privacy
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button variant="outline" className="w-full justify-start">
+                  Profile Settings
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Privacy Settings
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Security Settings
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-primary" />
+                  Data & Privacy
+                </CardTitle>
+                <CardDescription>
+                  Control your data and privacy preferences
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button variant="outline" className="w-full justify-start">
+                  Download My Data
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  Delete Account
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        <ImportExportModal 
+          isOpen={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          type={importType}
+        />
       </main>
 
       <MobileNav />
