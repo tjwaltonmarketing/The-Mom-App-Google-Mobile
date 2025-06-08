@@ -1,4 +1,4 @@
-import logoPath from "@assets/The Mom app_20250607_125224_0002_1749322541390.png";
+import logoPath from "@assets/The Mom app (1)_1749407807631.png";
 
 interface LogoProps {
   className?: string;
