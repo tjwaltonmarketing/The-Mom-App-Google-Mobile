@@ -21,11 +21,11 @@ export default function AIAssistantPage() {
               <Bot className="text-white" size={20} />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white blue-light-filter:text-gray-900">
-              AI Assistant
+              AI Assistant & Support
             </h1>
           </div>
           <p className="text-gray-600 dark:text-gray-400 blue-light-filter:text-gray-700">
-            Your intelligent family coordination helper
+            Your intelligent family coordinator and app support specialist
           </p>
         </div>
 
@@ -47,7 +47,7 @@ export default function AIAssistantPage() {
                   <div className="flex items-start gap-3">
                     <Zap className="text-blue-500 mt-1" size={16} />
                     <div>
-                      <h4 className="font-medium text-sm">Smart Task Creation</h4>
+                      <h4 className="font-medium text-sm">Family Coordination</h4>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
                         "Remind Emma to practice piano at 4 PM tomorrow"
                       </p>
@@ -57,9 +57,9 @@ export default function AIAssistantPage() {
                   <div className="flex items-start gap-3">
                     <Clock className="text-green-500 mt-1" size={16} />
                     <div>
-                      <h4 className="font-medium text-sm">Schedule Optimization</h4>
+                      <h4 className="font-medium text-sm">App Support</h4>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
-                        "When's the best time for doctor appointments this week?"
+                        "How do I sync my Google Calendar?"
                       </p>
                     </div>
                   </div>
@@ -67,9 +67,9 @@ export default function AIAssistantPage() {
                   <div className="flex items-start gap-3">
                     <Bot className="text-purple-500 mt-1" size={16} />
                     <div>
-                      <h4 className="font-medium text-sm">Meal Planning</h4>
+                      <h4 className="font-medium text-sm">Troubleshooting</h4>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
-                        "Suggest quick dinners for busy weeknights"
+                        "Why aren't my voice notes working?"
                       </p>
                     </div>
                   </div>

@@ -87,9 +87,11 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
 
   const quickPrompts = [
     "Help me plan meals for this week",
+    "How do I sync my Google Calendar?",
     "What tasks should I assign to the kids?",
-    "How can I better organize our family schedule?",
-    "Suggest some family activities for the weekend"
+    "How do I use the password vault?",
+    "Why aren't my voice notes working?",
+    "How do I set up notifications?"
   ];
 
   return (
@@ -100,7 +102,7 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
               <Sparkles className="text-white" size={16} />
             </div>
-            Family AI Assistant
+            AI Assistant & Support
           </CardTitle>
           {onClose && (
             <Button variant="ghost" size="sm" onClick={onClose}>
