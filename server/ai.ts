@@ -59,6 +59,20 @@ function getFallbackResponse(message: string): string | null {
     return "The Blue Light Filter reduces harsh blue light from your screen, making it easier on your eyes during evening use. Access it through the theme toggle button in the header. It's perfect for late-night planning sessions and helps reduce sleep disruption from screen time.";
   }
   
+  // Import/export data migration
+  if (lowerMessage.includes('import') || lowerMessage.includes('transfer') || (lowerMessage.includes('move') && lowerMessage.includes('data'))) {
+    return "To import data from other apps: Click the 'Import' button on Tasks, Calendar, or Password pages. You can paste text from Apple Notes, Google Keep, Todoist, or upload CSV files from password managers. The system shows step-by-step instructions for popular apps and provides a preview before importing.";
+  }
+  
+  // Specific app migrations
+  if (lowerMessage.includes('apple notes') || lowerMessage.includes('google keep') || lowerMessage.includes('todoist')) {
+    return "To migrate from note apps: Copy your notes/tasks and paste them into the import area (one per line). For Apple Notes: copy list content directly. For Google Keep: export notes as text. For Todoist: copy task names from your project lists. The import preview will show how your data will be organized.";
+  }
+  
+  if (lowerMessage.includes('password') && (lowerMessage.includes('import') || lowerMessage.includes('transfer'))) {
+    return "To import passwords: Use the CSV upload option in the Password Vault import dialog. Export from 1Password (Settings > Export), LastPass (Advanced Options > Export), Chrome (Settings > Passwords > Export), or Safari (File > Export Passwords). The system will map columns automatically and show a preview.";
+  }
+  
   return null;
 }
 

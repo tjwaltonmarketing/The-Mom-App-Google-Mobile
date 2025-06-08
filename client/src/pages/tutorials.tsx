@@ -16,7 +16,8 @@ import {
   Mic,
   Brain,
   ChevronRight,
-  Star
+  Star,
+  Download
 } from "lucide-react";
 
 interface Tutorial {
@@ -97,6 +98,37 @@ const tutorials: Tutorial[] = [
         title: "Automatic Notifications",
         description: "Family members get notified about their new tasks via SMS or email.",
         tips: ["Set notification preferences in Settings", "Kids can get simplified reminders"]
+      }
+    ]
+  },
+  {
+    id: "import-export",
+    title: "Import Your Existing Data",
+    description: "Transfer notes, tasks, and passwords from other apps",
+    duration: "3 min",
+    difficulty: "beginner",
+    icon: Download,
+    category: "getting-started",
+    steps: [
+      {
+        title: "Choose Import Type",
+        description: "Navigate to Tasks, Calendar, or Password Vault and click the 'Import' button.",
+        action: "Select what type of data you want to transfer"
+      },
+      {
+        title: "Select Your Source App",
+        description: "Follow the specific instructions for your current app (Apple Notes, Google Keep, Todoist, etc.).",
+        tips: ["Copy text directly from note apps", "Export CSV files from password managers", "Format events as 'Title - Date Time'"]
+      },
+      {
+        title: "Paste or Upload",
+        description: "Paste your content into the text area or upload a CSV file for bulk imports.",
+        tips: ["One item per line for text imports", "Preview shows how data will be imported", "Review before confirming"]
+      },
+      {
+        title: "Review and Confirm",
+        description: "Check the import preview and make any adjustments before finalizing the transfer.",
+        tips: ["Verify family member assignments", "Check due dates and priorities", "Edit any formatting issues"]
       }
     ]
   },

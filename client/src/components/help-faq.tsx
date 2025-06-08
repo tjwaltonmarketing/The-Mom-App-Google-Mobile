@@ -29,6 +29,13 @@ const faqItems: FAQItem[] = [
     tags: ["family", "setup", "members", "colors"]
   },
   {
+    id: "import-data",
+    question: "Can I import my existing notes and tasks from other apps?",
+    answer: "Yes! Click the 'Import' button on the Tasks page to transfer data from other apps. You can paste text directly from Apple Notes, Google Keep, Todoist, or upload CSV files from password managers. The system provides step-by-step instructions for popular apps and shows a preview before importing.",
+    category: "getting-started",
+    tags: ["import", "transfer", "migration", "notes", "tasks", "csv"]
+  },
+  {
     id: "calendar-sync-issues",
     question: "Why isn't my Google Calendar syncing?",
     answer: "Check that you've granted calendar permissions during the connection process. Ensure you're signed in to the correct Google account that contains your family calendar. If sync stops working, try disconnecting and reconnecting your account in Settings > Calendar Sync.",
