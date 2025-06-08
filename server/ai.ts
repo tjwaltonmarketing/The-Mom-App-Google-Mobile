@@ -128,19 +128,18 @@ If the user wants to create tasks, events, or reminders, include them in your re
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: request.message }
       ],
-      response_format: { type: "json_object" },
     });
 
-    const result = JSON.parse(response.choices[0].message.content || "{}");
+    const content = response.choices[0].message.content || "I'm here to help with your family coordination!";
     
     return {
-      message: result.message || "I'm here to help with your family coordination!",
-      actions: result.actions || []
+      message: content,
+      actions: []
     };
   } catch (error: any) {
     console.error("AI processing error:", error);
