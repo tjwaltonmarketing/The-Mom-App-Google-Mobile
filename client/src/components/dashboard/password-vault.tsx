@@ -218,15 +218,15 @@ export function PasswordVault() {
                   className="p-4 bg-gray-50 dark:bg-gray-700 blue-light-filter:bg-amber-25 rounded-lg border border-gray-200 dark:border-gray-600 blue-light-filter:border-amber-200"
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="text-2xl">{getCategoryIcon(password.category)}</div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-gray-900 dark:text-white blue-light-filter:text-gray-900">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="text-2xl flex-shrink-0">{getCategoryIcon(password.category)}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold text-gray-900 dark:text-white blue-light-filter:text-gray-900 truncate">
                             {password.title}
                           </h3>
                           {password.isFavorite && (
-                            <Star size={16} className="text-yellow-500 fill-current" />
+                            <Star size={16} className="text-yellow-500 fill-current flex-shrink-0" />
                           )}
                         </div>
                         <Badge className={`text-xs ${getCategoryColor(password.category)}`}>
@@ -235,13 +235,14 @@ export function PasswordVault() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                       {password.website && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => window.open(`https://${password.website}`, '_blank')}
-                          className="p-1"
+                          className="p-1 h-8 w-8"
+                          title="Open website"
                         >
                           <ExternalLink size={14} />
                         </Button>
@@ -249,7 +250,8 @@ export function PasswordVault() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="p-1"
+                        className="p-1 h-8 w-8"
+                        title={password.isFavorite ? "Remove from favorites" : "Add to favorites"}
                       >
                         {password.isFavorite ? <StarOff size={14} /> : <Star size={14} />}
                       </Button>
@@ -267,10 +269,10 @@ export function PasswordVault() {
                     )}
                     
                     {password.username && (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <User size={14} className="text-gray-500" />
-                          <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <User size={14} className="text-gray-500 flex-shrink-0" />
+                          <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700 truncate">
                             {password.username}
                           </span>
                         </div>
@@ -278,7 +280,8 @@ export function PasswordVault() {
                           variant="ghost"
                           size="sm"
                           onClick={() => copyToClipboard(password.username || "")}
-                          className="p-1"
+                          className="p-1 h-6 w-6 flex-shrink-0"
+                          title="Copy username"
                         >
                           <Copy size={12} />
                         </Button>
@@ -286,10 +289,10 @@ export function PasswordVault() {
                     )}
 
                     {password.email && password.email !== password.username && (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Mail size={14} className="text-gray-500" />
-                          <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <Mail size={14} className="text-gray-500 flex-shrink-0" />
+                          <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700 truncate">
                             {password.email}
                           </span>
                         </div>
@@ -297,29 +300,31 @@ export function PasswordVault() {
                           variant="ghost"
                           size="sm"
                           onClick={() => copyToClipboard(password.email || "")}
-                          className="p-1"
+                          className="p-1 h-6 w-6 flex-shrink-0"
+                          title="Copy email"
                         >
                           <Copy size={12} />
                         </Button>
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Lock size={14} className="text-gray-500" />
-                        <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700 font-mono">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Lock size={14} className="text-gray-500 flex-shrink-0" />
+                        <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700 font-mono truncate">
                           {visiblePasswords.has(password.id) 
                             ? password.password 
                             : "•".repeat(password.password.length)
                           }
                         </span>
                       </div>
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 flex-shrink-0">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => togglePasswordVisibility(password.id)}
-                          className="p-1"
+                          className="p-1 h-6 w-6"
+                          title={visiblePasswords.has(password.id) ? "Hide password" : "Show password"}
                         >
                           {visiblePasswords.has(password.id) ? (
                             <EyeOff size={12} />
@@ -331,7 +336,8 @@ export function PasswordVault() {
                           variant="ghost"
                           size="sm"
                           onClick={() => copyToClipboard(password.password)}
-                          className="p-1"
+                          className="p-1 h-6 w-6"
+                          title="Copy password"
                         >
                           <Copy size={12} />
                         </Button>
