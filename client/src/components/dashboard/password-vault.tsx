@@ -189,15 +189,15 @@ export function PasswordVault() {
 
       <CardContent>
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-          <TabsList className="grid grid-cols-4 lg:grid-cols-7 mb-4">
+          <TabsList className="grid grid-cols-4 lg:grid-cols-7 mb-4 bg-gray-100 dark:bg-gray-700 blue-light-filter:bg-amber-100">
             {categories.map(category => (
               <TabsTrigger
                 key={category.id}
                 value={category.id}
-                className="text-xs flex flex-col gap-1 p-2"
+                className="text-xs flex flex-col gap-1 p-2 bg-white dark:bg-gray-800 blue-light-filter:bg-amber-50 data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-900 blue-light-filter:data-[state=active]:bg-amber-200"
               >
                 <span>{category.label}</span>
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs bg-gray-200 dark:bg-gray-600 blue-light-filter:bg-amber-200">
                   {category.count}
                 </Badge>
               </TabsTrigger>
