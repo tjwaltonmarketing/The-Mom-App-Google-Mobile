@@ -1,14 +1,16 @@
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckSquare, Plus, Filter } from "lucide-react";
+import { CheckSquare, Plus, Filter, Download, Upload } from "lucide-react";
 import { useState } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
+import { ImportExportModal } from "@/components/import-export-modal";
 import { Button } from "@/components/ui/button";
 import { QuickTasks } from "@/components/dashboard/quick-tasks";
 
 export default function TasksPage() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [isImportExportOpen, setIsImportExportOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-neutral dark:bg-background blue-light-filter:bg-neutral">
@@ -24,10 +26,20 @@ export default function TasksPage() {
                 Family Tasks
               </h1>
             </div>
-            <Button className="bg-primary hover:bg-primary/90">
-              <Plus size={16} className="mr-2" />
-              Add Task
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsImportExportOpen(true)}
+                className="flex items-center gap-2"
+              >
+                <Upload size={16} />
+                Import
+              </Button>
+              <Button className="bg-primary hover:bg-primary/90">
+                <Plus size={16} className="mr-2" />
+                Add Task
+              </Button>
+            </div>
           </div>
           <p className="text-gray-600 dark:text-gray-400 blue-light-filter:text-gray-700">
             Manage and assign tasks for the whole family
@@ -107,6 +119,12 @@ export default function TasksPage() {
       <VoiceNoteModal 
         isOpen={isVoiceModalOpen} 
         onClose={() => setIsVoiceModalOpen(false)} 
+      />
+
+      <ImportExportModal
+        isOpen={isImportExportOpen}
+        onClose={() => setIsImportExportOpen(false)}
+        type="tasks"
       />
     </div>
   );
