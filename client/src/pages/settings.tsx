@@ -11,8 +11,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users } from "lucide-react";
 import { CalendarSync } from "@/components/calendar-sync";
 import { ImportExportModal } from "@/components/import-export-modal";
+import { useTheme } from "@/components/theme-provider";
 
 export default function SettingsPage() {
+  const { theme, setTheme } = useTheme();
   const [mindfulUsageEnabled, setMindfulUsageEnabled] = useState(true);
   const [reminderInterval, setReminderInterval] = useState("20");
   const [breakDuration, setBreakDuration] = useState([5]);
@@ -38,6 +40,8 @@ export default function SettingsPage() {
       dailyLimit: dailyLimit[0],
       notifications
     }));
+    // Theme is automatically saved by the theme provider
+    alert('Settings saved successfully!');
   };
 
   return (
@@ -160,15 +164,30 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="text-center p-3 border rounded-lg cursor-pointer hover:border-primary">
+                  <div 
+                    className={`text-center p-3 border rounded-lg cursor-pointer hover:border-primary ${
+                      theme === "light" ? "border-primary bg-primary/5" : ""
+                    }`}
+                    onClick={() => setTheme("light")}
+                  >
                     <div className="w-full h-8 bg-white border rounded mb-2"></div>
                     <span className="text-sm">Light</span>
                   </div>
-                  <div className="text-center p-3 border rounded-lg cursor-pointer hover:border-primary">
+                  <div 
+                    className={`text-center p-3 border rounded-lg cursor-pointer hover:border-primary ${
+                      theme === "dark" ? "border-primary bg-primary/5" : ""
+                    }`}
+                    onClick={() => setTheme("dark")}
+                  >
                     <div className="w-full h-8 bg-gray-900 rounded mb-2"></div>
                     <span className="text-sm">Dark</span>
                   </div>
-                  <div className="text-center p-3 border border-primary rounded-lg">
+                  <div 
+                    className={`text-center p-3 border rounded-lg cursor-pointer hover:border-primary ${
+                      theme === "blue-light-filter" ? "border-primary bg-primary/5" : ""
+                    }`}
+                    onClick={() => setTheme("blue-light-filter")}
+                  >
                     <div className="w-full h-8 bg-gradient-to-r from-orange-100 to-yellow-100 rounded mb-2"></div>
                     <span className="text-sm">Blue Light</span>
                   </div>
