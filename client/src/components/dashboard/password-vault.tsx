@@ -217,16 +217,20 @@ export function PasswordVault() {
                   key={password.id}
                   className="p-4 bg-gray-50 dark:bg-gray-700 blue-light-filter:bg-amber-25 rounded-lg border border-gray-200 dark:border-gray-600 blue-light-filter:border-amber-200"
                 >
-                  <div className="flex items-start justify-between mb-3 gap-4">
-                    <div className="flex items-center gap-3 flex-1 min-w-0 max-w-[calc(100%-80px)]">
-                      <div className="text-xl flex-shrink-0 w-6 h-6 flex items-center justify-center">{getCategoryIcon(password.category)}</div>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2 flex-1 pr-4">
+                      <div className="flex-shrink-0 w-4 h-4 text-sm overflow-hidden relative">
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          {getCategoryIcon(password.category)}
+                        </span>
+                      </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-semibold text-gray-900 dark:text-white blue-light-filter:text-gray-900 truncate">
                             {password.title}
                           </h3>
                           {password.isFavorite && (
-                            <Star size={14} className="text-yellow-500 fill-current flex-shrink-0" />
+                            <Star size={12} className="text-yellow-500 fill-current flex-shrink-0" />
                           )}
                         </div>
                         <Badge className={`text-xs ${getCategoryColor(password.category)}`}>
@@ -235,25 +239,25 @@ export function PasswordVault() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-1 flex-shrink-0 w-16 justify-end">
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       {password.website && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => window.open(`https://${password.website}`, '_blank')}
-                          className="p-1 h-7 w-7"
+                          className="p-1 h-6 w-6"
                           title="Open website"
                         >
-                          <ExternalLink size={12} />
+                          <ExternalLink size={10} />
                         </Button>
                       )}
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="p-1 h-7 w-7"
+                        className="p-1 h-6 w-6"
                         title={password.isFavorite ? "Remove from favorites" : "Add to favorites"}
                       >
-                        {password.isFavorite ? <StarOff size={12} /> : <Star size={12} />}
+                        {password.isFavorite ? <StarOff size={10} /> : <Star size={10} />}
                       </Button>
                     </div>
                   </div>
