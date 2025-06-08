@@ -479,11 +479,11 @@ export default function TutorialsPage() {
       </div>
 
       <Tabs defaultValue="getting-started" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="getting-started">Getting Started</TabsTrigger>
-          <TabsTrigger value="family-coordination">Family Coordination</TabsTrigger>
-          <TabsTrigger value="advanced-features">Advanced Features</TabsTrigger>
-          <TabsTrigger value="faq">FAQ & Help</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1">
+          <TabsTrigger value="getting-started" className="text-xs sm:text-sm px-2 py-2">Getting Started</TabsTrigger>
+          <TabsTrigger value="family-coordination" className="text-xs sm:text-sm px-2 py-2">Family Coordination</TabsTrigger>
+          <TabsTrigger value="advanced-features" className="text-xs sm:text-sm px-2 py-2">Advanced Features</TabsTrigger>
+          <TabsTrigger value="faq" className="text-xs sm:text-sm px-2 py-2">FAQ & Help</TabsTrigger>
         </TabsList>
 
         <TabsContent value="getting-started" className="space-y-6">
