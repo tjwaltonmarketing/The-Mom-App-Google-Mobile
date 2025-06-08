@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LoadingProvider } from "@/components/ui/loading-provider";
+import { PageLoadingHandler } from "@/components/ui/page-loading";
 import Dashboard from "@/pages/dashboard";
 import CalendarPage from "@/pages/calendar";
 import TasksPage from "@/pages/tasks";
@@ -17,17 +18,20 @@ import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
-    <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/calendar" component={CalendarPage} />
-      <Route path="/tasks" component={TasksPage} />
-      <Route path="/meal-plan" component={MealPlanPage} />
-      <Route path="/subscription" component={SubscriptionPage} />
-      <Route path="/ai-assistant" component={AIAssistantPage} />
-      <Route path="/settings" component={SettingsPage} />
-      <Route path="/tutorials" component={TutorialsPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <>
+      <PageLoadingHandler />
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/calendar" component={CalendarPage} />
+        <Route path="/tasks" component={TasksPage} />
+        <Route path="/meal-plan" component={MealPlanPage} />
+        <Route path="/subscription" component={SubscriptionPage} />
+        <Route path="/ai-assistant" component={AIAssistantPage} />
+        <Route path="/settings" component={SettingsPage} />
+        <Route path="/tutorials" component={TutorialsPage} />
+        <Route component={NotFound} />
+      </Switch>
+    </>
   );
 }
 
