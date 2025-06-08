@@ -40,6 +40,37 @@ interface TutorialStep {
 
 const tutorials: Tutorial[] = [
   {
+    id: "voice-assistant-quickstart",
+    title: "Voice Assistant Quick Start",
+    description: "Start using voice commands to create tasks and events instantly",
+    duration: "4 min",
+    difficulty: "beginner",
+    icon: Mic,
+    category: "getting-started",
+    steps: [
+      {
+        title: "Find the Voice Button",
+        description: "Look for the microphone icon on your dashboard. This opens the voice note recorder.",
+        action: "Click the microphone button to start your first voice note"
+      },
+      {
+        title: "Speak Naturally",
+        description: "Record a message like 'Remind me to pick up groceries tomorrow and schedule Emma's dentist appointment for Friday at 2pm'.",
+        tips: ["Speak clearly and naturally", "Include family member names", "Mention specific dates and times"]
+      },
+      {
+        title: "Review AI Suggestions",
+        description: "The AI will analyze your voice and suggest creating tasks and calendar events. Review these suggestions before accepting.",
+        tips: ["Check task assignments", "Verify dates and times", "Edit any details that need adjustment"]
+      },
+      {
+        title: "Create or Save",
+        description: "Choose 'Create All' to add suggested tasks and events, or 'Save Note Only' to keep just the voice transcription.",
+        tips: ["You can always convert notes to tasks later", "Voice notes are searchable", "All transcriptions are saved automatically"]
+      }
+    ]
+  },
+  {
     id: "dashboard-overview",
     title: "Dashboard Overview",
     description: "Learn how to navigate your family command center",
@@ -134,9 +165,9 @@ const tutorials: Tutorial[] = [
   },
   {
     id: "ai-assistant",
-    title: "AI Family Assistant",
-    description: "Get smart suggestions and automate family coordination",
-    duration: "5 min",
+    title: "AI Family Assistant & Voice Features",
+    description: "Get smart suggestions and automate family coordination with voice commands",
+    duration: "7 min",
     difficulty: "intermediate",
     icon: Brain,
     category: "advanced-features",
@@ -145,6 +176,22 @@ const tutorials: Tutorial[] = [
         title: "Ask for Help",
         description: "Chat with your AI assistant about family planning, schedules, or task management.",
         action: "Try: 'What should we have for dinner this week?'"
+      },
+      {
+        title: "Voice-to-Assistant",
+        description: "Record voice notes that automatically create tasks and calendar events. Click the voice note button to start recording.",
+        action: "Try saying: 'Remind me to pick up groceries tomorrow and schedule Emma's dentist appointment for next Friday'",
+        tips: ["Speak naturally - the AI understands context", "Review suggested tasks before creating them"]
+      },
+      {
+        title: "Smart Action Recognition",
+        description: "The AI analyzes your voice input and suggests relevant tasks, calendar events, and reminders.",
+        tips: ["Mention family member names for task assignments", "Include dates and times for automatic scheduling"]
+      },
+      {
+        title: "Voice Note Management",
+        description: "All voice recordings are transcribed and saved as searchable notes, even if you don't create tasks from them.",
+        tips: ["Use voice notes for quick thoughts", "Convert important notes to tasks later"]
       },
       {
         title: "Smart Suggestions",

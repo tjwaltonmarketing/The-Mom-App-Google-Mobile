@@ -15,11 +15,25 @@ interface FAQItem {
 
 const faqItems: FAQItem[] = [
   {
+    id: "voice-assistant-basics",
+    question: "How does the voice-to-assistant feature work?",
+    answer: "Record a voice note by clicking the microphone button. The AI transcribes your speech in real-time and analyzes it for tasks, calendar events, and reminders. You'll see smart suggestions that you can review and create with one tap. For example, saying 'Pick up groceries tomorrow and schedule Emma's dentist appointment' will suggest creating a grocery task and a calendar event.",
+    category: "features",
+    tags: ["voice", "ai", "assistant", "tasks", "calendar"]
+  },
+  {
     id: "voice-notes-accuracy",
     question: "How accurate is the voice-to-task conversion?",
     answer: "Our AI processes natural speech with high accuracy. It understands family context like names, relationships, and common household tasks. If a task isn't captured correctly, you can always edit it before saving. The system learns from your corrections to improve over time.",
     category: "features",
     tags: ["voice", "ai", "accuracy", "tasks"]
+  },
+  {
+    id: "voice-privacy",
+    question: "Is my voice data stored securely?",
+    answer: "Voice recordings are transcribed immediately and the audio is processed securely. Only the text transcription is saved as a searchable voice note. Your voice data is never stored permanently or shared with third parties. All processing happens through encrypted connections.",
+    category: "features", 
+    tags: ["voice", "privacy", "security", "data"]
   },
   {
     id: "family-member-setup",
@@ -125,6 +139,27 @@ const faqItems: FAQItem[] = [
     answer: "The password vault is designed for secure family password management. You can organize passwords by categories and share access with trusted family members. However, each person should have their own account for better security and individual access tracking.",
     category: "features",
     tags: ["password", "sharing", "family", "security", "access"]
+  },
+  {
+    id: "voice-troubleshooting",
+    question: "Voice recording isn't working or transcription is blank",
+    answer: "Check that your browser has microphone permissions enabled for this site. On mobile devices, ensure microphone access is granted in your device settings. If transcription appears blank, try speaking more clearly or closer to your device's microphone. The feature works best in quiet environments.",
+    category: "troubleshooting",
+    tags: ["voice", "microphone", "permissions", "transcription", "mobile"]
+  },
+  {
+    id: "voice-commands",
+    question: "What voice commands does the AI understand?",
+    answer: "Speak naturally about tasks, appointments, reminders, and family activities. Examples: 'Remind me to call the doctor', 'Schedule soccer practice for Saturday at 2pm', 'Add groceries to my task list', or 'Create a dentist appointment for Emma next week'. The AI understands family member names and common scheduling phrases.",
+    category: "features",
+    tags: ["voice", "commands", "examples", "natural language", "ai"]
+  },
+  {
+    id: "voice-note-editing",
+    question: "Can I edit voice notes after they're created?",
+    answer: "Yes! All voice notes are saved with their transcriptions and can be edited later. You can modify the text, convert parts to tasks or events, or delete notes you no longer need. The original voice recognition helps capture your thoughts, but you have full control over the final content.",
+    category: "features",
+    tags: ["voice", "editing", "transcription", "notes", "tasks"]
   }
 ];
 
