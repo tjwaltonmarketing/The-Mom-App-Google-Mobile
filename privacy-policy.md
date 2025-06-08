@@ -132,7 +132,7 @@ Continued use of the app after changes constitutes acceptance of the updated pol
 
 ### Privacy Questions
 **Email:** themomapp.us@gmail.com
-**Business:** TJ Walton Marketing LLC
+**Business:** TJ Walton Marketing LLC dba The Mom App
 
 ### Data Protection Officer
 For EU residents: themomapp.us@gmail.com

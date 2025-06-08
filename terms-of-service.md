@@ -199,14 +199,15 @@ These Terms of Service, along with our Privacy Policy, constitute the entire agr
 ## Contact Information
 
 ### General Inquiries
-**Email:** support@themom.app
+**Email:** themomapp.us@gmail.com
+**Business:** TJ Walton Marketing LLC dba The Mom App
 **Website:** https://themom.app
 
 ### Legal Issues
-**Email:** legal@themom.app
+**Email:** themomapp.us@gmail.com
 
 ### Billing Questions
-**Email:** billing@themom.app
+**Email:** themomapp.us@gmail.com
 
 ## Severability
 
