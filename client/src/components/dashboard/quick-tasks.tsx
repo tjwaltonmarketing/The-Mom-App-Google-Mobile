@@ -4,15 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Task, FamilyMember } from "@shared/schema";
 
 export function QuickTasks() {
-  const { data: tasks = [] } = useQuery<Task[]>({
+  const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks/pending"],
   });
 
-  const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
+  const { data: familyMembers = [], isLoading: membersLoading } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
   });
 
@@ -65,11 +66,16 @@ export function QuickTasks() {
       </CardHeader>
       
       <CardContent>
-        <div className="space-y-3">
-          {displayTasks.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No pending tasks</p>
-          ) : (
-            displayTasks.map((task) => {
+        {tasksLoading || membersLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <LoadingSpinner variant="heart" size="md" />
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {displayTasks.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No pending tasks</p>
+            ) : (
+              displayTasks.map((task) => {
               const member = getMemberById(task.assignedTo);
               return (
                 <div 
@@ -81,7 +87,7 @@ export function QuickTasks() {
                   }`}
                 >
                   <Checkbox
-                    checked={task.isCompleted}
+                    checked={task.isCompleted || false}
                     onCheckedChange={() => !task.isCompleted && handleCompleteTask(task.id)}
                     disabled={task.isCompleted || completeTaskMutation.isPending}
                   />
@@ -114,9 +120,10 @@ export function QuickTasks() {
                   )}
                 </div>
               );
-            })
-          )}
-        </div>
+              })
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
