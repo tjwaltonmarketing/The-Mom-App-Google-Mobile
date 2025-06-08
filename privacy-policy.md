@@ -131,14 +131,14 @@ Continued use of the app after changes constitutes acceptance of the updated pol
 ## Contact Information
 
 ### Privacy Questions
-**Email:** privacy@themom.app
-**Address:** [Your Business Address]
+**Email:** themomapp.us@gmail.com
+**Business:** TJ Walton Marketing LLC
 
 ### Data Protection Officer
-For EU residents: dpo@themom.app
+For EU residents: themomapp.us@gmail.com
 
 ### General Support
-**Email:** support@themom.app
+**Email:** themomapp.us@gmail.com
 **Website:** https://themom.app
 
 ## Legal Basis for Processing (EU Users)
