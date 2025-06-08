@@ -479,19 +479,11 @@ export default function TutorialsPage() {
       </div>
 
       <Tabs defaultValue="getting-started" className="space-y-6">
-        <TabsList className="w-full h-auto p-1 flex md:grid md:grid-cols-4 overflow-x-auto md:overflow-visible scrollbar-hide">
-          <TabsTrigger value="getting-started" className="flex-shrink-0 text-xs md:text-sm px-3 py-2 h-10 whitespace-nowrap">
-            Getting Started
-          </TabsTrigger>
-          <TabsTrigger value="family-coordination" className="flex-shrink-0 text-xs md:text-sm px-3 py-2 h-10 whitespace-nowrap">
-            Family Coordination
-          </TabsTrigger>
-          <TabsTrigger value="advanced-features" className="flex-shrink-0 text-xs md:text-sm px-3 py-2 h-10 whitespace-nowrap">
-            Advanced Features
-          </TabsTrigger>
-          <TabsTrigger value="faq" className="flex-shrink-0 text-xs md:text-sm px-3 py-2 h-10 whitespace-nowrap">
-            FAQ & Help
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1 h-auto">
+          <TabsTrigger value="getting-started" className="text-xs sm:text-sm px-2 py-3 h-12 flex items-center justify-center">Getting Started</TabsTrigger>
+          <TabsTrigger value="family-coordination" className="text-xs sm:text-sm px-2 py-3 h-12 flex items-center justify-center">Family Coordination</TabsTrigger>
+          <TabsTrigger value="advanced-features" className="text-xs sm:text-sm px-2 py-3 h-12 flex items-center justify-center">Advanced Features</TabsTrigger>
+          <TabsTrigger value="faq" className="text-xs sm:text-sm px-2 py-3 h-12 flex items-center justify-center">FAQ & Help</TabsTrigger>
         </TabsList>
 
         <TabsContent value="getting-started" className="space-y-6">
