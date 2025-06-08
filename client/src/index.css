@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Aristotelica:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -109,8 +109,10 @@
   }
 
   /* Custom font classes */
-  .font-aristotelica {
-    font-family: 'Aristotelica', serif;
+  .font-logo {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.1em;
   }
   
   h1, h2, h3, h4, h5, h6 {

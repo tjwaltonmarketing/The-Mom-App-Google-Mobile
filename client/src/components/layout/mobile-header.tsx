@@ -22,7 +22,7 @@ export function MobileHeader({ onStartVoiceNote }: MobileHeaderProps) {
         <div className="flex justify-between items-center">
           <Link href="/" className="flex items-center space-x-2">
             <Logo className="h-8 w-8 flex-shrink-0" />
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white font-aristotelica uppercase">THE MOM APP</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-white font-logo uppercase">THE MOM APP</h1>
           </Link>
           
           <div className="flex items-center space-x-3">

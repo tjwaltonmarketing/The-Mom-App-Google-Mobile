@@ -34,7 +34,7 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
           <div className="flex items-center space-x-2 md:space-x-4">
             <Link href="/" className="flex items-center space-x-2 hover:opacity-90 transition-opacity">
               <Logo className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" />
-              <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 dark:text-white blue-light-filter:text-gray-900 truncate font-aristotelica uppercase">THE MOM APP</h1>
+              <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 dark:text-white blue-light-filter:text-gray-900 truncate font-logo uppercase">THE MOM APP</h1>
             </Link>
             <nav className="hidden lg:flex space-x-4 xl:space-x-6">
               <Link href="/" className={location === "/" ? "text-primary font-medium border-b-2 border-primary pb-1" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors"}>
