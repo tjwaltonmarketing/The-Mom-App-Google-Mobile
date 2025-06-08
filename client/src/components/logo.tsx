@@ -1,4 +1,4 @@
-import logoPath from "@assets/The Mom app_20250607_125224_0000_1749322541299.png";
+import logoPath from "@assets/playstore.png";
 
 interface LogoProps {
   className?: string;
@@ -20,25 +20,24 @@ export function Logo({ className = "h-10 w-10", size = 40 }: LogoProps) {
     <div className={`relative ${className}`}>
       <img 
         src={logoPath} 
-        alt="The Mom App" 
-        className={`${className} object-contain`}
+        alt="The Mom App Icon" 
+        className={`${className} object-contain rounded-lg`}
         onError={handleImageError}
       />
       {/* SVG Fallback */}
       <svg 
-        className={`${className} hidden object-contain`}
-        viewBox="0 0 100 100" 
+        className={`${className} hidden object-contain rounded-lg`}
+        viewBox="0 0 512 512" 
         fill="none" 
         xmlns="http://www.w3.org/2000/svg"
       >
-        <circle cx="50" cy="50" r="50" fill="hsl(345, 83%, 61%)" />
-        <g fill="white" stroke="white" strokeWidth="3">
-          {/* Head */}
-          <circle cx="50" cy="25" r="8" />
-          {/* Body with heart */}
-          <path d="M50 35 C35 35, 35 50, 35 65 C35 75, 45 85, 50 85 C55 85, 65 75, 65 65 C65 50, 65 35, 50 35 Z" />
+        <circle cx="256" cy="256" r="256" fill="hsl(345, 83%, 61%)" />
+        <g fill="white" strokeWidth="16">
+          {/* Mom figure with heart */}
+          <circle cx="256" cy="150" r="48" />
+          <path d="M256 220 C200 220, 160 260, 160 320 L160 420 L352 420 L352 320 C352 260, 312 220, 256 220 Z" />
           {/* Heart in center */}
-          <path d="M43 50 C43 47, 45 45, 47 45 C49 45, 50 47, 50 50 C50 47, 51 45, 53 45 C55 45, 57 47, 57 50 C57 55, 50 60, 50 60 C50 60, 43 55, 43 50 Z" fill="hsl(345, 83%, 61%)" />
+          <path d="M210 290 C210 270, 225 255, 245 255 C255 255, 256 270, 256 290 C256 270, 257 255, 267 255 C287 255, 302 270, 302 290 C302 320, 256 360, 256 360 C256 360, 210 320, 210 290 Z" />
         </g>
       </svg>
     </div>
