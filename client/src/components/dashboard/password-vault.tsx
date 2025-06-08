@@ -217,12 +217,10 @@ export function PasswordVault() {
                   key={password.id}
                   className="p-4 bg-gray-50 dark:bg-gray-700 blue-light-filter:bg-amber-25 rounded-lg border border-gray-200 dark:border-gray-600 blue-light-filter:border-amber-200"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2 flex-1 pr-4">
-                      <div className="flex-shrink-0 w-4 h-4 text-sm overflow-hidden relative">
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          {getCategoryIcon(password.category)}
-                        </span>
+                  <div className="flex items-start mb-3">
+                    <div className="flex items-center gap-2 flex-1 mr-3">
+                      <div className="w-3 h-3 text-xs flex items-center justify-center flex-shrink-0">
+                        {getCategoryIcon(password.category)}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-1">
@@ -239,13 +237,13 @@ export function PasswordVault() {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-1 flex-shrink-0">
+                    <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
                       {password.website && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => window.open(`https://${password.website}`, '_blank')}
-                          className="p-1 h-6 w-6"
+                          className="p-1 h-6 w-6 hover:bg-gray-200 dark:hover:bg-gray-600"
                           title="Open website"
                         >
                           <ExternalLink size={10} />
@@ -254,7 +252,7 @@ export function PasswordVault() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="p-1 h-6 w-6"
+                        className="p-1 h-6 w-6 hover:bg-gray-200 dark:hover:bg-gray-600"
                         title={password.isFavorite ? "Remove from favorites" : "Add to favorites"}
                       >
                         {password.isFavorite ? <StarOff size={10} /> : <Star size={10} />}
