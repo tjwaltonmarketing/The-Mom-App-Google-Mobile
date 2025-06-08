@@ -1,7 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { smartTaskCreation } from "./ai";
 import { processAIRequest, generateMealSuggestions, smartTaskCreation } from "./ai";
 import { 
   insertEventSchema,
@@ -328,26 +327,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai/smart-task-creation", async (req, res) => {
     try {
-      const { voiceInput } = req.body;
-      const familyMembers = await storage.getFamilyMembers();
+      const { voiceInput, familyMembers } = req.body;
+      const members = familyMembers || await storage.getFamilyMembers();
       
-      const result = await smartTaskCreation(voiceInput, familyMembers);
+      const result = await smartTaskCreation(voiceInput, members);
       
-      // Optionally auto-create the tasks
-      if (result.tasks.length > 0) {
-        const createdTasks = [];
-        for (const taskData of result.tasks) {
-          try {
-            const task = await storage.createTask(taskData);
-            createdTasks.push(task);
-          } catch (error) {
-            console.error("Failed to create task:", error);
-          }
-        }
-        res.json({ ...result, createdTasks });
-      } else {
-        res.json(result);
-      }
+      // Return suggestions without auto-creating (frontend will handle creation)
+      res.json(result);
     } catch (error) {
       console.error("Smart task creation error:", error);
       res.status(500).json({ message: "Unable to process voice input" });
