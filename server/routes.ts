@@ -101,7 +101,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Events
   app.post("/api/events", async (req, res) => {
     try {
-      const validatedData = insertEventSchema.parse(req.body);
+      // Convert date strings to Date objects if needed
+      const eventData = { ...req.body };
+      if (eventData.startTime && typeof eventData.startTime === 'string') {
+        eventData.startTime = new Date(eventData.startTime);
+      }
+      if (eventData.endTime && typeof eventData.endTime === 'string') {
+        eventData.endTime = new Date(eventData.endTime);
+      }
+      
+      const validatedData = insertEventSchema.parse(eventData);
       const event = await storage.createEvent(validatedData);
       res.status(201).json(event);
     } catch (error) {

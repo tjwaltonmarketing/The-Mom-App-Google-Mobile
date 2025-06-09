@@ -38,38 +38,53 @@ export function LocationAutocomplete({
     
     try {
       // Check if Google Places API is available
-      if (!window.google || !window.google.maps || !window.google.maps.places) {
-        console.warn('Google Places API not loaded');
-        setIsLoading(false);
-        return;
-      }
-
-      const service = new window.google.maps.places.AutocompleteService();
-      
-      service.getPlacePredictions(
-        {
-          input: query,
-          types: ['establishment', 'geocode'],
-          componentRestrictions: { country: 'us' } // You can modify this or make it configurable
-        },
-        (predictions, status) => {
-          setIsLoading(false);
-          
-          if (status === window.google.maps.places.PlacesServiceStatus.OK && predictions) {
-            const formattedSuggestions: LocationSuggestion[] = predictions.map(prediction => ({
-              place_id: prediction.place_id,
-              description: prediction.description,
-              formatted_address: prediction.description
-            }));
+      if ((window as any).google?.maps?.places) {
+        const service = new (window as any).google.maps.places.AutocompleteService();
+        
+        service.getPlacePredictions(
+          {
+            input: query,
+            types: ['establishment', 'geocode'],
+            componentRestrictions: { country: 'us' }
+          },
+          (predictions: any[], status: string) => {
+            setIsLoading(false);
             
-            setSuggestions(formattedSuggestions);
-            setShowSuggestions(true);
-          } else {
-            setSuggestions([]);
-            setShowSuggestions(false);
+            if (status === (window as any).google.maps.places.PlacesServiceStatus.OK && predictions) {
+              const formattedSuggestions: LocationSuggestion[] = predictions.map((prediction: any) => ({
+                place_id: prediction.place_id,
+                description: prediction.description,
+                formatted_address: prediction.description
+              }));
+              
+              setSuggestions(formattedSuggestions);
+              setShowSuggestions(true);
+            } else {
+              setSuggestions([]);
+              setShowSuggestions(false);
+            }
           }
-        }
-      );
+        );
+      } else {
+        // Fallback to basic address completion
+        const commonPlaces = [
+          `${query} - Home`,
+          `${query} - Work`,
+          `${query} - School`,
+          `${query} - Park`,
+          `${query} - Restaurant`
+        ];
+        
+        const suggestions: LocationSuggestion[] = commonPlaces.map((place, index) => ({
+          place_id: `fallback_${index}`,
+          description: place,
+          formatted_address: place
+        }));
+        
+        setSuggestions(suggestions);
+        setIsLoading(false);
+        setShowSuggestions(true);
+      }
     } catch (error) {
       console.error('Error searching places:', error);
       setIsLoading(false);

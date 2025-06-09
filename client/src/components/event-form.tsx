@@ -73,8 +73,8 @@ export function EventForm({ onSuccess }: EventFormProps) {
 
       const eventPayload = {
         ...eventData,
-        startTime: startDateTime.toISOString(),
-        endTime: endDateTime?.toISOString() || null,
+        startTime: startDateTime,
+        endTime: endDateTime,
         isAllDay,
       };
 
