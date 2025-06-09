@@ -302,8 +302,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(response);
     } catch (error) {
-      console.error("AI chat error:", error);
-      res.status(500).json({ message: "AI assistant temporarily unavailable" });
+      res.status(500).json({ message: "Failed to process AI request" });
+    }
+  });
+
+  // Voice command processing endpoint
+  app.post("/api/ai/voice-command", async (req, res) => {
+    try {
+      const { message, familyContext } = req.body;
+      
+      // Get fresh family context
+      const familyMembers = await storage.getFamilyMembers();
+      const upcomingEvents = await storage.getEvents();
+      const pendingTasks = await storage.getPendingTasks();
+      
+      const response = await processAIRequest({
+        message: `Voice command: ${message}`,
+        familyContext: {
+          members: familyMembers.map(m => ({ id: m.id, name: m.name, role: m.role })),
+          upcomingEvents: upcomingEvents.map(e => ({ 
+            title: e.title, 
+            startTime: e.startTime, 
+            assignedTo: e.assignedTo ?? undefined 
+          })),
+          pendingTasks: pendingTasks.map(t => ({ 
+            title: t.title, 
+            assignedTo: t.assignedTo ?? undefined, 
+            dueDate: t.dueDate ?? undefined 
+          }))
+        }
+      });
+
+      // Execute any actions suggested by AI
+      if (response.actions) {
+        for (const action of response.actions) {
+          try {
+            switch (action.type) {
+              case "create_task":
+                await storage.createTask({
+                  title: action.data.title,
+                  description: action.data.description || "",
+                  assignedTo: action.data.assignedTo || 1,
+                  dueDate: action.data.dueDate ? new Date(action.data.dueDate) : undefined,
+                  priority: action.data.priority || "medium",
+                  isCompleted: false
+                });
+                break;
+              case "create_event":
+                await storage.createEvent({
+                  title: action.data.title,
+                  description: action.data.description || "",
+                  startTime: new Date(action.data.startTime),
+                  endTime: action.data.endTime ? new Date(action.data.endTime) : new Date(new Date(action.data.startTime).getTime() + 60 * 60 * 1000),
+                  assignedTo: action.data.assignedTo || 1,
+                  location: action.data.location || ""
+                });
+                break;
+              case "create_reminder":
+                await storage.createDeadline({
+                  title: action.data.title,
+                  description: action.data.description || "",
+                  dueDate: new Date(action.data.dueDate),
+                  assignedTo: action.data.assignedTo || 1,
+                  priority: action.data.priority || "medium"
+                });
+                break;
+            }
+          } catch (actionError) {
+            console.error("Failed to execute action:", action.type, actionError);
+          }
+        }
+      }
+      
+      res.json(response);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to process voice command" });
     }
   });
 
