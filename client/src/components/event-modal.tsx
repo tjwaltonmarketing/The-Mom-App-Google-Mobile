@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { EventForm } from "./event-form";
@@ -27,6 +27,9 @@ export function EventModal({ trigger, children }: EventModalProps) {
         )}
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Create New Event</DialogTitle>
+        </DialogHeader>
         <EventForm onSuccess={handleSuccess} />
         {children}
       </DialogContent>

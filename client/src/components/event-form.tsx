@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LocationAutocomplete } from "@/components/location-autocomplete";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { insertEventSchema, type FamilyMember } from "@shared/schema";
@@ -137,15 +138,11 @@ export function EventForm({ onSuccess }: EventFormProps) {
 
           <div>
             <Label htmlFor="location">Location</Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input
-                id="location"
-                placeholder="Event location (optional)"
-                className="pl-10"
-                {...form.register("location")}
-              />
-            </div>
+            <LocationAutocomplete
+              value={form.watch("location") || ""}
+              onChange={(value) => form.setValue("location", value)}
+              placeholder="Enter event location (optional)"
+            />
           </div>
 
           <div>
