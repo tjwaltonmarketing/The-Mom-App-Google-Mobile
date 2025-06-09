@@ -50,11 +50,13 @@ jobs:
     - name: Build Android App Bundle
       run: |
         cd android
+        export JAVA_HOME=$JAVA_HOME_17_X64
         ./gradlew bundleRelease
         
     - name: Build Android APK
       run: |
         cd android
+        export JAVA_HOME=$JAVA_HOME_17_X64
         ./gradlew assembleRelease
         
     - name: Upload App Bundle
