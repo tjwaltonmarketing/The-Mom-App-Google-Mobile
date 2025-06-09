@@ -41,8 +41,11 @@ jobs:
     - name: Build web app
       run: npm run build
       
-    - name: Sync Capacitor
-      run: npx cap sync android
+    - name: Clean and regenerate Android project
+      run: |
+        rm -rf android
+        npx cap add android
+        npx cap sync android
       
     - name: Patch all Java versions to 17
       run: |
