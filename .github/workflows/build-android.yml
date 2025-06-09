@@ -28,7 +28,7 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
       with:
-        api-level: 33
+        api-level: 34
         
     - name: Set Android SDK environment
       run: |
@@ -91,18 +91,18 @@ jobs:
       run: |
         cd android
         export JAVA_HOME=$JAVA_HOME_17_X64
-        export ANDROID_COMPILE_SDK=33
-        export ANDROID_BUILD_TOOLS=33.0.0
-        export ANDROID_TARGET_SDK=33
+        export ANDROID_COMPILE_SDK=34
+        export ANDROID_BUILD_TOOLS=34.0.0
+        export ANDROID_TARGET_SDK=34
         ./gradlew bundleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64
         
     - name: Build Android APK
       run: |
         cd android
         export JAVA_HOME=$JAVA_HOME_17_X64
-        export ANDROID_COMPILE_SDK=33
-        export ANDROID_BUILD_TOOLS=33.0.0
-        export ANDROID_TARGET_SDK=33
+        export ANDROID_COMPILE_SDK=34
+        export ANDROID_BUILD_TOOLS=34.0.0
+        export ANDROID_TARGET_SDK=34
         ./gradlew assembleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64
         
     - name: Upload App Bundle
