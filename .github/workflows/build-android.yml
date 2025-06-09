@@ -58,13 +58,43 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x android/gradlew
       
-    - name: Configure for Google Play App Signing
+    - name: Generate upload keystore for Google Play App Signing
+      run: |
+        cd android
+        keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload \
+        -dname "CN=The Mom App, OU=Development, O=TJ Walton Marketing LLC, L=Unknown, ST=Unknown, C=US" \
+        -storepass android -keypass android
+        
+    - name: Configure upload signing for Google Play
       run: |
         cd android/app
-        # Create unsigned build for Google Play App Signing
-        echo "Building unsigned release for Google Play App Signing"
+        cat >> build.gradle << 'EOF'
         
-    - name: Build Android App Bundle (unsigned for Google Play App Signing)
+        android {
+            signingConfigs {
+                release {
+                    storeFile file('../upload-keystore.jks')
+                    storePassword 'android'
+                    keyAlias 'upload'
+                    keyPassword 'android'
+                }
+            }
+            buildTypes {
+                release {
+                    signingConfig signingConfigs.release
+                }
+            }
+        }
+        EOF
+        
+    - name: Extract upload certificate fingerprint
+      run: |
+        cd android
+        keytool -list -v -keystore upload-keystore.jks -alias upload -storepass android -keypass android | grep -E "(SHA1|SHA256)" > upload-cert-fingerprint.txt
+        echo "Upload certificate fingerprint:"
+        cat upload-cert-fingerprint.txt
+        
+    - name: Build Android App Bundle (signed for Google Play App Signing)
       run: |
         cd android
         export JAVA_HOME=$JAVA_HOME_17_X64
@@ -93,3 +123,9 @@ jobs:
       with:
         name: app-apk
         path: android/app/build/outputs/apk/release/app-release.apk
+        
+    - name: Upload certificate fingerprint
+      uses: actions/upload-artifact@v4
+      with:
+        name: upload-certificate-info
+        path: android/upload-cert-fingerprint.txt
