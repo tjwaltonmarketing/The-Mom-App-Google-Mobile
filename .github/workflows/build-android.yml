@@ -58,6 +58,35 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x android/gradlew
       
+    - name: Generate signing keystore
+      run: |
+        cd android
+        keytool -genkey -v -keystore app-signing-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload \
+        -dname "CN=The Mom App, OU=Development, O=TJ Walton Marketing LLC, L=Unknown, ST=Unknown, C=US" \
+        -storepass android -keypass android
+        
+    - name: Configure signing in build.gradle
+      run: |
+        cd android/app
+        cat >> build.gradle << 'EOF'
+        
+        android {
+            signingConfigs {
+                release {
+                    storeFile file('../app-signing-key.jks')
+                    storePassword 'android'
+                    keyAlias 'upload'
+                    keyPassword 'android'
+                }
+            }
+            buildTypes {
+                release {
+                    signingConfig signingConfigs.release
+                }
+            }
+        }
+        EOF
+        
     - name: Build Android App Bundle
       run: |
         cd android
@@ -86,4 +115,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: app-apk
-        path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+        path: android/app/build/outputs/apk/release/app-release.apk
