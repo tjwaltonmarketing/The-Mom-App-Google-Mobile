@@ -98,6 +98,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Events
+  app.post("/api/events", async (req, res) => {
+    try {
+      const validatedData = insertEventSchema.parse(req.body);
+      const event = await storage.createEvent(validatedData);
+      res.status(201).json(event);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid event data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create event" });
+      }
+    }
+  });
+
   app.patch("/api/tasks/:id/complete", async (req, res) => {
     try {
       const taskId = parseInt(req.params.id);

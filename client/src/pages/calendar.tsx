@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
+import { EventModal } from "@/components/event-modal";
 import { useQuery } from "@tanstack/react-query";
 import type { Event, FamilyMember } from "@shared/schema";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday, addMonths, subMonths } from "date-fns";
@@ -50,10 +51,7 @@ export default function CalendarPage() {
                 Family Calendar
               </h1>
             </div>
-            <Button className="flex items-center gap-2">
-              <Plus size={16} />
-              Add Event
-            </Button>
+            <EventModal />
           </div>
           <p className="text-gray-600 dark:text-gray-400 blue-light-filter:text-gray-700">
             Manage your family's schedule and events
@@ -170,9 +168,14 @@ export default function CalendarPage() {
                 <CardTitle>Quick Add Event</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <p className="text-sm">Event creation form coming soon</p>
-                </div>
+                <EventModal 
+                  trigger={
+                    <Button variant="outline" className="w-full">
+                      <Plus size={16} className="mr-2" />
+                      Create Event
+                    </Button>
+                  }
+                />
               </CardContent>
             </Card>
           </div>
