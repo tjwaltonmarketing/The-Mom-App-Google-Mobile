@@ -58,36 +58,13 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x android/gradlew
       
-    - name: Generate signing keystore
-      run: |
-        cd android
-        keytool -genkey -v -keystore app-signing-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload \
-        -dname "CN=The Mom App, OU=Development, O=TJ Walton Marketing LLC, L=Unknown, ST=Unknown, C=US" \
-        -storepass android -keypass android
-        
-    - name: Configure signing in build.gradle
+    - name: Configure for Google Play App Signing
       run: |
         cd android/app
-        cat >> build.gradle << 'EOF'
+        # Create unsigned build for Google Play App Signing
+        echo "Building unsigned release for Google Play App Signing"
         
-        android {
-            signingConfigs {
-                release {
-                    storeFile file('../app-signing-key.jks')
-                    storePassword 'android'
-                    keyAlias 'upload'
-                    keyPassword 'android'
-                }
-            }
-            buildTypes {
-                release {
-                    signingConfig signingConfigs.release
-                }
-            }
-        }
-        EOF
-        
-    - name: Build Android App Bundle
+    - name: Build Android App Bundle (unsigned for Google Play App Signing)
       run: |
         cd android
         export JAVA_HOME=$JAVA_HOME_17_X64
@@ -96,7 +73,7 @@ jobs:
         export ANDROID_TARGET_SDK=34
         ./gradlew bundleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64
         
-    - name: Build Android APK
+    - name: Build Android APK (unsigned)
       run: |
         cd android
         export JAVA_HOME=$JAVA_HOME_17_X64
