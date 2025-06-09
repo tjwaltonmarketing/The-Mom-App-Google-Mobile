@@ -14,6 +14,7 @@ import SubscriptionPage from "@/pages/subscription";
 import AIAssistantPage from "@/pages/ai-assistant";
 import SettingsPage from "@/pages/settings";
 import TutorialsPage from "@/pages/tutorials";
+import VoiceTestPage from "@/pages/voice-test";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/ai-assistant" component={AIAssistantPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route path="/tutorials" component={TutorialsPage} />
+      <Route path="/voice-test" component={VoiceTestPage} />
       <Route component={NotFound} />
     </Switch>
   );
