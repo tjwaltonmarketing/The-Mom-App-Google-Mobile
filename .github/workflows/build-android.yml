@@ -59,13 +59,19 @@ jobs:
       run: |
         cd android
         export JAVA_HOME=$JAVA_HOME_17_X64
-        ./gradlew bundleRelease
+        export ANDROID_COMPILE_SDK=33
+        export ANDROID_BUILD_TOOLS=33.0.0
+        export ANDROID_TARGET_SDK=33
+        ./gradlew bundleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64
         
     - name: Build Android APK
       run: |
         cd android
         export JAVA_HOME=$JAVA_HOME_17_X64
-        ./gradlew assembleRelease
+        export ANDROID_COMPILE_SDK=33
+        export ANDROID_BUILD_TOOLS=33.0.0
+        export ANDROID_TARGET_SDK=33
+        ./gradlew assembleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64
         
     - name: Upload App Bundle
       uses: actions/upload-artifact@v4
