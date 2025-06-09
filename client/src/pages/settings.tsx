@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users } from "lucide-react";
+import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic } from "lucide-react";
+import { Link } from "wouter";
 import { CalendarSync } from "@/components/calendar-sync";
 import { ImportExportModal } from "@/components/import-export-modal";
 import { useTheme } from "@/components/theme-provider";
@@ -62,6 +63,26 @@ export default function SettingsPage() {
           </TabsList>
 
           <TabsContent value="general" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mic className="h-5 w-5 text-primary" />
+                  Voice Features (Beta)
+                </CardTitle>
+                <CardDescription>
+                  Test the "Hey Lisa" voice wake-up feature
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href="/voice-test">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Mic className="h-4 w-4 mr-2" />
+                    Test Voice Wake-up
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
             <CalendarSync />
 
             <Card>
