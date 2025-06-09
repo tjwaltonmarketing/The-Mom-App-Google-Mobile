@@ -44,11 +44,13 @@ jobs:
     - name: Sync Capacitor
       run: npx cap sync android
       
-    - name: Patch Capacitor Java version
+    - name: Patch all Java versions to 17
       run: |
-        # Force capacitor-android to use Java 17
-        sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' android/capacitor-android/build.gradle || true
-        sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' node_modules/@capacitor/android/capacitor/build.gradle || true
+        # Force all Android modules to use Java 17
+        find android -name "build.gradle" -exec sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' {} +
+        find node_modules/@capacitor -name "build.gradle" -exec sed -i 's/JavaVersion.VERSION_21/JavaVersion.VERSION_17/g' {} +
+        find android -name "build.gradle" -exec sed -i 's/sourceCompatibility = 21/sourceCompatibility = 17/g' {} +
+        find android -name "build.gradle" -exec sed -i 's/targetCompatibility = 21/targetCompatibility = 17/g' {} +
       
     - name: Make gradlew executable
       run: chmod +x android/gradlew
