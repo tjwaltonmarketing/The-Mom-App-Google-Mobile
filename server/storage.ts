@@ -334,7 +334,44 @@ export class MemStorage implements IStorage {
       isAllDay: false
     });
 
-    this.currentEventId = 4;
+    // Add events for other days this month
+    const tomorrowDate = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    this.events.set(4, {
+      id: 4,
+      title: "Doctor Appointment",
+      description: "Sam's annual checkup",
+      startTime: new Date(tomorrowDate.getTime() + 10 * 60 * 60 * 1000), // 10 AM tomorrow
+      endTime: new Date(tomorrowDate.getTime() + 11 * 60 * 60 * 1000), // 11 AM tomorrow
+      location: "Pediatric Clinic",
+      assignedTo: 4,
+      isAllDay: false
+    });
+
+    const nextWeek = new Date(todayStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    this.events.set(5, {
+      id: 5,
+      title: "School Board Meeting",
+      description: "Monthly meeting - Room 101",
+      startTime: new Date(nextWeek.getTime() + 18 * 60 * 60 * 1000), // 6 PM next week
+      endTime: new Date(nextWeek.getTime() + 20 * 60 * 60 * 1000), // 8 PM next week
+      location: "School Board Room 101",
+      assignedTo: 1,
+      isAllDay: false
+    });
+
+    const dayAfterTomorrow = new Date(todayStart.getTime() + 2 * 24 * 60 * 60 * 1000);
+    this.events.set(6, {
+      id: 6,
+      title: "Emma's Birthday Party",
+      description: "Chuck E. Cheese celebration",
+      startTime: new Date(dayAfterTomorrow.getTime() + 14 * 60 * 60 * 1000), // 2 PM
+      endTime: new Date(dayAfterTomorrow.getTime() + 17 * 60 * 60 * 1000), // 5 PM
+      location: "Chuck E. Cheese",
+      assignedTo: 3,
+      isAllDay: false
+    });
+
+    this.currentEventId = 7;
 
     // Initialize tasks
     this.tasks.set(1, {
@@ -388,7 +425,6 @@ export class MemStorage implements IStorage {
     this.currentVoiceNoteId = 2;
 
     // Initialize deadlines
-    const tomorrow = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
     const friday = new Date(todayStart.getTime() + (5 - todayStart.getDay()) * 24 * 60 * 60 * 1000);
     const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 

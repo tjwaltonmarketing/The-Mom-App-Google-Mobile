@@ -50,27 +50,30 @@ export function VoiceWakeTest() {
       console.log('Heard:', transcript);
 
       // Check for wake word "hey lisa"
-      if (transcript.includes('hey lisa') && !wakeWordDetected) {
-        setWakeWordDetected(true);
-        toast({
-          title: "Hey Lisa detected!",
-          description: "Wake word activated. Listening for command...",
-        });
+      if (transcript.includes('hey lisa')) {
+        if (!wakeWordDetected) {
+          setWakeWordDetected(true);
+          toast({
+            title: "Hey Lisa detected!",
+            description: "Wake word activated. Listening for command...",
+          });
+        }
         
         // Extract command after wake word
         const commandPart = transcript.split('hey lisa')[1]?.trim();
-        if (commandPart) {
+        if (commandPart && commandPart.length > 2) {
           setLastCommand(commandPart);
           toast({
             title: "Command received",
             description: `"${commandPart}"`,
           });
+          
+          // Reset wake word detection after processing command
+          setTimeout(() => {
+            setWakeWordDetected(false);
+            setLastTranscript(""); // Clear transcript for next command
+          }, 2000);
         }
-        
-        // Reset after 3 seconds
-        setTimeout(() => {
-          setWakeWordDetected(false);
-        }, 3000);
       }
     };
 
@@ -87,10 +90,14 @@ export function VoiceWakeTest() {
     };
 
     recognition.onend = () => {
+      console.log('Recognition ended, isActive:', isActive);
       setIsListening(false);
       if (isActive) {
-        // Restart listening
-        setTimeout(() => startListening(), 1000);
+        // Automatically restart listening for continuous wake word detection
+        setTimeout(() => {
+          console.log('Auto-restarting recognition...');
+          startListening();
+        }, 500);
       }
     };
 
