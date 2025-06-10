@@ -330,16 +330,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to parse events from voice commands
+  function parseEventFromVoice(message: string) {
+    const lowerMessage = message.toLowerCase();
+    
+    // Extract title
+    let title = message;
+    if (lowerMessage.includes('schedule ')) {
+      title = message.substring(message.toLowerCase().indexOf('schedule ') + 9);
+    } else if (lowerMessage.includes('create ') && lowerMessage.includes('event')) {
+      title = message.substring(message.toLowerCase().indexOf('create ') + 7).replace(/event/i, '').trim();
+    }
+    
+    // Extract time information
+    const now = new Date();
+    let startTime = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Default to tomorrow
+    
+    // Simple time parsing
+    const timeMatch = message.match(/(\d{1,2})\s*(am|pm|:\d{2})/i);
+    if (timeMatch) {
+      const hour = parseInt(timeMatch[1]);
+      const modifier = timeMatch[2].toLowerCase();
+      
+      if (modifier === 'pm' && hour !== 12) {
+        startTime.setHours(hour + 12, 0, 0, 0);
+      } else if (modifier === 'am' && hour === 12) {
+        startTime.setHours(0, 0, 0, 0);
+      } else {
+        startTime.setHours(hour, 0, 0, 0);
+      }
+    }
+    
+    // Extract date information
+    if (lowerMessage.includes('today')) {
+      startTime = new Date();
+      startTime.setHours(startTime.getHours() + 1); // 1 hour from now
+    } else if (lowerMessage.includes('tomorrow')) {
+      startTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    }
+    
+    return {
+      title: title.trim(),
+      description: `Created via voice command: "${message}"`,
+      startTime,
+      endTime: new Date(startTime.getTime() + 60 * 60 * 1000), // 1 hour duration
+      isAllDay: false,
+      assignedTo: 1 // Default to first family member
+    };
+  }
+
+  // Helper function to parse tasks from voice commands
+  function parseTaskFromVoice(message: string) {
+    const lowerMessage = message.toLowerCase();
+    
+    // Extract title
+    let title = message;
+    if (lowerMessage.includes('add ')) {
+      title = message.substring(message.toLowerCase().indexOf('add ') + 4);
+    } else if (lowerMessage.includes('create ')) {
+      title = message.substring(message.toLowerCase().indexOf('create ') + 7);
+    } else if (lowerMessage.includes('remind me to ')) {
+      title = message.substring(message.toLowerCase().indexOf('remind me to ') + 13);
+    }
+    
+    // Clean up title
+    title = title.replace(/to my task list|to tasks|task/gi, '').trim();
+    
+    // Set due date if mentioned
+    const now = new Date();
+    let dueDate = null;
+    
+    if (lowerMessage.includes('today')) {
+      dueDate = new Date();
+      dueDate.setHours(23, 59, 59, 999);
+    } else if (lowerMessage.includes('tomorrow')) {
+      dueDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      dueDate.setHours(23, 59, 59, 999);
+    }
+    
+    return {
+      title: title.trim(),
+      description: `Created via voice command: "${message}"`,
+      dueDate,
+      priority: "medium",
+      assignedTo: 1, // Default to first family member
+      isCompleted: false
+    };
+  }
+
   // Voice command processing endpoint
   app.post("/api/ai/voice-command", async (req, res) => {
     try {
-      const { message, familyContext } = req.body;
+      const { message } = req.body;
+      const lowerMessage = message.toLowerCase();
+      const actions = [];
       
       // Get fresh family context
       const familyMembers = await storage.getFamilyMembers();
       const upcomingEvents = await storage.getEvents();
       const pendingTasks = await storage.getPendingTasks();
       
+      // Smart parsing for direct voice commands
+      if (lowerMessage.includes('schedule') || lowerMessage.includes('appointment') || 
+          lowerMessage.includes('event') || lowerMessage.includes('meeting')) {
+        try {
+          const eventData = parseEventFromVoice(message);
+          const event = await storage.createEvent(eventData);
+          actions.push({
+            type: "create_event",
+            data: event
+          });
+        } catch (error) {
+          console.error('Event creation failed:', error);
+        }
+      }
+      
+      if (lowerMessage.includes('add') && (lowerMessage.includes('task') || lowerMessage.includes('todo') || 
+          lowerMessage.includes('remind me to'))) {
+        try {
+          const taskData = parseTaskFromVoice(message);
+          const task = await storage.createTask(taskData);
+          actions.push({
+            type: "create_task",
+            data: task
+          });
+        } catch (error) {
+          console.error('Task creation failed:', error);
+        }
+      }
+      
+      // If specific actions were created, return success
+      if (actions.length > 0) {
+        const responseMessage = actions.length === 1 
+          ? `Created ${actions[0].type.replace('create_', '').replace('_', ' ')}: ${actions[0].data.title}`
+          : `Created ${actions.length} items from your voice command`;
+          
+        return res.json({
+          message: responseMessage,
+          actions
+        });
+      }
+      
+      // Otherwise, use AI processing for general queries
       const response = await processAIRequest({
         message: `Voice command: ${message}`,
         familyContext: {

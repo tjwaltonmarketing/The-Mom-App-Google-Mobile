@@ -1,19 +1,20 @@
 import { useState, useRef } from "react";
-import { Mic, MicOff, Bot, Sparkles } from "lucide-react";
+import { Mic, MicOff, Bot, Calendar, CheckSquare, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export function VoiceWakeTest() {
   const [isListening, setIsListening] = useState(false);
-  const [isActive, setIsActive] = useState(false);
-  const [wakeWordDetected, setWakeWordDetected] = useState(false);
   const [lastTranscript, setLastTranscript] = useState("");
   const [lastCommand, setLastCommand] = useState("");
+  const [processing, setProcessing] = useState(false);
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Check browser support
   const speechSupported = typeof window !== 'undefined' && 
