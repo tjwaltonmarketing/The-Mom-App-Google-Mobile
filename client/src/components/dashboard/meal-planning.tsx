@@ -83,7 +83,7 @@ export function MealPlanning() {
   });
 
   // Fetch family members for sharing
-  const { data: familyMembers = [] } = useQuery({
+  const { data: familyMembers = [] } = useQuery<any[]>({
     queryKey: ["/api/family-members"],
   });
 
