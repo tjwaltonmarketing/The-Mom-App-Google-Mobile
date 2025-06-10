@@ -60,7 +60,7 @@ export function EventForm({ onSuccess }: EventFormProps) {
 
   const createEventMutation = useMutation({
     mutationFn: async (data: EventFormData) => {
-      const { startDate, startTime, endDate, endTime, ...eventData } = data;
+      const { startDate, startTime, endDate, endTime, visibilityType, sharedWith, ...eventData } = data;
       
       let startDateTime: Date;
       let endDateTime: Date | null = null;
@@ -75,11 +75,34 @@ export function EventForm({ onSuccess }: EventFormProps) {
         }
       }
 
+      // Set privacy fields based on visibility type
+      let privacyLevel: string;
+      let showAsBusy = false;
+      let finalSharedWith: number[] = [];
+
+      switch (visibilityType) {
+        case "private":
+          privacyLevel = "private";
+          break;
+        case "busy":
+          privacyLevel = "public";
+          showAsBusy = true;
+          break;
+        case "shared":
+        default:
+          privacyLevel = "public";
+          finalSharedWith = sharedWith.length > 0 ? sharedWith : [];
+          break;
+      }
+
       const eventPayload = {
         ...eventData,
         startTime: startDateTime,
         endTime: endDateTime,
         isAllDay,
+        privacyLevel,
+        sharedWith: finalSharedWith,
+        showAsBusy,
       };
 
       return apiRequest("POST", "/api/events", eventPayload);
@@ -223,6 +246,85 @@ export function EventForm({ onSuccess }: EventFormProps) {
               </div>
             </div>
           )}
+
+          {/* Calendar Privacy Controls */}
+          <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+            <div className="flex items-center gap-2">
+              <Eye size={18} className="text-gray-600 dark:text-gray-400" />
+              <Label className="text-sm font-medium">Privacy & Sharing</Label>
+            </div>
+            
+            <div>
+              <Label htmlFor="visibilityType" className="text-sm">Visibility</Label>
+              <Select
+                value={form.watch("visibilityType")}
+                onValueChange={(value: "shared" | "private" | "busy") => 
+                  form.setValue("visibilityType", value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="shared">
+                    <div className="flex items-center gap-2">
+                      <Users size={16} />
+                      <span>Shared - Everyone can see details</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="busy">
+                    <div className="flex items-center gap-2">
+                      <Eye size={16} />
+                      <span>Busy - Time blocked, no details shown</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="private">
+                    <div className="flex items-center gap-2">
+                      <EyeOff size={16} />
+                      <span>Private - Only visible to you</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {form.watch("visibilityType") === "shared" && "All family members can see event details"}
+                {form.watch("visibilityType") === "busy" && "Others see time is blocked but no event details"}
+                {form.watch("visibilityType") === "private" && "Only you can see this event"}
+              </p>
+            </div>
+
+            {form.watch("visibilityType") === "shared" && familyMembers.length > 1 && (
+              <div>
+                <Label className="text-sm">Share with specific family members (optional)</Label>
+                <div className="mt-2 space-y-2">
+                  {familyMembers.map((member) => (
+                    <div key={member.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`member-${member.id}`}
+                        checked={form.watch("sharedWith").includes(member.id)}
+                        onChange={(e) => {
+                          const currentShared = form.watch("sharedWith");
+                          if (e.target.checked) {
+                            form.setValue("sharedWith", [...currentShared, member.id]);
+                          } else {
+                            form.setValue("sharedWith", currentShared.filter(id => id !== member.id));
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <Label htmlFor={`member-${member.id}`} className="text-sm font-normal">
+                        {member.name}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Leave unchecked to share with all family members
+                </p>
+              </div>
+            )}
+          </div>
 
           <Button 
             type="submit" 
