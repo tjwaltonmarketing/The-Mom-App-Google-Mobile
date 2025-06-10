@@ -391,27 +391,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const now = new Date();
     let startTime = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Default to tomorrow
     
-    // Simple time parsing
-    const timeMatch = message.match(/(\d{1,2})\s*(am|pm|:\d{2})/i);
+    // Enhanced time parsing for AM/PM format
+    const timeMatch = message.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
+    const time24Match = message.match(/(\d{1,2}):(\d{2})/);
+    
+    let parsedHour = 9; // Default to 9 AM
+    let parsedMinute = 0;
+    let hasTimeInfo = false;
+    
     if (timeMatch) {
       const hour = parseInt(timeMatch[1]);
-      const modifier = timeMatch[2].toLowerCase();
+      const minute = timeMatch[2] ? parseInt(timeMatch[2]) : 0;
+      const modifier = timeMatch[3].toLowerCase();
       
       if (modifier === 'pm' && hour !== 12) {
-        startTime.setHours(hour + 12, 0, 0, 0);
+        parsedHour = hour + 12;
       } else if (modifier === 'am' && hour === 12) {
-        startTime.setHours(0, 0, 0, 0);
+        parsedHour = 0;
       } else {
-        startTime.setHours(hour, 0, 0, 0);
+        parsedHour = hour;
       }
+      parsedMinute = minute;
+      hasTimeInfo = true;
+    } else if (time24Match) {
+      parsedHour = parseInt(time24Match[1]);
+      parsedMinute = parseInt(time24Match[2]);
+      hasTimeInfo = true;
     }
     
-    // Extract date information
+    // Extract date information and apply time
     if (lowerMessage.includes('today')) {
-      startTime = new Date();
-      startTime.setHours(startTime.getHours() + 1); // 1 hour from now
+      const todayDate = new Date();
+      startTime = new Date(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate());
+      if (hasTimeInfo) {
+        startTime.setHours(parsedHour, parsedMinute, 0, 0);
+      } else {
+        startTime = new Date(todayDate.getTime() + 60 * 60 * 1000); // 1 hour from now
+      }
     } else if (lowerMessage.includes('tomorrow')) {
-      startTime = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      const tomorrowDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      startTime = new Date(tomorrowDate.getFullYear(), tomorrowDate.getMonth(), tomorrowDate.getDate());
+      if (hasTimeInfo) {
+        startTime.setHours(parsedHour, parsedMinute, 0, 0);
+      } else {
+        startTime.setHours(parsedHour, parsedMinute, 0, 0); // Default to 9 AM
+      }
+    } else if (hasTimeInfo) {
+      // Time specified but no date, default to today if time is in future, otherwise tomorrow
+      const todayWithTime = new Date();
+      todayWithTime.setHours(parsedHour, parsedMinute, 0, 0);
+      
+      if (todayWithTime > now) {
+        startTime = todayWithTime;
+      } else {
+        const tomorrowDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        startTime = new Date(tomorrowDate.getFullYear(), tomorrowDate.getMonth(), tomorrowDate.getDate());
+        startTime.setHours(parsedHour, parsedMinute, 0, 0);
+      }
     }
     
     return {

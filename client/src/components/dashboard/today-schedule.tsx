@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import type { Event, FamilyMember } from "@shared/schema";
 import { format } from "date-fns";
+import { formatTimeInUserTimezone } from "@/lib/timezone";
 
 export function TodaySchedule() {
   const { data: events = [] } = useQuery<Event[]>({
