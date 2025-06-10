@@ -6,6 +6,11 @@ import {
   deadlines,
   notifications,
   passwords,
+  groceryItems,
+  mealPlans,
+  users,
+  families,
+  familyMemberships,
   type FamilyMember, 
   type InsertFamilyMember,
   type Event,
@@ -20,17 +25,33 @@ import {
   type InsertNotification,
   type Password,
   type InsertPassword,
-  groceryItems,
-  mealPlans,
   type GroceryItem,
   type InsertGroceryItem,
   type MealPlan,
-  type InsertMealPlan
+  type InsertMealPlan,
+  type User,
+  type InsertUser,
+  type Family,
+  type InsertFamily,
+  type FamilyMembership,
+  type InsertFamilyMembership,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lt, desc, isNull, or } from "drizzle-orm";
 
 export interface IStorage {
+  // User Authentication
+  getUserById(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  
+  // Family Management
+  createFamily(family: InsertFamily): Promise<Family>;
+  getFamilyByUserId(userId: number): Promise<Family | undefined>;
+  
+  // Family Memberships
+  createFamilyMembership(membership: InsertFamilyMembership): Promise<FamilyMembership>;
+  
   // Family Members
   getFamilyMembers(): Promise<FamilyMember[]>;
   getFamilyMember(id: number): Promise<FamilyMember | undefined>;

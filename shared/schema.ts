@@ -1,7 +1,33 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  firstName: varchar("first_name", { length: 100 }),
+  lastName: varchar("last_name", { length: 100 }),
+  isVerified: boolean("is_verified").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const families = pgTable("families", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  ownerId: integer("owner_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const familyMemberships = pgTable("family_memberships", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  familyId: integer("family_id").references(() => families.id).notNull(),
+  role: text("role").notNull().default("member"), // "owner", "admin", "member"
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
 
 export const familyMembers = pgTable("family_members", {
   id: serial("id").primaryKey(),
@@ -181,6 +207,31 @@ export const insertMealPlanSchema = createInsertSchema(mealPlans).omit({
   createdAt: true,
 });
 
+// New auth-related schemas
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  isVerified: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFamilySchema = createInsertSchema(families).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertFamilyMembershipSchema = createInsertSchema(familyMemberships).omit({
+  id: true,
+  joinedAt: true,
+});
+
+// Sessions table for authentication
+export const sessions = pgTable("sessions", {
+  sid: varchar("sid").primaryKey(),
+  sess: text("sess").notNull(),
+  expire: timestamp("expire").notNull(),
+});
+
 // Relations
 export const familyMembersRelations = relations(familyMembers, ({ many }) => ({
   events: many(events),
@@ -296,3 +347,12 @@ export type InsertGroceryItem = z.infer<typeof insertGroceryItemSchema>;
 
 export type MealPlan = typeof mealPlans.$inferSelect;
 export type InsertMealPlan = z.infer<typeof insertMealPlanSchema>;
+
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+
+export type Family = typeof families.$inferSelect;
+export type InsertFamily = z.infer<typeof insertFamilySchema>;
+
+export type FamilyMembership = typeof familyMemberships.$inferSelect;
+export type InsertFamilyMembership = z.infer<typeof insertFamilyMembershipSchema>;
