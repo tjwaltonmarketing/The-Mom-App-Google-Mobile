@@ -122,6 +122,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/events/:id", async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const eventData = { ...req.body };
+      
+      // Convert date strings to Date objects if needed
+      if (eventData.startTime && typeof eventData.startTime === 'string') {
+        eventData.startTime = new Date(eventData.startTime);
+      }
+      if (eventData.endTime && typeof eventData.endTime === 'string') {
+        eventData.endTime = new Date(eventData.endTime);
+      }
+      
+      const validatedData = insertEventSchema.parse(eventData);
+      const event = await storage.updateEvent(eventId, validatedData);
+      
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      res.json(event);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid event data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to update event" });
+      }
+    }
+  });
+
+  app.delete("/api/events/:id", async (req, res) => {
+    try {
+      const eventId = parseInt(req.params.id);
+      const deleted = await storage.deleteEvent(eventId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete event" });
+    }
+  });
+
   app.patch("/api/tasks/:id/complete", async (req, res) => {
     try {
       const taskId = parseInt(req.params.id);

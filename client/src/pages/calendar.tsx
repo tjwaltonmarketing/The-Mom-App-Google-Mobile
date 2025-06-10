@@ -3,10 +3,11 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Plus, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
+import { Calendar, Clock, Plus, ChevronLeft, ChevronRight, ArrowLeft, Edit } from "lucide-react";
 import { useState } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { EventModal } from "@/components/event-modal";
+import { EventEditModal } from "@/components/event-edit-modal";
 import { useQuery } from "@tanstack/react-query";
 import type { Event, FamilyMember } from "@shared/schema";
 import { 
@@ -275,7 +276,7 @@ export default function CalendarPage() {
                         <div className="flex items-center justify-between mb-1">
                           <h3 className="font-medium text-gray-900 dark:text-white">{event.title}</h3>
                           <span className="text-sm text-gray-500">
-                            {format(new Date(event.startTime), 'HH:mm')} - {format(new Date(event.endTime), 'HH:mm')}
+                            {format(new Date(event.startTime), 'HH:mm')} - {event.endTime ? format(new Date(event.endTime), 'HH:mm') : 'End time TBD'}
                           </span>
                         </div>
                         {event.description && (
