@@ -8,14 +8,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus } from "lucide-react";
 import { Link } from "wouter";
 import { CalendarSync } from "@/components/calendar-sync";
 import { ImportExportModal } from "@/components/import-export-modal";
 import { useTheme } from "@/components/theme-provider";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { FamilyMember } from "@shared/schema";
+
+const addFamilyMemberSchema = z.object({
+  name: z.string().min(1, "Name is required").max(50, "Name too long"),
+  role: z.string().min(1, "Role is required"),
+  color: z.string().optional(),
+});
+
+type AddFamilyMemberForm = z.infer<typeof addFamilyMemberSchema>;
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [mindfulUsageEnabled, setMindfulUsageEnabled] = useState(true);
   const [reminderInterval, setReminderInterval] = useState("20");
   const [breakDuration, setBreakDuration] = useState([5]);
@@ -24,6 +44,45 @@ export default function SettingsPage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importType, setImportType] = useState<"tasks" | "notes" | "passwords" | "events">("tasks");
   const [activeTab, setActiveTab] = useState("general");
+  const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
+
+  // Fetch existing family members
+  const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
+    queryKey: ["/api/family-members"],
+  });
+
+  // Form for adding family member
+  const form = useForm<AddFamilyMemberForm>({
+    resolver: zodResolver(addFamilyMemberSchema),
+    defaultValues: {
+      name: "",
+      role: "",
+      color: "#3b82f6",
+    },
+  });
+
+  // Mutation for adding family member
+  const addMemberMutation = useMutation({
+    mutationFn: async (data: AddFamilyMemberForm) => {
+      return apiRequest("POST", "/api/family-members", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
+      toast({
+        title: "Success",
+        description: "Family member added successfully!",
+      });
+      setShowAddMemberDialog(false);
+      form.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add family member",
+        variant: "destructive",
+      });
+    },
+  });
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -46,7 +105,7 @@ export default function SettingsPage() {
   };
 
   const handleAddFamilyMember = () => {
-    alert('Add Family Member feature coming soon! This will allow you to invite new family members to join your coordination system.');
+    setShowAddMemberDialog(true);
   };
 
   const handleEditMemberRoles = () => {
@@ -55,6 +114,10 @@ export default function SettingsPage() {
 
   const handleManagePermissions = () => {
     alert('Manage Permissions feature coming soon! This will allow you to control what each family member can access.');
+  };
+
+  const onSubmitAddMember = (data: AddFamilyMemberForm) => {
+    addMemberMutation.mutate(data);
   };
 
   return (
@@ -227,7 +290,27 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Current Family Members */}
+                {familyMembers.length > 0 && (
+                  <div className="space-y-2 mb-4 p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-medium text-sm">Current Family Members:</h4>
+                    <div className="grid gap-2">
+                      {familyMembers.map((member) => (
+                        <div key={member.id} className="flex items-center gap-3 text-sm">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: member.color || '#3b82f6' }}
+                          />
+                          <span className="font-medium">{member.name}</span>
+                          <span className="text-muted-foreground capitalize">({member.role})</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 <Button variant="outline" className="w-full justify-start" onClick={handleAddFamilyMember}>
+                  <Plus className="h-4 w-4 mr-2" />
                   Add Family Member
                 </Button>
                 <Button variant="outline" className="w-full justify-start" onClick={handleEditMemberRoles}>
@@ -335,6 +418,100 @@ export default function SettingsPage() {
           onClose={() => setShowImportModal(false)}
           type={importType}
         />
+
+        {/* Add Family Member Dialog */}
+        <Dialog open={showAddMemberDialog} onOpenChange={setShowAddMemberDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Plus className="h-5 w-5 text-primary" />
+                Add Family Member
+              </DialogTitle>
+              <DialogDescription>
+                Add a new family member to your coordination system.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmitAddMember)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter family member's name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="mom">Mom</SelectItem>
+                            <SelectItem value="dad">Dad</SelectItem>
+                            <SelectItem value="child">Child</SelectItem>
+                            <SelectItem value="teen">Teen</SelectItem>
+                            <SelectItem value="grandparent">Grandparent</SelectItem>
+                            <SelectItem value="caregiver">Caregiver</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="color"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Color (Optional)</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2">
+                          <Input 
+                            type="color" 
+                            {...field} 
+                            className="w-16 h-10 rounded border cursor-pointer"
+                          />
+                          <Input 
+                            placeholder="#3b82f6" 
+                            {...field}
+                            className="flex-1"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowAddMemberDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={addMemberMutation.isPending}>
+                    {addMemberMutation.isPending ? "Adding..." : "Add Member"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </main>
 
       <MobileNav />
