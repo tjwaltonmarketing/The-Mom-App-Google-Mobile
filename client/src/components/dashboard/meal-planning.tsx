@@ -341,15 +341,16 @@ export function MealPlanning() {
                 placeholder="Item name"
                 value={newGroceryItem.item}
                 onChange={(e) => setNewGroceryItem({...newGroceryItem, item: e.target.value})}
+                className="flex-1 min-w-0"
               />
               <Input
                 placeholder="Quantity"
                 value={newGroceryItem.quantity}
                 onChange={(e) => setNewGroceryItem({...newGroceryItem, quantity: e.target.value})}
-                className="w-32"
+                className="w-24"
               />
               <Select value={newGroceryItem.category} onValueChange={(value) => setNewGroceryItem({...newGroceryItem, category: value})}>
-                <SelectTrigger className="w-32">
+                <SelectTrigger className="w-28">
                   <SelectValue placeholder="Category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -360,7 +361,7 @@ export function MealPlanning() {
                   ))}
                 </SelectContent>
               </Select>
-              <Button onClick={handleAddGroceryItem} disabled={addGroceryMutation.isPending}>
+              <Button onClick={handleAddGroceryItem} disabled={addGroceryMutation.isPending} className="shrink-0">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
