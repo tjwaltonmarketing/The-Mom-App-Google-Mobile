@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check } from "lucide-react";
+import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +41,8 @@ export function MealPlanning() {
   const [newGroceryItem, setNewGroceryItem] = useState({ item: "", quantity: "", category: "" });
   const [editingMeal, setEditingMeal] = useState<MealPlan | null>(null);
   const [isMealModalOpen, setIsMealModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState("");
   const { toast } = useToast();
 
   // Mock data for meal plans (replace with actual API calls)
@@ -78,6 +80,11 @@ export function MealPlanning() {
   // Fetch real grocery list data from API
   const { data: groceryList = [] } = useQuery<GroceryItem[]>({
     queryKey: ["/api/grocery-items"],
+  });
+
+  // Fetch family members for sharing
+  const { data: familyMembers = [] } = useQuery({
+    queryKey: ["/api/family-members"],
   });
 
   const addMealMutation = useMutation({
@@ -182,6 +189,55 @@ export function MealPlanning() {
       title: "Grocery list generated",
       description: `Added ${uniqueIngredients.length} items from meal plans`,
     });
+  };
+
+  const shareGroceryList = async () => {
+    if (!selectedMember) {
+      toast({
+        title: "Select family member",
+        description: "Please choose who to share the grocery list with",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const pendingItems = getPendingGroceries();
+    if (pendingItems.length === 0) {
+      toast({
+        title: "Nothing to share",
+        description: "No items in your grocery list to share",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create a notification for the selected family member
+    try {
+      const member = familyMembers.find((m: any) => m.id.toString() === selectedMember);
+      const itemsList = pendingItems.map((item: GroceryItem) => `${item.item} (${item.quantity})`).join(', ');
+      
+      await apiRequest("POST", "/api/notifications", {
+        type: "grocery_list",
+        title: "Grocery List Shared",
+        message: `Shopping list: ${itemsList}`,
+        recipientId: parseInt(selectedMember),
+        deliveryMethod: "in_app"
+      });
+
+      toast({
+        title: "Grocery list shared",
+        description: `Sent shopping list to ${member?.name}`,
+      });
+      
+      setIsShareModalOpen(false);
+      setSelectedMember("");
+    } catch (error) {
+      toast({
+        title: "Failed to share",
+        description: "Could not send grocery list. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const weekDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -333,6 +389,10 @@ export function MealPlanning() {
                   <Calendar className="h-4 w-4" />
                   From Meals
                 </Button>
+                <Button variant="outline" onClick={() => setIsShareModalOpen(true)} className="gap-2">
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </Button>
               </div>
             </div>
 
@@ -425,6 +485,72 @@ export function MealPlanning() {
           </TabsContent>
         </Tabs>
       </CardContent>
+
+      {/* Share Grocery List Modal */}
+      <Dialog open={isShareModalOpen} onOpenChange={setIsShareModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Share Grocery List</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Send to:
+              </label>
+              <Select value={selectedMember} onValueChange={setSelectedMember}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose family member" />
+                </SelectTrigger>
+                <SelectContent>
+                  {familyMembers.map((member: any) => (
+                    <SelectItem key={member.id} value={member.id.toString()}>
+                      {member.name} ({member.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Items to share ({getPendingGroceries().length} items):
+              </label>
+              <div className="max-h-32 overflow-y-auto bg-gray-50 rounded-md p-3">
+                {getPendingGroceries().length > 0 ? (
+                  <ul className="space-y-1 text-sm">
+                    {getPendingGroceries().map((item: GroceryItem) => (
+                      <li key={item.id} className="flex justify-between">
+                        <span>{item.item}</span>
+                        <span className="text-gray-500">{item.quantity}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 text-sm">No items to share</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsShareModalOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={shareGroceryList}
+                disabled={!selectedMember || getPendingGroceries().length === 0}
+                className="flex-1 gap-2"
+              >
+                <Send className="h-4 w-4" />
+                Share List
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
