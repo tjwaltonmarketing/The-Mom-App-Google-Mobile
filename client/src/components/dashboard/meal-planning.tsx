@@ -75,36 +75,10 @@ export function MealPlanning() {
     },
   ];
 
-  // Mock data for grocery list (replace with actual API calls)
-  const groceryList: GroceryItem[] = [
-    {
-      id: 1,
-      item: "Milk",
-      quantity: "1 gallon",
-      category: "dairy",
-      isCompleted: false,
-      addedBy: 1,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 2,
-      item: "Chicken breast",
-      quantity: "2 lbs",
-      category: "meat",
-      isCompleted: false,
-      addedBy: 1,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 3,
-      item: "Broccoli",
-      quantity: "1 head",
-      category: "vegetables",
-      isCompleted: true,
-      addedBy: 1,
-      createdAt: new Date().toISOString(),
-    },
-  ];
+  // Fetch real grocery list data from API
+  const { data: groceryList = [] } = useQuery<GroceryItem[]>({
+    queryKey: ["/api/grocery-items"],
+  });
 
   const addMealMutation = useMutation({
     mutationFn: async (meal: Omit<MealPlan, 'id' | 'createdAt'>) => {
@@ -141,10 +115,13 @@ export function MealPlanning() {
 
   const toggleGroceryMutation = useMutation({
     mutationFn: async ({ id, isCompleted }: { id: number; isCompleted: boolean }) => {
-      // Replace with actual API call
-      return Promise.resolve({ id, isCompleted });
+      const response = await apiRequest("PATCH", `/api/grocery-items/${id}`, {
+        isCompleted,
+      });
+      return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
       toast({
         title: "Item updated",
         description: "Grocery item status updated",
@@ -216,11 +193,11 @@ export function MealPlanning() {
   };
 
   const getPendingGroceries = () => {
-    return groceryList.filter(item => !item.isCompleted);
+    return groceryList.filter((item: GroceryItem) => !item.isCompleted);
   };
 
   const getCompletedGroceries = () => {
-    return groceryList.filter(item => item.isCompleted);
+    return groceryList.filter((item: GroceryItem) => item.isCompleted);
   };
 
   return (
@@ -395,7 +372,7 @@ export function MealPlanning() {
                   Shopping List ({getPendingGroceries().length} items)
                 </h4>
                 <div className="space-y-2">
-                  {getPendingGroceries().map(item => (
+                  {getPendingGroceries().map((item: GroceryItem) => (
                     <div key={item.id} className="flex items-center space-x-3 p-3 bg-white border rounded-lg">
                       <Checkbox
                         checked={false}
