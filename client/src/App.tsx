@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { LoadingProvider } from "@/components/ui/loading-provider";
 import { PageLoadingHandler } from "@/components/ui/page-loading";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "@/pages/dashboard";
 import CalendarPage from "@/pages/calendar";
 import TasksPage from "@/pages/tasks";
@@ -18,9 +19,31 @@ import AIAssistantPage from "@/pages/ai-assistant";
 import SettingsPage from "@/pages/settings";
 import TutorialsPage from "@/pages/tutorials";
 import VoiceTestPage from "@/pages/voice-test";
+import Login from "@/pages/login";
+import Register from "@/pages/register";
 import NotFound from "@/pages/not-found";
 
 function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/register" component={Register} />
+        <Route path="/login" component={Login} />
+        <Route component={Login} />
+      </Switch>
+    );
+  }
+
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
