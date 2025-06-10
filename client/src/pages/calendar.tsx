@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, Clock, Plus, ChevronLeft, ChevronRight, ArrowLeft, Edit } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { EventModal } from "@/components/event-modal";
 import { EventEditModal } from "@/components/event-edit-modal";
@@ -38,6 +38,11 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [view, setView] = useState<CalendarView>("month");
+
+  // Scroll to top when page loads
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const { data: events = [] } = useQuery<Event[]>({
     queryKey: ["/api/events"],
