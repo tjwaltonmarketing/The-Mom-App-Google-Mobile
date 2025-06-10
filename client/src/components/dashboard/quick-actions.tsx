@@ -1,14 +1,14 @@
-import { Plus, ShoppingCart, Utensils, Users, Zap, Mic } from "lucide-react";
+import { Plus, ShoppingCart, Utensils, Users, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
 export function QuickActions() {
   const actions = [
-    { icon: Plus, label: "Add Event", color: "text-primary" },
-    { icon: ShoppingCart, label: "Grocery List", color: "text-secondary" },
-    { icon: Utensils, label: "Meal Plan", color: "text-accent" },
-    { icon: Users, label: "Family Chat", color: "text-primary" },
+    { icon: Plus, label: "Add Event", color: "text-primary", href: "/calendar" },
+    { icon: ShoppingCart, label: "Grocery List", color: "text-secondary", href: "/tasks" },
+    { icon: Utensils, label: "Meal Plan", color: "text-accent", href: "/tasks" },
+    { icon: Users, label: "Family Chat", color: "text-primary", href: "/voice-assistant" },
   ];
 
   return (
@@ -23,26 +23,16 @@ export function QuickActions() {
       <CardContent>
         <div className="grid grid-cols-2 gap-3">
           {actions.map((action, index) => (
-            <Button
-              key={index}
-              variant="ghost"
-              className="bg-gray-50 hover:bg-gray-100 h-auto p-4 flex flex-col items-center space-y-2"
-            >
-              <action.icon className={`${action.color} h-6 w-6`} />
-              <span className="text-sm font-medium">{action.label}</span>
-            </Button>
+            <Link key={index} href={action.href}>
+              <Button
+                variant="ghost"
+                className="bg-gray-50 hover:bg-gray-100 h-auto p-4 flex flex-col items-center space-y-2 w-full"
+              >
+                <action.icon className={`${action.color} h-6 w-6`} />
+                <span className="text-sm font-medium">{action.label}</span>
+              </Button>
+            </Link>
           ))}
-          
-          {/* Voice Test Button */}
-          <Link href="/voice-test">
-            <Button
-              variant="ghost"
-              className="bg-purple-50 hover:bg-purple-100 h-auto p-4 flex flex-col items-center space-y-2 w-full"
-            >
-              <Mic className="text-purple-600 h-6 w-6" />
-              <span className="text-sm font-medium">Voice Test</span>
-            </Button>
-          </Link>
         </div>
       </CardContent>
     </Card>

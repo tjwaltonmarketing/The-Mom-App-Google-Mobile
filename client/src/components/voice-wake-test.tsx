@@ -1,8 +1,9 @@
 import { useState, useRef } from "react";
-import { Mic, MicOff, Bot, Calendar, CheckSquare, MessageSquare } from "lucide-react";
+import { Mic, MicOff, Bot, Calendar, CheckSquare, MessageSquare, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -12,6 +13,8 @@ export function VoiceWakeTest() {
   const [lastTranscript, setLastTranscript] = useState("");
   const [lastCommand, setLastCommand] = useState("");
   const [processing, setProcessing] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  const [wakeWordDetected, setWakeWordDetected] = useState(false);
   const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
