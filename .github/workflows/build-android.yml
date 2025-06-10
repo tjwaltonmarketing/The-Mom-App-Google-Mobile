@@ -102,14 +102,23 @@ jobs:
         echo "Upload certificate fingerprint:"
         cat upload-cert-fingerprint.txt
         
-    - name: Build Android App Bundle (signed for Google Play App Signing)
+    - name: Verify API Level Configuration
+      run: |
+        cd android
+        echo "Checking API level configuration..."
+        grep -r "targetSdkVersion\|compileSdkVersion" . --include="*.gradle"
+        echo "Variables.gradle contents:"
+        cat variables.gradle
+        
+    - name: Clean and Build Android App Bundle (signed for Google Play App Signing)
       run: |
         cd android
         export JAVA_HOME=$JAVA_HOME_17_X64
         export ANDROID_COMPILE_SDK=35
         export ANDROID_BUILD_TOOLS=35.0.0
         export ANDROID_TARGET_SDK=35
-        ./gradlew bundleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64
+        rm -rf .gradle build app/build
+        ./gradlew clean bundleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64 --no-daemon --no-build-cache
         
     - name: Build Android APK (unsigned)
       run: |
