@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -60,6 +61,13 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+          <div className="mb-4 flex justify-center">
+            <img 
+              src={logoPath} 
+              alt="The Mom App Logo" 
+              className="w-24 h-24 object-contain"
+            />
+          </div>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             Welcome Back
           </CardTitle>

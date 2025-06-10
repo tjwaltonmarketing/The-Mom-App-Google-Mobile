@@ -21,10 +21,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication Routes
   app.post("/api/register", async (req, res) => {
     try {
-      const validatedData = insertUserSchema.extend({
+      const registrationSchema = z.object({
+        email: z.string().email(),
         password: z.string().min(6),
+        firstName: z.string().min(1),
+        lastName: z.string().min(1),
         familyName: z.string().min(1),
-      }).parse(req.body);
+      });
+      
+      const validatedData = registrationSchema.parse(req.body);
       
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(validatedData.email);
