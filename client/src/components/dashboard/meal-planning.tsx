@@ -400,7 +400,7 @@ export function MealPlanning() {
                     Completed ({getCompletedGroceries().length} items)
                   </h4>
                   <div className="space-y-2">
-                    {getCompletedGroceries().map(item => (
+                    {getCompletedGroceries().map((item: GroceryItem) => (
                       <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 border rounded-lg opacity-75">
                         <Checkbox
                           checked={true}
