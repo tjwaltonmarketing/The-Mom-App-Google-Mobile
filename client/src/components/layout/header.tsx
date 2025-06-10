@@ -4,6 +4,7 @@ import { Home, Bell, Mic, Settings, Crown, User, Bot, HelpCircle, BookOpen } fro
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationBell } from "@/components/notification-bell";
 import { Link, useLocation } from "wouter";
 import {
   DropdownMenu,

@@ -92,6 +92,10 @@ export class DatabaseStorage implements IStorage {
 
   async createEvent(insertEvent: InsertEvent): Promise<Event> {
     const [event] = await db.insert(events).values(insertEvent).returning();
+    
+    // Create automatic notifications for the event
+    await this.createEventNotifications(event);
+    
     return event;
   }
 
@@ -243,6 +247,39 @@ export class DatabaseStorage implements IStorage {
     }
     
     return task;
+  }
+
+  async createEventNotifications(event: Event): Promise<void> {
+    if (!event.assignedTo || event.isAllDay) return;
+    
+    const eventTime = new Date(event.startTime);
+    const now = new Date();
+    
+    // Create multiple reminders for important events
+    const reminders = [
+      { hours: 24, title: "Tomorrow's Event", message: `You have "${event.title}" scheduled for tomorrow at ${eventTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}` },
+      { hours: 2, title: "Upcoming Event", message: `"${event.title}" starts in 2 hours${event.location ? ` at ${event.location}` : ''}` },
+      { hours: 0.25, title: "Event Starting Soon", message: `"${event.title}" starts in 15 minutes${event.location ? ` at ${event.location}` : ''}` }
+    ];
+    
+    for (const reminder of reminders) {
+      const reminderTime = new Date(eventTime.getTime() - reminder.hours * 60 * 60 * 1000);
+      
+      // Only create notifications for future times
+      if (reminderTime > now) {
+        const notification: InsertNotification = {
+          type: "event_reminder",
+          title: reminder.title,
+          message: reminder.message,
+          recipientId: event.assignedTo,
+          relatedEventId: event.id,
+          scheduledFor: reminderTime,
+          deliveryMethod: "sms"
+        };
+        
+        await this.createNotification(notification);
+      }
+    }
   }
 }
 
