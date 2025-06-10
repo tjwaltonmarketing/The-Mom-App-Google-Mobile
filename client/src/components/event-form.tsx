@@ -50,7 +50,7 @@ export function EventForm({ onSuccess }: EventFormProps) {
       startDate: format(new Date(), "yyyy-MM-dd"),
       startTime: "09:00",
       endDate: format(new Date(), "yyyy-MM-dd"),
-      endTime: "10:00",
+      endTime: "22:00",
     },
   });
 

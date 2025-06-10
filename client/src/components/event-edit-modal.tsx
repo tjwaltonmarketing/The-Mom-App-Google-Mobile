@@ -56,7 +56,7 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
       startDate: format(new Date(event.startTime), "yyyy-MM-dd"),
       startTime: format(new Date(event.startTime), "HH:mm"),
       endDate: event.endTime ? format(new Date(event.endTime), "yyyy-MM-dd") : format(new Date(event.startTime), "yyyy-MM-dd"),
-      endTime: event.endTime ? format(new Date(event.endTime), "HH:mm") : "10:00",
+      endTime: event.endTime ? format(new Date(event.endTime), "HH:mm") : "22:00",
     },
   });
 

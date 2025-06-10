@@ -163,7 +163,7 @@ export default function CalendarPage() {
                       style={{ backgroundColor: member?.color ? `${member.color}20` : undefined }}
                     >
                       <div className="flex items-center justify-between">
-                        <span>{format(new Date(event.startTime), 'HH:mm')} {event.title}</span>
+                        <span>{format(new Date(event.startTime), 'h:mm a')} {event.title}</span>
                         <EventEditModal 
                           event={event}
                           trigger={
@@ -233,7 +233,7 @@ export default function CalendarPage() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="font-medium">{format(new Date(event.startTime), 'HH:mm')}</div>
+                          <div className="font-medium">{format(new Date(event.startTime), 'h:mm a')}</div>
                           <div className="truncate">{event.title}</div>
                           {event.location && (
                             <div className="text-gray-600 dark:text-gray-400 truncate">{event.location}</div>
@@ -289,7 +289,7 @@ export default function CalendarPage() {
             return (
               <div key={hour} className="flex border-b border-gray-200 dark:border-gray-700 py-2">
                 <div className="w-20 text-sm text-gray-500 font-medium">
-                  {format(new Date().setHours(hour, 0), 'HH:mm')}
+                  {format(new Date().setHours(hour, 0), 'h a')}
                 </div>
                 <div className="flex-1 pl-4">
                   {hourEvents.map(event => {
@@ -306,7 +306,7 @@ export default function CalendarPage() {
                         <div className="flex items-center justify-between mb-1">
                           <h3 className="font-medium text-gray-900 dark:text-white">{event.title}</h3>
                           <span className="text-sm text-gray-500">
-                            {format(new Date(event.startTime), 'HH:mm')} - {event.endTime ? format(new Date(event.endTime), 'HH:mm') : 'End time TBD'}
+                            {format(new Date(event.startTime), 'h:mm a')} - {event.endTime ? format(new Date(event.endTime), 'h:mm a') : 'End time TBD'}
                           </span>
                         </div>
                         {event.description && (
@@ -433,7 +433,7 @@ export default function CalendarPage() {
                             <h4 className="font-medium">{event.title}</h4>
                             <div className="flex items-center gap-2">
                               <span className="text-sm text-gray-500">
-                                {format(new Date(event.startTime), 'HH:mm')}
+                                {format(new Date(event.startTime), 'h:mm a')}
                               </span>
                               <EventEditModal 
                                 event={event}
