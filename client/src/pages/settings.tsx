@@ -227,6 +227,44 @@ export default function SettingsPage() {
     editMemberMutation.mutate(data);
   };
 
+  const handleProfileSettings = () => {
+    toast({
+      title: "Profile Settings",
+      description: "Profile settings feature coming soon! This will allow you to update your personal information and preferences.",
+    });
+  };
+
+  const handlePrivacySettings = () => {
+    toast({
+      title: "Privacy Settings",
+      description: "Privacy settings feature coming soon! This will allow you to control your privacy and data sharing preferences.",
+    });
+  };
+
+  const handleSecuritySettings = () => {
+    toast({
+      title: "Security Settings",
+      description: "Security settings feature coming soon! This will allow you to manage passwords, two-factor authentication, and security preferences.",
+    });
+  };
+
+  const handleDownloadData = () => {
+    toast({
+      title: "Download Data",
+      description: "Data download feature coming soon! This will allow you to export all your family's data for backup or transfer.",
+    });
+  };
+
+  const handleDeleteAccount = () => {
+    if (confirm("Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your family's data.")) {
+      toast({
+        title: "Account Deletion",
+        description: "Account deletion feature coming soon! Please contact support if you need immediate assistance.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header onStartVoiceNote={() => {}} />
@@ -508,13 +546,13 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={handleProfileSettings}>
                   Profile Settings
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={handlePrivacySettings}>
                   Privacy Settings
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={handleSecuritySettings}>
                   Security Settings
                 </Button>
               </CardContent>
@@ -531,10 +569,10 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={handleDownloadData}>
                   Download My Data
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={handleDeleteAccount}>
                   Delete Account
                 </Button>
               </CardContent>
