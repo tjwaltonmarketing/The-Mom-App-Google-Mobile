@@ -123,16 +123,14 @@ export function MealPlanning() {
 
   const addGroceryMutation = useMutation({
     mutationFn: async (item: Omit<GroceryItem, 'id' | 'createdAt' | 'addedBy' | 'isCompleted'>) => {
-      // Replace with actual API call
-      return Promise.resolve({ 
-        ...item, 
-        id: Date.now(), 
-        isCompleted: false, 
-        addedBy: 1, 
-        createdAt: new Date().toISOString() 
+      const response = await apiRequest("POST", "/api/grocery-items", {
+        ...item,
+        addedBy: 1, // Default to first family member
       });
+      return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
       toast({
         title: "Item added",
         description: "Item has been added to your grocery list",

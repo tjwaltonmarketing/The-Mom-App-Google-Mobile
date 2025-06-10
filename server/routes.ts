@@ -764,6 +764,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Grocery List endpoints
+  app.get("/api/grocery-items", async (req, res) => {
+    try {
+      const items = await storage.getGroceryItems();
+      res.json(items);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/grocery-items", async (req, res) => {
+    try {
+      const item = await storage.createGroceryItem(req.body);
+      res.status(201).json(item);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/grocery-items/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const item = await storage.updateGroceryItem(id, req.body);
+      if (!item) {
+        return res.status(404).json({ message: "Grocery item not found" });
+      }
+      res.json(item);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Meal Plan endpoints
+  app.get("/api/meal-plans", async (req, res) => {
+    try {
+      const plans = await storage.getMealPlans();
+      res.json(plans);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/meal-plans", async (req, res) => {
+    try {
+      const plan = await storage.createMealPlan(req.body);
+      res.status(201).json(plan);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/meal-plans/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteMealPlan(id);
+      if (!success) {
+        return res.status(404).json({ message: "Meal plan not found" });
+      }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

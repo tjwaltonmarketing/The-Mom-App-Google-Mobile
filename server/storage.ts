@@ -19,7 +19,13 @@ import {
   type Notification,
   type InsertNotification,
   type Password,
-  type InsertPassword
+  type InsertPassword,
+  groceryItems,
+  mealPlans,
+  type GroceryItem,
+  type InsertGroceryItem,
+  type MealPlan,
+  type InsertMealPlan
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lt, desc, isNull, or } from "drizzle-orm";
@@ -306,6 +312,44 @@ export class DatabaseStorage implements IStorage {
   async createPassword(insertPassword: InsertPassword): Promise<Password> {
     const [password] = await db.insert(passwords).values(insertPassword).returning();
     return password;
+  }
+
+  async getGroceryItems(): Promise<GroceryItem[]> {
+    return await db.select().from(groceryItems).orderBy(desc(groceryItems.createdAt));
+  }
+
+  async createGroceryItem(insertItem: InsertGroceryItem): Promise<GroceryItem> {
+    const [item] = await db
+      .insert(groceryItems)
+      .values(insertItem)
+      .returning();
+    return item;
+  }
+
+  async updateGroceryItem(id: number, updates: Partial<GroceryItem>): Promise<GroceryItem | undefined> {
+    const [item] = await db
+      .update(groceryItems)
+      .set(updates)
+      .where(eq(groceryItems.id, id))
+      .returning();
+    return item;
+  }
+
+  async getMealPlans(): Promise<MealPlan[]> {
+    return await db.select().from(mealPlans).orderBy(desc(mealPlans.createdAt));
+  }
+
+  async createMealPlan(insertPlan: InsertMealPlan): Promise<MealPlan> {
+    const [plan] = await db
+      .insert(mealPlans)
+      .values(insertPlan)
+      .returning();
+    return plan;
+  }
+
+  async deleteMealPlan(id: number): Promise<boolean> {
+    const result = await db.delete(mealPlans).where(eq(mealPlans.id, id));
+    return result.rowCount > 0;
   }
 }
 
