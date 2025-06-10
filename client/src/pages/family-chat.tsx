@@ -19,7 +19,7 @@ import type { FamilyMember, Notification } from "@shared/schema";
 export default function FamilyChatPage() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
-  const [newMessage, setNewMessage] = useState({ recipient: "", title: "", message: "" });
+  const [newMessage, setNewMessage] = useState({ recipient: "", title: "", message: "", deliveryMethod: "in_app" });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -39,18 +39,18 @@ export default function FamilyChatPage() {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: async (data: { recipient: string; title: string; message: string }) => {
+    mutationFn: async (data: { recipient: string; title: string; message: string; deliveryMethod: string }) => {
       return apiRequest("POST", "/api/notifications", {
         type: "family_message",
         title: data.title,
         message: data.message,
         recipientId: parseInt(data.recipient),
-        deliveryMethod: "in_app"
+        deliveryMethod: data.deliveryMethod
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
-      setNewMessage({ recipient: "", title: "", message: "" });
+      setNewMessage({ recipient: "", title: "", message: "", deliveryMethod: "in_app" });
       setIsMessageModalOpen(false);
       toast({
         title: "Message sent",
@@ -309,6 +309,20 @@ export default function FamilyChatPage() {
                 onChange={(e) => setNewMessage({...newMessage, message: e.target.value})}
                 rows={4}
               />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Delivery method:</label>
+              <Select value={newMessage.deliveryMethod} onValueChange={(value) => setNewMessage({...newMessage, deliveryMethod: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="How to send" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="in_app">In-app notification</SelectItem>
+                  <SelectItem value="sms">Text message (SMS)</SelectItem>
+                  <SelectItem value="email">Email</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex gap-2 pt-4">
