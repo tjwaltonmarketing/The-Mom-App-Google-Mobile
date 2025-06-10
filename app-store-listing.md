@@ -13,10 +13,11 @@ Streamline your family's coordination with THE MOM APP - the comprehensive famil
 🏠 **Family Dashboard** - See everyone's schedules and tasks at a glance
 📅 **Smart Calendar with Privacy Controls** - Coordinate family events with selective sharing, private time blocks, and customizable visibility
 ✅ **Smart Task Management** - Assign, track, and complete family tasks
+🎤 **Voice-to-Task Assistant** - Speak naturally to create tasks and calendar events instantly
 🤖 **AI Assistant** - Get personalized help with family planning and organization
 🍽️ **Meal Planning** - Organize weekly meals and grocery lists
 🔒 **Family Password Vault** - Securely store and share important passwords
-📝 **Voice Notes** - Quickly capture thoughts and reminders
+📝 **Voice Notes** - Quickly capture thoughts and reminders with AI transcription
 ⏰ **Deadline Tracking** - Never miss important dates and appointments
 
 **Perfect For:**

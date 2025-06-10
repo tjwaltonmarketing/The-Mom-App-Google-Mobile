@@ -19,12 +19,12 @@
 
 ### Main Store Listing
 - **App name:** THE MOM APP
-- **Short description:** Family command center with smart calendar privacy controls and task management.
+- **Short description:** Family command center with voice-to-task AI, calendar privacy controls, and smart coordination.
 - **Full description:** [Use the description from app-store-listing.md]
 
 ### App Category & Tags
 - **Category:** Productivity
-- **Tags:** family organization, productivity, calendar, task management
+- **Tags:** family organization, productivity, calendar, task management, voice assistant, AI
 
 ### Contact Details
 - **Email:** themomapp.us@gmail.com
