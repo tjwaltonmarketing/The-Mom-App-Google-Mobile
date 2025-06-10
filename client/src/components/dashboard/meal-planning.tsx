@@ -336,34 +336,36 @@ export function MealPlanning() {
               </div>
             </div>
 
-            <div className="flex gap-2 mb-4">
+            <div className="space-y-3 mb-4">
               <Input
                 placeholder="Item name"
                 value={newGroceryItem.item}
                 onChange={(e) => setNewGroceryItem({...newGroceryItem, item: e.target.value})}
-                className="flex-1 min-w-0"
+                className="w-full"
               />
-              <Input
-                placeholder="Quantity"
-                value={newGroceryItem.quantity}
-                onChange={(e) => setNewGroceryItem({...newGroceryItem, quantity: e.target.value})}
-                className="w-20"
-              />
-              <Select value={newGroceryItem.category} onValueChange={(value) => setNewGroceryItem({...newGroceryItem, category: value})}>
-                <SelectTrigger className="w-28">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map(cat => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button onClick={handleAddGroceryItem} disabled={addGroceryMutation.isPending} className="shrink-0">
-                <Plus className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Quantity"
+                  value={newGroceryItem.quantity}
+                  onChange={(e) => setNewGroceryItem({...newGroceryItem, quantity: e.target.value})}
+                  className="flex-1"
+                />
+                <Select value={newGroceryItem.category} onValueChange={(value) => setNewGroceryItem({...newGroceryItem, category: value})}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(cat => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button onClick={handleAddGroceryItem} disabled={addGroceryMutation.isPending} className="shrink-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-4">
