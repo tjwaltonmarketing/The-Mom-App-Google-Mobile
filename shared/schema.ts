@@ -23,6 +23,10 @@ export const events = pgTable("events", {
   location: text("location"),
   assignedTo: integer("assigned_to").references(() => familyMembers.id),
   isAllDay: boolean("is_all_day").default(false),
+  isPrivate: boolean("is_private").default(false),
+  visibilityType: text("visibility_type").notNull().default("shared"), // "shared", "private", "busy"
+  sharedWith: integer("shared_with").array().default([]), // array of family member IDs
+  createdBy: integer("created_by").references(() => familyMembers.id),
 });
 
 export const tasks = pgTable("tasks", {

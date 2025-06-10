@@ -39,11 +39,12 @@ export default function SubscriptionPage() {
       monthly: 19.99,
       yearly: 199.99,
       features: [
-        "Up to 4 coordinating adults",
-        "Shared family calendar",
-        "Family communication hub",
-        "Collaborative meal planning",
-        "SMS & email delivery",
+        "Up to 4 unique user accounts with separate logins",
+        "Shared family calendar with privacy controls",
+        "Private calendars + selective sharing options",
+        "Family communication hub with message delivery",
+        "Collaborative meal planning and grocery lists",
+        "SMS & email delivery to all family members",
         "Priority support"
       ],
       popular: true

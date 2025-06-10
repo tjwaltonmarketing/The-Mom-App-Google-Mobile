@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar, Clock, MapPin, User } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Eye, EyeOff, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,8 @@ const eventFormSchema = insertEventSchema.extend({
   startTime: z.string(),
   endDate: z.string().optional(),
   endTime: z.string().optional(),
+  visibilityType: z.enum(["shared", "private", "busy"]).default("shared"),
+  sharedWith: z.array(z.number()).default([]),
 });
 
 type EventFormData = z.infer<typeof eventFormSchema>;
@@ -47,6 +49,8 @@ export function EventForm({ onSuccess }: EventFormProps) {
       location: "",
       assignedTo: null,
       isAllDay: false,
+      visibilityType: "shared",
+      sharedWith: [],
       startDate: format(new Date(), "yyyy-MM-dd"),
       startTime: "09:00",
       endDate: format(new Date(), "yyyy-MM-dd"),
