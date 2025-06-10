@@ -178,7 +178,10 @@ export function MealPlanning() {
     }
 
     addMealMutation.mutate({
-      ...newMeal,
+      day: newMeal.day,
+      mealType: newMeal.mealType as "breakfast" | "lunch" | "dinner" | "snack",
+      meal: newMeal.meal,
+      notes: newMeal.notes,
       ingredients: newMeal.ingredients ? newMeal.ingredients.split(',').map(i => i.trim()) : undefined,
     });
   };
@@ -198,7 +201,7 @@ export function MealPlanning() {
 
   const generateGroceryFromMeals = () => {
     const ingredients = mealPlans.flatMap(meal => meal.ingredients || []);
-    const uniqueIngredients = [...new Set(ingredients)];
+    const uniqueIngredients = Array.from(new Set(ingredients));
     
     toast({
       title: "Grocery list generated",
