@@ -33,13 +33,13 @@ export function WelcomeHeader() {
             <div className="text-2xl font-bold text-primary">
               {stats?.todayTasks || 0}
             </div>
-            <div className="text-xs text-gray-600">Tasks Due</div>
+            <div className="text-xs text-gray-700 dark:text-gray-300 blue-light-filter:text-gray-800 font-medium">Tasks Due</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-secondary">
               {stats?.todayEvents || 0}
             </div>
-            <div className="text-xs text-gray-600">Events Today</div>
+            <div className="text-xs text-gray-700 dark:text-gray-300 blue-light-filter:text-gray-800 font-medium">Events Today</div>
           </div>
         </div>
       </div>
