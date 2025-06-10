@@ -106,18 +106,18 @@ jobs:
       run: |
         cd android
         export JAVA_HOME=$JAVA_HOME_17_X64
-        export ANDROID_COMPILE_SDK=34
-        export ANDROID_BUILD_TOOLS=34.0.0
-        export ANDROID_TARGET_SDK=34
+        export ANDROID_COMPILE_SDK=35
+        export ANDROID_BUILD_TOOLS=35.0.0
+        export ANDROID_TARGET_SDK=35
         ./gradlew bundleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64
         
     - name: Build Android APK (unsigned)
       run: |
         cd android
         export JAVA_HOME=$JAVA_HOME_17_X64
-        export ANDROID_COMPILE_SDK=34
-        export ANDROID_BUILD_TOOLS=34.0.0
-        export ANDROID_TARGET_SDK=34
+        export ANDROID_COMPILE_SDK=35
+        export ANDROID_BUILD_TOOLS=35.0.0
+        export ANDROID_TARGET_SDK=35
         ./gradlew assembleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64
         
     - name: Upload App Bundle
@@ -144,3 +144,10 @@ jobs:
         name: upload-keystore-backup
         path: android/upload-keystore.jks
       if: env.UPLOAD_KEYSTORE_BASE64 == ''
+        
+    - name: Upload ProGuard mapping file
+      uses: actions/upload-artifact@v4
+      with:
+        name: proguard-mapping
+        path: android/app/build/outputs/mapping/release/mapping.txt
+      if: always()
