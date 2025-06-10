@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus } from "lucide-react";
+import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera } from "lucide-react";
 import { Link } from "wouter";
 import { CalendarSync } from "@/components/calendar-sync";
 import { ImportExportModal } from "@/components/import-export-modal";
@@ -28,9 +28,25 @@ const addFamilyMemberSchema = z.object({
   name: z.string().min(1, "Name is required").max(50, "Name too long"),
   role: z.string().min(1, "Role is required"),
   color: z.string().optional(),
+  avatar: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().optional(),
+  notificationPreference: z.string().optional(),
+});
+
+const editMemberSchema = z.object({
+  id: z.number(),
+  name: z.string().min(1, "Name is required").max(50, "Name too long"),
+  role: z.string().min(1, "Role is required"),
+  color: z.string().optional(),
+  avatar: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().optional(),
+  notificationPreference: z.string().optional(),
 });
 
 type AddFamilyMemberForm = z.infer<typeof addFamilyMemberSchema>;
+type EditMemberForm = z.infer<typeof editMemberSchema>;
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -45,6 +61,9 @@ export default function SettingsPage() {
   const [importType, setImportType] = useState<"tasks" | "notes" | "passwords" | "events">("tasks");
   const [activeTab, setActiveTab] = useState("general");
   const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
+  const [showEditMemberDialog, setShowEditMemberDialog] = useState(false);
+  const [showPermissionsDialog, setShowPermissionsDialog] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
 
   // Fetch existing family members
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
@@ -58,6 +77,25 @@ export default function SettingsPage() {
       name: "",
       role: "",
       color: "#3b82f6",
+      avatar: "",
+      phone: "",
+      email: "",
+      notificationPreference: "sms",
+    },
+  });
+
+  // Form for editing family member
+  const editForm = useForm<EditMemberForm>({
+    resolver: zodResolver(editMemberSchema),
+    defaultValues: {
+      id: 0,
+      name: "",
+      role: "",
+      color: "#3b82f6",
+      avatar: "",
+      phone: "",
+      email: "",
+      notificationPreference: "sms",
     },
   });
 
@@ -79,6 +117,50 @@ export default function SettingsPage() {
       toast({
         title: "Error",
         description: error.message || "Failed to add family member",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation for editing family member
+  const editMemberMutation = useMutation({
+    mutationFn: async (data: EditMemberForm) => {
+      return apiRequest("PATCH", `/api/family-members/${data.id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
+      toast({
+        title: "Success",
+        description: "Family member updated successfully!",
+      });
+      setShowEditMemberDialog(false);
+      setSelectedMember(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update family member",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation for deleting family member
+  const deleteMemberMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest("DELETE", `/api/family-members/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
+      toast({
+        title: "Success",
+        description: "Family member removed successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove family member",
         variant: "destructive",
       });
     },
@@ -109,15 +191,40 @@ export default function SettingsPage() {
   };
 
   const handleEditMemberRoles = () => {
-    alert('Edit Member Roles feature coming soon! This will allow you to change permissions for family members.');
+    setShowEditMemberDialog(true);
   };
 
   const handleManagePermissions = () => {
-    alert('Manage Permissions feature coming soon! This will allow you to control what each family member can access.');
+    setShowPermissionsDialog(true);
+  };
+
+  const handleEditMember = (member: FamilyMember) => {
+    setSelectedMember(member);
+    editForm.reset({
+      id: member.id,
+      name: member.name,
+      role: member.role,
+      color: member.color || "#3b82f6",
+      avatar: member.avatar || "",
+      phone: member.phone || "",
+      email: member.email || "",
+      notificationPreference: member.notificationPreference || "sms",
+    });
+    setShowEditMemberDialog(true);
+  };
+
+  const handleDeleteMember = (id: number, name: string) => {
+    if (confirm(`Are you sure you want to remove ${name} from your family?`)) {
+      deleteMemberMutation.mutate(id);
+    }
   };
 
   const onSubmitAddMember = (data: AddFamilyMemberForm) => {
     addMemberMutation.mutate(data);
+  };
+
+  const onSubmitEditMember = (data: EditMemberForm) => {
+    editMemberMutation.mutate(data);
   };
 
   return (
