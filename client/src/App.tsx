@@ -11,6 +11,7 @@ import Dashboard from "@/pages/dashboard";
 import CalendarPage from "@/pages/calendar";
 import TasksPage from "@/pages/tasks";
 import MealPlanPage from "@/pages/meal-plan";
+import GroceryListPage from "@/pages/grocery-list";
 import SubscriptionPage from "@/pages/subscription";
 import AIAssistantPage from "@/pages/ai-assistant";
 import SettingsPage from "@/pages/settings";
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/calendar" component={CalendarPage} />
       <Route path="/tasks" component={TasksPage} />
       <Route path="/meal-plan" component={MealPlanPage} />
+      <Route path="/grocery-list" component={GroceryListPage} />
       <Route path="/subscription" component={SubscriptionPage} />
       <Route path="/ai-assistant" component={AIAssistantPage} />
       <Route path="/settings" component={SettingsPage} />
