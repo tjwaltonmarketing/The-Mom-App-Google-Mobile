@@ -75,7 +75,11 @@ Ensure compliance with:
 - ✓ Functional app (not just a website wrapper)
 
 ## Step 7: Pricing & Distribution
-- **Price:** Free
+- **Price:** Free (with in-app purchases)
+- **In-app purchases:**
+  - Individual Plan: $9.99/month
+  - Family Plan: $19.99/month (up to 4 users)
+  - 14-day free trial included
 - **Countries:** All available countries
 - **Device categories:** Phone and tablet
 - **User programs:** Opt into Google Play Pass (optional)

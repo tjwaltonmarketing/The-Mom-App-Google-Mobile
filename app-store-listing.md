@@ -32,6 +32,11 @@ Streamline your family's coordination with THE MOM APP - the comprehensive famil
 ✓ Secure and privacy-focused
 ✓ Easy to use for all family members
 
+**Pricing:**
+• Individual Plan: $9.99/month - Perfect for single parents
+• Family Plan: $19.99/month - Up to 4 coordinating adults (Mom, Dad, Grandma, Grandpa)
+• 14-day free trial included
+
 Transform your family's organization and reduce the mental load with THE MOM APP. Download now and experience stress-free family coordination.
 
 ## App Category

@@ -19,9 +19,35 @@ export default function SubscriptionPage() {
     nextBillingDate: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
   };
 
-  const pricing = {
-    monthly: { price: 9.99, total: 9.99 },
-    yearly: { price: 99, total: 99, savings: 20 }
+  const plans = {
+    individual: {
+      name: "Individual",
+      description: "Perfect for single parents",
+      monthly: 9.99,
+      yearly: 99.99,
+      features: [
+        "1 user account",
+        "All core features",
+        "Voice assistant",
+        "Smart notifications",
+        "Secure password vault"
+      ]
+    },
+    family: {
+      name: "Family Plan",
+      description: "Up to 4 users: Mom, Dad, Grandma, Grandpa",
+      monthly: 19.99,
+      yearly: 199.99,
+      features: [
+        "Up to 4 coordinating adults",
+        "Shared family calendar",
+        "Family communication hub",
+        "Collaborative meal planning",
+        "SMS & email delivery",
+        "Priority support"
+      ],
+      popular: true
+    }
   };
 
   return (
@@ -96,16 +122,16 @@ export default function SubscriptionPage() {
             </CardContent>
           </Card>
 
-          {/* Pricing Plans */}
-          <Card>
+          {/* Billing Cycle Toggle */}
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Choose Your Plan</CardTitle>
-              <div className="flex items-center gap-2 mt-4">
+              <div className="flex items-center justify-center gap-2 mt-4">
                 <Button
                   variant={billingCycle === "monthly" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setBillingCycle("monthly")}
-                  className="flex-1"
+                  className="px-6"
                 >
                   Monthly
                 </Button>
@@ -113,7 +139,7 @@ export default function SubscriptionPage() {
                   variant={billingCycle === "yearly" ? "default" : "outline"}
                   size="sm"
                   onClick={() => setBillingCycle("yearly")}
-                  className="flex-1"
+                  className="px-6"
                 >
                   Yearly
                   <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800 text-xs">
@@ -122,24 +148,95 @@ export default function SubscriptionPage() {
                 </Button>
               </div>
             </CardHeader>
+          </Card>
+        </div>
+
+        {/* Pricing Plans */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          {/* Individual Plan */}
+          <Card className="relative">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                {plans.individual.name}
+              </CardTitle>
+              <p className="text-gray-600 dark:text-gray-400">{plans.individual.description}</p>
+            </CardHeader>
             <CardContent>
               <div className="text-center mb-6">
                 <div className="text-4xl font-bold text-primary mb-2">
-                  ${pricing[billingCycle].price}
+                  ${plans.individual[billingCycle]}
                   <span className="text-lg font-normal text-gray-600 dark:text-gray-400">
                     /{billingCycle === "monthly" ? "month" : "year"}
                   </span>
                 </div>
                 {billingCycle === "yearly" && (
                   <p className="text-sm text-green-600 dark:text-green-400">
-                    Save ${pricing.yearly.savings} compared to monthly billing
+                    Save $20 compared to monthly billing
                   </p>
                 )}
               </div>
 
+              <ul className="space-y-3 mb-6">
+                {plans.individual.features.map((feature, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <Check size={16} className="text-green-600 dark:text-green-400" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button className="w-full" variant="outline" size="lg">
+                <CreditCard size={18} className="mr-2" />
+                Start Individual Plan
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Family Plan */}
+          <Card className="relative border-primary">
+            {plans.family.popular && (
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-primary text-primary-foreground px-3 py-1">
+                  Most Popular
+                </Badge>
+              </div>
+            )}
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                {plans.family.name}
+              </CardTitle>
+              <p className="text-gray-600 dark:text-gray-400">{plans.family.description}</p>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center mb-6">
+                <div className="text-4xl font-bold text-primary mb-2">
+                  ${plans.family[billingCycle]}
+                  <span className="text-lg font-normal text-gray-600 dark:text-gray-400">
+                    /{billingCycle === "monthly" ? "month" : "year"}
+                  </span>
+                </div>
+                {billingCycle === "yearly" && (
+                  <p className="text-sm text-green-600 dark:text-green-400">
+                    Save $40 compared to monthly billing
+                  </p>
+                )}
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                  Just ${(plans.family[billingCycle] / 4).toFixed(2)} per person per {billingCycle === "monthly" ? "month" : "year"}
+                </p>
+              </div>
+
+              <ul className="space-y-3 mb-6">
+                {plans.family.features.map((feature, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <Check size={16} className="text-green-600 dark:text-green-400" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
               <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
                 <CreditCard size={18} className="mr-2" />
-                Continue with {billingCycle === "monthly" ? "Monthly" : "Yearly"} Plan
+                Start Family Plan
               </Button>
 
               <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
