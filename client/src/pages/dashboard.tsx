@@ -15,6 +15,7 @@ import { TutorialCards } from "@/components/dashboard/tutorial-cards";
 
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { MindfulUsage } from "@/components/mindful-usage";
+import { SmartVoiceAssistant } from "@/components/smart-voice-assistant";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -30,8 +31,9 @@ export default function Dashboard() {
         <WelcomeHeader />
         
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="voice">Voice Assistant</TabsTrigger>
             <TabsTrigger value="passwords">Password Vault</TabsTrigger>
           </TabsList>
           
@@ -57,6 +59,12 @@ export default function Dashboard() {
                 <QuickActions />
                 <UpcomingDeadlines />
               </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="voice">
+            <div className="space-y-6">
+              <SmartVoiceAssistant />
             </div>
           </TabsContent>
           
