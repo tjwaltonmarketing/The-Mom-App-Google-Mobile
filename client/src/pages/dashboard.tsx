@@ -12,6 +12,8 @@ import { NotificationDemo } from "@/components/dashboard/notification-demo";
 import { PasswordVault } from "@/components/dashboard/password-vault";
 import { TrialBanner } from "@/components/dashboard/trial-banner";
 import { TutorialCards } from "@/components/dashboard/tutorial-cards";
+import { AdvancedTaskManagement } from "@/components/dashboard/advanced-task-management";
+import { MealPlanning } from "@/components/dashboard/meal-planning";
 
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { MindfulUsage } from "@/components/mindful-usage";
@@ -31,8 +33,10 @@ export default function Dashboard() {
         <WelcomeHeader />
         
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            <TabsTrigger value="meals">Meals</TabsTrigger>
             <TabsTrigger value="voice">Voice Assistant</TabsTrigger>
             <TabsTrigger value="passwords">Password Vault</TabsTrigger>
           </TabsList>
@@ -66,6 +70,14 @@ export default function Dashboard() {
             <div className="space-y-6">
               <SmartVoiceAssistant />
             </div>
+          </TabsContent>
+          
+          <TabsContent value="tasks">
+            <AdvancedTaskManagement />
+          </TabsContent>
+          
+          <TabsContent value="meals">
+            <MealPlanning />
           </TabsContent>
           
           <TabsContent value="passwords">
