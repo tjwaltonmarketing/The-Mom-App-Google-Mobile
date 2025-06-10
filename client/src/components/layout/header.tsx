@@ -34,7 +34,7 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-2 md:space-x-4">
             <Link href="/" className="flex items-center space-x-2 hover:opacity-90 transition-opacity">
-              <Logo className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" />
+              <Logo className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 flex-shrink-0" />
               <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 dark:text-white blue-light-filter:text-gray-900 truncate font-logo uppercase">THE MOM APP</h1>
             </Link>
             <nav className="hidden lg:flex space-x-4 xl:space-x-6">
