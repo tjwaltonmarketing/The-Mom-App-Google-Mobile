@@ -6,9 +6,9 @@ import { Link } from "wouter";
 export function QuickActions() {
   const actions = [
     { icon: Plus, label: "Add Event", color: "text-primary", href: "/calendar" },
-    { icon: ShoppingCart, label: "Grocery List", color: "text-secondary", href: "/tasks" },
+    { icon: ShoppingCart, label: "Grocery List", color: "text-pink-500", href: "/tasks" },
     { icon: Utensils, label: "Meal Plan", color: "text-accent", href: "/meal-plan" },
-    { icon: Users, label: "Family Chat", color: "text-primary", href: "/voice-assistant" },
+    { icon: Users, label: "Family Chat", color: "text-primary", href: "/settings" },
   ];
 
   return (

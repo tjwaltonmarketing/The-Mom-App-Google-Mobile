@@ -1,7 +1,7 @@
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { CheckSquare } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { ImportExportModal } from "@/components/import-export-modal";
 import { AdvancedTaskManagement } from "@/components/dashboard/advanced-task-management";
@@ -9,6 +9,11 @@ import { AdvancedTaskManagement } from "@/components/dashboard/advanced-task-man
 export default function TasksPage() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [isImportExportOpen, setIsImportExportOpen] = useState(false);
+
+  // Scroll to top when page loads
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   return (
     <div className="min-h-screen bg-neutral dark:bg-background blue-light-filter:bg-neutral">
