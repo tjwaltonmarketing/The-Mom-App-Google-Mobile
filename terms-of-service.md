@@ -56,6 +56,8 @@ Your privacy is important to us. Our Privacy Policy explains how we collect, use
 - Trial automatically converts to paid subscription unless cancelled
 
 ### Paid Subscriptions
+- **Individual Plan**: $9.99/month - Single user account
+- **Family Plan**: $19.99/month - Up to 4 coordinating adults
 - Subscriptions are billed monthly or annually
 - Payment processed through Stripe
 - Prices may change with 30 days notice
