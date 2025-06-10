@@ -58,12 +58,20 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x android/gradlew
       
-    - name: Generate upload keystore for Google Play App Signing
+    - name: Setup signing keystore
       run: |
         cd android
-        keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload \
-        -dname "CN=The Mom App, OU=Development, O=TJ Walton Marketing LLC, L=Unknown, ST=Unknown, C=US" \
-        -storepass android -keypass android
+        if [ ! -z "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" ]; then
+          echo "Using existing keystore from secrets"
+          echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d > upload-keystore.jks
+        else
+          echo "Generating new upload keystore (first-time setup)"
+          keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload \
+          -dname "CN=The Mom App, OU=Development, O=TJ Walton Marketing LLC, L=Unknown, ST=Unknown, C=US" \
+          -storepass android -keypass android
+          echo "IMPORTANT: Save this keystore to GitHub Secrets as UPLOAD_KEYSTORE_BASE64"
+          echo "Run: base64 -w 0 upload-keystore.jks"
+        fi
         
     - name: Configure upload signing for Google Play
       run: |
@@ -129,3 +137,10 @@ jobs:
       with:
         name: upload-certificate-info
         path: android/upload-cert-fingerprint.txt
+        
+    - name: Upload keystore for backup (first-time only)
+      uses: actions/upload-artifact@v4
+      with:
+        name: upload-keystore-backup
+        path: android/upload-keystore.jks
+      if: env.UPLOAD_KEYSTORE_BASE64 == ''
