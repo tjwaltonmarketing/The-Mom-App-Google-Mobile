@@ -104,6 +104,50 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // User Authentication Methods
+  async getUserById(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
+  // Family Management Methods
+  async createFamily(insertFamily: InsertFamily): Promise<Family> {
+    const [family] = await db.insert(families).values(insertFamily).returning();
+    return family;
+  }
+
+  async getFamilyByUserId(userId: number): Promise<Family | undefined> {
+    const [membership] = await db
+      .select()
+      .from(familyMemberships)
+      .where(eq(familyMemberships.userId, userId))
+      .limit(1);
+    
+    if (!membership) return undefined;
+    
+    const [family] = await db
+      .select()
+      .from(families)
+      .where(eq(families.id, membership.familyId));
+    
+    return family || undefined;
+  }
+
+  async createFamilyMembership(insertMembership: InsertFamilyMembership): Promise<FamilyMembership> {
+    const [membership] = await db.insert(familyMemberships).values(insertMembership).returning();
+    return membership;
+  }
+
   async getFamilyMembers(): Promise<FamilyMember[]> {
     return await db.select().from(familyMembers);
   }

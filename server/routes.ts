@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupSession, requireAuth, getCurrentUser, hashPassword, verifyPassword } from "./auth";
+import { insertUserSchema } from "@shared/schema";
+import { z } from "zod";
 import { processAIRequest, generateMealSuggestions, smartTaskCreation } from "./ai";
 import { 
   insertEventSchema,
@@ -12,6 +15,116 @@ import {
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Setup session middleware
+  setupSession(app);
+  
+  // Authentication Routes
+  app.post("/api/register", async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.extend({
+        password: z.string().min(6),
+        familyName: z.string().min(1),
+      }).parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(validatedData.email);
+      if (existingUser) {
+        return res.status(400).json({ error: "User already exists" });
+      }
+      
+      // Hash password
+      const passwordHash = await hashPassword(validatedData.password);
+      
+      // Create user
+      const user = await storage.createUser({
+        email: validatedData.email,
+        passwordHash,
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+      });
+      
+      // Create family
+      const family = await storage.createFamily({
+        name: validatedData.familyName,
+        ownerId: user.id,
+      });
+      
+      // Create family membership
+      await storage.createFamilyMembership({
+        userId: user.id,
+        familyId: family.id,
+        role: "owner",
+      });
+      
+      // Login user
+      req.session!.userId = user.id;
+      
+      // Return user without password
+      const { passwordHash: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(400).json({ error: "Registration failed" });
+    }
+  });
+  
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password required" });
+      }
+      
+      // Find user
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      // Verify password
+      const isValid = await verifyPassword(password, user.passwordHash);
+      if (!isValid) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      // Login user
+      req.session!.userId = user.id;
+      
+      // Return user without password
+      const { passwordHash: _, ...userWithoutPassword } = user;
+      res.json({ user: userWithoutPassword });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+  
+  app.post("/api/logout", (req, res) => {
+    req.session?.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+  
+  app.get("/api/auth/user", async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      // Return user without password
+      const { passwordHash: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ error: "Failed to get user" });
+    }
+  });
   
   // Family Members
   app.get("/api/family-members", async (req, res) => {
