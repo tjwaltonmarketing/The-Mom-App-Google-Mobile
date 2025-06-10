@@ -159,10 +159,24 @@ export default function CalendarPage() {
                   return (
                     <div 
                       key={event.id} 
-                      className="text-xs p-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 truncate"
+                      className="text-xs p-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 truncate group relative"
                       style={{ backgroundColor: member?.color ? `${member.color}20` : undefined }}
                     >
-                      {format(new Date(event.startTime), 'HH:mm')} {event.title}
+                      <div className="flex items-center justify-between">
+                        <span>{format(new Date(event.startTime), 'HH:mm')} {event.title}</span>
+                        <EventEditModal 
+                          event={event}
+                          trigger={
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Edit size={8} />
+                            </Button>
+                          }
+                        />
+                      </div>
                     </div>
                   );
                 })}
@@ -214,14 +228,30 @@ export default function CalendarPage() {
                   return (
                     <div 
                       key={event.id} 
-                      className="text-xs p-2 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                      className="text-xs p-2 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 group relative"
                       style={{ backgroundColor: member?.color ? `${member.color}20` : undefined }}
                     >
-                      <div className="font-medium">{format(new Date(event.startTime), 'HH:mm')}</div>
-                      <div className="truncate">{event.title}</div>
-                      {event.location && (
-                        <div className="text-gray-600 dark:text-gray-400 truncate">{event.location}</div>
-                      )}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="font-medium">{format(new Date(event.startTime), 'HH:mm')}</div>
+                          <div className="truncate">{event.title}</div>
+                          {event.location && (
+                            <div className="text-gray-600 dark:text-gray-400 truncate">{event.location}</div>
+                          )}
+                        </div>
+                        <EventEditModal 
+                          event={event}
+                          trigger={
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+                            >
+                              <Edit size={8} />
+                            </Button>
+                          }
+                        />
+                      </div>
                     </div>
                   );
                 })}
@@ -288,15 +318,25 @@ export default function CalendarPage() {
                             {event.location}
                           </div>
                         )}
-                        {member && (
-                          <div className="flex items-center gap-2 mt-2">
-                            <div 
-                              className="w-3 h-3 rounded-full" 
-                              style={{ backgroundColor: member.color }}
-                            ></div>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{member.name}</span>
-                          </div>
-                        )}
+                        <div className="flex items-center justify-between mt-2">
+                          {member && (
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{ backgroundColor: member.color }}
+                              ></div>
+                              <span className="text-sm text-gray-600 dark:text-gray-400">{member.name}</span>
+                            </div>
+                          )}
+                          <EventEditModal 
+                            event={event}
+                            trigger={
+                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                <Edit size={12} />
+                              </Button>
+                            }
+                          />
+                        </div>
                       </div>
                     );
                   })}
@@ -391,9 +431,19 @@ export default function CalendarPage() {
                         <div key={event.id} className="p-3 border rounded-lg">
                           <div className="flex items-center justify-between mb-1">
                             <h4 className="font-medium">{event.title}</h4>
-                            <span className="text-sm text-gray-500">
-                              {format(new Date(event.startTime), 'HH:mm')}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-gray-500">
+                                {format(new Date(event.startTime), 'HH:mm')}
+                              </span>
+                              <EventEditModal 
+                                event={event}
+                                trigger={
+                                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                    <Edit size={12} />
+                                  </Button>
+                                }
+                              />
+                            </div>
                           </div>
                           {event.location && (
                             <p className="text-sm text-gray-600 dark:text-gray-400">{event.location}</p>
