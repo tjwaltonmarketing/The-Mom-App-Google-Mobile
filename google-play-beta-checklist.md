@@ -76,7 +76,7 @@ Create 1024x500 pixel feature graphic with:
 - Family-friendly design elements
 
 ### 5. Release Notes
-"Initial release of THE MOM APP - The complete family command center featuring AI-powered task management, voice notes, shared calendars, and secure password storage. Designed to reduce mental load and streamline family coordination."
+"Initial release of THE MOM APP - The complete family command center featuring AI-powered task management, voice notes, smart calendar privacy controls, and secure password storage. Designed to reduce mental load and streamline family coordination."
 
 ## 🚀 BETA TESTING APPROACH
 
@@ -85,7 +85,7 @@ Create 1024x500 pixel feature graphic with:
 2. Add team email addresses as testers
 3. Test core functionality:
    - Voice-to-task conversion
-   - Calendar sync
+   - Calendar privacy controls (shared/private/busy)
    - Family member management
    - Password vault
    - Theme switching

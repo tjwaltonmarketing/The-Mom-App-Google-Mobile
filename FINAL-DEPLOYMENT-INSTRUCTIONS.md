@@ -62,7 +62,7 @@ After successful build, find these files:
 Your app includes all major features:
 - Voice-to-Assistant with AI task/calendar creation
 - Family task management with assignments
-- Shared calendar coordination
+- Smart calendar with privacy controls (shared/private/busy visibility)
 - Secure password vault
 - AI assistant chat
 - Voice notes with transcription
