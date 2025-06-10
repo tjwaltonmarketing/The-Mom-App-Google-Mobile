@@ -45,6 +45,18 @@ export default function SettingsPage() {
     alert('Settings saved successfully!');
   };
 
+  const handleAddFamilyMember = () => {
+    alert('Add Family Member feature coming soon! This will allow you to invite new family members to join your coordination system.');
+  };
+
+  const handleEditMemberRoles = () => {
+    alert('Edit Member Roles feature coming soon! This will allow you to change permissions for family members.');
+  };
+
+  const handleManagePermissions = () => {
+    alert('Manage Permissions feature coming soon! This will allow you to control what each family member can access.');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header onStartVoiceNote={() => {}} />
@@ -63,25 +75,7 @@ export default function SettingsPage() {
           </TabsList>
 
           <TabsContent value="general" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mic className="h-5 w-5 text-primary" />
-                  Voice Features (Beta)
-                </CardTitle>
-                <CardDescription>
-                  Test the "Hey Lisa" voice wake-up feature
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link href="/voice-test">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Mic className="h-4 w-4 mr-2" />
-                    Test Voice Wake-up
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+
 
             <CalendarSync />
 
@@ -233,13 +227,13 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={handleAddFamilyMember}>
                   Add Family Member
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={handleEditMemberRoles}>
                   Edit Member Roles
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button variant="outline" className="w-full justify-start" onClick={handleManagePermissions}>
                   Manage Permissions
                 </Button>
               </CardContent>
