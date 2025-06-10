@@ -401,15 +401,37 @@ export default function SettingsPage() {
                 {familyMembers.length > 0 && (
                   <div className="space-y-2 mb-4 p-4 bg-muted/50 rounded-lg">
                     <h4 className="font-medium text-sm">Current Family Members:</h4>
-                    <div className="grid gap-2">
+                    <div className="grid gap-3">
                       {familyMembers.map((member) => (
-                        <div key={member.id} className="flex items-center gap-3 text-sm">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: member.color || '#3b82f6' }}
-                          />
-                          <span className="font-medium">{member.name}</span>
-                          <span className="text-muted-foreground capitalize">({member.role})</span>
+                        <div key={member.id} className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full text-white font-medium text-sm" 
+                                 style={{ backgroundColor: member.color || '#3b82f6' }}>
+                              {member.avatar || member.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm">{member.name}</div>
+                              <div className="text-xs text-muted-foreground capitalize">{member.role}</div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditMember(member)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteMember(member.id, member.name)}
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -617,6 +639,220 @@ export default function SettingsPage() {
                 </DialogFooter>
               </form>
             </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Family Member Dialog */}
+        <Dialog open={showEditMemberDialog} onOpenChange={setShowEditMemberDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Edit className="h-5 w-5 text-primary" />
+                Edit Family Member
+              </DialogTitle>
+              <DialogDescription>
+                Update family member information and preferences.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(onSubmitEditMember)} className="space-y-4">
+                <FormField
+                  control={editForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter family member's name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="mom">Mom</SelectItem>
+                            <SelectItem value="dad">Dad</SelectItem>
+                            <SelectItem value="child">Child</SelectItem>
+                            <SelectItem value="teen">Teen</SelectItem>
+                            <SelectItem value="grandparent">Grandparent</SelectItem>
+                            <SelectItem value="caregiver">Caregiver</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter phone number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter email address" type="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="notificationPreference"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notification Preference</FormLabel>
+                      <FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select preference" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="sms">SMS</SelectItem>
+                            <SelectItem value="email">Email</SelectItem>
+                            <SelectItem value="both">Both</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="color"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Color</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-2">
+                          <Input 
+                            type="color" 
+                            {...field} 
+                            className="w-16 h-10 rounded border cursor-pointer"
+                          />
+                          <Input 
+                            placeholder="#3b82f6" 
+                            {...field}
+                            className="flex-1"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowEditMemberDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={editMemberMutation.isPending}>
+                    {editMemberMutation.isPending ? "Updating..." : "Update Member"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Manage Permissions Dialog */}
+        <Dialog open={showPermissionsDialog} onOpenChange={setShowPermissionsDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Manage Permissions
+              </DialogTitle>
+              <DialogDescription>
+                Control what each family member can access and modify.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              {familyMembers.map((member) => (
+                <div key={member.id} className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full text-white font-medium text-sm" 
+                         style={{ backgroundColor: member.color || '#3b82f6' }}>
+                      {member.avatar || member.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="font-medium">{member.name}</div>
+                      <div className="text-sm text-muted-foreground capitalize">{member.role}</div>
+                    </div>
+                  </div>
+                  <div className="ml-11 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Can create tasks</Label>
+                      <Switch defaultChecked={member.role !== 'child'} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Can edit events</Label>
+                      <Switch defaultChecked={member.role !== 'child'} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Can manage grocery lists</Label>
+                      <Switch defaultChecked={true} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Can view passwords</Label>
+                      <Switch defaultChecked={member.role === 'mom' || member.role === 'dad'} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Receives notifications</Label>
+                      <Switch defaultChecked={member.notificationPreference !== 'none'} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowPermissionsDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={() => {
+                toast({
+                  title: "Success",
+                  description: "Permissions updated successfully!",
+                });
+                setShowPermissionsDialog(false);
+              }}>
+                Save Permissions
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </main>
