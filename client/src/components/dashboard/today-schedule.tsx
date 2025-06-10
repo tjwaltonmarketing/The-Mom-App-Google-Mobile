@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CalendarDays } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import type { Event, FamilyMember } from "@shared/schema";
 import { format } from "date-fns";
@@ -26,6 +27,11 @@ export function TodaySchedule() {
         <CardTitle className="text-lg font-semibold flex items-center">
           <CalendarDays className="text-primary mr-2 h-5 w-5" />
           Today's Schedule
+          {events.length > 0 && (
+            <Badge className="ml-2 bg-pink-500 hover:bg-pink-600 text-white">
+              {events.length}
+            </Badge>
+          )}
         </CardTitle>
         <Link href="/calendar">
           <Button variant="link" className="text-primary hover:text-blue-600 text-sm font-medium p-0">

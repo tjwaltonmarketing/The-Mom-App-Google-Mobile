@@ -58,6 +58,11 @@ export function QuickTasks() {
         <CardTitle className="text-lg font-semibold flex items-center">
           <CheckCircle className="text-secondary mr-2 h-5 w-5" />
           Quick Tasks
+          {tasks.length > 0 && (
+            <Badge className="ml-2 bg-pink-500 hover:bg-pink-600 text-white">
+              {tasks.length}
+            </Badge>
+          )}
         </CardTitle>
         <Button variant="link" className="text-primary hover:text-blue-600 text-sm font-medium p-0">
           <Plus className="mr-1 h-4 w-4" />
