@@ -104,6 +104,27 @@ export const subscriptions = pgTable("subscriptions", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const groceryItems = pgTable("grocery_items", {
+  id: serial("id").primaryKey(),
+  item: text("item").notNull(),
+  quantity: text("quantity").notNull(),
+  category: text("category").notNull(),
+  isCompleted: boolean("is_completed").default(false),
+  addedBy: integer("added_by").references(() => familyMembers.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const mealPlans = pgTable("meal_plans", {
+  id: serial("id").primaryKey(),
+  day: text("day").notNull(),
+  mealType: text("meal_type").notNull(), // "breakfast", "lunch", "dinner", "snack"
+  meal: text("meal").notNull(),
+  ingredients: text("ingredients").array(),
+  notes: text("notes"),
+  createdBy: integer("created_by").references(() => familyMembers.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertFamilyMemberSchema = createInsertSchema(familyMembers).omit({
   id: true,
 });
@@ -144,6 +165,16 @@ export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertGroceryItemSchema = createInsertSchema(groceryItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMealPlanSchema = createInsertSchema(mealPlans).omit({
+  id: true,
+  createdAt: true,
 });
 
 // Relations
@@ -218,6 +249,20 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
   }),
 }));
 
+export const groceryItemsRelations = relations(groceryItems, ({ one }) => ({
+  addedBy: one(familyMembers, {
+    fields: [groceryItems.addedBy],
+    references: [familyMembers.id],
+  }),
+}));
+
+export const mealPlansRelations = relations(mealPlans, ({ one }) => ({
+  createdBy: one(familyMembers, {
+    fields: [mealPlans.createdBy],
+    references: [familyMembers.id],
+  }),
+}));
+
 export type FamilyMember = typeof familyMembers.$inferSelect;
 export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
 
@@ -241,3 +286,9 @@ export type InsertPassword = z.infer<typeof insertPasswordSchema>;
 
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+
+export type GroceryItem = typeof groceryItems.$inferSelect;
+export type InsertGroceryItem = z.infer<typeof insertGroceryItemSchema>;
+
+export type MealPlan = typeof mealPlans.$inferSelect;
+export type InsertMealPlan = z.infer<typeof insertMealPlanSchema>;

@@ -64,6 +64,16 @@ export interface IStorage {
   // Passwords
   getPasswords(): Promise<Password[]>;
   createPassword(password: InsertPassword): Promise<Password>;
+  
+  // Grocery Lists
+  getGroceryItems(): Promise<GroceryItem[]>;
+  createGroceryItem(item: InsertGroceryItem): Promise<GroceryItem>;
+  updateGroceryItem(id: number, updates: Partial<GroceryItem>): Promise<GroceryItem | undefined>;
+  
+  // Meal Plans
+  getMealPlans(): Promise<MealPlan[]>;
+  createMealPlan(plan: InsertMealPlan): Promise<MealPlan>;
+  deleteMealPlan(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
