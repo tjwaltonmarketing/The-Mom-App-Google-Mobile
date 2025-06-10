@@ -30,13 +30,13 @@ export function WelcomeHeader() {
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-4">
           <div className="text-center">
-            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 blue-light-filter:text-gray-900">
+            <div className="text-3xl font-bold text-pink-500">
               {stats?.todayTasks || 0}
             </div>
             <div className="text-sm text-gray-900 dark:text-gray-100 blue-light-filter:text-gray-900 font-semibold">Tasks Due</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100 blue-light-filter:text-gray-900">
+            <div className="text-3xl font-bold text-pink-500">
               {stats?.todayEvents || 0}
             </div>
             <div className="text-sm text-gray-900 dark:text-gray-100 blue-light-filter:text-gray-900 font-semibold">Events Today</div>
