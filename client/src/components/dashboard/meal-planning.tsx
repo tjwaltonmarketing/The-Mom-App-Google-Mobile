@@ -347,7 +347,7 @@ export function MealPlanning() {
                 placeholder="Quantity"
                 value={newGroceryItem.quantity}
                 onChange={(e) => setNewGroceryItem({...newGroceryItem, quantity: e.target.value})}
-                className="w-24"
+                className="w-20"
               />
               <Select value={newGroceryItem.category} onValueChange={(value) => setNewGroceryItem({...newGroceryItem, category: value})}>
                 <SelectTrigger className="w-28">
