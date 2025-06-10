@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LoadingProvider } from "@/components/ui/loading-provider";
 import { PageLoadingHandler } from "@/components/ui/page-loading";
+import { useNotifications } from "@/hooks/use-notifications";
 import Dashboard from "@/pages/dashboard";
 import CalendarPage from "@/pages/calendar";
 import TasksPage from "@/pages/tasks";
@@ -34,6 +35,11 @@ function Router() {
   );
 }
 
+function NotificationWrapper() {
+  useNotifications(); // Initialize notification system
+  return <Router />;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -41,7 +47,7 @@ function App() {
         <LoadingProvider>
           <TooltipProvider>
             <Toaster />
-            <Router />
+            <NotificationWrapper />
           </TooltipProvider>
         </LoadingProvider>
       </ThemeProvider>
