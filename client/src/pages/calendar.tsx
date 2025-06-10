@@ -29,6 +29,7 @@ import {
   getHours,
   getMinutes
 } from "date-fns";
+import { formatTimeInUserTimezone } from "@/lib/timezone";
 
 type CalendarView = "month" | "week" | "day";
 
@@ -233,7 +234,7 @@ export default function CalendarPage() {
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="font-medium">{format(new Date(event.startTime), 'h:mm a')}</div>
+                          <div className="font-medium">{formatTimeInUserTimezone(event.startTime)}</div>
                           <div className="truncate">{event.title}</div>
                           {event.location && (
                             <div className="text-gray-600 dark:text-gray-400 truncate">{event.location}</div>
@@ -306,7 +307,7 @@ export default function CalendarPage() {
                         <div className="flex items-center justify-between mb-1">
                           <h3 className="font-medium text-gray-900 dark:text-white">{event.title}</h3>
                           <span className="text-sm text-gray-500">
-                            {format(new Date(event.startTime), 'h:mm a')} - {event.endTime ? format(new Date(event.endTime), 'h:mm a') : 'End time TBD'}
+                            {formatTimeInUserTimezone(event.startTime)} - {event.endTime ? formatTimeInUserTimezone(event.endTime) : 'End time TBD'}
                           </span>
                         </div>
                         {event.description && (

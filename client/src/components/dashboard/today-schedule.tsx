@@ -53,7 +53,7 @@ export function TodaySchedule() {
                     <div className="flex items-center justify-between">
                       <p className="font-medium">{event.title}</p>
                       <span className="text-sm text-gray-500">
-                        {format(new Date(event.startTime), 'h:mm a')}
+                        {formatTimeInUserTimezone(event.startTime)}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600">{event.description}</p>
