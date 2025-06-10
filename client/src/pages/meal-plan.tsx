@@ -1,11 +1,16 @@
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { MealPlanning } from "@/components/dashboard/meal-planning";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 
 export default function MealPlanPage() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+
+  // Scroll to top when page loads
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   return (
     <div className="min-h-screen bg-neutral dark:bg-background blue-light-filter:bg-neutral">
