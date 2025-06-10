@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { PasswordModal } from "@/components/password-modal";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Shield, 
   Plus, 
@@ -20,6 +23,7 @@ import {
   Globe
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Password } from "@shared/schema";
 
 interface PasswordEntry {
   id: number;
@@ -35,7 +39,13 @@ interface PasswordEntry {
 }
 
 export function PasswordVault() {
-  const [passwords] = useState<PasswordEntry[]>([
+  const { toast } = useToast();
+  
+  const { data: passwords = [] } = useQuery<Password[]>({
+    queryKey: ["/api/passwords"],
+  });
+  
+  const [staticPasswords] = useState<PasswordEntry[]>([
     {
       id: 1,
       title: "Netflix",
@@ -168,10 +178,7 @@ export function PasswordVault() {
             <Shield className="text-blue-600 dark:text-blue-400 blue-light-filter:text-amber-600" size={20} />
             <CardTitle className="text-lg">Password Vault</CardTitle>
           </div>
-          <Button size="sm" className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 blue-light-filter:bg-amber-600 blue-light-filter:hover:bg-amber-700">
-            <Plus size={16} className="mr-2" />
-            Add Password
-          </Button>
+          <PasswordModal />
         </div>
         
         <div className="flex gap-2 mt-4">

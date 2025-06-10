@@ -57,6 +57,10 @@ export interface IStorage {
   getPendingNotifications(): Promise<Notification[]>;
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationSent(id: number): Promise<void>;
+
+  // Passwords
+  getPasswords(): Promise<Password[]>;
+  createPassword(password: InsertPassword): Promise<Password>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -280,6 +284,15 @@ export class DatabaseStorage implements IStorage {
         await this.createNotification(notification);
       }
     }
+  }
+
+  async getPasswords(): Promise<Password[]> {
+    return await db.select().from(passwords);
+  }
+
+  async createPassword(insertPassword: InsertPassword): Promise<Password> {
+    const [password] = await db.insert(passwords).values(insertPassword).returning();
+    return password;
   }
 }
 

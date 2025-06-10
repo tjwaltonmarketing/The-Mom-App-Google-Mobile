@@ -745,6 +745,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Password management endpoints
+  app.get("/api/passwords", async (_req, res) => {
+    try {
+      const passwords = await storage.getPasswords();
+      res.json(passwords);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/passwords", async (req, res) => {
+    try {
+      const password = await storage.createPassword(req.body);
+      res.status(201).json(password);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
