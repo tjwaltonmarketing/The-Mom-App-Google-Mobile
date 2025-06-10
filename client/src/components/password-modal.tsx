@@ -153,7 +153,7 @@ export function PasswordModal({ trigger }: PasswordModalProps) {
                 <FormItem>
                   <FormLabel>Website</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., netflix.com" {...field} />
+                    <Input placeholder="e.g., netflix.com" {...field} value={field.value || ""} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -5,6 +5,7 @@ import {
   voiceNotes, 
   deadlines,
   notifications,
+  passwords,
   type FamilyMember, 
   type InsertFamilyMember,
   type Event,
@@ -16,7 +17,9 @@ import {
   type Deadline,
   type InsertDeadline,
   type Notification,
-  type InsertNotification
+  type InsertNotification,
+  type Password,
+  type InsertPassword
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lt, desc, isNull, or } from "drizzle-orm";
