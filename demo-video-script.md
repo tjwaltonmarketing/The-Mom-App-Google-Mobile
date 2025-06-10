@@ -21,10 +21,11 @@
 **Visual**:
 - Show dashboard with family members
 - Navigate to tasks page showing assigned tasks
-- Quick view of shared calendar
+- Quick view of shared calendar with privacy controls
+- Demonstrate creating a private event vs shared event
 - Switch between family member views
 
-**Narration**: "Coordinate your entire family with shared tasks, calendars, and intelligent organization"
+**Narration**: "Coordinate your entire family with smart calendar privacy controls, shared tasks, and intelligent organization"
 
 ### Key Features Montage (40-55 seconds)
 **Visual**: Quick cuts showing:
@@ -80,8 +81,9 @@ If video creation is challenging, focus on these key screenshots:
 3. **AI Suggestions** - Smart task/event creation interface
 4. **Task Management** - Assigned family tasks with due dates
 5. **Calendar View** - Shared family calendar with events
-6. **Password Vault** - Secure family credential storage
-7. **Settings/Themes** - Show theme options and customization
-8. **AI Assistant** - Chat interface with helpful responses
+6. **Calendar Privacy Controls** - Event visibility settings (shared/private/busy)
+7. **Password Vault** - Secure family credential storage
+8. **Settings/Themes** - Show theme options and customization
+9. **AI Assistant** - Chat interface with helpful responses
 
 Each screenshot should be taken in portrait mode on a clean device with good lighting and realistic family data.

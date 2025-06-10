@@ -11,7 +11,7 @@ Streamline your family's coordination with THE MOM APP - the comprehensive famil
 
 **Key Features:**
 🏠 **Family Dashboard** - See everyone's schedules and tasks at a glance
-📅 **Shared Calendar** - Coordinate appointments, events, and activities
+📅 **Smart Calendar with Privacy Controls** - Coordinate family events with selective sharing, private time blocks, and customizable visibility
 ✅ **Smart Task Management** - Assign, track, and complete family tasks
 🤖 **AI Assistant** - Get personalized help with family planning and organization
 🍽️ **Meal Planning** - Organize weekly meals and grocery lists

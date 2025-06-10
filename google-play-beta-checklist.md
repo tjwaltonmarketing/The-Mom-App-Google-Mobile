@@ -9,7 +9,7 @@
 - ✅ Version: 1.0.0 (Build 1)
 
 ### Store Listing Content Ready
-- ✅ Short Description: "Family command center to organize tasks, calendars, and reduce mental load."
+- ✅ Short Description: "Family command center with smart calendar privacy controls and task management."
 - ✅ Full Description: Complete description with features and benefits
 - ✅ Category: Productivity
 - ✅ Content Rating: Everyone
@@ -24,7 +24,7 @@
 ### App Features Complete
 - ✅ Family Dashboard with real-time updates
 - ✅ Task Management with assignment and tracking
-- ✅ Calendar Integration and event management
+- ✅ Smart Calendar with Privacy Controls (shared/private/busy visibility)
 - ✅ AI Assistant with voice-to-task conversion
 - ✅ Voice Notes with transcription
 - ✅ Family Password Vault (secure storage)
@@ -64,7 +64,7 @@ cd android && ./gradlew assembleRelease
 Take screenshots of these key screens:
 - Dashboard (family overview)
 - Task Management page
-- Calendar view
+- Calendar view with privacy controls
 - AI Assistant chat
 - Voice note recording
 - Settings/themes page

@@ -19,7 +19,7 @@
 
 ### Main Store Listing
 - **App name:** THE MOM APP
-- **Short description:** Family command center to organize tasks, calendars, and reduce mental load.
+- **Short description:** Family command center with smart calendar privacy controls and task management.
 - **Full description:** [Use the description from app-store-listing.md]
 
 ### App Category & Tags
