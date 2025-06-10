@@ -65,10 +65,10 @@ export default function Login() {
             <img 
               src={logoPath} 
               alt="The Mom App Logo" 
-              className="w-24 h-24 object-contain"
+              className="w-32 h-32 object-contain"
             />
           </div>
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-pink-500 bg-clip-text text-transparent">
             Welcome Back
           </CardTitle>
           <CardDescription>
@@ -127,7 +127,7 @@ export default function Login() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
-              <Link href="/register" className="text-purple-600 hover:text-purple-500 font-medium">
+              <Link href="/register" className="text-pink-600 hover:text-pink-500 font-medium">
                 Create one
               </Link>
             </p>

@@ -70,10 +70,10 @@ export default function Register() {
             <img 
               src={logoPath} 
               alt="The Mom App Logo" 
-              className="w-24 h-24 object-contain"
+              className="w-32 h-32 object-contain"
             />
           </div>
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-pink-500 bg-clip-text text-transparent">
             Join The Mom App
           </CardTitle>
           <CardDescription>
@@ -179,7 +179,7 @@ export default function Register() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
-              <Link href="/login" className="text-purple-600 hover:text-purple-500 font-medium">
+              <Link href="/login" className="text-pink-600 hover:text-pink-500 font-medium">
                 Sign in
               </Link>
             </p>
