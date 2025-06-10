@@ -735,6 +735,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Notifications endpoints
+  app.get("/api/notifications/pending", async (_req, res) => {
+    try {
+      const notifications = await storage.getPendingNotifications();
+      res.json(notifications);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -69,6 +69,9 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
               <ThemeToggle />
             </div>
             
+            {/* Notification Bell */}
+            <NotificationBell />
+            
             {/* Voice Note Button */}
             <Button
               onClick={onStartVoiceNote}

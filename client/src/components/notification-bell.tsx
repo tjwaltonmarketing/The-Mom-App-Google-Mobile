@@ -31,7 +31,7 @@ export function NotificationBell() {
     }
   };
 
-  const getTimeUntilEvent = (scheduledFor: string) => {
+  const getTimeUntilEvent = (scheduledFor: string | Date) => {
     const now = new Date();
     const scheduled = new Date(scheduledFor);
     const diffMs = scheduled.getTime() - now.getTime();
@@ -106,7 +106,7 @@ export function NotificationBell() {
                             {getTimeUntilEvent(notification.scheduledFor)}
                           </span>
                           <span className="text-xs text-gray-400">
-                            {formatTimeInUserTimezone(new Date(notification.scheduledFor))}
+                            {formatTimeInUserTimezone(notification.scheduledFor)}
                           </span>
                         </div>
                       </div>
