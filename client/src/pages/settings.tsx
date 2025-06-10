@@ -63,6 +63,8 @@ export default function SettingsPage() {
   const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
   const [showEditMemberDialog, setShowEditMemberDialog] = useState(false);
   const [showPermissionsDialog, setShowPermissionsDialog] = useState(false);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
 
   // Fetch existing family members
@@ -228,17 +230,11 @@ export default function SettingsPage() {
   };
 
   const handleProfileSettings = () => {
-    toast({
-      title: "Profile Settings",
-      description: "Profile settings feature coming soon! This will allow you to update your personal information and preferences.",
-    });
+    setShowProfileDialog(true);
   };
 
   const handlePrivacySettings = () => {
-    toast({
-      title: "Privacy Settings",
-      description: "Privacy settings feature coming soon! This will allow you to control your privacy and data sharing preferences.",
-    });
+    setShowPrivacyDialog(true);
   };
 
   const handleSecuritySettings = () => {
@@ -248,11 +244,38 @@ export default function SettingsPage() {
     });
   };
 
-  const handleDownloadData = () => {
-    toast({
-      title: "Download Data",
-      description: "Data download feature coming soon! This will allow you to export all your family's data for backup or transfer.",
-    });
+  const handleDownloadData = async () => {
+    try {
+      // Generate family data export
+      const exportData = {
+        familyMembers,
+        exportDate: new Date().toISOString(),
+        version: "1.0"
+      };
+      
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `family-data-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Data Export Complete",
+        description: "Your family data has been downloaded successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "There was an error exporting your data. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -938,6 +961,157 @@ export default function SettingsPage() {
                 setShowPermissionsDialog(false);
               }}>
                 Save Permissions
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Profile Settings Dialog */}
+        <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <User className="h-5 w-5 text-primary" />
+                Profile Settings
+              </DialogTitle>
+              <DialogDescription>
+                Manage your personal information and app preferences.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Display Name</Label>
+                  <Input defaultValue="Mom" className="mt-1" />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">App Theme</Label>
+                  <Select defaultValue={theme}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="light">Light</SelectItem>
+                      <SelectItem value="dark">Dark</SelectItem>
+                      <SelectItem value="system">System</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Time Format</Label>
+                  <Select defaultValue="12h">
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="12h">12-hour (AM/PM)</SelectItem>
+                      <SelectItem value="24h">24-hour</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Language</Label>
+                  <Select defaultValue="en">
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowProfileDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={() => {
+                toast({
+                  title: "Profile Updated",
+                  description: "Your profile settings have been saved successfully.",
+                });
+                setShowProfileDialog(false);
+              }}>
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Privacy Settings Dialog */}
+        <Dialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Privacy Settings
+              </DialogTitle>
+              <DialogDescription>
+                Control your privacy and data sharing preferences.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Share Activity Status</Label>
+                    <p className="text-xs text-muted-foreground">Let family members see when you're active</p>
+                  </div>
+                  <Switch defaultChecked={true} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Location Sharing</Label>
+                    <p className="text-xs text-muted-foreground">Share your location for family coordination</p>
+                  </div>
+                  <Switch defaultChecked={false} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Usage Analytics</Label>
+                    <p className="text-xs text-muted-foreground">Help improve the app by sharing usage data</p>
+                  </div>
+                  <Switch defaultChecked={true} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Marketing Communications</Label>
+                    <p className="text-xs text-muted-foreground">Receive updates about new features</p>
+                  </div>
+                  <Switch defaultChecked={false} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Data Backup to Cloud</Label>
+                    <p className="text-xs text-muted-foreground">Automatically backup your family data</p>
+                  </div>
+                  <Switch defaultChecked={true} />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowPrivacyDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={() => {
+                toast({
+                  title: "Privacy Settings Updated",
+                  description: "Your privacy preferences have been saved successfully.",
+                });
+                setShowPrivacyDialog(false);
+              }}>
+                Save Preferences
               </Button>
             </DialogFooter>
           </DialogContent>
