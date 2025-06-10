@@ -65,7 +65,7 @@ export default function Login() {
             <img 
               src={logoPath} 
               alt="The Mom App Logo" 
-              className="w-32 h-32 object-contain"
+              className="w-48 h-48 object-contain"
             />
           </div>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-pink-500 bg-clip-text text-transparent">

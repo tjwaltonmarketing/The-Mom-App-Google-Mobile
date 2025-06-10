@@ -3,8 +3,8 @@
 # Script to document the logo updates made
 echo "Logo Updates Made:"
 echo "==================="
-echo "1. Login page: Increased logo from 24x24 to 32x32 pixels"
-echo "2. Registration page: Increased logo from 24x24 to 32x32 pixels"
+echo "1. Login page: Increased logo from 24x24 to 48x48 pixels (192px total)"
+echo "2. Registration page: Increased logo from 24x24 to 48x48 pixels (192px total)"
 echo "3. Header/Home screen: Increased responsive logo sizes:"
 echo "   - Mobile: 32x32 → 40x40 pixels"
 echo "   - Small screens: 40x40 → 48x48 pixels"  
