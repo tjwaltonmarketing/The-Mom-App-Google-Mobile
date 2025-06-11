@@ -84,11 +84,6 @@ export default function Login() {
           <CardDescription>
             Sign in to your family command center
           </CardDescription>
-          <div className="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-            <p className="font-medium">Demo Account:</p>
-            <p>Email: demo@momapp.com</p>
-            <p>Password: demo123</p>
-          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>
