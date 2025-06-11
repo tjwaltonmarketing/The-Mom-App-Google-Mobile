@@ -1,80 +1,46 @@
-# THE MOM APP - Final Deployment Instructions
+# CRITICAL: Certificate Mismatch Resolution
 
-## Status: Ready for Google Play Store
+## Problem
+Google Play expects certificate fingerprint: `C5:F1:BB:63:4B:D5:6D:F8:BC:AD:3B:EF:1E:51:D1:01:C2:85:1C:03`
+Current build produces: `71:FE:96:50:B7:87:A3:26:05:7D:BD:E5:9D:41:D9:2F:0F:88:79:D5`
 
-Your app is fully developed with all features implemented. The Android build process requires local compilation due to Replit environment limitations.
+## Root Cause
+The original app bundle was signed with a different keystore than what GitHub Actions is currently using.
 
-## Download and Build Process
+## SOLUTION: Restore Original Keystore
 
-### 1. Download Project
-- Download the entire project as ZIP from Replit
-- Extract to your local machine
-- Open terminal/command prompt in the project folder
+### Step 1: Find Original Keystore
+1. Go to Google Play Console → Your App → Release → Setup → App signing
+2. Download the "Upload certificate" (.pem format)
+3. Or find your first successful GitHub Actions build that created the original release
+4. Download the "upload-keystore-backup" artifact from that build
 
-### 2. Install Dependencies
-```bash
-npm install
-```
+### Step 2: Set GitHub Secret
+1. If you have the original .jks keystore file:
+   ```bash
+   base64 -w 0 original-upload-keystore.jks
+   ```
+2. Go to GitHub repo → Settings → Secrets and variables → Actions
+3. Add/Update secret: `UPLOAD_KEYSTORE_BASE64` with the base64 content
 
-### 3. Build Production Version
-```bash
-npm run build
-npx cap sync android
-```
+### Step 3: Alternative - Extract from Google Play
+If the original keystore is lost:
+1. Google Play Console → App signing → Upload certificate
+2. Download the certificate (.pem or .der)
+3. Convert to keystore format (requires original keystore password)
 
-### 4. Generate Release Files
-```bash
-cd android
-./gradlew bundleRelease
-```
+## IMMEDIATE ACTION REQUIRED
+**DO NOT change the app signing key in Google Play Console** - this would break updates for all existing users.
 
-### 5. Locate Upload Files
-After successful build, find these files:
-- **App Bundle (Preferred)**: `android/app/build/outputs/bundle/release/app-release.aab`
-- **APK (Alternative)**: `android/app/build/outputs/apk/release/app-release.apk`
+Instead, we need to recreate the exact keystore that was used for the original release.
 
-## Google Play Store Submission
+## Next Steps After Fix
+1. Push changes to trigger new build with correct certificate
+2. Verify certificate fingerprint matches: `C5:F1:BB:63:4B:D5:6D:F8:BC:AD:3B:EF:1E:51:D1:01:C2:85:1C:03`
+3. Upload to Google Play Console
+4. Release update to users seamlessly
 
-### Required Assets (Ready in Project)
-- ✅ `feature-graphic.png` - Store banner image
-- ✅ `app-store-listing.md` - Complete store descriptions
-- ✅ `generated-icon.png` - App icon (512x512)
-- ✅ Privacy policy and terms of service
-- ✅ Release notes (condensed version provided)
-
-### Submission Steps
-1. **Google Play Console**: https://play.google.com/console
-2. **Create App**: Use content from `app-store-listing.md`
-3. **Upload**: Use the .aab file (preferred) or .apk file
-4. **Screenshots**: Capture 2-8 screens from running app
-5. **Submit**: For internal testing first, then production
-
-### App Details for Console
-- **Package Name**: com.tjwaltonmarketing.themomapp
-- **App Name**: THE MOM APP
-- **Category**: Productivity
-- **Content Rating**: Everyone
-- **Developer**: TJ Walton Marketing LLC dba The Mom App
-- **Contact**: themomapp.us@gmail.com
-
-## Complete Feature Set
-
-Your app includes all major features:
-- Voice-to-Assistant with AI task/calendar creation
-- Family task management with assignments
-- Smart calendar with privacy controls (shared/private/busy visibility)
-- Secure password vault
-- AI assistant chat
-- Voice notes with transcription
-- Meal planning tools
-- Multi-theme support (light/dark/blue filter)
-- Import/export functionality
-- Comprehensive tutorials and help
-
-## Timeline
-- **Local Build**: 10-15 minutes
-- **Google Play Upload**: 30 minutes
-- **Review Process**: 1-3 business days
-- **Go Live**: Within 1 week
-
-Your app is production-ready. All code, features, documentation, and submission assets are complete and waiting for the final build and upload process.
+## Status
+- App version 1.4 ready with fixes
+- Only blocked by certificate mismatch
+- User experience preserved by avoiding key change
