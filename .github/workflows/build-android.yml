@@ -46,6 +46,14 @@ jobs:
         rm -rf android
         npx cap add android
         npx cap sync android
+        
+    - name: Set version code and name
+      run: |
+        cd android/app
+        sed -i 's/versionCode 1/versionCode 6/' build.gradle
+        sed -i 's/versionName "1.0"/versionName "1.5"/' build.gradle
+        echo "Updated version to 1.5 (code 6)"
+        grep -A2 -B2 "versionCode\|versionName" build.gradle
       
     - name: Patch all Java versions to 17
       run: |

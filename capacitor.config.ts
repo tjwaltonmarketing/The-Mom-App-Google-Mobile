@@ -7,6 +7,15 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https'
   },
+  android: {
+    buildOptions: {
+      keystorePath: 'upload-keystore.jks',
+      keystorePassword: 'android',
+      keystoreAlias: 'upload',
+      keystoreAliasPassword: 'android',
+      releaseType: 'AAB'
+    }
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
