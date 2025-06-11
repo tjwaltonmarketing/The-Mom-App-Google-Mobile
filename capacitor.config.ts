@@ -5,8 +5,7 @@ const config: CapacitorConfig = {
   appName: 'The Mom App',
   webDir: 'dist/public',
   server: {
-    androidScheme: 'https',
-    url: 'https://the-mom-app.replit.app'
+    androidScheme: 'https'
   },
   android: {
     buildOptions: {
