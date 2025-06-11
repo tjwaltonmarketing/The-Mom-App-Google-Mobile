@@ -49,7 +49,54 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return await bcrypt.compare(password, hash);
 }
 
+const JWT_SECRET = process.env.JWT_SECRET || "fallback-jwt-secret-for-development";
+
+export function generateToken(userId: number): string {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '24h' });
+}
+
+export function verifyToken(token: string): { userId: number } | null {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+    return decoded;
+  } catch (error) {
+    return null;
+  }
+}
+
+export function extractTokenFromRequest(req: Request): string | null {
+  // Check Authorization header first (for API requests)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+  
+  // Check cookies (for web requests)
+  if (req.headers.cookie) {
+    const cookies = req.headers.cookie.split(';');
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'auth_token') {
+        return value;
+      }
+    }
+  }
+  
+  return null;
+}
+
 export async function getCurrentUser(req: Request): Promise<User | null> {
+  // Try token-based authentication first
+  const token = extractTokenFromRequest(req);
+  if (token) {
+    const decoded = verifyToken(token);
+    if (decoded) {
+      const user = await storage.getUserById(decoded.userId);
+      return user || null;
+    }
+  }
+  
+  // Fallback to session-based authentication
   if (!req.session.userId) {
     return null;
   }

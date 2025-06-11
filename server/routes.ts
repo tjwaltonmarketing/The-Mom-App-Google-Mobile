@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupSession, requireAuth, getCurrentUser, hashPassword, verifyPassword } from "./auth";
+import { setupSession, requireAuth, getCurrentUser, hashPassword, verifyPassword, generateToken } from "./auth";
 import { insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import { processAIRequest, generateMealSuggestions, smartTaskCreation } from "./ai";
@@ -110,9 +110,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Login successful for user:", user.id, "Session ID:", req.session?.id);
       
-      // Return user without password
+      // Generate JWT token for mobile compatibility
+      const token = generateToken(user.id);
+      
+      // Set token as HTTP-only cookie for web browsers
+      res.cookie('auth_token', token, {
+        httpOnly: false, // Allow client access for mobile apps
+        secure: false, // Keep false for development/mobile
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      });
+      
+      // Return user without password and include token
       const { passwordHash: _, ...userWithoutPassword } = user;
-      res.json({ user: userWithoutPassword });
+      res.json({ 
+        user: userWithoutPassword,
+        token: token // Include token in response for mobile apps
+      });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ error: "Login failed" });

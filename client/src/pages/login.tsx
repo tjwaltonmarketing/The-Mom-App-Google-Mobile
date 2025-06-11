@@ -42,6 +42,12 @@ export default function Login() {
         title: "Success",
         description: "Logged in successfully!",
       });
+      
+      // Store token in localStorage for mobile compatibility
+      if (data.token && typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('auth_token', data.token);
+      }
+      
       // Set the user data immediately and invalidate to trigger re-fetch
       queryClient.setQueryData(["/api/auth/user"], data.user);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });

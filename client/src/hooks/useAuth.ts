@@ -13,6 +13,16 @@ export function useAuth() {
   const logoutMutation = useMutation({
     mutationFn: () => apiRequest("POST", "/api/logout"),
     onSuccess: () => {
+      // Clear token from localStorage for mobile compatibility
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem('auth_token');
+      }
+      
+      // Clear cookie by setting it to expire
+      if (typeof document !== 'undefined') {
+        document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      }
+      
       queryClient.setQueryData(["/api/auth/user"], null);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
