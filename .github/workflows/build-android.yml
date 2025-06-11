@@ -49,11 +49,25 @@ jobs:
         
     - name: Set version code and name
       run: |
-        cd android/app
-        sed -i 's/versionCode 1/versionCode 6/' build.gradle
-        sed -i 's/versionName "1.0"/versionName "1.5"/' build.gradle
-        echo "Updated version to 1.5 (code 6)"
-        grep -A2 -B2 "versionCode\|versionName" build.gradle
+        cd android
+        
+        # First update variables.gradle
+        echo "    versionCode = 6" >> variables.gradle
+        echo "    versionName = \"1.5\"" >> variables.gradle
+        echo "Updated variables.gradle with version info"
+        cat variables.gradle
+        
+        # Then update app/build.gradle to use variables
+        cd app
+        sed -i 's/versionCode [0-9]*/versionCode versionCode/' build.gradle
+        sed -i 's/versionName "[^"]*"/versionName versionName/' build.gradle
+        
+        # Also set hardcoded fallback values
+        sed -i 's/versionCode versionCode/versionCode 6/' build.gradle
+        sed -i 's/versionName versionName/versionName "1.5"/' build.gradle
+        
+        echo "Final build.gradle version configuration:"
+        grep -A5 -B5 "versionCode\|versionName" build.gradle
       
     - name: Patch all Java versions to 17
       run: |
