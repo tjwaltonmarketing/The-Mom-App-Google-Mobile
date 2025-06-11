@@ -52,16 +52,16 @@ jobs:
         cd android
         
         # Ensure variables.gradle has correct version configuration
-        if ! grep -q "versionCode = 6" variables.gradle; then
-          sed -i '/targetSdkVersion = 35/a\    versionCode = 6\n    versionName = "1.5"' variables.gradle
+        if ! grep -q "versionCode = 7" variables.gradle; then
+          sed -i '/targetSdkVersion = 35/a\    versionCode = 7\n    versionName = "1.6"' variables.gradle
         fi
         echo "Updated variables.gradle:"
         cat variables.gradle
         
         # Update app/build.gradle to use the version variables
         cd app
-        sed -i 's/versionCode.*$/versionCode 6/' build.gradle
-        sed -i 's/versionName.*$/versionName "1.5"/' build.gradle
+        sed -i 's/versionCode.*$/versionCode 7/' build.gradle
+        sed -i 's/versionName.*$/versionName "1.6"/' build.gradle
         
         echo "Final build.gradle version configuration:"
         grep -A2 -B2 "versionCode\|versionName" build.gradle
