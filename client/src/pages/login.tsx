@@ -61,11 +61,11 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mb-4 flex justify-center">
+          <div className="mb-2 flex justify-center">
             <img 
               src={logoPath} 
               alt="The Mom App Logo" 
-              className="w-48 h-48 object-contain"
+              className="w-60 h-60 object-contain"
             />
           </div>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-pink-500 bg-clip-text text-transparent">
