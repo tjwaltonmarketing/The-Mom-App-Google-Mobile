@@ -93,8 +93,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Invalid credentials" });
       }
       
-      // Login user
+      // Login user - ensure session is created
       req.session!.userId = user.id;
+      
+      // Save session explicitly for mobile compatibility
+      await new Promise<void>((resolve, reject) => {
+        req.session!.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+      
+      console.log("Login successful for user:", user.id, "Session ID:", req.session?.id);
       
       // Return user without password
       const { passwordHash: _, ...userWithoutPassword } = user;
@@ -116,10 +130,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get("/api/auth/user", async (req, res) => {
     try {
+      console.log("Auth check - Session ID:", req.session?.id, "User ID:", req.session?.userId);
+      
       const user = await getCurrentUser(req);
       if (!user) {
+        console.log("No user found in session");
         return res.status(401).json({ error: "Not authenticated" });
       }
+      
+      console.log("User authenticated:", user.id);
       
       // Return user without password
       const { passwordHash: _, ...userWithoutPassword } = user;
