@@ -24,7 +24,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       status: "ok", 
       timestamp: new Date().toISOString(),
       server: "replit",
-      version: "2.2"
+      version: "2.3",
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || "development"
     });
   });
   

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,7 +10,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Wifi, WifiOff, RefreshCw } from "lucide-react";
+import { testServerConnectivity, getNetworkInfo } from "@/lib/connectivity";
 import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
 
 const loginSchema = z.object({
@@ -25,6 +26,13 @@ export default function Login() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<{
+    isConnected: boolean;
+    server: string;
+    responseTime?: number;
+    error?: string;
+  } | null>(null);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -33,6 +41,26 @@ export default function Login() {
       password: "",
     },
   });
+
+  // Test server connectivity on mobile apps
+  const testConnection = async () => {
+    const networkInfo = getNetworkInfo();
+    if (networkInfo.isMobile) {
+      setIsTestingConnection(true);
+      const result = await testServerConnectivity();
+      setConnectionStatus({
+        isConnected: result.success,
+        server: result.server,
+        responseTime: result.responseTime,
+        error: result.error
+      });
+      setIsTestingConnection(false);
+    }
+  };
+
+  useEffect(() => {
+    testConnection();
+  }, []);
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginForm) => {
@@ -57,9 +85,17 @@ export default function Login() {
       setLocation("/");
     },
     onError: (error: any) => {
+      // Enhanced error reporting for mobile
+      const networkInfo = getNetworkInfo();
+      let errorMessage = error.message || "Invalid email or password";
+      
+      if (networkInfo.isMobile && error.message?.includes('Failed to fetch')) {
+        errorMessage = `Connection failed to ${connectionStatus?.server || 'server'}. Please check your internet connection and try again.`;
+      }
+      
       toast({
         title: "Login Failed",
-        description: error.message || "Invalid email or password",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -86,6 +122,51 @@ export default function Login() {
           <CardDescription>
             Sign in to your family command center
           </CardDescription>
+          
+          {/* Mobile connection status */}
+          {connectionStatus && (
+            <div className="mt-2 space-y-2">
+              <div className={`flex items-center justify-center gap-2 text-xs px-2 py-1 rounded ${
+                connectionStatus.isConnected 
+                  ? 'bg-green-100 text-green-700' 
+                  : 'bg-red-100 text-red-700'
+              }`}>
+                {connectionStatus.isConnected ? (
+                  <Wifi className="w-3 h-3" />
+                ) : (
+                  <WifiOff className="w-3 h-3" />
+                )}
+                <span>
+                  {connectionStatus.isConnected 
+                    ? `Connected (${connectionStatus.responseTime}ms)`
+                    : connectionStatus.error || 'Connection failed'
+                  }
+                </span>
+              </div>
+              
+              {!connectionStatus.isConnected && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={testConnection}
+                  disabled={isTestingConnection}
+                  className="w-full text-xs"
+                >
+                  {isTestingConnection ? (
+                    <>
+                      <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                      Testing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-3 h-3 mr-1" />
+                      Test Connection
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <Form {...form}>
