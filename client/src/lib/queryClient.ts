@@ -1,5 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
-import { getApiUrl } from "./config";
+import { getApiUrl, switchToNextServer } from "./config";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -46,18 +46,50 @@ export async function apiRequest(
     headers["Authorization"] = `Bearer ${token}`;
   }
   
-  // Use absolute URL for mobile apps
-  const fullUrl = getApiUrl(url);
+  let lastError: Error;
+  let attempts = 0;
+  const maxAttempts = 3;
   
-  const res = await fetch(fullUrl, {
-    method,
-    headers,
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  do {
+    try {
+      // Use absolute URL for mobile apps
+      const fullUrl = getApiUrl(url);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const res = await fetch(fullUrl, {
+        method,
+        headers,
+        body: data ? JSON.stringify(data) : undefined,
+        credentials: "include",
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
 
-  await throwIfResNotOk(res);
-  return res;
+      await throwIfResNotOk(res);
+      return res;
+    } catch (error) {
+      lastError = error as Error;
+      attempts++;
+      
+      // If this is a network error and we're on mobile, try next server
+      if ((lastError.message.includes('Failed to fetch') || lastError.name === 'AbortError') && attempts < maxAttempts) {
+        const hasMoreServers = switchToNextServer();
+        if (hasMoreServers) {
+          console.log(`Network error, trying backup server (attempt ${attempts + 1})`);
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second before retry
+          continue;
+        }
+      }
+      
+      // If we've exhausted all attempts or servers, throw the error
+      if (attempts >= maxAttempts) break;
+    }
+  } while (attempts < maxAttempts);
+  
+  throw lastError;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
