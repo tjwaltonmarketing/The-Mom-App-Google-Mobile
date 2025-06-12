@@ -17,6 +17,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup session middleware
   setupSession(app);
+
+  // Health check endpoint for mobile connectivity testing
+  app.get("/api/health", (req, res) => {
+    res.json({ 
+      status: "ok", 
+      timestamp: new Date().toISOString(),
+      server: "replit",
+      version: "2.2"
+    });
+  });
   
   // Authentication Routes
   app.post("/api/register", async (req, res) => {

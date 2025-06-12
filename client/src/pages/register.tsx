@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,7 +10,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Wifi, WifiOff } from "lucide-react";
+import { testServerConnectivity, getNetworkInfo } from "@/lib/connectivity";
 import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
 
 const registerSchema = z.object({
@@ -33,6 +34,12 @@ export default function Register() {
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<{
+    isConnected: boolean;
+    server: string;
+    responseTime?: number;
+    error?: string;
+  } | null>(null);
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -45,6 +52,24 @@ export default function Register() {
       familyName: "",
     },
   });
+
+  // Test server connectivity on mobile apps
+  useEffect(() => {
+    const checkConnection = async () => {
+      const networkInfo = getNetworkInfo();
+      if (networkInfo.isMobile) {
+        const result = await testServerConnectivity();
+        setConnectionStatus({
+          isConnected: result.success,
+          server: result.server,
+          responseTime: result.responseTime,
+          error: result.error
+        });
+      }
+    };
+    
+    checkConnection();
+  }, []);
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterForm) => {
@@ -61,9 +86,17 @@ export default function Register() {
       setLocation("/");
     },
     onError: (error: any) => {
+      // Enhanced error reporting for mobile
+      const networkInfo = getNetworkInfo();
+      let errorMessage = error.message || "Failed to create account";
+      
+      if (networkInfo.isMobile && error.message?.includes('Failed to fetch')) {
+        errorMessage = `Connection failed to ${connectionStatus?.server || 'server'}. Check your internet connection and try again.`;
+      }
+      
       toast({
         title: "Registration Failed",
-        description: error.message || "Failed to create account",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -90,6 +123,27 @@ export default function Register() {
           <CardDescription>
             Create your family command center
           </CardDescription>
+          
+          {/* Mobile connection status */}
+          {connectionStatus && (
+            <div className={`mt-2 flex items-center justify-center gap-2 text-xs px-2 py-1 rounded ${
+              connectionStatus.isConnected 
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-red-100 text-red-700'
+            }`}>
+              {connectionStatus.isConnected ? (
+                <Wifi className="w-3 h-3" />
+              ) : (
+                <WifiOff className="w-3 h-3" />
+              )}
+              <span>
+                {connectionStatus.isConnected 
+                  ? `Connected (${connectionStatus.responseTime}ms)`
+                  : connectionStatus.error || 'Connection failed'
+                }
+              </span>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <Form {...form}>
