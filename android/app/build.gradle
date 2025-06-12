@@ -7,7 +7,7 @@ android {
         applicationId "com.momapp.family"
         minSdkVersion 23
         targetSdkVersion 35
-        versionCode project.hasProperty('versionCode') ? versionCode : 15
+        versionCode project.hasProperty('versionCode') ? versionCode : 16
         versionName project.hasProperty('versionName') ? versionName : "2.3"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
