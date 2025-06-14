@@ -1,15 +1,15 @@
 // Configuration for API endpoints  
 export const API_CONFIG = {
-  // Use current development server for mobile apps
+  // Use deployment URL for mobile apps, relative for web
   baseUrl: typeof window !== 'undefined' && (window as any).Capacitor 
-    ? 'https://33f93ffa-c4c1-49d4-afd5-82cd21d7faa7-00-25cydufxpidmj.riker.replit.dev'
+    ? 'https://the-mom-app-tjwalton.replit.app'
     : '', // Empty string for relative URLs in web browsers
   
   // Fallback servers for mobile connectivity
   fallbackUrls: [
+    'https://the-mom-app-tjwalton.replit.app',
     'https://33f93ffa-c4c1-49d4-afd5-82cd21d7faa7-00-25cydufxpidmj.riker.replit.dev',
     'https://the-mom-app.replit.app',
-    'https://momapp-production.up.railway.app',
   ]
 };
 
