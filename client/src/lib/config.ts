@@ -1,14 +1,20 @@
-// Configuration for API endpoints
+// Get the deployment URL from environment or use development fallback
+const DEPLOYMENT_URL = typeof window !== 'undefined' && window.location.hostname !== 'localhost' 
+  ? window.location.origin 
+  : 'https://33f93ffa-c4c1-49d4-afd5-82cd21d7faa7-00-25cydufxpidmj.riker.replit.dev';
+
+// Configuration for API endpoints  
 export const API_CONFIG = {
-  // Use absolute URL for mobile apps, relative for web
+  // Use deployment URL for mobile apps, relative for web
   baseUrl: typeof window !== 'undefined' && (window as any).Capacitor 
-    ? 'https://the-mom-app.replit.app'
+    ? DEPLOYMENT_URL
     : '', // Empty string for relative URLs in web browsers
   
   // Fallback servers for mobile connectivity
   fallbackUrls: [
+    DEPLOYMENT_URL,
+    'https://33f93ffa-c4c1-49d4-afd5-82cd21d7faa7-00-25cydufxpidmj.riker.replit.dev',
     'https://the-mom-app.replit.app',
-    'https://the-mom-app--replit.repl.co', // Alternative Replit domain
   ]
 };
 
