@@ -1,31 +1,24 @@
-# Mobile App Immediate Fix Guide
+# Mobile App Connection Fix
 
-## Current Issue
-Mobile app is hardcoded to connect to `https://the-mom-app.replit.app` which is inactive.
+## Updated Configuration
+Mobile app now points to: `https://33f93ffa-c4c1-49d4-afd5-82cd21d7faa7-00-25cydufxpidmj.riker.replit.dev`
 
-## Where to Find Deployment URL
-After clicking "Deploy" in Replit:
-1. **Deployments tab** in left sidebar shows deployment status and URL
-2. **Deployment completion message** displays the live URL
-3. **Browser address bar** when accessing the deployed app
+## Current Status
+- Development server is running and accessible
+- Authentication endpoints verified working
+- Mobile app configuration updated to use development server
+- Version 30 ready with all enhancements
 
-Typical format: `https://your-app-name.your-username.replit.app`
+## Next Steps for Mobile Testing
+1. Build new mobile app with GitHub Actions (version 30)
+2. Test registration and login functionality 
+3. After successful testing, deploy production version
+4. Update mobile configuration for production URL
 
-## Immediate Solution Options
+## Production Deployment
+When ready for production:
+1. Deploy app (generates production URL)
+2. Update mobile configuration with production URL
+3. Build final production mobile app
 
-### Option 1: Deploy with Specific Name
-Deploy the app with the name "the-mom-app" so it matches the mobile app's expected URL.
-
-### Option 2: Update Mobile App (Recommended)
-1. Deploy the app (any name is fine)
-2. Note the deployment URL 
-3. Push version 30 to GitHub with the correct URL
-4. Build new mobile app version
-
-## Version 30 Status
-- All build files updated to version 30
-- Authentication system verified working
-- Mobile connectivity diagnostics implemented
-- Ready for deployment and mobile app build
-
-The mobile app network connectivity is working fine (257ms response time) - it just needs the correct server URL.
+The mobile app will now connect to the active development server for immediate testing.

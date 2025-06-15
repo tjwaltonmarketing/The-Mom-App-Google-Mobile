@@ -1,26 +1,30 @@
-# Mobile App Connection Solution
+# Deployment Solution
 
-## Current Status
-- Mobile app shows "Connected (139ms)" - network connectivity is working
-- Registration fails with "Connection failed to https://the-mom-app.replit.app"
-- Authentication system verified working on local server
-- Version 25 ready with all fixes applied
+## Current Situation
+- Mobile app expects: `https://the-mom-app.replit.app`
+- Replit autoscale deployments generate random URLs
+- Need to update mobile app after deployment
 
-## Root Issue
-Mobile app is configured to connect to `https://the-mom-app.replit.app` which is not actively deployed.
+## Solution Steps
 
-## Immediate Solution
-1. Deploy the app to Replit's deployment service
-2. Update mobile configuration with the live deployment URL
-3. Build version 25 with correct server endpoint
+### 1. Deploy the App
+Click "Deploy" in Replit - it will generate a URL like `https://abc123-def456.replit.app`
 
-## Deployment Steps
-1. Click "Deploy" button in Replit to create live deployment
-2. Note the deployment URL (usually ends in .repl.co or .replit.app)
-3. Update mobile app configuration with this URL
-4. Push version 25 to GitHub for mobile build
+### 2. Update Mobile Configuration
+After deployment, run:
+```bash
+node update-deployment-url.js https://YOUR-ACTUAL-DEPLOYMENT-URL.replit.app
+```
 
-## Expected Result
-Mobile app will successfully connect to live deployment and allow user registration/login.
+### 3. Push Updated Version
+```bash
+git add .
+git commit -m "Update mobile app with deployment URL"
+git push origin main
+```
 
-The authentication system is already verified working - just need the correct deployment URL.
+### 4. Build New Mobile App
+The GitHub Actions will automatically build version 30 with the correct URL.
+
+## Alternative: Quick Test
+For immediate testing, I can update the current mobile app to use the development server URL temporarily.

@@ -1,14 +1,14 @@
 // Configuration for API endpoints  
 export const API_CONFIG = {
-  // Use the exact URL the mobile app expects
+  // Use current development server for immediate testing
   baseUrl: typeof window !== 'undefined' && (window as any).Capacitor 
-    ? 'https://the-mom-app.replit.app'
+    ? 'https://33f93ffa-c4c1-49d4-afd5-82cd21d7faa7-00-25cydufxpidmj.riker.replit.dev'
     : '', // Empty string for relative URLs in web browsers
   
-  // Fallback servers for mobile connectivity
+  // Multiple servers for mobile connectivity resilience
   fallbackUrls: [
-    'https://the-mom-app.replit.app',
     'https://33f93ffa-c4c1-49d4-afd5-82cd21d7faa7-00-25cydufxpidmj.riker.replit.dev',
+    'https://the-mom-app.replit.app', // Future deployment URL
   ]
 };
 
