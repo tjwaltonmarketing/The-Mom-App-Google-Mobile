@@ -7,8 +7,8 @@ android {
         applicationId "com.momapp.family"
         minSdkVersion 23
         targetSdkVersion 35
-        versionCode project.hasProperty('versionCode') ? versionCode : 31
-        versionName project.hasProperty('versionName') ? versionName : "3.1"
+        versionCode project.hasProperty('versionCode') ? versionCode : 40
+        versionName project.hasProperty('versionName') ? versionName : "4.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
