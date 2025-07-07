@@ -60,8 +60,8 @@ jobs:
         
         # Update app/build.gradle to use the version variables
         cd app
-        sed -i 's/versionCode.*$/versionCode 40/' build.gradle
-        sed -i 's/versionName.*$/versionName "4.0"/' build.gradle
+        sed -i 's/versionCode.*$/versionCode 41/' build.gradle
+        sed -i 's/versionName.*$/versionName "4.1"/' build.gradle
         
         echo "Final build.gradle version configuration:"
         grep -A2 -B2 "versionCode\|versionName" build.gradle
