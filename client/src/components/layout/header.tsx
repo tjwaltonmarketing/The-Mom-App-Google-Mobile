@@ -107,16 +107,6 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
               </Link>
             </Button>
             
-            {/* Notifications - Hidden on mobile */}
-            <div className="relative hidden sm:block">
-              <Button variant="ghost" size="icon" className="text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-primary blue-light-filter:text-gray-600 blue-light-filter:hover:text-primary">
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 bg-error text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  3
-                </span>
-              </Button>
-            </div>
-            
             {/* Family Members Quick Access - Hidden on mobile */}
             <div className="hidden md:flex items-center space-x-1">
               {familyMembers.map((member) => (
