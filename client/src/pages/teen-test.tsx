@@ -67,7 +67,7 @@ export default function TeenTest() {
                   <li>Check your phone for the invitation message!</li>
                 </ol>
                 <div className="mt-2 text-xs text-blue-600">
-                  ✅ Twilio SMS integration active: {process.env.TWILIO_ACCOUNT_SID ? "Ready" : "Not configured"}
+                  ✅ Twilio SMS integration: Ready for testing
                 </div>
               </div>
             </CardContent>
