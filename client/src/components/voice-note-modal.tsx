@@ -74,12 +74,16 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
       tasks.forEach((task: SmartAction, index: number) => {
         if (task.type === "event" && task.dueDate) {
           const date = new Date(task.dueDate);
-          // Format time properly as HH:MM in 24-hour format
-          const hours = date.getUTCHours().toString().padStart(2, '0');
-          const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+          // Convert to 12-hour AM/PM format
+          const hours24 = date.getUTCHours();
+          const minutes = date.getUTCMinutes();
+          const period = hours24 >= 12 ? 'PM' : 'AM';
+          const hours12 = hours24 % 12 || 12; // Convert to 12-hour, 0 becomes 12
+          const timeString = `${hours12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${period}`;
+          
           eventSchedulingDefaults[index] = {
             date: date.toISOString().split('T')[0], // YYYY-MM-DD format
-            time: `${hours}:${minutes}` // HH:MM format
+            time: timeString // HH:MM AM/PM format
           };
         }
       });
