@@ -118,6 +118,7 @@ The application uses a multi-tenant architecture with the following core entitie
 - Certificate signing for production releases
 
 ## Changelog
+- July 09, 2025. Fixed calendar event creation: Voice assistant now properly detects calendar requests and provides date/time selection interface for scheduling events
 - July 05, 2025. Initial setup
 
 ## User Preferences

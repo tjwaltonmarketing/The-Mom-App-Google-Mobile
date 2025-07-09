@@ -234,6 +234,8 @@ Analyze the request for:
 
 Create a calendar event with appropriate details.
 
+IMPORTANT: Always include "type": "event" in the task object for calendar events.
+
 Respond with JSON: { 
   "tasks": [
     {
@@ -255,8 +257,13 @@ Respond with JSON: {
       });
 
       const result = JSON.parse(response.choices[0].message.content || "{}");
+      // Ensure all tasks have type "event" for calendar requests
+      const tasks = (result.tasks || []).map((task: any) => ({
+        ...task,
+        type: "event"
+      }));
       return {
-        tasks: result.tasks || [],
+        tasks,
         interpretation: result.interpretation || "I'll add that event to your calendar!"
       };
     } catch (error) {
