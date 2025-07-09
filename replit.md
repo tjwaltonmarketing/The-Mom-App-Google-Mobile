@@ -118,6 +118,8 @@ The application uses a multi-tenant architecture with the following core entitie
 - Certificate signing for production releases
 
 ## Changelog
+- July 09, 2025. Comprehensive teen account system implementation: Complete invite workflow with SMS integration, teen dashboard with gamification (points/streaks), smart notification engine with progressive reminders and quiet hours, parent oversight without nagging, permission-based access controls
+- July 09, 2025. Updated tutorials and FAQs: Added comprehensive documentation for teen account setup, gamification system, SMS messaging, and anti-nagging benefits
 - July 09, 2025. Enhanced voice-to-calendar with smart date/time parsing: AI now correctly handles relative dates ("tomorrow", "Friday") and natural time expressions ("2:00 PM"), automatically pre-populating date and time fields in 12-hour AM/PM format
 - July 09, 2025. Fixed calendar event creation: Voice assistant now properly detects calendar requests and provides date/time selection interface for scheduling events
 - July 05, 2025. Initial setup

@@ -15,6 +15,34 @@ interface FAQItem {
 
 const faqItems: FAQItem[] = [
   {
+    id: "teen-accounts-overview",
+    question: "How do teen accounts help reduce parent 'nagging'?",
+    answer: "Teen accounts include smart notification systems that handle chore reminders automatically. Instead of parents repeatedly asking about tasks, the app sends progressive reminders to teens directly. It starts with gentle notifications and escalates appropriately, while celebrating completions. Parents get status updates without needing to ask, and teens develop independence through gamified task management with points and streaks.",
+    category: "features",
+    tags: ["teen", "accounts", "notifications", "chores", "independence", "gamification"]
+  },
+  {
+    id: "teen-invite-process",
+    question: "How do I set up a teen account for my child?",
+    answer: "From Settings > Family, click 'Invite Teen to Family'. Enter their name, phone number or email, set age-appropriate permissions, and send the invitation via SMS or email. They'll receive an invite code with download instructions. Teen accounts include task assignments, calendar access, and smart notifications while restricting access to adult features like family passwords or task assignment to others.",
+    category: "getting-started",
+    tags: ["teen", "setup", "invite", "permissions", "SMS"]
+  },
+  {
+    id: "teen-gamification",
+    question: "How does the points and streaks system work for teens?",
+    answer: "Teens earn points for completing tasks on time, with bonus points for early completion. Daily streaks encourage consistent task completion. The teen dashboard shows weekly points, current streak, and today's completion status. This gamification makes chores more engaging while giving parents visibility into progress without constant check-ins. Achievement celebrations reinforce positive behavior.",
+    category: "features",
+    tags: ["teen", "points", "streaks", "gamification", "motivation"]
+  },
+  {
+    id: "teen-notifications",
+    question: "How do smart notifications work for teen accounts?",
+    answer: "Teen accounts include progressive reminder systems that respect quiet hours and personal schedules. Notifications start gentle and escalate appropriately for overdue tasks. Teens can customize notification preferences, set quiet hours, and choose how they want to receive reminders. The system celebrates achievements and maintains positive engagement while ensuring tasks get completed.",
+    category: "features",
+    tags: ["teen", "notifications", "reminders", "quiet hours", "customization"]
+  },
+  {
     id: "voice-assistant-basics",
     question: "How does the voice-to-assistant feature work?",
     answer: "Record a voice note by clicking the microphone button. The AI transcribes your speech in real-time and analyzes it for tasks, calendar events, and reminders. You'll see smart suggestions that you can review and create with one tap. For example, saying 'Pick up groceries tomorrow and schedule Emma's dentist appointment' will suggest creating a grocery task and a calendar event.",
@@ -139,6 +167,27 @@ const faqItems: FAQItem[] = [
     answer: "The password vault is designed for secure family password management. You can organize passwords by categories and share access with trusted family members. However, each person should have their own account for better security and individual access tracking.",
     category: "features",
     tags: ["password", "sharing", "family", "security", "access"]
+  },
+  {
+    id: "sms-messaging",
+    question: "How does SMS messaging work for teen invites?",
+    answer: "The app integrates with Twilio to send real text messages for teen invites. When you create a teen invite and click 'Send Via Text', your teen receives an actual SMS with their invite code and app download instructions. This ensures reliable delivery and makes the onboarding process seamless. Free Twilio accounts include trial credits perfect for family use.",
+    category: "features",
+    tags: ["SMS", "messaging", "teen", "invites", "Twilio"]
+  },
+  {
+    id: "teen-permissions",
+    question: "What can teen accounts access vs. adult accounts?",
+    answer: "Teen accounts can view assigned tasks, mark them complete, see family calendar events, and receive notifications. They cannot assign tasks to others, access the family password vault, create family invites, or modify other family members' settings. These permissions protect family privacy while giving teens appropriate independence in managing their responsibilities.",
+    category: "features",
+    tags: ["teen", "permissions", "access", "security", "family"]
+  },
+  {
+    id: "anti-nagging-benefits",
+    question: "How does the 'anti-nagging' system benefit families?",
+    answer: "The smart notification system handles progressive chore reminders automatically, reducing the mental load on parents. Instead of repeatedly asking teens about tasks, the app sends gentle reminders that escalate appropriately. Parents get completion notifications without having to check in, and teens develop independence through self-management. This creates a more positive family dynamic with less friction around chores.",
+    category: "features",
+    tags: ["anti-nagging", "family", "mental load", "independence", "notifications"]
   },
   {
     id: "voice-troubleshooting",

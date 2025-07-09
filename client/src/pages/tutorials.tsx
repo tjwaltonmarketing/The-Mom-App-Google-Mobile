@@ -40,6 +40,40 @@ interface TutorialStep {
 
 const tutorials: Tutorial[] = [
   {
+    id: "teen-account-setup",
+    title: "Teen Account Setup (Anti-Nagging System)",
+    description: "Set up teen accounts with smart notifications that handle chore reminders automatically",
+    duration: "6 min",
+    difficulty: "beginner",
+    icon: Users,
+    category: "family-coordination",
+    steps: [
+      {
+        title: "Create Teen Invite",
+        description: "From Settings > Family, click 'Invite Teen to Family'. Enter their name, phone number or email, and set permissions.",
+        action: "Fill out teen information and contact details",
+        tips: ["Use their real phone number for SMS invites", "Set appropriate permissions based on age", "Teen accounts reduce parent 'nagging' by automating reminders"]
+      },
+      {
+        title: "Send Invitation",
+        description: "Choose to send via text message or email. The teen will receive an invite code and download instructions.",
+        action: "Click 'Send Via Text' or copy the invite code manually",
+        tips: ["SMS delivery is instant", "Invite codes expire in 7 days", "You can resend if needed"]
+      },
+      {
+        title: "Teen Onboarding",
+        description: "Guide your teen through creating their account using the invite code. They'll set up notifications and preferences.",
+        action: "Help teen complete profile setup",
+        tips: ["Let them customize notification preferences", "Explain the points and streak system", "Show them how to mark tasks complete"]
+      },
+      {
+        title: "Smart Notifications in Action",
+        description: "The app now handles progressive chore reminders automatically - no more parent nagging needed!",
+        tips: ["Gentle first reminders", "Escalation for overdue tasks", "Celebration messages for completion", "Respects quiet hours"]
+      }
+    ]
+  },
+  {
     id: "voice-assistant-quickstart",
     title: "Voice Assistant Quick Start",
     description: "Start using voice commands to create tasks and events instantly",
@@ -129,6 +163,39 @@ const tutorials: Tutorial[] = [
         title: "Automatic Notifications",
         description: "Family members get notified about their new tasks via SMS or email.",
         tips: ["Set notification preferences in Settings", "Kids can get simplified reminders"]
+      }
+    ]
+  },
+  {
+    id: "teen-dashboard-guide",
+    title: "Teen Dashboard & Gamification",
+    description: "Help teens stay motivated with points, streaks, and achievement tracking",
+    duration: "5 min",
+    difficulty: "beginner",
+    icon: Star,
+    category: "family-coordination",
+    steps: [
+      {
+        title: "Understanding the Teen Dashboard",
+        description: "The teen dashboard shows assigned tasks, today's events, points earned, and current streak.",
+        tips: ["Tasks are color-coded by priority", "Streaks encourage daily completion", "Points can be tracked weekly"]
+      },
+      {
+        title: "Task Completion System",
+        description: "Teens tap 'Mark Complete' on tasks to earn points and maintain their streak.",
+        action: "Show teen how to complete tasks",
+        tips: ["Completing tasks before deadline earns bonus points", "Streaks reset if tasks are missed", "Parents get automatic completion notifications"]
+      },
+      {
+        title: "Smart Notification Settings",
+        description: "Teens can customize when and how they receive task reminders to fit their schedule.",
+        action: "Help teen set quiet hours and notification preferences",
+        tips: ["Quiet hours prevent late-night notifications", "Progressive reminders get more urgent over time", "Achievement celebrations are always allowed"]
+      },
+      {
+        title: "Parent Benefits",
+        description: "Parents see real-time completion status and can focus on encouragement instead of reminders.",
+        tips: ["No more repeated asking about chores", "Automatic escalation for overdue tasks", "Celebration messages for achievements"]
       }
     ]
   },
