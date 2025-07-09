@@ -232,7 +232,12 @@ export default function Login() {
             </form>
           </Form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-3">
+            <p className="text-sm text-gray-600">
+              <Link href="/forgot-password" className="text-pink-600 hover:text-pink-500 font-medium">
+                Forgot your password?
+              </Link>
+            </p>
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
               <Link href="/register" className="text-pink-600 hover:text-pink-500 font-medium">
