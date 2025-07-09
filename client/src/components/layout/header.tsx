@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Home, Bell, Mic, Settings, Crown, User, Bot, HelpCircle, BookOpen } from "lucide-react";
+import { Home, Bell, Mic, Settings, Crown, User, Bot, HelpCircle, BookOpen, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { FamilyMember } from "@shared/schema";
 import { Logo } from "@/components/logo";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 interface HeaderProps {
   onStartVoiceNote: () => void;
@@ -23,10 +25,20 @@ interface HeaderProps {
 export function Header({ onStartVoiceNote }: HeaderProps) {
   const [dndEnabled, setDndEnabled] = useState(false);
   const [location] = useLocation();
+  const { user, logout, isLoggingOut } = useAuth();
+  const { toast } = useToast();
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
   });
+
+  const handleSignOut = () => {
+    logout();
+    toast({
+      title: "Signed Out",
+      description: "You have been successfully signed out.",
+    });
+  };
 
   return (
     <header className="bg-white dark:bg-card blue-light-filter:bg-card shadow-sm border-b border-gray-200 dark:border-border blue-light-filter:border-border sticky top-0 z-50">
@@ -156,6 +168,15 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
                     <User className="mr-2 h-4 w-4" />
                     Family Settings
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={handleSignOut}
+                  disabled={isLoggingOut}
+                  className="w-full flex items-center text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {isLoggingOut ? "Signing Out..." : "Sign Out"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
