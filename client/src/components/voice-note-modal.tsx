@@ -139,6 +139,8 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
       stopRecording();
     }
     setTranscript("");
+    setSmartActions([]);
+    setIsProcessingAI(false);
     onClose();
   };
 
