@@ -27,10 +27,12 @@ export function useAuth() {
       // Clear all cached data
       queryClient.clear();
       
-      // Force redirect to login page
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
-      }
+      // Small delay to ensure logout completes, then redirect
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.reload();
+        }
+      }, 100);
     },
   });
 
