@@ -72,6 +72,7 @@ export interface IStorage {
   createEvent(event: InsertEvent): Promise<Event>;
   updateEvent(id: number, updates: Partial<InsertEvent>): Promise<Event | undefined>;
   deleteEvent(id: number): Promise<boolean>;
+  deleteAllEvents(): Promise<boolean>;
   
   // Tasks
   getTasks(): Promise<Task[]>;
@@ -80,6 +81,8 @@ export interface IStorage {
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined>;
   completeTask(id: number, completedBy: number): Promise<Task | undefined>;
+  deleteTask(id: number): Promise<boolean>;
+  deleteAllTasks(): Promise<boolean>;
   
   // Voice Notes
   getVoiceNotes(): Promise<VoiceNote[]>;
@@ -248,6 +251,11 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount !== null && result.rowCount > 0;
   }
 
+  async deleteAllEvents(): Promise<boolean> {
+    const result = await db.delete(events);
+    return true;
+  }
+
   async getTasks(): Promise<Task[]> {
     return await db.select().from(tasks);
   }
@@ -288,6 +296,18 @@ export class DatabaseStorage implements IStorage {
       .where(eq(tasks.id, id))
       .returning();
     return task || undefined;
+  }
+
+  async deleteTask(id: number): Promise<boolean> {
+    const result = await db
+      .delete(tasks)
+      .where(eq(tasks.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async deleteAllTasks(): Promise<boolean> {
+    const result = await db.delete(tasks);
+    return true; // Always return true since we're clearing all tasks
   }
 
   async getVoiceNotes(): Promise<VoiceNote[]> {

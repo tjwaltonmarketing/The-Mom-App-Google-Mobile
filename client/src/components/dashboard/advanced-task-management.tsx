@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Calendar, User, Flag, Search, Filter } from "lucide-react";
+import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from "@/components/ui/alert-dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { TaskModal } from "@/components/task-modal";
 import type { Task, FamilyMember } from "@shared/schema";
@@ -19,6 +31,7 @@ export function AdvancedTaskManagement() {
   const [filterAssignee, setFilterAssignee] = useState("all");
   const [showCompleted, setShowCompleted] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const { toast } = useToast();
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
@@ -35,6 +48,48 @@ export function AdvancedTaskManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+    },
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      return apiRequest("DELETE", `/api/tasks/${taskId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      toast({
+        title: "Task Deleted",
+        description: "The task has been successfully deleted.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete the task. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteAllTasksMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("DELETE", "/api/tasks");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      toast({
+        title: "All Tasks Deleted",
+        description: "All tasks have been successfully deleted. You now have a fresh start!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete all tasks. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -57,6 +112,14 @@ export function AdvancedTaskManagement() {
 
   const handleCompleteTask = (taskId: number) => {
     completeTaskMutation.mutate({ taskId, completedBy: 1 });
+  };
+
+  const handleDeleteTask = (taskId: number) => {
+    deleteTaskMutation.mutate(taskId);
+  };
+
+  const handleDeleteAllTasks = () => {
+    deleteAllTasksMutation.mutate();
   };
 
   // Filter and search tasks
@@ -90,10 +153,40 @@ export function AdvancedTaskManagement() {
             <Flag className="text-primary mr-2 h-5 w-5" />
             Advanced Task Management
           </CardTitle>
-          <Button onClick={() => setIsTaskModalOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add Task
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setIsTaskModalOpen(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add Task
+            </Button>
+            {tasks.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    Clear All
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete All Tasks</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete all tasks? This will permanently remove all {tasks.length} tasks including completed ones. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAllTasks}
+                      disabled={deleteAllTasksMutation.isPending}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {deleteAllTasksMutation.isPending ? "Deleting..." : "Delete All Tasks"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
         </div>
         
         {/* Stats */}
@@ -222,6 +315,35 @@ export function AdvancedTaskManagement() {
                                 {member.avatar}
                               </div>
                             )}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-gray-400 hover:text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Task</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete "{task.title}"? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteTask(task.id)}
+                                    disabled={deleteTaskMutation.isPending}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    {deleteTaskMutation.isPending ? "Deleting..." : "Delete"}
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
                         

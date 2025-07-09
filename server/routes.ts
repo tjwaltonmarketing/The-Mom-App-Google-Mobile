@@ -412,6 +412,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/events", async (req, res) => {
+    try {
+      await storage.deleteAllEvents();
+      res.json({ message: "All events deleted successfully" });
+    } catch (error) {
+      console.error("Delete all events error:", error);
+      res.status(500).json({ message: "Failed to delete all events" });
+    }
+  });
+
+  // Fresh Start - Clear all data
+  app.delete("/api/fresh-start", async (req, res) => {
+    try {
+      await storage.deleteAllTasks();
+      await storage.deleteAllEvents();
+      // Add other data clearing as needed
+      res.json({ message: "All data cleared successfully - you have a fresh start!" });
+    } catch (error) {
+      console.error("Fresh start error:", error);
+      res.status(500).json({ message: "Failed to clear all data" });
+    }
+  });
+
   app.patch("/api/tasks/:id/complete", async (req, res) => {
     try {
       const taskId = parseInt(req.params.id);
@@ -429,6 +452,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(task);
     } catch (error) {
       res.status(500).json({ message: "Failed to complete task" });
+    }
+  });
+
+  app.delete("/api/tasks/:id", async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      
+      const success = await storage.deleteTask(taskId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      
+      res.json({ message: "Task deleted successfully" });
+    } catch (error) {
+      console.error("Delete task error:", error);
+      res.status(500).json({ message: "Failed to delete task" });
+    }
+  });
+
+  app.delete("/api/tasks", async (req, res) => {
+    try {
+      await storage.deleteAllTasks();
+      res.json({ message: "All tasks deleted successfully" });
+    } catch (error) {
+      console.error("Delete all tasks error:", error);
+      res.status(500).json({ message: "Failed to delete all tasks" });
     }
   });
 
