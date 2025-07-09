@@ -74,6 +74,11 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
       tasks.forEach((task: SmartAction, index: number) => {
         if (task.type === "event" && task.dueDate) {
           const date = new Date(task.dueDate);
+          console.log('Task dueDate:', task.dueDate);
+          console.log('Parsed date:', date);
+          console.log('UTC Hours:', date.getUTCHours());
+          console.log('UTC Minutes:', date.getUTCMinutes());
+          
           // Convert to 12-hour AM/PM format
           const hours24 = date.getUTCHours();
           const minutes = date.getUTCMinutes();
@@ -81,12 +86,15 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
           const hours12 = hours24 % 12 || 12; // Convert to 12-hour, 0 becomes 12
           const timeString = `${hours12.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${period}`;
           
+          console.log('Generated time string:', timeString);
+          
           eventSchedulingDefaults[index] = {
             date: date.toISOString().split('T')[0], // YYYY-MM-DD format
             time: timeString // HH:MM AM/PM format
           };
         }
       });
+      console.log('Event scheduling defaults:', eventSchedulingDefaults);
       setEventScheduling(eventSchedulingDefaults);
       
       setIsProcessingAI(false);
