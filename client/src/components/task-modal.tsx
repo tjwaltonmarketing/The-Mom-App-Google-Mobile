@@ -23,7 +23,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<string>("medium");
-  const [assignedTo, setAssignedTo] = useState<string>("");
+  const [assignedTo, setAssignedTo] = useState<string>("unassigned");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const { toast } = useToast();
 
@@ -67,7 +67,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       title: title.trim(),
       description: description.trim() || null,
       priority,
-      assignedTo: assignedTo ? parseInt(assignedTo) : null,
+      assignedTo: assignedTo !== "unassigned" ? parseInt(assignedTo) : null,
       dueDate,
     };
 
@@ -78,7 +78,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
     setTitle("");
     setDescription("");
     setPriority("medium");
-    setAssignedTo("");
+    setAssignedTo("unassigned");
     setDueDate(undefined);
     onClose();
   };
@@ -136,7 +136,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
                   <SelectValue placeholder="Select member" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Unassigned</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
                   {familyMembers.map((member) => (
                     <SelectItem key={member.id} value={member.id.toString()}>
                       {member.name}
