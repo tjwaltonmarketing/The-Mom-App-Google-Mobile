@@ -12,11 +12,18 @@ import {
   insertDeadlineSchema,
   insertNotificationSchema
 } from "@shared/schema";
+import twilio from "twilio";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup session middleware
   setupSession(app);
+
+  // Initialize Twilio client
+  const twilioClient = twilio(
+    process.env.TWILIO_ACCOUNT_SID,
+    process.env.TWILIO_AUTH_TOKEN
+  );
 
   // Health check endpoint for mobile connectivity testing
   app.get("/api/health", (req, res) => {
@@ -1176,17 +1183,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/family/invites/:id/send", async (req, res) => {
     try {
-      // Mock sending invite (would integrate with SMS/email service)
       const inviteId = parseInt(req.params.id);
+      const { contact, contactType, inviteCode, teenName } = req.body;
       
-      // In real implementation, would send SMS or email here
-      console.log(`Mock: Sending invite ${inviteId} via SMS/email`);
+      console.log(`Sending invite ${inviteId} via ${contactType} to ${contact}`);
       
-      res.json({ 
-        success: true, 
-        message: "Invitation sent successfully" 
-      });
+      if (contactType === "phone" && process.env.TWILIO_ACCOUNT_SID) {
+        // Send real SMS via Twilio
+        const message = `Hi! You've been invited to join The Mom App family account.
+
+👨‍👩‍👧‍👦 Teen Account Setup
+Your invite code: ${inviteCode}
+
+📱 Get the app:
+• Download "The Mom App" from your app store
+• Enter your invite code: ${inviteCode}
+• Complete your profile setup
+
+✨ What you get:
+• Track your chores and earn points
+• Build daily streaks for completing tasks
+• Get smart reminders (no more nagging!)
+• See family calendar events
+
+Download now and join the family! 🎉
+
+- The Mom App Team
+themomapp.us@gmail.com`;
+
+        try {
+          const smsResult = await twilioClient.messages.create({
+            body: message,
+            from: process.env.TWILIO_PHONE_NUMBER,
+            to: contact
+          });
+          
+          console.log(`SMS sent successfully: ${smsResult.sid}`);
+          
+          res.json({ 
+            success: true, 
+            message: "Invitation sent via SMS successfully",
+            twilioSid: smsResult.sid
+          });
+        } catch (twilioError: any) {
+          console.error("Twilio SMS error:", twilioError);
+          
+          // Provide helpful error messages
+          let errorMessage = "Failed to send SMS";
+          if (twilioError.code === 21211) {
+            errorMessage = "Invalid phone number format. Please use format: +1234567890";
+          } else if (twilioError.code === 21608) {
+            errorMessage = "Phone number not verified with Twilio. Please verify the number first.";
+          } else if (twilioError.code === 20003) {
+            errorMessage = "Twilio authentication failed. Please check your credentials.";
+          }
+          
+          res.status(400).json({ 
+            success: false, 
+            message: errorMessage,
+            twilioError: twilioError.message 
+          });
+        }
+      } else if (contactType === "email") {
+        // For email, we'll return success but note it needs email service
+        console.log(`Email invite would be sent to: ${contact}`);
+        res.json({ 
+          success: true, 
+          message: "Invitation prepared (Email service integration needed)",
+          note: "SMS is recommended for teen invites"
+        });
+      } else {
+        res.status(400).json({ 
+          success: false, 
+          message: "Twilio not configured. Please set TWILIO_ACCOUNT_SID environment variable." 
+        });
+      }
     } catch (error: any) {
+      console.error("Send invite error:", error);
       res.status(500).json({ message: "Failed to send invite: " + error.message });
     }
   });

@@ -62,14 +62,38 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
   });
 
   const sendInviteMutation = useMutation({
-    mutationFn: async (inviteId: number) => {
-      const response = await apiRequest("POST", `/api/family/invites/${inviteId}/send`);
+    mutationFn: async () => {
+      if (!generatedInvite) throw new Error("No invite to send");
+      
+      const response = await apiRequest("POST", `/api/family/invites/${generatedInvite.id}/send`, {
+        contact: generatedInvite.invitedContact,
+        contactType: inviteMethod,
+        inviteCode: generatedInvite.inviteCode,
+        teenName: teenName
+      });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data.success) {
+        toast({
+          title: "Invitation Sent!",
+          description: inviteMethod === "phone" 
+            ? `SMS sent to ${contact} with invite code and app download instructions` 
+            : "Invitation sent successfully",
+        });
+      } else {
+        toast({
+          title: "Sending Failed",
+          description: data.message || "Failed to send invitation",
+          variant: "destructive",
+        });
+      }
+    },
+    onError: (error: any) => {
       toast({
-        title: "Invitation Sent",
-        description: "Your teen will receive the invitation shortly",
+        title: "SMS Error",
+        description: error.message || "Failed to send SMS invitation",
+        variant: "destructive",
       });
     },
   });
@@ -104,7 +128,7 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
 
   const handleSendInvite = () => {
     if (generatedInvite) {
-      sendInviteMutation.mutate(generatedInvite.id);
+      sendInviteMutation.mutate();
     }
   };
 

@@ -59,13 +59,16 @@ export default function TeenTest() {
               </div>
 
               <div className="bg-blue-50 p-4 rounded-lg">
-                <h5 className="font-medium text-blue-900 mb-2">Testing Flow:</h5>
+                <h5 className="font-medium text-blue-900 mb-2">SMS Testing:</h5>
                 <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
                   <li>Click "Create Teen Invite" above</li>
-                  <li>Fill in teen info and contact method</li>
-                  <li>Copy the generated invite code</li>
-                  <li>Use the code in "Teen Onboarding" below</li>
+                  <li>Choose "Text Message" and enter a phone number</li>
+                  <li>Click "Send via Text" to send real SMS</li>
+                  <li>Check your phone for the invitation message!</li>
                 </ol>
+                <div className="mt-2 text-xs text-blue-600">
+                  ✅ Twilio SMS integration active: {process.env.TWILIO_ACCOUNT_SID ? "Ready" : "Not configured"}
+                </div>
               </div>
             </CardContent>
           </Card>
