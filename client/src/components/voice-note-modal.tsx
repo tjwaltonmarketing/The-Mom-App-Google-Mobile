@@ -66,7 +66,22 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
       return response.json();
     },
     onSuccess: (data: any) => {
-      setSmartActions(data.tasks || []);
+      const tasks = data.tasks || [];
+      setSmartActions(tasks);
+      
+      // Pre-populate event scheduling with extracted date/time
+      const eventSchedulingDefaults: {[key: number]: {date: string, time: string}} = {};
+      tasks.forEach((task: SmartAction, index: number) => {
+        if (task.type === "event" && task.dueDate) {
+          const date = new Date(task.dueDate);
+          eventSchedulingDefaults[index] = {
+            date: date.toISOString().split('T')[0], // YYYY-MM-DD format
+            time: date.toTimeString().slice(0, 5) // HH:MM format
+          };
+        }
+      });
+      setEventScheduling(eventSchedulingDefaults);
+      
       setIsProcessingAI(false);
     },
     onError: () => {
