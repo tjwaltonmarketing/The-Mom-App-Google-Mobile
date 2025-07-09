@@ -221,20 +221,35 @@ export async function smartTaskCreation(voiceInput: string, familyMembers: Array
   
   // Handle calendar/event requests
   if (lowerInput.includes('calendar') || lowerInput.includes('event') || lowerInput.includes('appointment') || lowerInput.includes('meeting') || lowerInput.includes('schedule') || lowerInput.includes('add to calendar')) {
-    const eventPrompt = `This is a request to add an event to the calendar. Please extract event details from this voice input:
-"${voiceInput}"
+    const currentDate = new Date();
+    const currentDay = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+    const currentDateStr = currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    
+    const tomorrow = new Date(currentDate.getTime() + 24*60*60*1000);
+    const eventPrompt = `You are a smart calendar assistant. Extract event details from this voice input and create a properly scheduled calendar event.
 
-Analyze the request for:
-- Event title/activity (soccer practice, doctor appointment, etc.)
-- Date mentioned (July 10th, next Monday, etc.)
-- Time mentioned (2:00 PM, morning, etc.)
-- Duration if mentioned
-- Location if mentioned
-- Who it's for (if mentioned)
+CURRENT DATE CONTEXT: 
+- Today: ${currentDate.toISOString()} (${currentDay}, ${currentDateStr})
+- Tomorrow: ${tomorrow.toDateString()}
+- Current Year: 2025 (IMPORTANT: Always use 2025 for the year)
 
-Create a calendar event with appropriate details.
+Voice input: "${voiceInput}"
 
-IMPORTANT: Always include "type": "event" in the task object for calendar events.
+CRITICAL PARSING REQUIREMENTS:
+1. Parse relative dates to 2025 dates:
+   - "tomorrow" = ${tomorrow.getFullYear()}-${(tomorrow.getMonth()+1).toString().padStart(2,'0')}-${tomorrow.getDate().toString().padStart(2,'0')}
+   - "Friday" = next upcoming Friday in 2025
+   - "next Monday" = Monday of next week in 2025
+   - "July 10th" = 2025-07-10
+
+2. Parse times precisely:
+   - "2pm", "2:00 PM", "2 p.m." = 14:00 
+   - "10am", "10:00 AM" = 10:00
+   - Default to 12:00 if no time specified
+
+3. ALWAYS use year 2025 in timestamps
+4. Always include "type": "event" for calendar requests
+5. Format as "2025-MM-DDTHH:MM:00Z"
 
 Respond with JSON: { 
   "tasks": [
@@ -247,7 +262,11 @@ Respond with JSON: {
     }
   ], 
   "interpretation": "I'll add soccer practice to your calendar for July 10th at 2:00 PM"
-}`;
+}
+
+REQUIRED FORMAT EXAMPLES:
+- "tomorrow at 2pm" → "2025-07-10T14:00:00Z" (NOT 2023!)
+- "Friday at 10am" → "2025-07-11T10:00:00Z" (NOT 2023!)`;
 
     try {
       const response = await openai.chat.completions.create({
