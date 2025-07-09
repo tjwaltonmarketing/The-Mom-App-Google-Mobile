@@ -74,9 +74,12 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
       tasks.forEach((task: SmartAction, index: number) => {
         if (task.type === "event" && task.dueDate) {
           const date = new Date(task.dueDate);
+          // Format time properly as HH:MM in 24-hour format
+          const hours = date.getUTCHours().toString().padStart(2, '0');
+          const minutes = date.getUTCMinutes().toString().padStart(2, '0');
           eventSchedulingDefaults[index] = {
             date: date.toISOString().split('T')[0], // YYYY-MM-DD format
-            time: date.toTimeString().slice(0, 5) // HH:MM format
+            time: `${hours}:${minutes}` // HH:MM format
           };
         }
       });
