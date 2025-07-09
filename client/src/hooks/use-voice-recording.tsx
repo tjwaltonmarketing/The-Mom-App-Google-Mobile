@@ -7,6 +7,7 @@ interface UseVoiceRecordingOptions {
 export function useVoiceRecording({ onTranscript }: UseVoiceRecordingOptions) {
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const fullTranscriptRef = useRef<string>("");
 
   const startRecording = useCallback(() => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -28,20 +29,34 @@ export function useVoiceRecording({ onTranscript }: UseVoiceRecordingOptions) {
     recognition.continuous = true;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
+    recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
       setIsRecording(true);
+      fullTranscriptRef.current = "";
     };
 
     recognition.onresult = (event) => {
-      let transcript = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      let finalTranscript = '';
+      let interimTranscript = '';
+      
+      for (let i = 0; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          transcript += event.results[i][0].transcript + ' ';
+          finalTranscript += transcript + ' ';
+        } else {
+          interimTranscript += transcript;
         }
       }
-      if (transcript) {
-        onTranscript(transcript.trim());
+      
+      if (finalTranscript) {
+        fullTranscriptRef.current += finalTranscript;
+      }
+      
+      // Send current complete transcript (final + interim for live preview)
+      const currentTranscript = fullTranscriptRef.current + interimTranscript;
+      if (currentTranscript.trim()) {
+        onTranscript(currentTranscript.trim());
       }
     };
 
@@ -52,6 +67,10 @@ export function useVoiceRecording({ onTranscript }: UseVoiceRecordingOptions) {
 
     recognition.onend = () => {
       setIsRecording(false);
+      // Send final complete transcript
+      if (fullTranscriptRef.current.trim()) {
+        onTranscript(fullTranscriptRef.current.trim());
+      }
     };
 
     recognitionRef.current = recognition;
