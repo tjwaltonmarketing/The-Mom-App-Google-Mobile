@@ -217,6 +217,63 @@ export async function smartTaskCreation(voiceInput: string, familyMembers: Array
     };
   }
 
+  const lowerInput = voiceInput.toLowerCase();
+  
+  // Handle meal suggestions differently than regular tasks
+  if (lowerInput.includes('meal') || lowerInput.includes('recipe') || lowerInput.includes('cook') || lowerInput.includes('dinner') || lowerInput.includes('lunch') || lowerInput.includes('breakfast')) {
+    const mealPrompt = `This is a request for meal suggestions. Please provide specific meal ideas based on this voice input:
+"${voiceInput}"
+
+Analyze the request for:
+- Ingredients mentioned (chicken, rice, etc.)
+- Day of week mentioned (Monday, Tuesday, etc.)
+- Meal type (breakfast, lunch, dinner)
+- Dietary preferences or restrictions
+- Cooking time constraints
+
+Provide 2-3 specific meal suggestions with ingredients. For each suggestion, create a task that can be scheduled.
+
+Respond with JSON: { 
+  "tasks": [
+    {
+      "title": "Chicken Fried Rice for Tuesday",
+      "description": "Ingredients: chicken breast, rice, eggs, vegetables, soy sauce. Cook time: 20 minutes",
+      "type": "meal",
+      "assignedTo": 1,
+      "priority": "medium"
+    }
+  ], 
+  "interpretation": "Here are some meal suggestions based on your ingredients and preferences"
+}`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: mealPrompt }],
+        response_format: { type: "json_object" },
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || "{}");
+      return {
+        tasks: result.tasks || [],
+        interpretation: result.interpretation || "Here are some meal suggestions for you!"
+      };
+    } catch (error) {
+      console.error("Meal suggestion error:", error);
+      return {
+        tasks: [
+          {
+            title: "Chicken and Rice Stir-Fry",
+            description: "Quick chicken and rice dish with vegetables",
+            priority: "medium"
+          }
+        ],
+        interpretation: "I suggest a chicken and rice stir-fry - it's quick and family-friendly!"
+      };
+    }
+  }
+
+  // Regular task processing
   const prompt = `Parse this voice input from a parent and extract actionable tasks:
 "${voiceInput}"
 

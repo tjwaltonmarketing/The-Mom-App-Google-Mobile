@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles } from "lucide-react";
+import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ interface VoiceNoteModalProps {
 }
 
 interface SmartAction {
-  type: "task" | "event" | "reminder";
+  type: "task" | "event" | "reminder" | "meal";
   title: string;
   description?: string;
   dueDate?: Date;
@@ -99,6 +99,21 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     },
   });
 
+  const createMealPlanMutation = useMutation({
+    mutationFn: async (meal: SmartAction) => {
+      return apiRequest("POST", "/api/meal-plans", {
+        meal: meal.title,
+        day: meal.dueDate ? meal.dueDate.toLocaleDateString('en-US', { weekday: 'long' }) : "Today",
+        mealType: "dinner", // Default to dinner
+        ingredients: meal.description ? meal.description.split("Ingredients: ")[1]?.split(".")[0]?.split(", ") : [],
+        notes: meal.description,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+    },
+  });
+
   const handleStartRecording = () => {
     setTranscript("");
     setSmartActions([]);
@@ -124,6 +139,8 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
       createTaskMutation.mutate(action);
     } else if (action.type === "event") {
       createEventMutation.mutate(action);
+    } else if (action.type === "meal") {
+      createMealPlanMutation.mutate(action);
     }
   };
 
@@ -197,6 +214,8 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
                     <div className="flex items-center space-x-2">
                       {action.type === "task" ? (
                         <CheckSquare className="h-4 w-4 text-blue-500" />
+                      ) : action.type === "meal" ? (
+                        <Utensils className="h-4 w-4 text-green-500" />
                       ) : (
                         <Calendar className="h-4 w-4 text-purple-500" />
                       )}
