@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils } from "lucide-react";
+import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils, ChevronDown } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useVoiceRecording } from "@/hooks/use-voice-recording";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -31,6 +33,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
   const [transcript, setTranscript] = useState("");
   const [smartActions, setSmartActions] = useState<SmartAction[]>([]);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
+  const [mealScheduling, setMealScheduling] = useState<{[key: number]: {day: string, mealType: string}}>({});
   const { isRecording, startRecording, stopRecording } = useVoiceRecording({
     onTranscript: setTranscript,
   });
@@ -100,11 +103,11 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
   });
 
   const createMealPlanMutation = useMutation({
-    mutationFn: async (meal: SmartAction) => {
+    mutationFn: async ({ meal, day, mealType }: { meal: SmartAction, day: string, mealType: string }) => {
       return apiRequest("POST", "/api/meal-plans", {
         meal: meal.title,
-        day: meal.dueDate ? meal.dueDate.toLocaleDateString('en-US', { weekday: 'long' }) : "Today",
-        mealType: "dinner", // Default to dinner
+        day: day,
+        mealType: mealType,
         ingredients: meal.description ? meal.description.split("Ingredients: ")[1]?.split(".")[0]?.split(", ") : [],
         notes: meal.description,
       });
@@ -134,14 +137,28 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     }
   };
 
-  const handleCreateAction = (action: SmartAction) => {
+  const handleCreateAction = (action: SmartAction, index?: number) => {
     if (action.type === "task") {
       createTaskMutation.mutate(action);
     } else if (action.type === "event") {
       createEventMutation.mutate(action);
-    } else if (action.type === "meal") {
-      createMealPlanMutation.mutate(action);
+    } else if (action.type === "meal" && index !== undefined) {
+      const scheduling = mealScheduling[index];
+      if (scheduling?.day && scheduling?.mealType) {
+        createMealPlanMutation.mutate({ 
+          meal: action, 
+          day: scheduling.day, 
+          mealType: scheduling.mealType 
+        });
+      }
     }
+  };
+
+  const handleScheduleMeal = (index: number, day: string, mealType: string) => {
+    setMealScheduling(prev => ({
+      ...prev,
+      [index]: { day, mealType }
+    }));
   };
 
   const handleCreateAll = () => {
@@ -158,6 +175,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     setTranscript("");
     setSmartActions([]);
     setIsProcessingAI(false);
+    setMealScheduling({});
     onClose();
   };
 
@@ -208,27 +226,87 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
                 <Sparkles className="h-4 w-4 text-green-600" />
                 <h4 className="font-medium text-green-800">Smart Suggestions</h4>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {smartActions.map((action, index) => (
-                  <div key={index} className="flex items-center justify-between bg-white rounded p-3">
-                    <div className="flex items-center space-x-2">
+                  <div key={index} className="bg-white rounded-lg p-3 border">
+                    <div className="flex items-start space-x-3">
                       {action.type === "task" ? (
-                        <CheckSquare className="h-4 w-4 text-blue-500" />
+                        <CheckSquare className="h-4 w-4 text-blue-500 mt-1" />
                       ) : action.type === "meal" ? (
-                        <Utensils className="h-4 w-4 text-green-500" />
+                        <Utensils className="h-4 w-4 text-green-500 mt-1" />
                       ) : (
-                        <Calendar className="h-4 w-4 text-purple-500" />
+                        <Calendar className="h-4 w-4 text-purple-500 mt-1" />
                       )}
-                      <div>
-                        <p className="font-medium text-sm">{action.title}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="font-medium text-sm">{action.title}</p>
+                          <Badge variant="outline" className="text-xs">
+                            {action.type}
+                          </Badge>
+                        </div>
                         {action.description && (
-                          <p className="text-xs text-gray-600">{action.description}</p>
+                          <p className="text-xs text-gray-600 mb-3">{action.description}</p>
+                        )}
+                        
+                        {action.type === "meal" && (
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <Select
+                                value={mealScheduling[index]?.day || ""}
+                                onValueChange={(day) => handleScheduleMeal(index, day, mealScheduling[index]?.mealType || "dinner")}
+                              >
+                                <SelectTrigger className="flex-1 h-8 text-xs">
+                                  <SelectValue placeholder="Select day" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Monday">Monday</SelectItem>
+                                  <SelectItem value="Tuesday">Tuesday</SelectItem>
+                                  <SelectItem value="Wednesday">Wednesday</SelectItem>
+                                  <SelectItem value="Thursday">Thursday</SelectItem>
+                                  <SelectItem value="Friday">Friday</SelectItem>
+                                  <SelectItem value="Saturday">Saturday</SelectItem>
+                                  <SelectItem value="Sunday">Sunday</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              
+                              <Select
+                                value={mealScheduling[index]?.mealType || ""}
+                                onValueChange={(mealType) => handleScheduleMeal(index, mealScheduling[index]?.day || "Monday", mealType)}
+                              >
+                                <SelectTrigger className="flex-1 h-8 text-xs">
+                                  <SelectValue placeholder="Meal type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="breakfast">Breakfast</SelectItem>
+                                  <SelectItem value="lunch">Lunch</SelectItem>
+                                  <SelectItem value="dinner">Dinner</SelectItem>
+                                  <SelectItem value="snack">Snack</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            <Button
+                              size="sm"
+                              className="w-full h-8 text-xs"
+                              onClick={() => handleCreateAction(action, index)}
+                              disabled={!mealScheduling[index]?.day || !mealScheduling[index]?.mealType || createMealPlanMutation.isPending}
+                            >
+                              {createMealPlanMutation.isPending ? "Adding..." : "Add to Meal Plan"}
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {action.type !== "meal" && (
+                          <Button
+                            size="sm"
+                            className="w-full h-8 text-xs mt-2"
+                            onClick={() => handleCreateAction(action)}
+                          >
+                            Create {action.type}
+                          </Button>
                         )}
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {action.type}
-                    </Badge>
                   </div>
                 ))}
               </div>
