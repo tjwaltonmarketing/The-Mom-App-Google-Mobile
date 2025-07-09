@@ -19,6 +19,7 @@ import AIAssistantPage from "@/pages/ai-assistant";
 import SettingsPage from "@/pages/settings";
 import TutorialsPage from "@/pages/tutorials";
 import VoiceTestPage from "@/pages/voice-test";
+import TeenTestPage from "@/pages/teen-test";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import ForgotPassword from "@/pages/forgot-password";
@@ -61,6 +62,7 @@ function Router() {
       <Route path="/settings" component={SettingsPage} />
       <Route path="/tutorials" component={TutorialsPage} />
       <Route path="/voice-test" component={VoiceTestPage} />
+      <Route path="/teen-test" component={TeenTestPage} />
       <Route component={NotFound} />
     </Switch>
   );

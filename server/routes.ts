@@ -1141,6 +1141,229 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Teen Account System Routes
+  
+  // Family invites - for parents to invite teens
+  app.post("/api/family/invites", requireAuth, async (req, res) => {
+    try {
+      // Mock invite creation for testing
+      const inviteCode = `FAM-${Date.now().toString(36).toUpperCase()}`;
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      
+      const invite = {
+        id: Math.floor(Math.random() * 1000),
+        inviteCode,
+        familyId: 1,
+        invitedBy: req.session!.userId!,
+        invitedContact: req.body.contact,
+        contactType: req.body.contactType,
+        invitedRole: req.body.role,
+        teenName: req.body.teenName,
+        status: "pending",
+        expiresAt: expiresAt.toISOString(),
+        createdAt: new Date().toISOString(),
+      };
+      
+      res.status(201).json(invite);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to create invite: " + error.message });
+    }
+  });
+
+  app.post("/api/family/invites/:id/send", requireAuth, async (req, res) => {
+    try {
+      // Mock sending invite (would integrate with SMS/email service)
+      const inviteId = parseInt(req.params.id);
+      
+      // In real implementation, would send SMS or email here
+      console.log(`Mock: Sending invite ${inviteId} via SMS/email`);
+      
+      res.json({ 
+        success: true, 
+        message: "Invitation sent successfully" 
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to send invite: " + error.message });
+    }
+  });
+
+  app.post("/api/family/invites/validate", async (req, res) => {
+    try {
+      const { inviteCode } = req.body;
+      
+      // Mock validation - in real implementation would check database
+      if (inviteCode && inviteCode.startsWith("FAM-")) {
+        res.json({
+          valid: true,
+          family: {
+            id: 1,
+            name: "The Smith Family",
+            parentName: "Sarah Smith"
+          }
+        });
+      } else {
+        res.status(400).json({ valid: false, message: "Invalid invite code" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to validate invite: " + error.message });
+    }
+  });
+
+  // Teen onboarding completion
+  app.post("/api/teen/complete-onboarding", async (req, res) => {
+    try {
+      const { inviteCode, profile, notificationSettings } = req.body;
+      
+      // Mock teen account creation
+      const teenAccount = {
+        id: Math.floor(Math.random() * 1000),
+        userId: Math.floor(Math.random() * 1000),
+        familyMemberId: Math.floor(Math.random() * 1000),
+        ...profile,
+        points: 0,
+        streak: 0,
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Mock notification settings
+      const settings = {
+        id: Math.floor(Math.random() * 1000),
+        teenProfileId: teenAccount.id,
+        ...notificationSettings,
+        updatedAt: new Date().toISOString(),
+      };
+      
+      console.log("Teen onboarding completed:", { teenAccount, settings });
+      
+      res.json({ 
+        success: true, 
+        teenProfile: teenAccount,
+        notificationSettings: settings 
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to complete onboarding: " + error.message });
+    }
+  });
+
+  // Teen dashboard data
+  app.get("/api/teen/tasks", requireAuth, async (req, res) => {
+    try {
+      // Mock teen tasks
+      const teenTasks = [
+        {
+          id: 1,
+          title: "Clean your room",
+          description: "Make bed, organize desk, vacuum floor",
+          dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          priority: "high",
+          assignedBy: "Mom",
+          points: 25,
+          isCompleted: false,
+          reminderCount: 1,
+        },
+        {
+          id: 2,
+          title: "Take out trash",
+          description: "Garbage and recycling to curb",
+          dueDate: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
+          priority: "medium",
+          assignedBy: "Dad",
+          points: 15,
+          isCompleted: false,
+          reminderCount: 0,
+        },
+        {
+          id: 3,
+          title: "Walk the dog",
+          description: "30 minute walk around the neighborhood",
+          dueDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // Overdue
+          priority: "high",
+          assignedBy: "Mom",
+          points: 20,
+          isCompleted: false,
+          reminderCount: 3,
+        },
+      ];
+      
+      res.json(teenTasks);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch teen tasks: " + error.message });
+    }
+  });
+
+  app.get("/api/teen/events/today", requireAuth, async (req, res) => {
+    try {
+      // Mock today's events for teen
+      const todayEvents = [
+        {
+          id: 1,
+          title: "Soccer Practice",
+          startTime: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
+          endTime: new Date(Date.now() + 4.5 * 60 * 60 * 1000).toISOString(),
+          type: "personal",
+        },
+        {
+          id: 2,
+          title: "Family Dinner",
+          startTime: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
+          endTime: new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString(),
+          type: "family",
+        },
+      ];
+      
+      res.json(todayEvents);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch today's events: " + error.message });
+    }
+  });
+
+  app.get("/api/teen/stats", requireAuth, async (req, res) => {
+    try {
+      // Mock teen stats
+      const stats = {
+        weeklyPoints: 85,
+        streak: 3,
+        completedToday: 1,
+      };
+      
+      res.json(stats);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch teen stats: " + error.message });
+    }
+  });
+
+  app.post("/api/teen/tasks/:id/complete", requireAuth, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      
+      // Mock task completion
+      const pointsEarned = 25;
+      
+      res.json({
+        success: true,
+        pointsEarned,
+        message: `Task completed! You earned ${pointsEarned} points!`,
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to complete task: " + error.message });
+    }
+  });
+
+  app.post("/api/teen/tasks/:id/snooze", requireAuth, async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const { hours } = req.body;
+      
+      // Mock task snoozing
+      res.json({
+        success: true,
+        message: `Task snoozed for ${hours} hours`,
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to snooze task: " + error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

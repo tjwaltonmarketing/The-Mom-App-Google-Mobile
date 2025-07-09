@@ -12,6 +12,11 @@ import {
   users,
   families,
   familyMemberships,
+  familyInvites,
+  teenProfiles,
+  teenNotificationSettings,
+  teenTaskHistory,
+  teenNotificationLog,
   type FamilyMember, 
   type InsertFamilyMember,
   type Event,
@@ -38,6 +43,16 @@ import {
   type InsertFamily,
   type FamilyMembership,
   type InsertFamilyMembership,
+  type FamilyInvite,
+  type InsertFamilyInvite,
+  type TeenProfile,
+  type InsertTeenProfile,
+  type TeenNotificationSettings,
+  type InsertTeenNotificationSettings,
+  type TeenTaskHistory,
+  type InsertTeenTaskHistory,
+  type TeenNotificationLog,
+  type InsertTeenNotificationLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lt, desc, isNull, or } from "drizzle-orm";
@@ -113,6 +128,28 @@ export interface IStorage {
   getMealPlans(): Promise<MealPlan[]>;
   createMealPlan(plan: InsertMealPlan): Promise<MealPlan>;
   deleteMealPlan(id: number): Promise<boolean>;
+
+  // Teen Account System
+  createFamilyInvite(invite: InsertFamilyInvite): Promise<FamilyInvite>;
+  getFamilyInvite(inviteCode: string): Promise<FamilyInvite | undefined>;
+  acceptFamilyInvite(inviteCode: string, acceptedBy: number): Promise<FamilyInvite | undefined>;
+  getFamilyInvites(familyId: number): Promise<FamilyInvite[]>;
+  
+  createTeenProfile(profile: InsertTeenProfile): Promise<TeenProfile>;
+  getTeenProfile(userId: number): Promise<TeenProfile | undefined>;
+  updateTeenPoints(teenProfileId: number, points: number): Promise<void>;
+  updateTeenStreak(teenProfileId: number, streak: number): Promise<void>;
+  
+  createTeenNotificationSettings(settings: InsertTeenNotificationSettings): Promise<TeenNotificationSettings>;
+  getTeenNotificationSettings(teenProfileId: number): Promise<TeenNotificationSettings | undefined>;
+  updateTeenNotificationSettings(teenProfileId: number, settings: Partial<TeenNotificationSettings>): Promise<void>;
+  
+  getTeenTasks(teenProfileId: number): Promise<Task[]>;
+  getTeenStats(teenProfileId: number): Promise<{ weeklyPoints: number; streak: number; completedToday: number }>;
+  completeTeenTask(taskId: number, teenProfileId: number): Promise<{ task: Task; pointsEarned: number }>;
+  
+  createTeenTaskHistory(history: InsertTeenTaskHistory): Promise<TeenTaskHistory>;
+  logTeenNotification(log: InsertTeenNotificationLog): Promise<TeenNotificationLog>;
 }
 
 export class DatabaseStorage implements IStorage {

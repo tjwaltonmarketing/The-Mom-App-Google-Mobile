@@ -164,6 +164,71 @@ export const mealPlans = pgTable("meal_plans", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Teen account system tables
+export const familyInvites = pgTable("family_invites", {
+  id: serial("id").primaryKey(),
+  inviteCode: varchar("invite_code", { length: 50 }).notNull().unique(),
+  familyId: integer("family_id").references(() => families.id).notNull(),
+  invitedBy: integer("invited_by").references(() => users.id).notNull(),
+  invitedContact: varchar("invited_contact", { length: 255 }).notNull(), // email or phone
+  contactType: text("contact_type").notNull(), // "email" or "phone"
+  invitedRole: text("invited_role").notNull().default("teen"), // "teen", "child", "young-adult"
+  teenName: varchar("teen_name", { length: 100 }).notNull(),
+  status: text("status").notNull().default("pending"), // "pending", "accepted", "expired"
+  expiresAt: timestamp("expires_at").notNull(),
+  acceptedAt: timestamp("accepted_at"),
+  acceptedBy: integer("accepted_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const teenProfiles = pgTable("teen_profiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull().unique(),
+  familyMemberId: integer("family_member_id").references(() => familyMembers.id).notNull(),
+  age: integer("age"),
+  favoriteColor: varchar("favorite_color", { length: 20 }).default("blue"),
+  points: integer("points").default(0),
+  streak: integer("streak").default(0), // consecutive days of completing tasks
+  lastActivityDate: timestamp("last_activity_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const teenNotificationSettings = pgTable("teen_notification_settings", {
+  id: serial("id").primaryKey(),
+  teenProfileId: integer("teen_profile_id").references(() => teenProfiles.id).notNull().unique(),
+  taskReminders: boolean("task_reminders").default(true),
+  eventNotifications: boolean("event_notifications").default(true),
+  dailyDigest: boolean("daily_digest").default(true),
+  quietHours: boolean("quiet_hours").default(true),
+  quietStart: varchar("quiet_start", { length: 5 }).default("22:00"),
+  quietEnd: varchar("quiet_end", { length: 5 }).default("08:00"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const teenTaskHistory = pgTable("teen_task_history", {
+  id: serial("id").primaryKey(),
+  teenProfileId: integer("teen_profile_id").references(() => teenProfiles.id).notNull(),
+  taskId: integer("task_id").references(() => tasks.id).notNull(),
+  pointsEarned: integer("points_earned").default(0),
+  completedAt: timestamp("completed_at").defaultNow(),
+  streakDay: integer("streak_day"), // Which day of their streak this was
+});
+
+export const teenNotificationLog = pgTable("teen_notification_log", {
+  id: serial("id").primaryKey(),
+  teenProfileId: integer("teen_profile_id").references(() => teenProfiles.id).notNull(),
+  taskId: integer("task_id").references(() => tasks.id),
+  notificationType: text("notification_type").notNull(), // "task_reminder", "task_overdue", etc.
+  templateId: varchar("template_id", { length: 50 }).notNull(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  scheduledFor: timestamp("scheduled_for").notNull(),
+  sentAt: timestamp("sent_at"),
+  wasDelivered: boolean("was_delivered").default(false),
+  wasOpened: boolean("was_opened").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertFamilyMemberSchema = createInsertSchema(familyMembers).omit({
   id: true,
 });
@@ -213,6 +278,40 @@ export const insertGroceryItemSchema = createInsertSchema(groceryItems).omit({
 
 export const insertMealPlanSchema = createInsertSchema(mealPlans).omit({
   id: true,
+  createdAt: true,
+});
+
+// Teen account schemas
+export const insertFamilyInviteSchema = createInsertSchema(familyInvites).omit({
+  id: true,
+  createdAt: true,
+  acceptedAt: true,
+  acceptedBy: true,
+});
+
+export const insertTeenProfileSchema = createInsertSchema(teenProfiles).omit({
+  id: true,
+  points: true,
+  streak: true,
+  lastActivityDate: true,
+  createdAt: true,
+});
+
+export const insertTeenNotificationSettingsSchema = createInsertSchema(teenNotificationSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertTeenTaskHistorySchema = createInsertSchema(teenTaskHistory).omit({
+  id: true,
+  completedAt: true,
+});
+
+export const insertTeenNotificationLogSchema = createInsertSchema(teenNotificationLog).omit({
+  id: true,
+  sentAt: true,
+  wasDelivered: true,
+  wasOpened: true,
   createdAt: true,
 });
 
@@ -368,3 +467,18 @@ export type InsertFamily = z.infer<typeof insertFamilySchema>;
 
 export type FamilyMembership = typeof familyMemberships.$inferSelect;
 export type InsertFamilyMembership = z.infer<typeof insertFamilyMembershipSchema>;
+
+export type FamilyInvite = typeof familyInvites.$inferSelect;
+export type InsertFamilyInvite = z.infer<typeof insertFamilyInviteSchema>;
+
+export type TeenProfile = typeof teenProfiles.$inferSelect;
+export type InsertTeenProfile = z.infer<typeof insertTeenProfileSchema>;
+
+export type TeenNotificationSettings = typeof teenNotificationSettings.$inferSelect;
+export type InsertTeenNotificationSettings = z.infer<typeof insertTeenNotificationSettingsSchema>;
+
+export type TeenTaskHistory = typeof teenTaskHistory.$inferSelect;
+export type InsertTeenTaskHistory = z.infer<typeof insertTeenTaskHistorySchema>;
+
+export type TeenNotificationLog = typeof teenNotificationLog.$inferSelect;
+export type InsertTeenNotificationLog = z.infer<typeof insertTeenNotificationLogSchema>;
