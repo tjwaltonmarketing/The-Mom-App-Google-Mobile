@@ -45,37 +45,10 @@ export function MealPlanning() {
   const [selectedMember, setSelectedMember] = useState("");
   const { toast } = useToast();
 
-  // Mock data for meal plans (replace with actual API calls)
-  const mealPlans: MealPlan[] = [
-    {
-      id: 1,
-      day: "Monday",
-      mealType: "breakfast",
-      meal: "Oatmeal with berries",
-      ingredients: ["Oats", "Blueberries", "Milk", "Honey"],
-      prepTime: 10,
-      notes: "Kids love this!",
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 2,
-      day: "Monday",
-      mealType: "dinner",
-      meal: "Grilled chicken with vegetables",
-      ingredients: ["Chicken breast", "Broccoli", "Carrots", "Olive oil"],
-      prepTime: 30,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 3,
-      day: "Tuesday",
-      mealType: "lunch",
-      meal: "Turkey sandwiches",
-      ingredients: ["Turkey", "Bread", "Lettuce", "Tomato", "Mayo"],
-      prepTime: 5,
-      createdAt: new Date().toISOString(),
-    },
-  ];
+  // Fetch real meal plans data from API
+  const { data: mealPlans = [] } = useQuery<MealPlan[]>({
+    queryKey: ["/api/meal-plans"],
+  });
 
   // Fetch real grocery list data from API
   const { data: groceryList = [] } = useQuery<GroceryItem[]>({
@@ -89,10 +62,14 @@ export function MealPlanning() {
 
   const addMealMutation = useMutation({
     mutationFn: async (meal: Omit<MealPlan, 'id' | 'createdAt'>) => {
-      // Replace with actual API call
-      return Promise.resolve({ ...meal, id: Date.now(), createdAt: new Date().toISOString() });
+      const response = await apiRequest("POST", "/api/meal-plans", {
+        ...meal,
+        createdBy: 1, // Default to first family member
+      });
+      return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
       toast({
         title: "Meal added",
         description: "Meal has been added to your plan",
@@ -138,12 +115,13 @@ export function MealPlanning() {
 
   const deleteMealMutation = useMutation({
     mutationFn: async (id: number) => {
-      // Replace with actual API call
-      return Promise.resolve(id);
+      const response = await apiRequest("DELETE", `/api/meal-plans/${id}`);
+      return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
       toast({
-        title: "Meal removed",
+        title: "Meal deleted",
         description: "Meal has been removed from your plan",
       });
     },
