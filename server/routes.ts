@@ -150,6 +150,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (err) {
         return res.status(500).json({ error: "Logout failed" });
       }
+      
+      // Clear the auth token cookie
+      res.clearCookie('auth_token', {
+        httpOnly: false,
+        secure: false,
+        sameSite: 'lax',
+        path: '/'
+      });
+      
+      // Also clear the session cookie
+      res.clearCookie('connect.sid', {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        path: '/'
+      });
+      
+      console.log("Logout successful - cookies cleared");
       res.json({ message: "Logged out successfully" });
     });
   });

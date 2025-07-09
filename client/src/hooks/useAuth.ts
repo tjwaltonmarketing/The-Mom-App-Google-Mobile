@@ -21,10 +21,16 @@ export function useAuth() {
       // Clear cookie by setting it to expire
       if (typeof document !== 'undefined') {
         document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = 'connect.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       }
       
-      queryClient.setQueryData(["/api/auth/user"], null);
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      // Clear all cached data
+      queryClient.clear();
+      
+      // Force redirect to login page
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
     },
   });
 
