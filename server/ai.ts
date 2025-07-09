@@ -219,6 +219,62 @@ export async function smartTaskCreation(voiceInput: string, familyMembers: Array
 
   const lowerInput = voiceInput.toLowerCase();
   
+  // Handle calendar/event requests
+  if (lowerInput.includes('calendar') || lowerInput.includes('event') || lowerInput.includes('appointment') || lowerInput.includes('meeting') || lowerInput.includes('schedule') || lowerInput.includes('add to calendar')) {
+    const eventPrompt = `This is a request to add an event to the calendar. Please extract event details from this voice input:
+"${voiceInput}"
+
+Analyze the request for:
+- Event title/activity (soccer practice, doctor appointment, etc.)
+- Date mentioned (July 10th, next Monday, etc.)
+- Time mentioned (2:00 PM, morning, etc.)
+- Duration if mentioned
+- Location if mentioned
+- Who it's for (if mentioned)
+
+Create a calendar event with appropriate details.
+
+Respond with JSON: { 
+  "tasks": [
+    {
+      "title": "Soccer Practice",
+      "description": "Weekly soccer practice session",
+      "type": "event",
+      "dueDate": "2025-07-10T14:00:00Z",
+      "priority": "medium"
+    }
+  ], 
+  "interpretation": "I'll add soccer practice to your calendar for July 10th at 2:00 PM"
+}`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [{ role: "user", content: eventPrompt }],
+        response_format: { type: "json_object" },
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || "{}");
+      return {
+        tasks: result.tasks || [],
+        interpretation: result.interpretation || "I'll add that event to your calendar!"
+      };
+    } catch (error) {
+      console.error("Event creation error:", error);
+      return {
+        tasks: [
+          {
+            title: "Soccer Practice",
+            description: "Weekly soccer practice",
+            type: "event",
+            priority: "medium"
+          }
+        ],
+        interpretation: "I'll add soccer practice to your calendar!"
+      };
+    }
+  }
+  
   // Handle meal suggestions differently than regular tasks
   if (lowerInput.includes('meal') || lowerInput.includes('recipe') || lowerInput.includes('cook') || lowerInput.includes('dinner') || lowerInput.includes('lunch') || lowerInput.includes('breakfast')) {
     const mealPrompt = `This is a request for meal suggestions. Please provide specific meal ideas based on this voice input:

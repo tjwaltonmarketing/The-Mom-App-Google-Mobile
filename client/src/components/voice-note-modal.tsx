@@ -34,6 +34,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
   const [smartActions, setSmartActions] = useState<SmartAction[]>([]);
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [mealScheduling, setMealScheduling] = useState<{[key: number]: {day: string, mealType: string}}>({});
+  const [eventScheduling, setEventScheduling] = useState<{[key: number]: {date: string, time: string}}>({});
   const { isRecording, startRecording, stopRecording } = useVoiceRecording({
     onTranscript: setTranscript,
   });
@@ -89,11 +90,12 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
   });
 
   const createEventMutation = useMutation({
-    mutationFn: async (event: SmartAction) => {
+    mutationFn: async ({ event, date, time }: { event: SmartAction, date: string, time: string }) => {
+      const startTime = new Date(`${date}T${time}:00`);
       return apiRequest("POST", "/api/events", {
         title: event.title,
         description: event.description,
-        startTime: event.dueDate,
+        startTime: startTime.toISOString(),
         assignedTo: event.assignedTo,
       });
     },
@@ -140,8 +142,15 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
   const handleCreateAction = (action: SmartAction, index?: number) => {
     if (action.type === "task") {
       createTaskMutation.mutate(action);
-    } else if (action.type === "event") {
-      createEventMutation.mutate(action);
+    } else if (action.type === "event" && index !== undefined) {
+      const scheduling = eventScheduling[index];
+      if (scheduling?.date && scheduling?.time) {
+        createEventMutation.mutate({ 
+          event: action, 
+          date: scheduling.date, 
+          time: scheduling.time 
+        });
+      }
     } else if (action.type === "meal" && index !== undefined) {
       const scheduling = mealScheduling[index];
       if (scheduling?.day && scheduling?.mealType) {
@@ -161,6 +170,13 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     }));
   };
 
+  const handleScheduleEvent = (index: number, date: string, time: string) => {
+    setEventScheduling(prev => ({
+      ...prev,
+      [index]: { date, time }
+    }));
+  };
+
   const handleCreateAll = () => {
     smartActions.forEach(action => {
       handleCreateAction(action);
@@ -176,6 +192,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     setSmartActions([]);
     setIsProcessingAI(false);
     setMealScheduling({});
+    setEventScheduling({});
     onClose();
   };
 
@@ -248,6 +265,36 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
                           <p className="text-xs text-gray-600 mb-3">{action.description}</p>
                         )}
                         
+                        {action.type === "event" && (
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <input
+                                type="date"
+                                className="flex-1 h-8 text-xs border rounded px-2"
+                                value={eventScheduling[index]?.date || ""}
+                                onChange={(e) => handleScheduleEvent(index, e.target.value, eventScheduling[index]?.time || "12:00")}
+                                min={new Date().toISOString().split('T')[0]}
+                              />
+                              
+                              <input
+                                type="time"
+                                className="flex-1 h-8 text-xs border rounded px-2"
+                                value={eventScheduling[index]?.time || ""}
+                                onChange={(e) => handleScheduleEvent(index, eventScheduling[index]?.date || new Date().toISOString().split('T')[0], e.target.value)}
+                              />
+                            </div>
+                            
+                            <Button
+                              size="sm"
+                              className="w-full h-8 text-xs"
+                              onClick={() => handleCreateAction(action, index)}
+                              disabled={!eventScheduling[index]?.date || !eventScheduling[index]?.time || createEventMutation.isPending}
+                            >
+                              {createEventMutation.isPending ? "Adding..." : "Add to Calendar"}
+                            </Button>
+                          </div>
+                        )}
+
                         {action.type === "meal" && (
                           <div className="space-y-2">
                             <div className="flex gap-2">
@@ -296,13 +343,13 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
                           </div>
                         )}
                         
-                        {action.type !== "meal" && (
+                        {action.type === "task" && (
                           <Button
                             size="sm"
                             className="w-full h-8 text-xs mt-2"
                             onClick={() => handleCreateAction(action)}
                           >
-                            Create {action.type}
+                            Create Task
                           </Button>
                         )}
                       </div>
