@@ -85,7 +85,14 @@ export class LeadConnectorProvider implements SMSProvider {
     
     this.apiKey = process.env.LEADCONNECTOR_API_KEY;
     this.locationId = process.env.LEADCONNECTOR_LOCATION_ID;
+    // Use the correct base URL for agency-level API access
     this.baseUrl = process.env.LEADCONNECTOR_BASE_URL || "https://services.leadconnectorhq.com";
+    
+    // Debug constructor values
+    console.log(`🔧 LeadConnector constructor:`);
+    console.log(`- API Key: ${this.apiKey.substring(0, 10)}...`);
+    console.log(`- Location ID: ${this.locationId}`);
+    console.log(`- Base URL: ${this.baseUrl}`);
   }
 
   async sendSMS(to: string, message: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
@@ -99,8 +106,15 @@ export class LeadConnectorProvider implements SMSProvider {
         formattedPhone = '+' + formattedPhone;
       }
       
-      // Use the correct LeadConnector API endpoint for SMS
-      const response = await fetch(`${this.baseUrl}/conversations/messages`, {
+      // Debug the LeadConnector configuration
+      console.log(`🔧 LeadConnector Debug:`);
+      console.log(`- Phone: ${formattedPhone}`);
+      console.log(`- API Key: ${this.apiKey.substring(0, 10)}...`);
+      console.log(`- Location ID: ${this.locationId}`);
+      console.log(`- Base URL: ${this.baseUrl}`);
+      
+      // Try the most common LeadConnector API format first
+      let response = await fetch(`${this.baseUrl}/conversations/messages`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
@@ -114,6 +128,41 @@ export class LeadConnectorProvider implements SMSProvider {
           phone: formattedPhone
         })
       });
+
+      // If that fails, try alternative endpoint
+      if (!response.ok && response.status === 401) {
+        console.log('First endpoint failed, trying alternative format...');
+        response = await fetch(`${this.baseUrl}/conversations/messages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            type: 'SMS',
+            contactId: this.locationId,
+            message: message,
+            phone: formattedPhone
+          })
+        });
+      }
+
+      // If still failing, try the direct SMS endpoint
+      if (!response.ok && response.status === 401) {
+        console.log('Trying direct SMS endpoint...');
+        response = await fetch(`${this.baseUrl}/locations/${this.locationId}/messages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${this.apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            type: 'SMS',
+            message: message,
+            phone: formattedPhone
+          })
+        });
+      }
 
       if (!response.ok) {
         const errorText = await response.text();

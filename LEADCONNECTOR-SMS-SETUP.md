@@ -2,11 +2,18 @@
 
 This guide shows how to set up LeadConnector (formerly HighLevel) for SMS messaging in The Mom App.
 
-## Step 1: Get LeadConnector API Access
-1. Log into your LeadConnector/HighLevel account
+## Step 1: Get LeadConnector Agency API Access
+**IMPORTANT: Use Agency-level API key, not sub-account key**
+
+1. Log into your **Agency account** (main HighLevel account, not sub-account)
 2. Go to Settings → Integrations → API
-3. Create a new API key with SMS permissions
-4. Copy the API key (starts with `sk_` or similar)
+3. Create a new API key with these permissions:
+   - `conversations.message.write`
+   - `conversations.readonly` 
+   - `locations.readonly`
+4. Copy the Agency API key (usually starts with `eyJ` and is much longer)
+
+**Note**: Sub-account API keys don't have sufficient permissions for SMS messaging.
 
 ## Step 2: Find Your Location ID
 1. In LeadConnector, go to Settings → Business Profile
