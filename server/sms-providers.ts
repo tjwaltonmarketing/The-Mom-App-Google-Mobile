@@ -69,6 +69,66 @@ export class AWSSNSProvider implements SMSProvider {
   }
 }
 
+export class LeadConnectorProvider implements SMSProvider {
+  name = "LeadConnector";
+  private apiKey: string;
+  private locationId: string;
+  private baseUrl: string;
+
+  constructor() {
+    if (!process.env.LEADCONNECTOR_API_KEY) {
+      throw new Error("LEADCONNECTOR_API_KEY is required");
+    }
+    if (!process.env.LEADCONNECTOR_LOCATION_ID) {
+      throw new Error("LEADCONNECTOR_LOCATION_ID is required");
+    }
+    
+    this.apiKey = process.env.LEADCONNECTOR_API_KEY;
+    this.locationId = process.env.LEADCONNECTOR_LOCATION_ID;
+    this.baseUrl = process.env.LEADCONNECTOR_BASE_URL || "https://services.leadconnectorhq.com";
+  }
+
+  async sendSMS(to: string, message: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    try {
+      // Format phone number for LeadConnector (remove +1 if present)
+      const formattedPhone = to.replace(/^\+?1?/, '').replace(/\D/g, '');
+      
+      const response = await fetch(`${this.baseUrl}/conversations/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+          'Version': '2021-07-28'
+        },
+        body: JSON.stringify({
+          type: 'SMS',
+          contactId: this.locationId,
+          message: message,
+          phone: formattedPhone
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`LeadConnector API error: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      
+      return {
+        success: true,
+        messageId: result.id || result.messageId,
+      };
+    } catch (error: any) {
+      console.error("LeadConnector SMS error:", error);
+      return {
+        success: false,
+        error: error.message || "Failed to send SMS via LeadConnector"
+      };
+    }
+  }
+}
+
 export class SMSService {
   private providers: SMSProvider[] = [];
 
@@ -78,10 +138,21 @@ export class SMSService {
   }
 
   private initializeProviders() {
-    // Try Twilio first
+    // Try LeadConnector first (if available)
+    if (process.env.LEADCONNECTOR_API_KEY && process.env.LEADCONNECTOR_LOCATION_ID) {
+      try {
+        this.providers.push(new LeadConnectorProvider());
+        console.log("✅ LeadConnector SMS provider initialized");
+      } catch (error) {
+        console.warn("Failed to initialize LeadConnector provider:", error);
+      }
+    }
+
+    // Try Twilio
     if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
       try {
         this.providers.push(new TwilioProvider());
+        console.log("✅ Twilio SMS provider initialized");
       } catch (error) {
         console.warn("Failed to initialize Twilio provider:", error);
       }
@@ -91,13 +162,16 @@ export class SMSService {
     if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
       try {
         this.providers.push(new AWSSNSProvider());
+        console.log("✅ AWS SNS provider initialized");
       } catch (error) {
         console.warn("Failed to initialize AWS SNS provider:", error);
       }
     }
 
     if (this.providers.length === 0) {
-      console.warn("No SMS providers available. Please configure Twilio or AWS SNS.");
+      console.warn("No SMS providers available. Please configure LeadConnector, Twilio, or AWS SNS.");
+    } else {
+      console.log(`📱 SMS service ready with ${this.providers.length} provider(s): ${this.getAvailableProviders().join(', ')}`);
     }
   }
 
