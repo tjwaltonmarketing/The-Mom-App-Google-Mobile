@@ -5,7 +5,35 @@ import { InviteTeenModal } from "@/components/family/invite-teen-modal";
 import { TeenOnboarding } from "@/components/teen/teen-onboarding";
 import { TeenDashboard } from "@/components/teen/teen-dashboard";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, Users, Trophy } from "lucide-react";
+import { UserPlus, Users, Trophy, CheckCircle, XCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+function SMSProviderStatus() {
+  const { data: smsProviders, isLoading } = useQuery({
+    queryKey: ["/api/sms/providers"],
+    retry: false,
+  });
+
+  if (isLoading) {
+    return <div className="mt-2 text-xs text-gray-500">Checking SMS providers...</div>;
+  }
+
+  return (
+    <div className="mt-2 text-xs">
+      {smsProviders?.configured ? (
+        <div className="flex items-center gap-1 text-green-600">
+          <CheckCircle className="h-3 w-3" />
+          SMS active via: {smsProviders.providers.join(", ")}
+        </div>
+      ) : (
+        <div className="flex items-center gap-1 text-amber-600">
+          <XCircle className="h-3 w-3" />
+          No SMS providers configured
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function TeenTest() {
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -66,9 +94,7 @@ export default function TeenTest() {
                   <li>Click "Send via Text" to send real SMS</li>
                   <li>Check your phone for the invitation message!</li>
                 </ol>
-                <div className="mt-2 text-xs text-blue-600">
-                  ✅ Twilio SMS integration: Ready for testing
-                </div>
+                <SMSProviderStatus />
               </div>
             </CardContent>
           </Card>

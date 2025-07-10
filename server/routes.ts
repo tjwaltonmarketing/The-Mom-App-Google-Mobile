@@ -12,18 +12,14 @@ import {
   insertDeadlineSchema,
   insertNotificationSchema
 } from "@shared/schema";
-import twilio from "twilio";
+import { smsService } from "./sms-providers";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup session middleware
   setupSession(app);
 
-  // Initialize Twilio client
-  const twilioClient = twilio(
-    process.env.TWILIO_ACCOUNT_SID,
-    process.env.TWILIO_AUTH_TOKEN
-  );
+  // SMS service is initialized automatically with available providers
 
   // Health check endpoint for mobile connectivity testing
   app.get("/api/health", (req, res) => {
@@ -34,6 +30,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       version: "3.0",
       uptime: process.uptime(),
       environment: process.env.NODE_ENV || "development"
+    });
+  });
+
+  // SMS providers status endpoint
+  app.get("/api/sms/providers", (req, res) => {
+    const providers = smsService.getAvailableProviders();
+    res.json({
+      providers,
+      count: providers.length,
+      configured: providers.length > 0
     });
   });
   
@@ -1188,8 +1194,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Sending invite ${inviteId} via ${contactType} to ${contact}`);
       
-      if (contactType === "phone" && process.env.TWILIO_ACCOUNT_SID) {
-        // Send real SMS via Twilio
+      if (contactType === "phone") {
+        // Send SMS using available provider (Twilio or AWS SNS)
         const message = `Hi! You've been invited to join The Mom App family account.
 
 👨‍👩‍👧‍👦 Teen Account Setup
@@ -1211,37 +1217,34 @@ Download now and join the family! 🎉
 - The Mom App Team
 themomapp.us@gmail.com`;
 
-        try {
-          const smsResult = await twilioClient.messages.create({
-            body: message,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: contact
-          });
-          
-          console.log(`SMS sent successfully: ${smsResult.sid}`);
+        const smsResult = await smsService.sendSMS(contact, message);
+        
+        if (smsResult.success) {
+          console.log(`SMS sent successfully via ${smsResult.provider}: ${smsResult.messageId}`);
           
           res.json({ 
             success: true, 
-            message: "Invitation sent via SMS successfully",
-            twilioSid: smsResult.sid
+            message: `Invitation sent via SMS successfully using ${smsResult.provider}`,
+            messageId: smsResult.messageId,
+            provider: smsResult.provider
           });
-        } catch (twilioError: any) {
-          console.error("Twilio SMS error:", twilioError);
+        } else {
+          console.error("SMS sending failed:", smsResult.error);
           
           // Provide helpful error messages
-          let errorMessage = "Failed to send SMS";
-          if (twilioError.code === 21211) {
+          let errorMessage = smsResult.error || "Failed to send SMS";
+          if (errorMessage.includes("Invalid phone number")) {
             errorMessage = "Invalid phone number format. Please use format: +1234567890";
-          } else if (twilioError.code === 21608) {
-            errorMessage = "Phone number not verified with Twilio. Please verify the number first.";
-          } else if (twilioError.code === 20003) {
-            errorMessage = "Twilio authentication failed. Please check your credentials.";
+          } else if (errorMessage.includes("not verified")) {
+            errorMessage = "Phone number not verified. Please verify the number first.";
+          } else if (errorMessage.includes("authentication") || errorMessage.includes("credentials")) {
+            errorMessage = "SMS service authentication failed. Please check your credentials.";
           }
           
           res.status(400).json({ 
             success: false, 
             message: errorMessage,
-            twilioError: twilioError.message 
+            error: smsResult.error 
           });
         }
       } else if (contactType === "email") {
@@ -1253,9 +1256,13 @@ themomapp.us@gmail.com`;
           note: "SMS is recommended for teen invites"
         });
       } else {
+        const availableProviders = smsService.getAvailableProviders();
         res.status(400).json({ 
           success: false, 
-          message: "Twilio not configured. Please set TWILIO_ACCOUNT_SID environment variable." 
+          message: availableProviders.length > 0 
+            ? "SMS service available but phone contact method not selected" 
+            : "No SMS providers configured. Please set up Twilio or AWS SNS credentials.",
+          availableProviders
         });
       }
     } catch (error: any) {
