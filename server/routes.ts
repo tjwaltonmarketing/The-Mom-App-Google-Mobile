@@ -12,6 +12,13 @@ import {
   insertDeadlineSchema,
   insertNotificationSchema
 } from "@shared/schema";
+// Set LeadConnector environment variables before importing SMS service
+if (!process.env.LEADCONNECTOR_API_KEY) {
+  process.env.LEADCONNECTOR_API_KEY = "215c65d0-72a8-4221-a0bc-cf39ebfc6acf";
+  process.env.LEADCONNECTOR_LOCATION_ID = "Zuv4qgKlSoOyGdkVJtjr";
+  console.log("🔧 LeadConnector credentials set in routes.ts");
+}
+
 import { smsService } from "./sms-providers";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -41,6 +48,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       count: providers.length,
       configured: providers.length > 0
     });
+  });
+
+  // Reinitialize SMS providers endpoint
+  app.post("/api/sms/reinitialize", (req, res) => {
+    smsService.reinitialize();
+    const providers = smsService.getAvailableProviders();
+    res.json({
+      message: "SMS providers reinitialized",
+      providers,
+      count: providers.length,
+      configured: providers.length > 0
+    });
+  });
+
+  // SMS test endpoint
+  app.post("/api/sms/test", async (req, res) => {
+    try {
+      const { phone, message } = req.body;
+      
+      if (!phone || !message) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Phone number and message are required" 
+        });
+      }
+      
+      const result = await smsService.sendSMS(phone, message);
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: `SMS sent successfully via ${result.provider}`,
+          messageId: result.messageId,
+          provider: result.provider
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          error: result.error,
+          availableProviders: smsService.getAvailableProviders()
+        });
+      }
+    } catch (error: any) {
+      console.error("SMS test error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to send test SMS: " + error.message 
+      });
+    }
   });
   
   // Authentication Routes

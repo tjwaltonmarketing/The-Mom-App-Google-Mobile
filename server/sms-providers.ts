@@ -90,9 +90,16 @@ export class LeadConnectorProvider implements SMSProvider {
 
   async sendSMS(to: string, message: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
-      // Format phone number for LeadConnector (remove +1 if present)
-      const formattedPhone = to.replace(/^\+?1?/, '').replace(/\D/g, '');
+      // Format phone number to E.164 format for LeadConnector
+      let formattedPhone = to.replace(/\D/g, '');
+      if (!formattedPhone.startsWith('1') && formattedPhone.length === 10) {
+        formattedPhone = '1' + formattedPhone;
+      }
+      if (!formattedPhone.startsWith('+')) {
+        formattedPhone = '+' + formattedPhone;
+      }
       
+      // Use the correct LeadConnector API endpoint for SMS
       const response = await fetch(`${this.baseUrl}/conversations/messages`, {
         method: 'POST',
         headers: {
@@ -102,7 +109,7 @@ export class LeadConnectorProvider implements SMSProvider {
         },
         body: JSON.stringify({
           type: 'SMS',
-          contactId: this.locationId,
+          locationId: this.locationId,
           message: message,
           phone: formattedPhone
         })
@@ -134,6 +141,11 @@ export class SMSService {
 
   constructor() {
     // Try to initialize providers based on available credentials
+    this.initializeProviders();
+  }
+
+  public reinitialize() {
+    this.providers = [];
     this.initializeProviders();
   }
 

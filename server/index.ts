@@ -2,6 +2,13 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
+// Set LeadConnector environment variables for testing
+if (!process.env.LEADCONNECTOR_API_KEY) {
+  process.env.LEADCONNECTOR_API_KEY = "215c65d0-72a8-4221-a0bc-cf39ebfc6acf";
+  process.env.LEADCONNECTOR_LOCATION_ID = "Zuv4qgKlSoOyGdkVJtjr";
+  console.log("🔧 LeadConnector credentials configured for testing");
+}
+
 const app = express();
 
 // CORS middleware for mobile app compatibility
