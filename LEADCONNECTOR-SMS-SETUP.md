@@ -2,18 +2,17 @@
 
 This guide shows how to set up LeadConnector (formerly HighLevel) for SMS messaging in The Mom App.
 
-## Step 1: Get LeadConnector Agency API Access
-**IMPORTANT: Use Agency-level API key, not sub-account key**
+## Step 1: Get LeadConnector Sub-Account API Access
+**IMPORTANT: Use Location-level API key, not Agency-level key**
 
-1. Log into your **Agency account** (main HighLevel account, not sub-account)
-2. Go to Settings → Integrations → API
-3. Create a new API key with these permissions:
-   - `conversations.message.write`
-   - `conversations.readonly` 
-   - `locations.readonly`
-4. Copy the Agency API key (usually starts with `eyJ` and is much longer)
+Based on HighLevel support: "All integrations are managed at the sub-account (location) level"
 
-**Note**: Sub-account API keys don't have sufficient permissions for SMS messaging.
+1. Log into your **Sub-account** (the specific location you want to send SMS from)
+2. Go to Settings → Business Profile (or Settings → Integrations)
+3. Find your **Location API key** 
+4. Copy the Location API key
+
+**Note**: Agency-level API keys are only for advanced features. SMS messaging requires Location-level API keys.
 
 ## Step 2: Find Your Location ID
 1. In LeadConnector, go to Settings → Business Profile
@@ -62,27 +61,26 @@ LeadConnector automatically uses numbers associated with your location:
 3. Visit `/teen-test` to see LeadConnector in the available providers
 4. Test sending an invite to verify SMS delivery
 
-## Current Status
+## Current Status (Updated after HighLevel Support Response)
 
-✅ **Agency API Key**: Successfully configured (eyJhbGciOi...)
+⚠️ **Issue Identified**: Using Agency-level API key instead of Location-level API key
 ✅ **Location ID**: Successfully extracted from JWT (Zuv4qgKlSoOyGdkVJtjr)
 ✅ **Provider Initialization**: LeadConnector provider loads correctly
-⚠️ **API Endpoints**: All tested endpoints return 401/404 errors
+⚠️ **API Authentication**: 401/404 errors due to wrong API key type
 
-### Tested Endpoints (All Failed)
-- `/conversations/messages` (401 error)
-- `/conversations/text` (404 error) 
-- `/messaging/sms` (404 error)
-- `/locations/{id}/conversations/messages` (404 error)
+### Root Cause (Per HighLevel Support)
+- "All integrations are managed at the sub-account (location) level"
+- Agency-level API keys are only for advanced features
+- SMS messaging requires Location-level API keys
 
 ## Next Steps
 
-The integration is configured correctly but the API endpoints may have changed or require different permissions. Consider:
+**ACTION REQUIRED**: Switch from Agency API key to Location API key
 
-1. **Contact LeadConnector Support** to verify the correct SMS API endpoints for Agency-level keys
-2. **Check API Documentation** for any recent endpoint changes
-3. **Verify Permissions** - ensure your Agency API key has SMS messaging permissions enabled
-4. **Alternative**: Use Twilio (working) or AWS SNS as reliable fallbacks
+1. **Get Location API Key**: Log into your sub-account and find the Location API key in Settings → Business Profile
+2. **Update Environment**: Replace current `LEADCONNECTOR_API_KEY` with the Location-level key
+3. **Test SMS**: LeadConnector should work correctly with the proper API key
+4. **Fallback**: Twilio continues to work as backup during the transition
 
 ## Troubleshooting
 

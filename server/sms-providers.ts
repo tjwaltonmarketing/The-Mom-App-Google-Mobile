@@ -85,8 +85,8 @@ export class LeadConnectorProvider implements SMSProvider {
     
     this.apiKey = process.env.LEADCONNECTOR_API_KEY;
     this.locationId = process.env.LEADCONNECTOR_LOCATION_ID;
-    // Use the correct base URL for agency-level API access
-    this.baseUrl = process.env.LEADCONNECTOR_BASE_URL || "https://services.leadconnectorhq.com";
+    // Use the correct base URL for GoHighLevel API 2.0
+    this.baseUrl = process.env.LEADCONNECTOR_BASE_URL || "https://rest.gohighlevel.com/v1";
     
     // Debug constructor values
     console.log(`🔧 LeadConnector constructor:`);
@@ -113,14 +113,13 @@ export class LeadConnectorProvider implements SMSProvider {
       console.log(`- Location ID: ${this.locationId}`);
       console.log(`- Base URL: ${this.baseUrl}`);
       
-      // Try the correct GoHighLevel/LeadConnector SMS API endpoints
-      // Method 1: Direct conversations endpoint with correct body structure
+      // GoHighLevel API v1 endpoint structure
+      // Method 1: Try conversations/messages endpoint
       let response = await fetch(`${this.baseUrl}/conversations/messages`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
-          'Content-Type': 'application/json',
-          'Version': '2021-07-28'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           type: 'SMS',
@@ -129,15 +128,14 @@ export class LeadConnectorProvider implements SMSProvider {
         })
       });
 
-      // Method 2: If first fails, try with phone instead of contactId  
+      // Method 2: Try with phone instead of contactId
       if (!response.ok) {
-        console.log(`Endpoint 1 failed (${response.status}), trying with phone field...`);
+        console.log(`Method 1 failed (${response.status}), trying with phone...`);
         response = await fetch(`${this.baseUrl}/conversations/messages`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json',
-            'Version': '2021-07-28'
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             type: 'SMS',
@@ -147,19 +145,19 @@ export class LeadConnectorProvider implements SMSProvider {
         });
       }
 
-      // Method 3: Try the messaging endpoint
+      // Method 3: Try the direct SMS endpoint
       if (!response.ok) {
-        console.log(`Endpoint 2 failed (${response.status}), trying messaging endpoint...`);
-        response = await fetch(`${this.baseUrl}/messaging/sms`, {
+        console.log(`Method 2 failed (${response.status}), trying SMS endpoint...`);
+        response = await fetch(`${this.baseUrl}/conversations/messages/outbound`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${this.apiKey}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            locationId: this.locationId,
+            type: 'SMS',
             message: message,
-            phone: formattedPhone
+            contactId: formattedPhone
           })
         });
       }

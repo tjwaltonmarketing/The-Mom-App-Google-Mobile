@@ -1,0 +1,48 @@
+Hi TJ! How can I help you today?
+
+What do I need to do connect another app to a sub account? Do I just need the sub account ID and API key?
+
+
+TJ, to connect another app to a sub-account in HighLevel, here’s what you need to know:
+
+All integrations are managed at the sub-account (location) level. Each sub-account will have its own unique connection to the third-party app.
+Authentication methods supported:
+OAuth: Login and authorize the integration with the third-party app.
+API Key: Copy the API key from the third-party app and paste it into HighLevel.
+Basic Auth: Use the username/password credentials of your third-party app.
+For most integrations, you’ll need the sub-account (location) API key and sometimes the sub-account ID, depending on the app’s requirements.
+After installing an app, you’ll be prompted to connect it to the sub-account and provide the necessary credentials (API key, OAuth login, etc.).
+
+If you’re bulk-installing across multiple sub-accounts, each sub-account user must connect the app individually from their marketplace.
+
+Tip:
+
+You can find your sub-account API key in the sub-account’s settings under “Business Profile” or “Integrations.”
+Always follow the specific app’s connection instructions for best results.
+Source(s):
+
+Marketplace Apps - Managing External Connections
+Business Profile Settings
+
+Did this solve it for you?
+OR — If you’d like a step-by-step guide to connect your phone number, I’m happy to walk you through it.
+
+Do I need a certain service level to connect to apps via API?
+
+
+TJ, to connect apps to a sub-account via API in HighLevel, here’s what you need to know:
+
+Basic API access is included with Starter and Unlimited plans, allowing you to use Location-level API keys for integrations.
+Advanced API access (including Agency-level API keys and future OAuth 2.0 endpoints) is available only on the Agency Pro plan. Lower plans can only use Location API keys, not Agency API keys.
+All integrations are managed at the sub-account (location) level, and you can connect using OAuth, API Keys, or Basic Auth depending on the app’s requirements.
+You can find your Location API key in the sub-account’s settings under “Business Info.” Agency-level API keys are accessible in Agency Settings if your plan supports it.
+For more details, see:
+
+API Access & Plan Levels
+Developer Docs
+Let me know if you need help finding your API key or have questions about your current plan’s capabilities.
+
+Source(s):
+
+HighLevel API
+How to Use Webhook.site to Troubleshoot your API Requests
