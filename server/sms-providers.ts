@@ -113,7 +113,8 @@ export class LeadConnectorProvider implements SMSProvider {
       console.log(`- Location ID: ${this.locationId}`);
       console.log(`- Base URL: ${this.baseUrl}`);
       
-      // Try the most common LeadConnector API format first
+      // Try the correct GoHighLevel/LeadConnector SMS API endpoints
+      // Method 1: Direct conversations endpoint with correct body structure
       let response = await fetch(`${this.baseUrl}/conversations/messages`, {
         method: 'POST',
         headers: {
@@ -123,41 +124,40 @@ export class LeadConnectorProvider implements SMSProvider {
         },
         body: JSON.stringify({
           type: 'SMS',
-          locationId: this.locationId,
           message: message,
-          phone: formattedPhone
+          contactId: formattedPhone
         })
       });
 
-      // If that fails, try alternative endpoint
-      if (!response.ok && response.status === 401) {
-        console.log('First endpoint failed, trying alternative format...');
+      // Method 2: If first fails, try with phone instead of contactId  
+      if (!response.ok) {
+        console.log(`Endpoint 1 failed (${response.status}), trying with phone field...`);
         response = await fetch(`${this.baseUrl}/conversations/messages`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${this.apiKey}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Version': '2021-07-28'
           },
           body: JSON.stringify({
             type: 'SMS',
-            contactId: this.locationId,
             message: message,
             phone: formattedPhone
           })
         });
       }
 
-      // If still failing, try the direct SMS endpoint
-      if (!response.ok && response.status === 401) {
-        console.log('Trying direct SMS endpoint...');
-        response = await fetch(`${this.baseUrl}/locations/${this.locationId}/messages`, {
+      // Method 3: Try the messaging endpoint
+      if (!response.ok) {
+        console.log(`Endpoint 2 failed (${response.status}), trying messaging endpoint...`);
+        response = await fetch(`${this.baseUrl}/messaging/sms`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${this.apiKey}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            type: 'SMS',
+            locationId: this.locationId,
             message: message,
             phone: formattedPhone
           })
@@ -166,6 +166,7 @@ export class LeadConnectorProvider implements SMSProvider {
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.log(`❌ All LeadConnector endpoints failed. Last error: ${response.status} - ${errorText}`);
         throw new Error(`LeadConnector API error: ${response.status} - ${errorText}`);
       }
 

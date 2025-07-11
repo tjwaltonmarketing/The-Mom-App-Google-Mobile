@@ -43,10 +43,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // SMS providers status endpoint
   app.get("/api/sms/providers", (req, res) => {
     const providers = smsService.getAvailableProviders();
+    const envDebug = {
+      hasLeadConnectorKey: !!process.env.LEADCONNECTOR_API_KEY,
+      hasLeadConnectorLocation: !!process.env.LEADCONNECTOR_LOCATION_ID,
+      leadConnectorKeyStart: process.env.LEADCONNECTOR_API_KEY ? process.env.LEADCONNECTOR_API_KEY.substring(0, 15) + '...' : 'Not set',
+      leadConnectorLocationId: process.env.LEADCONNECTOR_LOCATION_ID || 'Not set'
+    };
     res.json({
       providers,
       count: providers.length,
-      configured: providers.length > 0
+      configured: providers.length > 0,
+      debug: envDebug
     });
   });
 
@@ -97,6 +104,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: "Failed to send test SMS: " + error.message 
       });
     }
+  });
+
+  // SMS debug endpoint
+  app.get("/api/sms/debug", (req, res) => {
+    const providers = smsService.getAvailableProviders();
+    const envCheck = {
+      hasLeadConnectorKey: !!process.env.LEADCONNECTOR_API_KEY,
+      hasLeadConnectorLocation: !!process.env.LEADCONNECTOR_LOCATION_ID,
+      hasTwilioSid: !!process.env.TWILIO_ACCOUNT_SID,
+      hasTwilioToken: !!process.env.TWILIO_AUTH_TOKEN,
+      hasAwsKey: !!process.env.AWS_ACCESS_KEY_ID,
+      hasAwsSecret: !!process.env.AWS_SECRET_ACCESS_KEY,
+      leadConnectorKeyPrefix: process.env.LEADCONNECTOR_API_KEY ? process.env.LEADCONNECTOR_API_KEY.substring(0, 10) + '...' : 'Not set',
+      leadConnectorLocationId: process.env.LEADCONNECTOR_LOCATION_ID || 'Not set'
+    };
+    
+    res.json({
+      availableProviders: providers,
+      providerCount: providers.length,
+      environmentCheck: envCheck
+    });
   });
   
   // Authentication Routes

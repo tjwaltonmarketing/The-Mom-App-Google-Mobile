@@ -62,18 +62,41 @@ LeadConnector automatically uses numbers associated with your location:
 3. Visit `/teen-test` to see LeadConnector in the available providers
 4. Test sending an invite to verify SMS delivery
 
+## Current Status
+
+✅ **Agency API Key**: Successfully configured (eyJhbGciOi...)
+✅ **Location ID**: Successfully extracted from JWT (Zuv4qgKlSoOyGdkVJtjr)
+✅ **Provider Initialization**: LeadConnector provider loads correctly
+⚠️ **API Endpoints**: All tested endpoints return 401/404 errors
+
+### Tested Endpoints (All Failed)
+- `/conversations/messages` (401 error)
+- `/conversations/text` (404 error) 
+- `/messaging/sms` (404 error)
+- `/locations/{id}/conversations/messages` (404 error)
+
+## Next Steps
+
+The integration is configured correctly but the API endpoints may have changed or require different permissions. Consider:
+
+1. **Contact LeadConnector Support** to verify the correct SMS API endpoints for Agency-level keys
+2. **Check API Documentation** for any recent endpoint changes
+3. **Verify Permissions** - ensure your Agency API key has SMS messaging permissions enabled
+4. **Alternative**: Use Twilio (working) or AWS SNS as reliable fallbacks
+
 ## Troubleshooting
 
-**"API key invalid"**
-- Verify the API key is correct and has SMS permissions
-- Check that the key isn't expired
+**"API key invalid" (401 errors)**
+- Verify the API key has SMS messaging permissions
+- Check if the API key needs to be regenerated
+- Confirm you're using the Agency-level key, not sub-account key
 
-**"Location ID not found"**
-- Verify the Location ID matches your LeadConnector sub-account
-- Make sure the API key has access to this location
+**"Endpoint not found" (404 errors)**
+- API endpoints may have changed - check latest LeadConnector documentation
+- Try alternative base URLs if documented
 
 **"Phone number not configured"**
 - Ensure your LeadConnector location has at least one phone number
 - Check that SMS is enabled for that number
 
-The app will automatically prioritize LeadConnector if configured, then fall back to Twilio or AWS SNS if needed.
+The app will automatically prioritize LeadConnector if working, then fall back to Twilio or AWS SNS.
