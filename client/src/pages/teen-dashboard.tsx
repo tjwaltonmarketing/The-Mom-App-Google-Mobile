@@ -18,7 +18,8 @@ import {
   Users,
   Moon,
   Sun,
-  Eye
+  Eye,
+  BookOpen
 } from "lucide-react";
 import TeenNotifications from "@/components/teen/teen-notifications";
 
@@ -159,6 +160,14 @@ export default function TeenDashboard() {
                 onClick={() => setLocation("/teen-profile")}
               >
                 <Settings className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setLocation("/teen-tutorial")}
+                title="View Tutorial"
+              >
+                <BookOpen className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="sm">
                 <LogOut className="h-4 w-4" />

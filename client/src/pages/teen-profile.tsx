@@ -15,7 +15,8 @@ import {
   X,
   Moon,
   Sun,
-  Eye
+  Eye,
+  BookOpen
 } from "lucide-react";
 
 export default function TeenProfile() {
@@ -400,6 +401,37 @@ export default function TeenProfile() {
                   <p className="text-sm text-amber-700">
                     <strong>Tip:</strong> Blue light filter is great for evening use. 
                     It helps reduce eye strain and may improve sleep quality.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tutorial Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Need Help?</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  New to the app or want to learn about all the cool features? 
+                  Check out our kid-friendly tutorial!
+                </p>
+                
+                <Button 
+                  onClick={() => setLocation("/teen-tutorial")}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  View Interactive Tutorial
+                </Button>
+                
+                <div className="bg-purple-50 p-3 rounded-lg">
+                  <p className="text-sm text-purple-700">
+                    <strong>Quick Tour:</strong> Learn how to use dark mode, 
+                    notifications, calendar, points system, and more in just a few minutes!
                   </p>
                 </div>
               </div>
