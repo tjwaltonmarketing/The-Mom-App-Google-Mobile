@@ -5,8 +5,9 @@ import { InviteTeenModal } from "@/components/family/invite-teen-modal";
 import { TeenOnboarding } from "@/components/teen/teen-onboarding";
 import { TeenDashboard } from "@/components/teen/teen-dashboard";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, Users, Trophy, CheckCircle, XCircle } from "lucide-react";
+import { UserPlus, Users, Trophy, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 
 function SMSProviderStatus() {
   const { data: smsProviders, isLoading } = useQuery({
@@ -39,6 +40,7 @@ export default function TeenTest() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [viewMode, setViewMode] = useState<"testing" | "teen-dashboard">("testing");
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
@@ -61,6 +63,27 @@ export default function TeenTest() {
           >
             Teen Dashboard
           </Button>
+        </div>
+
+        {/* Authentication Status */}
+        <div className="max-w-md mx-auto">
+          <Card>
+            <CardContent className="pt-4">
+              <div className="flex items-center gap-2">
+                {isAuthenticated ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-sm">Authenticated as: {user?.email}</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <span className="text-sm">Not authenticated</span>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
