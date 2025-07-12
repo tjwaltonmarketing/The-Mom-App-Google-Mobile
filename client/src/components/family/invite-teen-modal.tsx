@@ -31,6 +31,7 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
   const [email, setEmail] = useState("");
   const [teenName, setTeenName] = useState("");
   const [role, setRole] = useState("teen");
+  const [step, setStep] = useState<"form" | "created">("form");
   const [generatedInvite, setGeneratedInvite] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -48,7 +49,17 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
       return response.json();
     },
     onSuccess: (data) => {
-      setGeneratedInvite(data);
+      console.log("Teen invite response:", data); // Debug log
+      
+      // Structure the invite data properly for display
+      setGeneratedInvite({
+        id: data.teen.id,
+        inviteCode: data.teen.inviteCode,
+        invitedContact: inviteMethod === "sms" ? phone : email,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      });
+      
+      setStep("created");
       queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
       
       const contact = inviteMethod === "sms" ? phone : email;
@@ -149,6 +160,7 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
     setEmail("");
     setTeenName("");
     setRole("teen");
+    setStep("form");
     setGeneratedInvite(null);
     onClose();
   };
@@ -163,7 +175,7 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
           </DialogTitle>
         </DialogHeader>
 
-        {!generatedInvite ? (
+        {step === "form" ? (
           <div className="space-y-6">
             {/* Teen Information */}
             <div className="space-y-4">
