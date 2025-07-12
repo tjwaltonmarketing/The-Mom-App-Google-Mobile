@@ -1844,7 +1844,10 @@ themomapp.us@gmail.com`;
     try {
       const teenId = req.session?.teenId;
       
+      console.log("Auth check - Session ID:", req.session?.id, "User ID:", req.session?.userId, "Teen ID:", teenId);
+      
       if (!teenId) {
+        console.log("No teen found in session");
         return res.status(401).json({ error: "Not authenticated" });
       }
       

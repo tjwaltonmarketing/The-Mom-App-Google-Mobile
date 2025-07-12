@@ -9,6 +9,7 @@ import jwt from "jsonwebtoken";
 declare module "express-session" {
   interface SessionData {
     userId?: number;
+    teenId?: number;
   }
 }
 

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -30,10 +30,33 @@ export default function TeenProfile() {
   const queryClient = useQueryClient();
 
   // Get teen profile data
-  const { data: teenProfile, isLoading } = useQuery({
+  const { data: teenProfile, isLoading, error } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     retry: false,
   });
+
+  // Debug authentication state
+  useEffect(() => {
+    console.log("Teen auth state:", { teenProfile, isLoading, error });
+  }, [teenProfile, isLoading, error]);
+
+  // Quick login for testing (temporary)
+  const loginForTesting = async () => {
+    try {
+      const response = await apiRequest("POST", "/api/teen/login", {
+        username: "adri_w",
+        password: "password123"
+      });
+      console.log("Login response:", response);
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/auth/user"] });
+      toast({
+        title: "Logged in!",
+        description: "Test login successful",
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+  };
 
   const updateProfileMutation = useMutation({
     mutationFn: async (profileData: any) => {
@@ -133,6 +156,32 @@ export default function TeenProfile() {
       console.error("Avatar revert error:", error);
     }
   };
+
+  // Show login button if not authenticated
+  if (error && !isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Authentication Required</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-gray-600">
+              You need to be logged in to access your profile.
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={loginForTesting}>
+                Test Login (Adri)
+              </Button>
+              <Button variant="outline" onClick={() => setLocation("/teen-login")}>
+                Go to Login
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
