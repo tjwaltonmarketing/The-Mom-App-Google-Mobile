@@ -48,14 +48,25 @@ export default function TeenNavigation({ currentPath }: TeenNavigationProps) {
       <div className="max-w-7xl mx-auto">
         {/* Top Header with Profile & Controls */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          {/* Profile Section */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
-              A
+          {/* App Branding + Profile Section */}
+          <div className="flex items-center gap-4">
+            {/* The Mom App Logo */}
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">M</span>
+              </div>
+              <span className="font-semibold text-gray-900 hidden sm:block">The Mom App</span>
             </div>
-            <div>
-              <h1 className="text-lg font-semibold">Hey, Adri!</h1>
-              <p className="text-sm text-gray-600">Family Helper</p>
+            
+            {/* Profile Section */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
+                A
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold">Hey, Adri!</h1>
+                <p className="text-sm text-gray-600">Family Helper</p>
+              </div>
             </div>
           </div>
 
