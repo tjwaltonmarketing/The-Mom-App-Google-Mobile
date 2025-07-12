@@ -708,7 +708,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/events", async (req, res) => {
     try {
-      const validatedData = insertEventSchema.parse(req.body);
+      // Convert date strings to Date objects if needed
+      const eventData = { ...req.body };
+      if (eventData.startTime && typeof eventData.startTime === 'string') {
+        eventData.startTime = new Date(eventData.startTime);
+      }
+      if (eventData.endTime && typeof eventData.endTime === 'string') {
+        eventData.endTime = new Date(eventData.endTime);
+      }
+      
+      const validatedData = insertEventSchema.parse(eventData);
       const event = await storage.createEvent(validatedData);
       res.status(201).json(event);
     } catch (error) {
@@ -750,41 +759,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/tasks", async (req, res) => {
     try {
-      const validatedData = insertTaskSchema.parse(req.body);
+      // Convert date strings to Date objects if needed
+      const taskData = { ...req.body };
+      if (taskData.dueDate && typeof taskData.dueDate === 'string') {
+        taskData.dueDate = new Date(taskData.dueDate);
+      }
+      
+      // Validate the data after conversion
+      const validatedData = insertTaskSchema.parse(taskData);
       const task = await storage.createTask(validatedData);
       res.status(201).json(task);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Task validation error:", error.errors);
         res.status(400).json({ message: "Invalid task data", errors: error.errors });
       } else {
+        console.error("Task creation error:", error);
         res.status(500).json({ message: "Failed to create task" });
       }
     }
   });
 
-  // Events
-  app.post("/api/events", async (req, res) => {
-    try {
-      // Convert date strings to Date objects if needed
-      const eventData = { ...req.body };
-      if (eventData.startTime && typeof eventData.startTime === 'string') {
-        eventData.startTime = new Date(eventData.startTime);
-      }
-      if (eventData.endTime && typeof eventData.endTime === 'string') {
-        eventData.endTime = new Date(eventData.endTime);
-      }
-      
-      const validatedData = insertEventSchema.parse(eventData);
-      const event = await storage.createEvent(validatedData);
-      res.status(201).json(event);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        res.status(400).json({ message: "Invalid event data", errors: error.errors });
-      } else {
-        res.status(500).json({ message: "Failed to create event" });
-      }
-    }
-  });
+
 
   app.put("/api/events/:id", async (req, res) => {
     try {

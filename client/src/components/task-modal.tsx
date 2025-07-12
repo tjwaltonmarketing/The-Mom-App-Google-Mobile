@@ -68,7 +68,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       description: description.trim() || null,
       priority,
       assignedTo: assignedTo !== "unassigned" ? parseInt(assignedTo) : null,
-      dueDate,
+      dueDate: dueDate ? dueDate.toISOString() : null,
     };
 
     createTaskMutation.mutate(taskData);
