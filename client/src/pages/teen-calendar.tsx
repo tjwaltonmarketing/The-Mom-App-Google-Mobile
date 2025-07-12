@@ -15,7 +15,6 @@ import {
   Calendar, 
   Clock, 
   Users, 
-  ArrowLeft,
   Plus,
   Eye,
   EyeOff,
@@ -24,11 +23,12 @@ import {
   ChevronRight,
   Grid3X3
 } from "lucide-react";
+import TeenNavigation from "@/components/teen/teen-navigation";
 
 export default function TeenCalendar() {
   const [, setLocation] = useLocation();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"calendar" | "list">("calendar");
+  const [viewMode, setViewMode] = useState<"calendar" | "list">("list");
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: "",
@@ -48,27 +48,19 @@ export default function TeenCalendar() {
     retry: false,
   });
 
+  // Create event mutation
   const createEventMutation = useMutation({
     mutationFn: async (eventData: any) => {
-      const response = await apiRequest("POST", "/api/events", eventData);
-      return response;
+      return await apiRequest("POST", "/api/events", eventData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
-      toast({
-        title: "Event Created!",
-        description: `"${newEvent.title}" has been added to the family calendar`,
-      });
-      setNewEvent({
-        title: "",
-        date: "",
-        time: "",
-        endTime: "",
-        location: "",
-        description: "",
-        type: "personal"
-      });
       setIsAddEventOpen(false);
+      setNewEvent({ title: "", date: "", time: "", endTime: "", location: "", description: "", type: "personal" });
+      toast({
+        title: "Event Created",
+        description: "Your event has been added to the calendar",
+      });
     },
     onError: (error: any) => {
       toast({
@@ -141,45 +133,6 @@ export default function TeenCalendar() {
     return allEvents.filter(event => event.date === dateLabel);
   };
 
-  const getEventsForCalendarDate = (date: Date) => {
-    return allEvents.filter(event => {
-      return event.fullDate.toDateString() === date.toDateString();
-    });
-  };
-
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-    
-    const days = [];
-    
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
-    }
-    
-    // Add days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(new Date(year, month, day));
-    }
-    
-    return days;
-  };
-
-  const navigateMonth = (direction: "prev" | "next") => {
-    const newDate = new Date(selectedDate);
-    if (direction === "prev") {
-      newDate.setMonth(newDate.getMonth() - 1);
-    } else {
-      newDate.setMonth(newDate.getMonth() + 1);
-    }
-    setSelectedDate(newDate);
-  };
-
   const handleAddEvent = () => {
     if (!newEvent.title || !newEvent.date || !newEvent.time) {
       toast({
@@ -190,21 +143,14 @@ export default function TeenCalendar() {
       return;
     }
 
-    // Create proper datetime for the event
-    const startDateTime = new Date(`${newEvent.date}T${newEvent.time}:00`);
-    const endDateTime = newEvent.endTime 
-      ? new Date(`${newEvent.date}T${newEvent.endTime}:00`)
-      : null;
-
     const eventData = {
       title: newEvent.title,
       description: newEvent.description,
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime?.toISOString(),
+      startTime: new Date(`${newEvent.date}T${newEvent.time}`).toISOString(),
+      endTime: newEvent.endTime ? new Date(`${newEvent.date}T${newEvent.endTime}`).toISOString() : null,
       location: newEvent.location,
-      visibilityType: "shared", // Default to shared for teen events
-      createdBy: 1, // Assume teen is family member ID 1
-      assignedTo: 1
+      visibilityType: "shared", // Default to shared for teens
+      familyId: 1, // Would be dynamic based on teen's family
     };
 
     createEventMutation.mutate(eventData);
@@ -294,348 +240,234 @@ export default function TeenCalendar() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setLocation("/teen-dashboard")}
-              >
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                Back
-              </Button>
-              <div>
-                <h1 className="text-xl font-semibold">Family Calendar</h1>
-                <p className="text-sm text-gray-600">The Walton Family</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === "calendar" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("calendar")}
-              >
-                <Grid3X3 className="h-4 w-4 mr-1" />
-                Calendar
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-              >
-                List
-              </Button>
-              
-              <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Event
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Add New Event</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="title">Event Title</Label>
+      {/* Navigation */}
+      <TeenNavigation currentPath="/teen-calendar" />
+      
+      <div className="max-w-6xl mx-auto p-4">
+        {/* Page Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">My Calendar</h1>
+            <p className="text-gray-600">Your events and family schedule</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === "calendar" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setViewMode("calendar")}
+            >
+              <Grid3X3 className="h-4 w-4 mr-1" />
+              Calendar
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setViewMode("list")}
+            >
+              <Calendar className="h-4 w-4 mr-1" />
+              List
+            </Button>
+            <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Event
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Event</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Event Title</Label>
+                    <Input
+                      id="title"
+                      value={newEvent.title}
+                      onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
+                      placeholder="Enter event title"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="date">Date</Label>
                       <Input
-                        id="title"
-                        value={newEvent.title}
-                        onChange={(e) => setNewEvent({...newEvent, title: e.target.value})}
-                        placeholder="Enter event title"
+                        id="date"
+                        type="date"
+                        value={newEvent.date}
+                        onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
                       />
                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label htmlFor="date">Date</Label>
-                        <Input
-                          id="date"
-                          type="date"
-                          value={newEvent.date}
-                          onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="time">Start Time</Label>
-                        <Input
-                          id="time"
-                          type="time"
-                          value={newEvent.time}
-                          onChange={(e) => setNewEvent({...newEvent, time: e.target.value})}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="endTime">End Time (Optional)</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="time">Start Time</Label>
                       <Input
-                        id="endTime"
+                        id="time"
                         type="time"
-                        value={newEvent.endTime}
-                        onChange={(e) => setNewEvent({...newEvent, endTime: e.target.value})}
+                        value={newEvent.time}
+                        onChange={(e) => setNewEvent({...newEvent, time: e.target.value})}
                       />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="location">Location</Label>
-                      <Input
-                        id="location"
-                        value={newEvent.location}
-                        onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
-                        placeholder="Enter location"
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="type">Event Type</Label>
-                      <Select value={newEvent.type} onValueChange={(value) => setNewEvent({...newEvent, type: value})}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="personal">Personal</SelectItem>
-                          <SelectItem value="family">Family</SelectItem>
-                          <SelectItem value="school">School</SelectItem>
-                          <SelectItem value="sport">Sports</SelectItem>
-                          <SelectItem value="work">Work</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="description">Description (Optional)</Label>
-                      <Textarea
-                        id="description"
-                        value={newEvent.description}
-                        onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
-                        placeholder="Add any notes or details"
-                        rows={3}
-                      />
-                    </div>
-
-                    <div className="flex gap-2 pt-2">
-                      <Button 
-                        onClick={handleAddEvent} 
-                        className="flex-1"
-                        disabled={createEventMutation.isPending}
-                      >
-                        {createEventMutation.isPending ? "Adding..." : "Add Event"}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setIsAddEventOpen(false)}
-                      >
-                        Cancel
-                      </Button>
                     </div>
                   </div>
-                </DialogContent>
-              </Dialog>
-            </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="endTime">End Time (Optional)</Label>
+                    <Input
+                      id="endTime"
+                      type="time"
+                      value={newEvent.endTime}
+                      onChange={(e) => setNewEvent({...newEvent, endTime: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location (Optional)</Label>
+                    <Input
+                      id="location"
+                      value={newEvent.location}
+                      onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
+                      placeholder="Add location"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="description">Description (Optional)</Label>
+                    <Textarea
+                      id="description"
+                      value={newEvent.description}
+                      onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
+                      placeholder="Add any notes or details"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button 
+                      onClick={handleAddEvent} 
+                      className="flex-1"
+                      disabled={createEventMutation.isPending}
+                    >
+                      {createEventMutation.isPending ? "Adding..." : "Add Event"}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsAddEventOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
             <span className="ml-3 text-gray-600">Loading calendar events...</span>
           </div>
         ) : (
-        <div className="space-y-6">
-          
-          {/* Privacy Legend */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                Privacy Levels
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full" />
-                  <span><strong>My Events:</strong> Your personal events</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full" />
-                  <span><strong>Family Shared:</strong> Everyone can see</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full" />
-                  <span><strong>Busy:</strong> Time blocked only</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-gray-500 rounded-full" />
-                  <span><strong>Private:</strong> Hidden details</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {viewMode === "calendar" ? (
-            /* Calendar Grid View */
+          <div className="space-y-6">
+            {/* Privacy Legend */}
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    {selectedDate.toLocaleDateString('en-US', { 
-                      month: 'long', 
-                      year: 'numeric' 
-                    })}
-                  </CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={() => navigateMonth("prev")}>
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => navigateMonth("next")}>
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Privacy Levels
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-7 gap-2">
-                  {/* Day headers */}
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                    <div key={day} className="p-2 text-center text-sm font-medium text-gray-600">
-                      {day}
-                    </div>
-                  ))}
-                  
-                  {/* Calendar days */}
-                  {getDaysInMonth(selectedDate).map((date, index) => {
-                    if (!date) {
-                      return <div key={index} className="p-2 h-20" />;
-                    }
-                    
-                    const dayEvents = getEventsForCalendarDate(date);
-                    const isToday = date.toDateString() === new Date().toDateString();
-                    
-                    return (
-                      <div 
-                        key={index} 
-                        className={`p-2 h-20 border rounded-lg ${
-                          isToday 
-                            ? 'bg-blue-50 border-blue-200' 
-                            : 'bg-white border-gray-200 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className={`text-sm font-medium mb-1 ${
-                          isToday ? 'text-blue-600' : 'text-gray-900'
-                        }`}>
-                          {date.getDate()}
-                        </div>
-                        <div className="space-y-1">
-                          {dayEvents.slice(0, 2).map((event) => (
-                            <div 
-                              key={event.id}
-                              className={`text-xs p-1 rounded truncate ${
-                                event.privacy === 'private' 
-                                  ? 'bg-gray-200 text-gray-600'
-                                  : event.privacy === 'busy'
-                                  ? 'bg-yellow-200 text-yellow-800'
-                                  : 'text-white'
-                              }`}
-                              style={{
-                                backgroundColor: event.privacy === 'shared' ? event.color : undefined
-                              }}
-                            >
-                              {event.privacy === 'private' 
-                                ? 'Private' 
-                                : event.privacy === 'busy'
-                                ? 'Busy'
-                                : event.title}
-                            </div>
-                          ))}
-                          {dayEvents.length > 2 && (
-                            <div className="text-xs text-gray-500">
-                              +{dayEvents.length - 2} more
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-purple-500 rounded-full" />
+                    <span><strong>My Events:</strong> Your personal events</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                    <span><strong>Family Shared:</strong> Everyone can see</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+                    <span><strong>Busy:</strong> Time blocked only</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-500 rounded-full" />
+                    <span><strong>Private:</strong> Hidden details</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          ) : (
-            /* List View */
-            <>
-              {/* Today's Events */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-blue-600" />
-                    Today - {new Date().toLocaleDateString('en-US', { 
+
+            {/* Today's Events */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-green-600" />
+                  Today - {new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {getEventsByDate("Today").length > 0 ? (
+                    getEventsByDate("Today").map(renderEvent)
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">No events today</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tomorrow's Events */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-blue-600" />
+                  Tomorrow - {(() => {
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    return tomorrow.toLocaleDateString('en-US', { 
                       weekday: 'long', 
                       month: 'long', 
                       day: 'numeric' 
-                    })}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {getEventsByDate("Today").length > 0 ? (
-                      getEventsByDate("Today").map(renderEvent)
-                    ) : (
-                      <p className="text-gray-500 text-center py-4">No events today</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                    });
+                  })()}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {getEventsByDate("Tomorrow").length > 0 ? (
+                    getEventsByDate("Tomorrow").map(renderEvent)
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">No events tomorrow</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Tomorrow's Events */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-green-600" />
-                    Tomorrow - {new Date(Date.now() + 86400000).toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {getEventsByDate("Tomorrow").length > 0 ? (
-                      getEventsByDate("Tomorrow").map(renderEvent)
-                    ) : (
-                      <p className="text-gray-500 text-center py-4">No events tomorrow</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Upcoming Events */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-purple-600" />
-                    This Week
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {allEvents.filter(event => !["Today", "Tomorrow"].includes(event.date)).map(renderEvent)}
-                  </div>
-                </CardContent>
-              </Card>
-            </>
-          )}
-
-        </div>
+            {/* Upcoming Events */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-purple-600" />
+                  This Week
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {allEvents.filter(event => !["Today", "Tomorrow"].includes(event.date)).length > 0 ? (
+                    allEvents.filter(event => !["Today", "Tomorrow"].includes(event.date)).map(renderEvent)
+                  ) : (
+                    <p className="text-gray-500 text-center py-4">No other events this week</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </div>

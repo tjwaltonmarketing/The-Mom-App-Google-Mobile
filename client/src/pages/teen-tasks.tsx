@@ -13,12 +13,11 @@ import {
   Flame, 
   Trophy, 
   Plus,
-  Users,
-  Lock
+  Users
 } from "lucide-react";
 import TeenNavigation from "@/components/teen/teen-navigation";
 
-export default function TeenDashboard() {
+export default function TeenTasks() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [, setLocation] = useLocation();
 
@@ -50,10 +49,10 @@ export default function TeenDashboard() {
     },
     {
       id: 3,
-      title: "Clean bedroom",
-      dueTime: "8:00 PM",
-      priority: "medium",
-      points: 25,
+      title: "Clean bedroom", 
+      dueTime: "4:00 PM",
+      priority: "low",
+      points: 20,
       isCompleted: false
     }
   ];
@@ -62,15 +61,15 @@ export default function TeenDashboard() {
     {
       id: 1,
       title: "Soccer Practice",
-      time: "4:00 PM",
+      time: "3:30 PM",
       date: "Today",
-      type: "sport"
+      type: "activity"
     },
     {
       id: 2,
-      title: "Family Dinner",
-      time: "6:30 PM",
-      date: "Today",
+      title: "Family Movie Night",
+      time: "7:00 PM", 
+      date: "Tonight",
       type: "family"
     },
     {
@@ -95,7 +94,7 @@ export default function TeenDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Header */}
-      <TeenNavigation currentPath="/teen-dashboard" />
+      <TeenNavigation currentPath="/teen-tasks" />
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -164,23 +163,55 @@ export default function TeenDashboard() {
                         <p className={`font-medium ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
                           {task.title}
                         </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Clock className="h-3 w-3 text-gray-400" />
-                          <span className="text-xs text-gray-600">{task.dueTime}</span>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Clock className="h-3 w-3" />
+                          <span>{task.dueTime}</span>
+                          <Badge variant={
+                            task.priority === 'high' ? 'destructive' : 
+                            task.priority === 'medium' ? 'default' : 'secondary'
+                          } className="text-xs">
+                            {task.priority}
+                          </Badge>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
-                        {task.priority}
-                      </Badge>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 text-yellow-500" />
-                        <span className="text-sm font-medium">{task.points}</span>
-                      </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-purple-600">+{task.points} pts</p>
                     </div>
                   </div>
                 ))}
+                
+                <Button variant="outline" className="w-full mt-4">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Task
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card className="md:col-span-1">
+            <CardHeader>
+              <CardTitle className="text-lg">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setLocation("/teen-calendar")}
+                  className="h-16 flex flex-col gap-1"
+                >
+                  <Calendar className="h-5 w-5" />
+                  <span className="text-xs">Calendar</span>
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="h-16 flex flex-col gap-1"
+                >
+                  <Plus className="h-5 w-5" />
+                  <span className="text-xs">Add Task</span>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -195,16 +226,43 @@ export default function TeenDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {upcomingEvents.map((event) => (
-                  <div key={event.id} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-medium text-sm">{event.title}</p>
-                        <p className="text-xs text-gray-600 mt-1">{event.date} at {event.time}</p>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {event.type}
-                      </Badge>
+                {upcomingEvents.slice(0, 3).map((event) => (
+                  <div key={event.id} className="p-2 bg-gray-50 rounded-lg">
+                    <p className="font-medium text-sm">{event.title}</p>
+                    <div className="flex items-center gap-2 text-xs text-gray-600">
+                      <Clock className="h-3 w-3" />
+                      <span>{event.time} • {event.date}</span>
+                    </div>
+                  </div>
+                ))}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full text-xs"
+                  onClick={() => setLocation("/teen-calendar")}
+                >
+                  View All Events
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Achievements */}
+          <Card className="md:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-yellow-500" />
+                Achievements
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {achievements.map((achievement, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="text-2xl">{achievement.icon}</div>
+                    <div>
+                      <p className="font-medium text-sm">{achievement.name}</p>
+                      <p className="text-xs text-gray-600">{achievement.description}</p>
                     </div>
                   </div>
                 ))}
@@ -212,54 +270,6 @@ export default function TeenDashboard() {
             </CardContent>
           </Card>
 
-          {/* Recent Achievements */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-yellow-500" />
-                Recent Achievements
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {achievements.map((achievement, index) => (
-                  <div key={index} className="p-3 bg-yellow-50 rounded-lg border border-yellow-200 text-center">
-                    <div className="text-2xl mb-2">{achievement.icon}</div>
-                    <p className="font-medium text-sm">{achievement.name}</p>
-                    <p className="text-xs text-gray-600">{achievement.description}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Family Connection */}
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-purple-500" />
-                Family
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-2">Connected to</p>
-                  <p className="font-semibold">The Walton Family</p>
-                  <p className="text-xs text-gray-500 mt-1">3 members</p>
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full"
-                  onClick={() => setLocation("/teen-calendar")}
-                >
-                  <Calendar className="h-3 w-3 mr-1" />
-                  View Family Calendar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>
