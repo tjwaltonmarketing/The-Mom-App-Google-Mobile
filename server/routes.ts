@@ -10,7 +10,8 @@ import {
   insertTaskSchema,
   insertVoiceNoteSchema,
   insertDeadlineSchema,
-  insertNotificationSchema
+  insertNotificationSchema,
+  insertMealPlanSchema
 } from "@shared/schema";
 // Set LeadConnector environment variables before importing SMS service
 if (!process.env.LEADCONNECTOR_API_KEY) {
@@ -906,6 +907,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(notifications);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch pending notifications" });
+    }
+  });
+
+  // Meal Plans Routes
+  app.get("/api/meal-plans", async (req, res) => {
+    try {
+      const mealPlans = await storage.getMealPlans();
+      res.json(mealPlans);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch meal plans" });
+    }
+  });
+
+  app.get("/api/meal-plans/week", async (req, res) => {
+    try {
+      const weeklyMealPlans = await storage.getWeeklyMealPlans();
+      
+      // If no meal plans exist, create sample ones for demo
+      if (weeklyMealPlans.length === 0) {
+        const sampleMeals = [
+          { day: "Monday", mealName: "Spaghetti & Meatballs", description: "Classic Italian dinner with garlic bread" },
+          { day: "Tuesday", mealName: "Taco Tuesday", description: "Ground beef tacos with all the fixings" },
+          { day: "Wednesday", mealName: "Grilled Chicken", description: "Herb-roasted chicken with vegetables" },
+          { day: "Thursday", mealName: "Pizza Night", description: "Homemade pizza - everyone picks toppings!" },
+          { day: "Friday", mealName: "Fish & Chips", description: "Crispy cod with hand-cut fries" },
+          { day: "Saturday", mealName: "BBQ Burgers", description: "Grilled burgers with sweet potato fries" },
+          { day: "Sunday", mealName: "Roast Dinner", description: "Sunday roast with all the trimmings" }
+        ];
+        
+        for (const meal of sampleMeals) {
+          await storage.createMealPlan({
+            day: meal.day,
+            mealType: "dinner",
+            meal: meal.mealName,
+            notes: meal.description,
+            createdBy: 1 // Default to first family member
+          });
+        }
+        
+        // Fetch the newly created meal plans
+        const newMealPlans = await storage.getWeeklyMealPlans();
+        res.json(newMealPlans);
+      } else {
+        res.json(weeklyMealPlans);
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch weekly meal plans" });
+    }
+  });
+
+  app.post("/api/meal-plans", async (req, res) => {
+    try {
+      const validatedData = insertMealPlanSchema.parse(req.body);
+      const mealPlan = await storage.createMealPlan(validatedData);
+      res.status(201).json(mealPlan);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid meal plan data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create meal plan" });
+      }
+    }
+  });
+
+  app.delete("/api/meal-plans/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteMealPlan(id);
+      if (!success) {
+        return res.status(404).json({ message: "Meal plan not found" });
+      }
+      res.json({ message: "Meal plan deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete meal plan" });
     }
   });
 

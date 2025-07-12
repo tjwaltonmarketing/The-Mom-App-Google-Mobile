@@ -14,13 +14,21 @@ import {
   Trophy, 
   Plus,
   Users,
-  Lock
+  Lock,
+  ChefHat,
+  Utensils
 } from "lucide-react";
 import TeenNavigation from "@/components/teen/teen-navigation";
 
 export default function TeenDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [, setLocation] = useLocation();
+
+  // Fetch weekly meal plans for teen dashboard
+  const { data: weeklyMeals = [], isLoading: mealsLoading } = useQuery({
+    queryKey: ["/api/meal-plans/week"],
+    retry: false,
+  });
 
   // Mock data for teen dashboard
   const teenProfile = {
@@ -230,6 +238,72 @@ export default function TeenDashboard() {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Weekly Dinner Plans */}
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Utensils className="h-5 w-5 text-green-500" />
+                This Week's Dinners
+                <Badge variant="secondary" className="text-xs ml-auto">
+                  Set by parents
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {mealsLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" />
+                  <span className="ml-2 text-sm text-gray-600">Loading meal plans...</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
+                    const dayMeal = weeklyMeals.find(meal => meal.day === day);
+                    const isToday = new Date().toLocaleDateString('en-US', { weekday: 'long' }) === day;
+                    
+                    return (
+                      <div 
+                        key={day} 
+                        className={`p-3 rounded-lg border ${
+                          isToday 
+                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
+                            : 'bg-gray-50 border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <p className={`text-xs font-medium ${isToday ? 'text-green-700' : 'text-gray-600'}`}>
+                            {day}
+                          </p>
+                          {isToday && (
+                            <Badge variant="outline" className="text-xs text-green-600 border-green-300">
+                              Today
+                            </Badge>
+                          )}
+                        </div>
+                        {dayMeal ? (
+                          <div>
+                            <p className="font-medium text-sm text-gray-900 mb-1">
+                              {dayMeal.meal}
+                            </p>
+                            {dayMeal.notes && (
+                              <p className="text-xs text-gray-600 line-clamp-2">
+                                {dayMeal.notes}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-gray-400 italic">
+                            No dinner planned
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
 

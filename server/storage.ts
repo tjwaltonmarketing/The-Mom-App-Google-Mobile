@@ -126,6 +126,7 @@ export interface IStorage {
   
   // Meal Plans
   getMealPlans(): Promise<MealPlan[]>;
+  getWeeklyMealPlans(): Promise<MealPlan[]>;
   createMealPlan(plan: InsertMealPlan): Promise<MealPlan>;
   deleteMealPlan(id: number): Promise<boolean>;
 
@@ -504,6 +505,10 @@ export class DatabaseStorage implements IStorage {
 
   async getMealPlans(): Promise<MealPlan[]> {
     return await db.select().from(mealPlans).orderBy(desc(mealPlans.createdAt));
+  }
+
+  async getWeeklyMealPlans(): Promise<MealPlan[]> {
+    return await db.select().from(mealPlans).where(eq(mealPlans.mealType, "dinner"));
   }
 
   async createMealPlan(insertPlan: InsertMealPlan): Promise<MealPlan> {
