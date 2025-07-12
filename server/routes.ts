@@ -1571,6 +1571,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/passwords/:id/sharing", async (req, res) => {
+    try {
+      const passwordId = parseInt(req.params.id);
+      const { shared_with } = req.body;
+      
+      const updatedPassword = await storage.updatePasswordSharing(passwordId, shared_with);
+      
+      if (!updatedPassword) {
+        return res.status(404).json({ message: "Password not found" });
+      }
+      
+      res.json(updatedPassword);
+    } catch (error: any) {
+      console.error("Password sharing update error:", error);
+      res.status(500).json({ message: "Failed to update password sharing" });
+    }
+  });
+
   // Grocery List endpoints
   app.get("/api/grocery-items", async (req, res) => {
     try {

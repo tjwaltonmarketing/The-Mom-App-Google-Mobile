@@ -125,6 +125,7 @@ export interface IStorage {
   // Passwords
   getPasswords(): Promise<Password[]>;
   createPassword(password: InsertPassword): Promise<Password>;
+  updatePasswordSharing(id: number, sharedWith: number[]): Promise<Password | undefined>;
   
   // Grocery Lists
   getGroceryItems(): Promise<GroceryItem[]>;
@@ -575,6 +576,18 @@ export class DatabaseStorage implements IStorage {
 
   async createPassword(insertPassword: InsertPassword): Promise<Password> {
     const [password] = await db.insert(passwords).values(insertPassword).returning();
+    return password;
+  }
+
+  async updatePasswordSharing(id: number, sharedWith: number[]): Promise<Password | undefined> {
+    const [password] = await db
+      .update(passwords)
+      .set({ 
+        shared_with: sharedWith,
+        updatedAt: new Date()
+      })
+      .where(eq(passwords.id, id))
+      .returning();
     return password;
   }
 

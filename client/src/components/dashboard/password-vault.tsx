@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { PasswordModal } from "@/components/password-modal";
+import { PasswordEditModal } from "@/components/password-edit-modal";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Shield, 
@@ -20,7 +21,8 @@ import {
   Lock,
   Mail,
   User,
-  Globe
+  Globe,
+  Edit
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Password } from "@shared/schema";
@@ -40,6 +42,7 @@ interface PasswordEntry {
 
 export function PasswordVault() {
   const { toast } = useToast();
+  const [editingPassword, setEditingPassword] = useState<Password | null>(null);
   
   const { data: passwords = [] } = useQuery<Password[]>({
     queryKey: ["/api/passwords"],
@@ -366,6 +369,15 @@ export function PasswordVault() {
                       <span className="text-xs text-gray-400">
                         Updated {password.lastUpdated}
                       </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingPassword(password)}
+                        className="p-1 h-6 w-6 text-gray-400 hover:text-blue-600"
+                        title="Edit sharing permissions"
+                      >
+                        <Edit size={12} />
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -374,6 +386,14 @@ export function PasswordVault() {
           </TabsContent>
         </Tabs>
       </CardContent>
+      
+      {editingPassword && (
+        <PasswordEditModal 
+          password={editingPassword}
+          isOpen={!!editingPassword}
+          onClose={() => setEditingPassword(null)}
+        />
+      )}
     </Card>
   );
 }
