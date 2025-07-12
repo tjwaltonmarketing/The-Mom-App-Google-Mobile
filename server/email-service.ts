@@ -13,8 +13,9 @@ export class SendGridProvider implements EmailProvider {
       throw new Error('SENDGRID_API_KEY is required');
     }
     
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    console.log('✅ SendGrid email provider initialized');
+    const apiKey = process.env.SENDGRID_API_KEY.trim();
+    sgMail.setApiKey(apiKey);
+    console.log('✅ SendGrid email provider initialized with key format:', apiKey.startsWith('SG.') ? 'Valid format' : 'Invalid format');
   }
 
   async sendEmail(to: string, subject: string, html: string, text?: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
