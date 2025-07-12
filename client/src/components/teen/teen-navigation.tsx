@@ -49,41 +49,41 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
     <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto">
         {/* Top Header with Profile & Controls */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+        <div className="flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4 border-b border-gray-100">
           {/* App Branding + Profile Section */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
             {/* The Mom App Logo */}
-            <div className="flex items-center gap-2">
-              <Logo className="h-8 w-8 flex-shrink-0" />
-              <h1 className="text-lg font-bold text-gray-900 dark:text-white font-logo uppercase hidden sm:block">THE MOM APP</h1>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Logo className="h-7 w-7 sm:h-8 sm:w-8" />
+              <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white font-logo uppercase hidden sm:block">THE MOM APP</h1>
             </div>
             
             {/* Profile Section */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
               {teenProfile?.avatar ? (
                 <img 
                   src={teenProfile.avatar} 
                   alt="Profile"
-                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
                 />
               ) : (
                 <div 
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold border-2 border-gray-200"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold border-2 border-gray-200 flex-shrink-0"
                   style={{ backgroundColor: teenProfile?.favoriteColor || "#a855f7" }}
                 >
                   {teenProfile?.firstName?.charAt(0) || "A"}
                 </div>
               )}
-              <div>
-                <h1 className="text-lg font-semibold">Hey, {teenProfile?.firstName || "Adri"}!</h1>
-                <p className="text-sm text-gray-600">Family Helper</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-sm sm:text-lg font-semibold truncate">Hey, {teenProfile?.firstName || "Adri"}!</h1>
+                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Family Helper</p>
               </div>
             </div>
           </div>
 
           {/* Quick Controls */}
-          <div className="flex items-center gap-2">
-            {/* Dark Mode Toggle */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            {/* Dark Mode Toggle - Always visible */}
             <Button 
               variant={darkMode ? "default" : "ghost"} 
               size="sm"
@@ -92,11 +92,12 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
                 document.documentElement.classList.toggle('dark', !darkMode);
               }}
               title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              className="h-8 w-8 p-0"
             >
-              {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {darkMode ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             </Button>
             
-            {/* Blue Light Filter Toggle */}
+            {/* Blue Light Filter Toggle - Always visible */}
             <Button 
               variant={blueLight ? "default" : "ghost"} 
               size="sm"
@@ -106,42 +107,49 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
                 document.documentElement.style.filter = filter;
               }}
               title={blueLight ? "Turn Off Blue Light Filter" : "Turn On Blue Light Filter"}
+              className="h-8 w-8 p-0"
             >
-              <Eye className="h-4 w-4" />
+              <Eye className="h-3.5 w-3.5" />
             </Button>
             
             <TeenNotifications />
             
+            {/* Tutorial Button - Hidden on mobile, shown on tablet+ */}
             <Button 
               variant="ghost" 
               size="sm"
               onClick={() => setLocation("/teen-tutorial")}
               title="View Tutorial"
+              className="hidden sm:flex h-8 w-8 p-0"
             >
-              <BookOpen className="h-4 w-4" />
+              <BookOpen className="h-3.5 w-3.5" />
             </Button>
             
+            {/* Settings Button - Always visible but smaller */}
             <Button 
               variant="ghost" 
               size="sm"
               onClick={() => setLocation("/teen-profile")}
               title="Settings"
+              className="h-8 w-8 p-0"
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-3.5 w-3.5" />
             </Button>
             
+            {/* Logout Button - Hidden on mobile, shown on tablet+ */}
             <Button 
               variant="ghost" 
               size="sm"
               title="Logout"
+              className="hidden md:flex h-8 w-8 p-0"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 px-4">
+        <div className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4">
           {navItems.map((item) => {
             const isActive = currentPath === item.path;
             return (
@@ -149,14 +157,18 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
                 key={item.path}
                 variant={isActive ? "default" : "ghost"}
                 onClick={() => setLocation(item.path)}
-                className={`flex items-center gap-2 rounded-none border-b-2 ${
+                className={`flex items-center gap-1.5 sm:gap-2 rounded-none border-b-2 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base ${
                   isActive 
                     ? "border-primary bg-primary text-primary-foreground" 
                     : "border-transparent hover:border-gray-300"
                 }`}
               >
-                {item.icon}
-                {item.label}
+                <span className="h-3.5 w-3.5 sm:h-4 sm:w-4">
+                  {item.icon}
+                </span>
+                <span className="hidden xs:inline sm:inline">
+                  {item.label}
+                </span>
               </Button>
             );
           })}
