@@ -20,6 +20,7 @@ if (!process.env.LEADCONNECTOR_API_KEY) {
 }
 
 import { smsService } from "./sms-providers";
+import { emailService } from "./email-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -125,6 +126,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
       providerCount: providers.length,
       environmentCheck: envCheck
     });
+  });
+
+  // Email service endpoints
+  app.get("/api/email/status", (req, res) => {
+    res.json({
+      configured: emailService.isConfigured(),
+      provider: emailService.getProvider(),
+      hasApiKey: !!process.env.SENDGRID_API_KEY
+    });
+  });
+
+  // Email test endpoint
+  app.post("/api/email/test", async (req, res) => {
+    try {
+      const { to, subject, message } = req.body;
+      
+      if (!to || !subject || !message) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "To, subject, and message are required" 
+        });
+      }
+      
+      const html = `<h2>${subject}</h2><p>${message}</p>`;
+      const result = await emailService.sendEmail(to, subject, html);
+      
+      if (result.success) {
+        res.json({
+          success: true,
+          message: `Email sent successfully via ${result.provider}`,
+          messageId: result.messageId,
+          provider: result.provider
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          error: result.error,
+          configured: emailService.isConfigured()
+        });
+      }
+    } catch (error: any) {
+      console.error("Email test error:", error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Failed to send test email: " + error.message 
+      });
+    }
+  });
+
+  // Teen invite with email option
+  app.post("/api/teens/invite", requireAuth, async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { name, phone, email, preferredContact } = req.body;
+      
+      if (!name || (!phone && !email)) {
+        return res.status(400).json({ 
+          error: "Name and either phone or email is required" 
+        });
+      }
+
+      // Generate invite token
+      const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      
+      // Create teen member
+      const teen = await storage.createFamilyMember({
+        familyId: user.familyId,
+        name,
+        role: 'teen',
+        color: '#10B981', // Default teen color
+        avatar: null,
+        phone: phone || null,
+        email: email || null,
+        inviteCode,
+        inviteStatus: 'pending'
+      });
+
+      // Prepare invite message
+      const inviteUrl = `${req.protocol}://${req.get('host')}/teen/join?code=${inviteCode}`;
+      const message = `Hi ${name}! You've been invited to join your family's Mom App. Use code ${inviteCode} or visit: ${inviteUrl}`;
+      
+      let inviteResult = { success: false, method: '', error: 'No contact method available' };
+
+      // Try preferred contact method first
+      if (preferredContact === 'email' && email && emailService.isConfigured()) {
+        const emailResult = await emailService.sendEmail(
+          email,
+          "You're invited to join The Mom App!",
+          `
+            <h2>You're invited to join your family's Mom App!</h2>
+            <p>Hi ${name},</p>
+            <p>Your family has invited you to join The Mom App to help coordinate schedules and stay connected.</p>
+            <div style="margin: 20px 0; padding: 15px; background: #f0f9ff; border-radius: 8px; text-align: center;">
+              <p><strong>Your invite code: ${inviteCode}</strong></p>
+              <p><a href="${inviteUrl}" style="background: #0079f2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Join Now</a></p>
+            </div>
+            <p>Or visit: <a href="${inviteUrl}">${inviteUrl}</a></p>
+            <p>Welcome to the family coordination hub!</p>
+          `
+        );
+        if (emailResult.success) {
+          inviteResult = { success: true, method: 'email', messageId: emailResult.messageId };
+        } else {
+          inviteResult = { success: false, method: 'email', error: emailResult.error };
+        }
+      } else if (preferredContact === 'sms' && phone) {
+        const smsResult = await smsService.sendSMS(phone, message);
+        if (smsResult.success) {
+          inviteResult = { success: true, method: 'sms', messageId: smsResult.messageId };
+        } else {
+          inviteResult = { success: false, method: 'sms', error: smsResult.error };
+        }
+      }
+
+      // If preferred method failed, try the other method as backup
+      if (!inviteResult.success) {
+        if (preferredContact === 'email' && phone) {
+          const smsResult = await smsService.sendSMS(phone, message);
+          if (smsResult.success) {
+            inviteResult = { success: true, method: 'sms (backup)', messageId: smsResult.messageId };
+          }
+        } else if (preferredContact === 'sms' && email && emailService.isConfigured()) {
+          const emailResult = await emailService.sendEmail(
+            email,
+            "You're invited to join The Mom App!",
+            `
+              <h2>You're invited to join your family's Mom App!</h2>
+              <p>Hi ${name},</p>
+              <p>Your family has invited you to join The Mom App to help coordinate schedules and stay connected.</p>
+              <div style="margin: 20px 0; padding: 15px; background: #f0f9ff; border-radius: 8px; text-align: center;">
+                <p><strong>Your invite code: ${inviteCode}</strong></p>
+                <p><a href="${inviteUrl}" style="background: #0079f2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Join Now</a></p>
+              </div>
+              <p>Or visit: <a href="${inviteUrl}">${inviteUrl}</a></p>
+              <p>Welcome to the family coordination hub!</p>
+            `
+          );
+          if (emailResult.success) {
+            inviteResult = { success: true, method: 'email (backup)', messageId: emailResult.messageId };
+          }
+        }
+      }
+
+      res.json({
+        success: true,
+        teen: {
+          id: teen.id,
+          name: teen.name,
+          inviteCode,
+          inviteStatus: 'pending'
+        },
+        invite: inviteResult
+      });
+
+    } catch (error: any) {
+      console.error("Teen invite error:", error);
+      res.status(500).json({ error: "Failed to create teen invite: " + error.message });
+    }
   });
   
   // Authentication Routes

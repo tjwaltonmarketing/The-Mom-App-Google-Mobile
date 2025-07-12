@@ -26,36 +26,50 @@ interface FamilyInvite {
 }
 
 export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
-  const [inviteMethod, setInviteMethod] = useState<"phone" | "email">("phone");
-  const [contact, setContact] = useState("");
+  const [inviteMethod, setInviteMethod] = useState<"sms" | "email">("sms");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [teenName, setTeenName] = useState("");
-  const [role, setRole] = useState("teen");
-  const [generatedInvite, setGeneratedInvite] = useState<FamilyInvite | null>(null);
+  const [generatedInvite, setGeneratedInvite] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const createInviteMutation = useMutation({
-    mutationFn: async (inviteData: {
-      contact: string;
-      contactType: string;
-      teenName: string;
-      role: string;
-    }) => {
-      const response = await apiRequest("POST", "/api/family/invites", inviteData);
+    mutationFn: async () => {
+      const inviteData = {
+        name: teenName,
+        phone: inviteMethod === "sms" ? phone : null,
+        email: inviteMethod === "email" ? email : null,
+        preferredContact: inviteMethod
+      };
+      
+      const response = await apiRequest("POST", "/api/teens/invite", inviteData);
       return response.json();
     },
     onSuccess: (data) => {
       setGeneratedInvite(data);
-      queryClient.invalidateQueries({ queryKey: ["/api/family/invites"] });
-      toast({
-        title: "Invitation Created",
-        description: `Invite sent to ${contact}`,
-      });
+      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
+      
+      const contact = inviteMethod === "sms" ? phone : email;
+      const method = data.invite?.method || inviteMethod;
+      
+      if (data.invite?.success) {
+        toast({
+          title: "Invitation Sent Successfully!",
+          description: `Invite sent to ${contact} via ${method}`,
+        });
+      } else {
+        toast({
+          title: "Invitation Created",
+          description: `Created invite for ${teenName} but delivery failed: ${data.invite?.error}`,
+          variant: "destructive",
+        });
+      }
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to create invitation",
+        description: error.message || "Failed to create invitation",
         variant: "destructive",
       });
     },
@@ -99,6 +113,8 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
   });
 
   const handleCreateInvite = () => {
+    const contact = inviteMethod === "sms" ? phone : email;
+    
     if (!contact || !teenName) {
       toast({
         title: "Missing Information",
@@ -108,12 +124,7 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
       return;
     }
 
-    createInviteMutation.mutate({
-      contact,
-      contactType: inviteMethod,
-      teenName,
-      role,
-    });
+    createInviteMutation.mutate();
   };
 
   const handleCopyInviteCode = () => {
@@ -133,9 +144,9 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
   };
 
   const handleClose = () => {
-    setContact("");
+    setPhone("");
+    setEmail("");
     setTeenName("");
-    setRole("teen");
     setGeneratedInvite(null);
     onClose();
   };
@@ -184,8 +195,8 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
               <Label>How to send invitation</Label>
               <div className="flex gap-2">
                 <Button
-                  variant={inviteMethod === "phone" ? "default" : "outline"}
-                  onClick={() => setInviteMethod("phone")}
+                  variant={inviteMethod === "sms" ? "default" : "outline"}
+                  onClick={() => setInviteMethod("sms")}
                   className="flex items-center gap-2"
                 >
                   <Smartphone className="h-4 w-4" />
@@ -201,20 +212,29 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
                 </Button>
               </div>
 
-              <div>
-                <Label htmlFor="contact">
-                  {inviteMethod === "phone" ? "Phone Number" : "Email Address"}
-                </Label>
-                <Input
-                  id="contact"
-                  value={contact}
-                  onChange={(e) => setContact(e.target.value)}
-                  placeholder={
-                    inviteMethod === "phone" ? "(555) 123-4567" : "teen@example.com"
-                  }
-                  type={inviteMethod === "phone" ? "tel" : "email"}
-                />
-              </div>
+              {inviteMethod === "sms" ? (
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="(555) 123-4567"
+                    type="tel"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="teen@example.com"
+                    type="email"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Permissions Preview */}
