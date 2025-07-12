@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, UserPlus } from "lucide-react";
+import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, UserPlus, Edit } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { TaskModal } from "@/components/task-modal";
+import { TaskEditModal } from "@/components/task-edit-modal";
 import { TeenTaskAssignmentModal } from "@/components/teen-task-assignment-modal";
 import type { Task, FamilyMember } from "@shared/schema";
 import { format } from "date-fns";
@@ -32,6 +33,7 @@ export function AdvancedTaskManagement() {
   const [filterAssignee, setFilterAssignee] = useState("all");
   const [showCompleted, setShowCompleted] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const { toast } = useToast();
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
@@ -327,6 +329,14 @@ export function AdvancedTaskManagement() {
                                 {member.avatar}
                               </div>
                             )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-gray-400 hover:text-blue-600"
+                              onClick={() => setEditingTask(task)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <Button
@@ -399,6 +409,14 @@ export function AdvancedTaskManagement() {
         isOpen={isTaskModalOpen} 
         onClose={() => setIsTaskModalOpen(false)} 
       />
+      
+      {editingTask && (
+        <TaskEditModal 
+          task={editingTask}
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+        />
+      )}
     </Card>
   );
 }

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +15,7 @@ import { Plus, Eye, EyeOff } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { insertPasswordSchema } from "@shared/schema";
 import type { z } from "zod";
+import type { FamilyMember } from "@shared/schema";
 
 type PasswordFormData = z.infer<typeof insertPasswordSchema>;
 
@@ -35,8 +37,13 @@ interface PasswordModalProps {
 export function PasswordModal({ trigger }: PasswordModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<number[]>([1]); // Default to mom
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
+    queryKey: ["/api/family-members"],
+  });
 
   const form = useForm<PasswordFormData>({
     resolver: zodResolver(insertPasswordSchema),
@@ -50,7 +57,7 @@ export function PasswordModal({ trigger }: PasswordModalProps) {
       notes: "",
       isFavorite: false,
       createdBy: 1, // Default to mom for now
-      sharedWith: "[1]" // Share with mom by default
+      sharedWith: JSON.stringify([1]) // Share with mom by default
     },
   });
 
@@ -78,7 +85,18 @@ export function PasswordModal({ trigger }: PasswordModalProps) {
   });
 
   const onSubmit = (data: PasswordFormData) => {
-    createPasswordMutation.mutate(data);
+    createPasswordMutation.mutate({
+      ...data,
+      sharedWith: JSON.stringify(selectedMembers)
+    });
+  };
+
+  const handleMemberToggle = (memberId: number) => {
+    setSelectedMembers(prev => 
+      prev.includes(memberId) 
+        ? prev.filter(id => id !== memberId)
+        : [...prev, memberId]
+    );
   };
 
   const generatePassword = () => {
@@ -247,6 +265,35 @@ export function PasswordModal({ trigger }: PasswordModalProps) {
                 </FormItem>
               )}
             />
+
+            <div className="space-y-3">
+              <FormLabel>Share With Family Members</FormLabel>
+              <div className="space-y-2">
+                {familyMembers.map((member) => (
+                  <div key={member.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`member-${member.id}`}
+                      checked={selectedMembers.includes(member.id)}
+                      onCheckedChange={() => handleMemberToggle(member.id)}
+                    />
+                    <label
+                      htmlFor={`member-${member.id}`}
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: member.color }}
+                      />
+                      <span className="text-sm">{member.name}</span>
+                      <span className="text-xs text-muted-foreground">({member.role})</span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Select which family members can view this password
+              </div>
+            </div>
 
             <FormField
               control={form.control}

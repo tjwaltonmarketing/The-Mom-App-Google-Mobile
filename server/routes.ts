@@ -780,6 +780,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/tasks/:id", async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const taskData = { ...req.body };
+      
+      // Convert date strings to Date objects if needed
+      if (taskData.dueDate && typeof taskData.dueDate === 'string') {
+        taskData.dueDate = new Date(taskData.dueDate);
+      }
+      
+      const task = await storage.updateTask(taskId, taskData);
+      
+      if (!task) {
+        return res.status(404).json({ message: "Task not found" });
+      }
+      
+      res.json(task);
+    } catch (error) {
+      console.error("Task update error:", error);
+      res.status(500).json({ message: "Failed to update task" });
+    }
+  });
+
 
 
   app.put("/api/events/:id", async (req, res) => {
