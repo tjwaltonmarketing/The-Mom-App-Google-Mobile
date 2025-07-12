@@ -43,7 +43,7 @@ export const familyMembers = pgTable("family_members", {
   name: text("name").notNull(),
   role: text("role").notNull(), // "mom", "dad", "child"
   color: text("color").notNull(), // hex color for UI
-  avatar: text("avatar").notNull(), // initial letter
+  avatar: text("avatar"), // initial letter - optional, will be generated from name
   phone: text("phone"), // for SMS notifications
   email: text("email"), // for email notifications
   notificationPreference: text("notification_preference").default("sms"), // "sms", "email", "both", "none"

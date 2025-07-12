@@ -194,13 +194,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate invite token
       const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       
-      // Create teen member
+      // Create teen member with generated avatar
+      const avatar = name.charAt(0).toUpperCase(); // Generate avatar from first letter of name
       const teen = await storage.createFamilyMember({
         familyId: user.familyId,
         name,
         role: 'teen',
         color: '#10B981', // Default teen color
-        avatar: null,
+        avatar,
         phone: phone || null,
         email: email || null,
         inviteCode,
