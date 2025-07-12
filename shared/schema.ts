@@ -41,12 +41,16 @@ export const familyMemberships = pgTable("family_memberships", {
 export const familyMembers = pgTable("family_members", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  role: text("role").notNull(), // "mom", "dad", "child"
+  role: text("role").notNull(), // "mom", "dad", "child", "teen"
   color: text("color").notNull(), // hex color for UI
   avatar: text("avatar"), // initial letter - optional, will be generated from name
   phone: text("phone"), // for SMS notifications
   email: text("email"), // for email notifications
   notificationPreference: text("notification_preference").default("sms"), // "sms", "email", "both", "none"
+  userId: integer("user_id").references(() => users.id), // Links to actual user account (for parents/teens who can log in)
+  familyId: integer("family_id").references(() => families.id).notNull(), // Which family this member belongs to
+  canLogin: boolean("can_login").default(false), // Whether this member can log into the app
+  isActive: boolean("is_active").default(true), // For soft deletion/deactivation
 });
 
 export const events = pgTable("events", {

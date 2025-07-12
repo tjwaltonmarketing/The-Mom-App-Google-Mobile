@@ -78,9 +78,13 @@ export interface IStorage {
   
   // Family Members
   getFamilyMembers(): Promise<FamilyMember[]>;
+  getFamilyMembersByFamily(familyId: number): Promise<FamilyMember[]>;
   getFamilyMember(id: number): Promise<FamilyMember | undefined>;
   createFamilyMember(member: InsertFamilyMember): Promise<FamilyMember>;
+  updateFamilyMember(id: number, updates: Partial<InsertFamilyMember>): Promise<FamilyMember | undefined>;
   deleteFamilyMember(id: number): Promise<boolean>;
+  linkFamilyMemberToUser(familyMemberId: number, userId: number): Promise<FamilyMember | undefined>;
+  createParentInvite(email: string, familyId: number, role: "mom" | "dad" | "parent"): Promise<string>;
   
   // Events
   getEvents(): Promise<Event[]>;
@@ -238,7 +242,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFamilyMembers(): Promise<FamilyMember[]> {
-    return await db.select().from(familyMembers);
+    return await db.select().from(familyMembers).where(eq(familyMembers.isActive, true));
+  }
+
+  async getFamilyMembersByFamily(familyId: number): Promise<FamilyMember[]> {
+    return await db.select().from(familyMembers)
+      .where(and(
+        eq(familyMembers.familyId, familyId),
+        eq(familyMembers.isActive, true)
+      ));
   }
 
   async getFamilyMember(id: number): Promise<FamilyMember | undefined> {
@@ -248,6 +260,15 @@ export class DatabaseStorage implements IStorage {
 
   async createFamilyMember(insertMember: InsertFamilyMember): Promise<FamilyMember> {
     const [member] = await db.insert(familyMembers).values(insertMember).returning();
+    return member;
+  }
+
+  async updateFamilyMember(id: number, updates: Partial<InsertFamilyMember>): Promise<FamilyMember | undefined> {
+    const [member] = await db
+      .update(familyMembers)
+      .set(updates)
+      .where(eq(familyMembers.id, id))
+      .returning();
     return member;
   }
 
@@ -269,6 +290,58 @@ export class DatabaseStorage implements IStorage {
       console.error(`Failed to delete family member ${id}:`, error);
       return false;
     }
+  }
+
+  async linkFamilyMemberToUser(familyMemberId: number, userId: number): Promise<FamilyMember | undefined> {
+    const [member] = await db
+      .update(familyMembers)
+      .set({ userId, canLogin: true })
+      .where(eq(familyMembers.id, familyMemberId))
+      .returning();
+    return member;
+  }
+
+  async createParentInvite(email: string, familyId: number, role: "mom" | "dad" | "parent"): Promise<string> {
+    // Generate invite code
+    const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    // Check if user already exists
+    const existingUser = await this.getUserByEmail(email);
+    
+    if (existingUser) {
+      // User exists, just add them to family
+      await this.createFamilyMembership({
+        userId: existingUser.id,
+        familyId,
+        role: "admin"
+      });
+      
+      // Create or link family member
+      const [member] = await db.select().from(familyMembers)
+        .where(and(
+          eq(familyMembers.email, email),
+          eq(familyMembers.familyId, familyId)
+        ));
+      
+      if (!member) {
+        await this.createFamilyMember({
+          name: `${existingUser.firstName || ''} ${existingUser.lastName || ''}`.trim() || email.split('@')[0],
+          role,
+          color: role === 'mom' ? '#E53E3E' : '#3182CE',
+          avatar: (existingUser.firstName || email)[0].toUpperCase(),
+          email,
+          userId: existingUser.id,
+          familyId,
+          canLogin: true,
+          isActive: true,
+          notificationPreference: 'both'
+        });
+      } else {
+        await this.linkFamilyMemberToUser(member.id, existingUser.id);
+      }
+    }
+    
+    return inviteCode;
   }
 
   async getEvents(): Promise<Event[]> {

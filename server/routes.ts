@@ -603,6 +603,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/family-members/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertFamilyMemberSchema.partial().parse(req.body);
+      const member = await storage.updateFamilyMember(id, validatedData);
+      
+      if (!member) {
+        return res.status(404).json({ message: "Family member not found" });
+      }
+      
+      res.json(member);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid family member data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to update family member" });
+      }
+    }
+  });
+
   app.delete("/api/family-members/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -615,6 +635,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Family member deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete family member" });
+    }
+  });
+
+  // Parent account linking and invites
+  app.post("/api/family/invite-parent", async (req, res) => {
+    try {
+      const { email, role } = req.body;
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      // Get user's family
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+      
+      const inviteCode = await storage.createParentInvite(email, family.id, role);
+      
+      res.json({ 
+        message: "Parent invitation sent successfully",
+        inviteCode,
+        invitedEmail: email,
+        role 
+      });
+    } catch (error) {
+      console.error("Parent invite error:", error);
+      res.status(500).json({ message: "Failed to send parent invitation" });
+    }
+  });
+
+  app.post("/api/family/link-member", async (req, res) => {
+    try {
+      const { familyMemberId, userId } = req.body;
+      
+      const member = await storage.linkFamilyMemberToUser(familyMemberId, userId);
+      
+      if (!member) {
+        return res.status(404).json({ message: "Family member not found" });
+      }
+      
+      res.json({ 
+        message: "Family member linked to user account successfully",
+        member 
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to link family member" });
     }
   });
 

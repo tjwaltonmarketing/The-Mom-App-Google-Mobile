@@ -25,6 +25,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { FamilyMember } from "@shared/schema";
 import { InviteTeenModal } from "@/components/family/invite-teen-modal";
+import { ParentInviteModal } from "@/components/parent-invite-modal";
 
 const addFamilyMemberSchema = z.object({
   name: z.string().min(1, "Name is required").max(50, "Name too long"),
@@ -69,6 +70,7 @@ export default function SettingsPage() {
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [showSecurityDialog, setShowSecurityDialog] = useState(false);
   const [showInviteTeenModal, setShowInviteTeenModal] = useState(false);
+  const [showParentInviteModal, setShowParentInviteModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
 
   // Fetch existing family members
@@ -536,6 +538,10 @@ export default function SettingsPage() {
                 <Button variant="outline" className="w-full justify-start" onClick={handleAddFamilyMember}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Family Member
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => setShowParentInviteModal(true)}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Invite Parent to Family
                 </Button>
                 <Button variant="outline" className="w-full justify-start" onClick={() => setShowInviteTeenModal(true)}>
                   <UserPlus className="h-4 w-4 mr-2" />
@@ -1255,6 +1261,12 @@ export default function SettingsPage() {
         <InviteTeenModal
           isOpen={showInviteTeenModal}
           onClose={() => setShowInviteTeenModal(false)}
+        />
+
+        {/* Parent Invite Modal */}
+        <ParentInviteModal
+          isOpen={showParentInviteModal}
+          onClose={() => setShowParentInviteModal(false)}
         />
       </main>
 
