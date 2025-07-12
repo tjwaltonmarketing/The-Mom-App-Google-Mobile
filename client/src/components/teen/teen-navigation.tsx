@@ -19,9 +19,10 @@ import TeenNotifications from "./teen-notifications";
 
 interface TeenNavigationProps {
   currentPath: string;
+  teenProfile?: any; // Teen profile data including avatar
 }
 
-export default function TeenNavigation({ currentPath }: TeenNavigationProps) {
+export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigationProps) {
   const [, setLocation] = useLocation();
   const [darkMode, setDarkMode] = useState(false);
   const [blueLight, setBlueLight] = useState(false);
@@ -59,11 +60,22 @@ export default function TeenNavigation({ currentPath }: TeenNavigationProps) {
             
             {/* Profile Section */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
-                A
-              </div>
+              {teenProfile?.avatar ? (
+                <img 
+                  src={teenProfile.avatar} 
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                />
+              ) : (
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold border-2 border-gray-200"
+                  style={{ backgroundColor: teenProfile?.favoriteColor || "#a855f7" }}
+                >
+                  {teenProfile?.firstName?.charAt(0) || "A"}
+                </div>
+              )}
               <div>
-                <h1 className="text-lg font-semibold">Hey, Adri!</h1>
+                <h1 className="text-lg font-semibold">Hey, {teenProfile?.firstName || "Adri"}!</h1>
                 <p className="text-sm text-gray-600">Family Helper</p>
               </div>
             </div>

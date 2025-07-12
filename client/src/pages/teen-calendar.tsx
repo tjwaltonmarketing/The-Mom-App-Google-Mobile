@@ -48,6 +48,12 @@ export default function TeenCalendar() {
     retry: false,
   });
 
+  // Get teen profile data with avatar
+  const { data: teenProfile } = useQuery({
+    queryKey: ["/api/teen/auth/user"],
+    retry: false,
+  });
+
   // Create event mutation
   const createEventMutation = useMutation({
     mutationFn: async (eventData: any) => {
@@ -241,7 +247,7 @@ export default function TeenCalendar() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <TeenNavigation currentPath="/teen-calendar" />
+      <TeenNavigation currentPath="/teen-calendar" teenProfile={teenProfile} />
       
       <div className="max-w-6xl mx-auto p-4">
         {/* Page Header */}

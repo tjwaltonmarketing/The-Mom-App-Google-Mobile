@@ -30,14 +30,11 @@ export default function TeenDashboard() {
     retry: false,
   });
 
-  // Mock data for teen dashboard
-  const teenProfile = {
-    firstName: "Adri",
-    points: 285,
-    streak: 12,
-    level: "Family Helper",
-    color: "purple"
-  };
+  // Get teen profile data with avatar
+  const { data: teenProfile, isLoading: profileLoading } = useQuery({
+    queryKey: ["/api/teen/auth/user"],
+    retry: false,
+  });
 
   const todayTasks = [
     {
@@ -103,7 +100,7 @@ export default function TeenDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Header */}
-      <TeenNavigation currentPath="/teen-dashboard" />
+      <TeenNavigation currentPath="/teen-dashboard" teenProfile={teenProfile} />
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -119,13 +116,13 @@ export default function TeenDashboard() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-purple-600">{teenProfile.points}</p>
+                  <p className="text-2xl font-bold text-purple-600">{teenProfile?.points || 0}</p>
                   <p className="text-sm text-gray-600">Total Points</p>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center gap-1">
                     <Flame className="h-4 w-4 text-orange-500" />
-                    <span className="text-lg font-semibold">{teenProfile.streak}</span>
+                    <span className="text-lg font-semibold">{teenProfile?.streak || 0}</span>
                   </div>
                   <p className="text-sm text-gray-600">Day Streak</p>
                 </div>
