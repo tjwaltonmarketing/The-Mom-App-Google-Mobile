@@ -290,6 +290,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to create teen invite: " + error.message });
     }
   });
+
+  // Validate invite code endpoint
+  app.post("/api/family/invites/validate", async (req, res) => {
+    try {
+      const { inviteCode } = req.body;
+      
+      if (!inviteCode) {
+        return res.status(400).json({ error: "Invite code is required" });
+      }
+      
+      // In a real app, you would validate against the database
+      // For demo purposes, accept any code that looks like a valid format
+      const isValid = /^[A-Z0-9]{4,8}$/.test(inviteCode.toUpperCase());
+      
+      if (!isValid) {
+        return res.status(400).json({ error: "Invalid invite code format" });
+      }
+      
+      // Mock family data
+      const familyData = {
+        id: 1,
+        name: "Walton",
+        parentName: "Mom",
+        memberCount: 3
+      };
+      
+      res.json({
+        success: true,
+        valid: true,
+        family: familyData,
+        message: "Invite code is valid"
+      });
+      
+    } catch (error: any) {
+      console.error("Invite validation error:", error);
+      res.status(500).json({ error: "Failed to validate invite code: " + error.message });
+    }
+  });
   
   // Authentication Routes
   app.post("/api/register", async (req, res) => {
