@@ -12,7 +12,8 @@ import {
   LogOut,
   Moon,
   Sun,
-  Eye
+  Eye,
+  CheckSquare
 } from "lucide-react";
 import { useState } from "react";
 import TeenNotifications from "./teen-notifications";
@@ -32,6 +33,11 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
       path: "/teen-dashboard",
       label: "Home",
       icon: <Home className="h-4 w-4" />
+    },
+    {
+      path: "/teen-tasks",
+      label: "Tasks", 
+      icon: <CheckSquare className="h-4 w-4" />
     },
     {
       path: "/teen-calendar", 

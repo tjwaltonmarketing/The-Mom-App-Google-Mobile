@@ -1,275 +1,548 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 import { 
-  Calendar, 
   CheckCircle2, 
-  Clock, 
-  Star, 
-  Flame, 
-  Trophy, 
+  Circle, 
   Plus,
-  Users
+  Calendar,
+  Clock,
+  Users,
+  Filter,
+  Star,
+  AlertCircle,
+  Trash2,
+  Edit3
 } from "lucide-react";
 import TeenNavigation from "@/components/teen/teen-navigation";
 
-export default function TeenTasks() {
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [, setLocation] = useLocation();
+interface Task {
+  id: number;
+  title: string;
+  description?: string;
+  dueDate?: Date;
+  priority: "low" | "medium" | "high";
+  status: "pending" | "completed" | "overdue";
+  assignedBy?: string;
+  points: number;
+  isCompleted: boolean;
+  category: "chores" | "homework" | "personal" | "family";
+  estimatedTime?: number; // in minutes
+}
 
-  // Mock data for teen dashboard
-  const teenProfile = {
-    firstName: "Adri",
-    points: 285,
-    streak: 12,
-    level: "Family Helper",
-    color: "purple"
+const priorityColors = {
+  low: "bg-green-50 border-green-200 text-green-700",
+  medium: "bg-yellow-50 border-yellow-200 text-yellow-700", 
+  high: "bg-red-50 border-red-200 text-red-700"
+};
+
+const categoryColors = {
+  chores: "bg-blue-50 border-blue-200",
+  homework: "bg-purple-50 border-purple-200",
+  personal: "bg-pink-50 border-pink-200",
+  family: "bg-green-50 border-green-200"
+};
+
+export default function TeenTasks() {
+  const [, setLocation] = useLocation();
+  const [filter, setFilter] = useState<"all" | "today" | "upcoming" | "completed">("all");
+  const [priorityFilter, setPriorityFilter] = useState<"all" | "low" | "medium" | "high">("all");
+  const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+  const [newTask, setNewTask] = useState({
+    title: "",
+    description: "",
+    dueDate: "",
+    priority: "medium" as const,
+    category: "personal" as const,
+    estimatedTime: ""
+  });
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Get teen profile data with avatar
+  const { data: teenProfile } = useQuery({
+    queryKey: ["/api/teen/auth/user"],
+    retry: false,
+  });
+
+  // Fetch tasks from database
+  const { data: tasks = [], isLoading } = useQuery({
+    queryKey: ["/api/teen/tasks"],
+    retry: false,
+  });
+
+  // Create task mutation
+  const createTaskMutation = useMutation({
+    mutationFn: async (taskData: any) => {
+      return await apiRequest("POST", "/api/teen/tasks", taskData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/tasks"] });
+      setIsAddTaskOpen(false);
+      setNewTask({ title: "", description: "", dueDate: "", priority: "medium", category: "personal", estimatedTime: "" });
+      toast({
+        title: "Task Created",
+        description: "Your task has been added successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Creating Task",
+        description: error.message || "Failed to create task",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Toggle task completion
+  const toggleTaskMutation = useMutation({
+    mutationFn: async ({ taskId, completed }: { taskId: number; completed: boolean }) => {
+      return await apiRequest("PUT", `/api/teen/tasks/${taskId}`, { completed });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/tasks"] });
+      toast({
+        title: "Task Updated",
+        description: "Task status has been updated",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Updating Task",
+        description: error.message || "Failed to update task",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mock data for demo - replace with real data from API
+  const mockTasks: Task[] = [
+    {
+      id: 1,
+      title: "Clean bedroom",
+      description: "Make bed, organize desk, vacuum floor",
+      dueDate: new Date(),
+      priority: "medium",
+      status: "pending",
+      assignedBy: "Mom",
+      points: 15,
+      isCompleted: false,
+      category: "chores",
+      estimatedTime: 30
+    },
+    {
+      id: 2,
+      title: "Math homework - Chapter 5",
+      description: "Complete exercises 1-20 on page 85",
+      dueDate: new Date(Date.now() + 86400000), // Tomorrow
+      priority: "high",
+      status: "pending",
+      assignedBy: "Teacher",
+      points: 25,
+      isCompleted: false,
+      category: "homework",
+      estimatedTime: 60
+    },
+    {
+      id: 3,
+      title: "Take out trash",
+      description: "Empty all trash cans and take to curb",
+      dueDate: new Date(),
+      priority: "low",
+      status: "completed",
+      assignedBy: "Dad",
+      points: 10,
+      isCompleted: true,
+      category: "chores",
+      estimatedTime: 15
+    },
+    {
+      id: 4,
+      title: "Practice guitar",
+      description: "Work on new song for 30 minutes",
+      dueDate: new Date(Date.now() + 172800000), // Day after tomorrow
+      priority: "medium",
+      status: "pending",
+      assignedBy: "Self",
+      points: 20,
+      isCompleted: false,
+      category: "personal",
+      estimatedTime: 30
+    },
+    {
+      id: 5,
+      title: "Family movie night prep",
+      description: "Set up living room and prepare snacks",
+      dueDate: new Date(Date.now() + 259200000), // 3 days from now
+      priority: "low",
+      status: "pending",
+      assignedBy: "Mom",
+      points: 12,
+      isCompleted: false,
+      category: "family",
+      estimatedTime: 20
+    }
+  ];
+
+  // Use mock data for now - replace with API data when available
+  const allTasks = tasks.length > 0 ? tasks : mockTasks;
+
+  // Filter tasks based on selected filters
+  const filteredTasks = allTasks.filter((task: Task) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Date filter
+    switch (filter) {
+      case "today":
+        const taskDate = new Date(task.dueDate || new Date());
+        taskDate.setHours(0, 0, 0, 0);
+        return taskDate.getTime() === today.getTime();
+      case "upcoming":
+        return !task.isCompleted && new Date(task.dueDate || new Date()) > today;
+      case "completed":
+        return task.isCompleted;
+      default:
+        return true;
+    }
+  }).filter((task: Task) => {
+    // Priority filter
+    return priorityFilter === "all" || task.priority === priorityFilter;
+  });
+
+  const handleCreateTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTask.title.trim()) return;
+
+    const taskData = {
+      ...newTask,
+      dueDate: newTask.dueDate ? new Date(newTask.dueDate) : null,
+      estimatedTime: newTask.estimatedTime ? parseInt(newTask.estimatedTime) : null,
+      points: Math.floor(Math.random() * 20) + 5, // Random points for demo
+    };
+
+    createTaskMutation.mutate(taskData);
   };
 
-  const todayTasks = [
-    {
-      id: 1,
-      title: "Take out trash",
-      dueTime: "6:00 PM",
-      priority: "medium",
-      points: 15,
-      isCompleted: false
-    },
-    {
-      id: 2,
-      title: "Feed the dog",
-      dueTime: "7:30 AM",
-      priority: "high",
-      points: 10,
-      isCompleted: true
-    },
-    {
-      id: 3,
-      title: "Clean bedroom", 
-      dueTime: "4:00 PM",
-      priority: "low",
-      points: 20,
-      isCompleted: false
+  const handleToggleTask = (taskId: number, currentStatus: boolean) => {
+    toggleTaskMutation.mutate({ taskId, completed: !currentStatus });
+  };
+
+  const formatDate = (date: Date | undefined) => {
+    if (!date) return "No due date";
+    const today = new Date();
+    const taskDate = new Date(date);
+    
+    if (taskDate.toDateString() === today.toDateString()) {
+      return "Today";
+    } else if (taskDate.toDateString() === new Date(today.getTime() + 86400000).toDateString()) {
+      return "Tomorrow";
+    } else {
+      return taskDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
-  ];
+  };
 
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: "Soccer Practice",
-      time: "3:30 PM",
-      date: "Today",
-      type: "activity"
-    },
-    {
-      id: 2,
-      title: "Family Movie Night",
-      time: "7:00 PM", 
-      date: "Tonight",
-      type: "family"
-    },
-    {
-      id: 3,
-      title: "Math Test",
-      time: "10:00 AM",
-      date: "Tomorrow",
-      type: "school"
-    }
-  ];
+  const getTaskStats = () => {
+    const total = allTasks.length;
+    const completed = allTasks.filter((t: Task) => t.isCompleted).length;
+    const today = allTasks.filter((t: Task) => {
+      const taskDate = new Date(t.dueDate || new Date());
+      const todayDate = new Date();
+      return taskDate.toDateString() === todayDate.toDateString();
+    }).length;
+    
+    return { total, completed, today, pending: total - completed };
+  };
 
-  const achievements = [
-    { name: "Week Warrior", description: "7 days streak!", icon: "🔥" },
-    { name: "Task Master", description: "100 tasks completed", icon: "⭐" },
-    { name: "Early Bird", description: "5 morning tasks", icon: "🌅" }
-  ];
-
-  const completedTasks = todayTasks.filter(task => task.isCompleted);
-  const pendingTasks = todayTasks.filter(task => !task.isCompleted);
-  const taskProgress = (completedTasks.length / todayTasks.length) * 100;
+  const stats = getTaskStats();
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navigation Header */}
-      <TeenNavigation currentPath="/teen-tasks" />
+      {/* Navigation */}
+      <TeenNavigation currentPath="/teen-tasks" teenProfile={teenProfile} />
+      
+      <div className="max-w-6xl mx-auto p-4">
+        {/* Page Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold">My Tasks</h1>
+            <p className="text-gray-600">Manage all your tasks and assignments</p>
+          </div>
+          <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <Plus className="h-4 w-4" />
+                Add Task
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Create New Task</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleCreateTask} className="space-y-4">
+                <div>
+                  <Label htmlFor="title">Task Title</Label>
+                  <Input
+                    id="title"
+                    value={newTask.title}
+                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                    placeholder="Enter task title..."
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={newTask.description}
+                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                    placeholder="Add details..."
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="dueDate">Due Date</Label>
+                    <Input
+                      id="dueDate"
+                      type="date"
+                      value={newTask.dueDate}
+                      onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="estimatedTime">Time (minutes)</Label>
+                    <Input
+                      id="estimatedTime"
+                      type="number"
+                      value={newTask.estimatedTime}
+                      onChange={(e) => setNewTask({ ...newTask, estimatedTime: e.target.value })}
+                      placeholder="30"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Priority</Label>
+                    <Select value={newTask.priority} onValueChange={(value: any) => setNewTask({ ...newTask, priority: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Category</Label>
+                    <Select value={newTask.category} onValueChange={(value: any) => setNewTask({ ...newTask, category: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="personal">Personal</SelectItem>
+                        <SelectItem value="chores">Chores</SelectItem>
+                        <SelectItem value="homework">Homework</SelectItem>
+                        <SelectItem value="family">Family</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => setIsAddTaskOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={createTaskMutation.isPending}>
+                    {createTaskMutation.isPending ? "Creating..." : "Create Task"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          
-          {/* Points & Streak Card */}
-          <Card className="md:col-span-1">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-yellow-500" />
-                Your Progress
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-purple-600">{teenProfile.points}</p>
-                  <p className="text-sm text-gray-600">Total Points</p>
+                  <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
+                  <p className="text-sm text-gray-600">Total Tasks</p>
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-1">
-                    <Flame className="h-4 w-4 text-orange-500" />
-                    <span className="text-lg font-semibold">{teenProfile.streak}</span>
-                  </div>
-                  <p className="text-sm text-gray-600">Day Streak</p>
-                </div>
-              </div>
-              
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Today's Tasks</span>
-                  <span className="text-sm text-gray-600">{completedTasks.length}/{todayTasks.length}</span>
-                </div>
-                <Progress value={taskProgress} className="h-2" />
+                <CheckCircle2 className="h-8 w-8 text-blue-500" />
               </div>
             </CardContent>
           </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
+                  <p className="text-sm text-gray-600">Completed</p>
+                </div>
+                <CheckCircle2 className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold text-orange-600">{stats.today}</p>
+                  <p className="text-sm text-gray-600">Due Today</p>
+                </div>
+                <Calendar className="h-8 w-8 text-orange-500" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold text-purple-600">{stats.pending}</p>
+                  <p className="text-sm text-gray-600">Pending</p>
+                </div>
+                <Clock className="h-8 w-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Today's Tasks */}
-          <Card className="md:col-span-1 lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
-                Today's Tasks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {todayTasks.map((task) => (
-                  <div 
-                    key={task.id} 
-                    className={`p-3 rounded-lg border flex items-center justify-between ${
-                      task.isCompleted 
-                        ? 'bg-green-50 border-green-200' 
-                        : 'bg-white border-gray-200'
-                    }`}
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                <span className="text-sm font-medium">Filter:</span>
+              </div>
+              <div className="flex gap-2">
+                {["all", "today", "upcoming", "completed"].map((filterOption) => (
+                  <Button
+                    key={filterOption}
+                    variant={filter === filterOption ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setFilter(filterOption as any)}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        task.isCompleted 
-                          ? 'bg-green-500 border-green-500' 
-                          : 'border-gray-300'
-                      }`}>
-                        {task.isCompleted && <CheckCircle2 className="h-3 w-3 text-white" />}
-                      </div>
-                      <div>
-                        <p className={`font-medium ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
-                          {task.title}
-                        </p>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Clock className="h-3 w-3" />
-                          <span>{task.dueTime}</span>
-                          <Badge variant={
-                            task.priority === 'high' ? 'destructive' : 
-                            task.priority === 'medium' ? 'default' : 'secondary'
-                          } className="text-xs">
+                    {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+                  </Button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Priority:</span>
+                <Select value={priorityFilter} onValueChange={(value: any) => setPriorityFilter(value)}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tasks List */}
+        <div className="space-y-4">
+          {isLoading ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-gray-500">Loading tasks...</p>
+              </CardContent>
+            </Card>
+          ) : filteredTasks.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-gray-500">No tasks found for the selected filter.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredTasks.map((task: Task) => (
+              <Card key={task.id} className={`border-l-4 ${task.isCompleted ? 'opacity-75' : ''} ${
+                task.priority === 'high' ? 'border-l-red-500' : 
+                task.priority === 'medium' ? 'border-l-yellow-500' : 'border-l-green-500'
+              }`}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleTask(task.id, task.isCompleted)}
+                        className="mt-1 p-0 h-auto"
+                      >
+                        {task.isCompleted ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <Circle className="h-5 w-5 text-gray-400" />
+                        )}
+                      </Button>
+                      
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className={`font-semibold ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
+                            {task.title}
+                          </h3>
+                          <Badge variant="outline" className={priorityColors[task.priority]}>
                             {task.priority}
                           </Badge>
+                          <Badge variant="outline" className={categoryColors[task.category]}>
+                            {task.category}
+                          </Badge>
+                        </div>
+                        
+                        {task.description && (
+                          <p className="text-sm text-gray-600 mb-2">{task.description}</p>
+                        )}
+                        
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{formatDate(task.dueDate)}</span>
+                          </div>
+                          {task.estimatedTime && (
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              <span>{task.estimatedTime}min</span>
+                            </div>
+                          )}
+                          {task.assignedBy && (
+                            <div className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              <span>by {task.assignedBy}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3 w-3" />
+                            <span>{task.points} pts</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-purple-600">+{task.points} pts</p>
-                    </div>
                   </div>
-                ))}
-                
-                <Button variant="outline" className="w-full mt-4">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add New Task
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setLocation("/teen-calendar")}
-                  className="h-16 flex flex-col gap-1"
-                >
-                  <Calendar className="h-5 w-5" />
-                  <span className="text-xs">Calendar</span>
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="h-16 flex flex-col gap-1"
-                >
-                  <Plus className="h-5 w-5" />
-                  <span className="text-xs">Add Task</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Upcoming Events */}
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-blue-500" />
-                Upcoming Events
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {upcomingEvents.slice(0, 3).map((event) => (
-                  <div key={event.id} className="p-2 bg-gray-50 rounded-lg">
-                    <p className="font-medium text-sm">{event.title}</p>
-                    <div className="flex items-center gap-2 text-xs text-gray-600">
-                      <Clock className="h-3 w-3" />
-                      <span>{event.time} • {event.date}</span>
-                    </div>
-                  </div>
-                ))}
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full text-xs"
-                  onClick={() => setLocation("/teen-calendar")}
-                >
-                  View All Events
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Achievements */}
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-500" />
-                Achievements
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {achievements.map((achievement, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="text-2xl">{achievement.icon}</div>
-                    <div>
-                      <p className="font-medium text-sm">{achievement.name}</p>
-                      <p className="text-xs text-gray-600">{achievement.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </div>

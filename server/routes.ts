@@ -2145,6 +2145,58 @@ themomapp.us@gmail.com`;
     }
   });
 
+  // Create new teen task
+  app.post("/api/teen/tasks", async (req, res) => {
+    try {
+      const taskData = req.body;
+      
+      // Create new task with unique ID
+      const newTask = {
+        id: Date.now(), // Simple ID generation for demo
+        title: taskData.title,
+        description: taskData.description || "",
+        dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
+        priority: taskData.priority || "medium",
+        assignedBy: "Self",
+        points: taskData.points || Math.floor(Math.random() * 20) + 5,
+        isCompleted: false,
+        category: taskData.category || "personal",
+        estimatedTime: taskData.estimatedTime || null,
+        status: "pending",
+        reminderCount: 0
+      };
+
+      res.status(201).json(newTask);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to create task: " + error.message });
+    }
+  });
+
+  // Update teen task (toggle completion, edit details)
+  app.put("/api/teen/tasks/:id", async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.id);
+      const updateData = req.body;
+      
+      // Mock task update
+      if (updateData.completed !== undefined) {
+        const pointsEarned = updateData.completed ? 15 : 0;
+        res.json({
+          success: true,
+          pointsEarned,
+          message: updateData.completed ? `Task completed! You earned ${pointsEarned} points!` : "Task marked as incomplete",
+        });
+      } else {
+        res.json({
+          success: true,
+          message: "Task updated successfully",
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to update task: " + error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
