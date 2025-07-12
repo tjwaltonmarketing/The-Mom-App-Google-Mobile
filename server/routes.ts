@@ -1869,6 +1869,58 @@ themomapp.us@gmail.com`;
     }
   });
 
+  // Teen shared passwords
+  app.get("/api/teen/shared-passwords", async (req, res) => {
+    try {
+      const teenId = req.session?.teenId;
+      
+      if (!teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      // Mock shared passwords - in real app, fetch from database based on teen's family
+      const sharedPasswords = [
+        {
+          id: 1,
+          service: "Disney Plus",
+          category: "streaming",
+          username: "family@walton.com",
+          password: "DisneyFun2024!",
+          notes: "This is our family Disney Plus account. Please don't change anything in the profile settings.",
+          sharedBy: "Mom",
+          sharedAt: new Date("2024-01-15T10:30:00Z"),
+          lastUsed: new Date("2024-01-20T19:45:00Z")
+        },
+        {
+          id: 2,
+          service: "Netflix",
+          category: "streaming", 
+          username: "walton.family@gmail.com",
+          password: "Netflix123$",
+          notes: "Use the 'Kids' profile for age-appropriate content.",
+          sharedBy: "Dad",
+          sharedAt: new Date("2024-01-10T14:20:00Z"),
+          lastUsed: new Date("2024-01-19T20:15:00Z")
+        },
+        {
+          id: 3,
+          service: "Khan Academy",
+          category: "educational",
+          username: "adri.walton@student.edu",
+          password: "LearnEveryday2024",
+          notes: "Great for math and science practice. Your progress syncs with your school account.",
+          sharedBy: "Mom",
+          sharedAt: new Date("2024-01-05T09:00:00Z")
+        }
+      ];
+      
+      res.json(sharedPasswords);
+    } catch (error: any) {
+      console.error("Teen shared passwords error:", error);
+      res.status(500).json({ error: "Failed to get shared passwords: " + error.message });
+    }
+  });
+
   // Teen dashboard data
   app.get("/api/teen/tasks", async (req, res) => {
     try {

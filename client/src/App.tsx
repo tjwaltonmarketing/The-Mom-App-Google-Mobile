@@ -27,6 +27,7 @@ import TeenDashboard from "@/pages/teen-dashboard";
 import TeenCalendar from "@/pages/teen-calendar";
 import TeenProfile from "@/pages/teen-profile";
 import TeenTutorial from "@/pages/teen-tutorial";
+import TeenPasswords from "@/pages/teen-passwords";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import ForgotPassword from "@/pages/forgot-password";
@@ -58,6 +59,7 @@ function Router() {
         <Route path="/teen-calendar" component={TeenCalendar} />
         <Route path="/teen-profile" component={TeenProfile} />
         <Route path="/teen-tutorial" component={TeenTutorial} />
+        <Route path="/teen-passwords" component={TeenPasswords} />
         <Route component={Login} />
       </Switch>
     );

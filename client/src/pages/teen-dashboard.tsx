@@ -19,7 +19,8 @@ import {
   Moon,
   Sun,
   Eye,
-  BookOpen
+  BookOpen,
+  Lock
 } from "lucide-react";
 import TeenNotifications from "@/components/teen/teen-notifications";
 
