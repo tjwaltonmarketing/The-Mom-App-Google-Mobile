@@ -25,6 +25,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const [priority, setPriority] = useState<string>("medium");
   const [assignedTo, setAssignedTo] = useState<string>("unassigned");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [points, setPoints] = useState<string>("10");
   const { toast } = useToast();
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
@@ -69,6 +70,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       priority,
       assignedTo: assignedTo !== "unassigned" ? parseInt(assignedTo) : null,
       dueDate: dueDate ? dueDate.toISOString() : null,
+      points: parseInt(points),
     };
 
     createTaskMutation.mutate(taskData);
@@ -80,6 +82,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
     setPriority("medium");
     setAssignedTo("unassigned");
     setDueDate(undefined);
+    setPoints("10");
     onClose();
   };
 
@@ -147,30 +150,50 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
             </div>
           </div>
 
-          <div>
-            <label className="text-sm font-medium">Due Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full mt-1 justify-start text-left font-normal",
-                    !dueDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarDays className="mr-2 h-4 w-4" />
-                  {dueDate ? format(dueDate, "PPP") : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={dueDate}
-                  onSelect={setDueDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">Points Reward</label>
+              <Select value={points} onValueChange={setPoints}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5 points</SelectItem>
+                  <SelectItem value="10">10 points</SelectItem>
+                  <SelectItem value="15">15 points</SelectItem>
+                  <SelectItem value="20">20 points</SelectItem>
+                  <SelectItem value="25">25 points</SelectItem>
+                  <SelectItem value="30">30 points</SelectItem>
+                  <SelectItem value="50">50 points</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Due Date</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full mt-1 justify-start text-left font-normal",
+                      !dueDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarDays className="mr-2 h-4 w-4" />
+                    {dueDate ? format(dueDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={dueDate}
+                    onSelect={setDueDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
 
           <div className="flex gap-2 pt-4">

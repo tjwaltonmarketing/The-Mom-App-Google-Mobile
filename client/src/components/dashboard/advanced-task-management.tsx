@@ -313,6 +313,11 @@ export function AdvancedTaskManagement() {
                             <Badge className={getPriorityColor(task.priority)}>
                               {task.priority} priority
                             </Badge>
+                            {task.points && (
+                              <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                {task.points} points
+                              </Badge>
+                            )}
                             {member && (
                               <div 
                                 className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs"
