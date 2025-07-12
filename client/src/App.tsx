@@ -21,6 +21,7 @@ import TutorialsPage from "@/pages/tutorials";
 import VoiceTestPage from "@/pages/voice-test";
 import TeenTestPage from "@/pages/teen-test";
 import TeenOnboardingDemo from "@/pages/teen-onboarding-demo";
+import TeenDashboard from "@/pages/teen-dashboard";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import ForgotPassword from "@/pages/forgot-password";
@@ -46,6 +47,7 @@ function Router() {
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/teen-onboarding-demo" component={TeenOnboardingDemo} />
+        <Route path="/teen-dashboard" component={TeenDashboard} />
         <Route component={Login} />
       </Switch>
     );
@@ -65,6 +67,7 @@ function Router() {
       <Route path="/tutorials" component={TutorialsPage} />
       <Route path="/voice-test" component={VoiceTestPage} />
       <Route path="/teen-test" component={TeenTestPage} />
+      <Route path="/teen-dashboard" component={TeenDashboard} />
       <Route component={NotFound} />
     </Switch>
   );

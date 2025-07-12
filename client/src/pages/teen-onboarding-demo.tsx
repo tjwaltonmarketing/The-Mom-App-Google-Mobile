@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +16,7 @@ export default function TeenOnboardingDemo() {
     age: "",
     favoriteColor: "blue"
   });
+  const [, setLocation] = useLocation();
 
   const handleJoinFamily = () => {
     if (!inviteCode) return;
@@ -195,17 +197,25 @@ export default function TeenOnboardingDemo() {
             </div>
           </div>
 
-          <Button
-            onClick={() => {
-              setCurrentStep(0);
-              setInviteCode("");
-              setProfile({ firstName: "", age: "", favoriteColor: "blue" });
-            }}
-            variant="outline"
-            className="w-full"
-          >
-            Try Demo Again
-          </Button>
+          <div className="space-y-3">
+            <Button
+              onClick={() => setLocation("/teen-dashboard")}
+              className="w-full"
+            >
+              Go to Dashboard
+            </Button>
+            <Button
+              onClick={() => {
+                setCurrentStep(0);
+                setInviteCode("");
+                setProfile({ firstName: "", age: "", favoriteColor: "blue" });
+              }}
+              variant="outline"
+              className="w-full"
+            >
+              Try Demo Again
+            </Button>
+          </div>
         </div>
       )
     }
