@@ -21,7 +21,7 @@ export class SendGridProvider implements EmailProvider {
     try {
       const msg = {
         to,
-        from: process.env.FROM_EMAIL || 'noreply@themomapp.com', // Use verified sender
+        from: process.env.FROM_EMAIL || 'themomapp.us@gmail.com', // Use your verified email as sender
         subject,
         text: text || this.htmlToText(html),
         html,
