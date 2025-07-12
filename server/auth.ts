@@ -33,11 +33,29 @@ export function setupSession(app: Express) {
   }));
 }
 
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  if (!req.session.userId) {
-    return res.status(401).json({ message: "Unauthorized" });
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  // Check session first
+  if (req.session.userId) {
+    return next();
   }
-  next();
+  
+  // Try token-based authentication as fallback
+  const token = extractTokenFromRequest(req);
+  if (token) {
+    const decoded = verifyToken(token);
+    if (decoded) {
+      // Verify user exists
+      const user = await storage.getUserById(decoded.userId);
+      if (user) {
+        // Set session for consistency
+        req.session.userId = user.id;
+        return next();
+      }
+    }
+  }
+  
+  console.log("Auth failed - Session ID:", req.session?.id, "User ID:", req.session?.userId);
+  return res.status(401).json({ message: "Unauthorized" });
 }
 
 export async function hashPassword(password: string): Promise<string> {
