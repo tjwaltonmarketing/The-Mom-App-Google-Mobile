@@ -1,6 +1,7 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Logo } from "@/components/logo";
 import { 
   Calendar,
   Lock,
@@ -52,10 +53,8 @@ export default function TeenNavigation({ currentPath }: TeenNavigationProps) {
           <div className="flex items-center gap-4">
             {/* The Mom App Logo */}
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">M</span>
-              </div>
-              <span className="font-semibold text-gray-900 hidden sm:block">The Mom App</span>
+              <Logo className="h-8 w-8 flex-shrink-0" />
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white font-logo uppercase hidden sm:block">THE MOM APP</h1>
             </div>
             
             {/* Profile Section */}
