@@ -40,9 +40,42 @@ interface TutorialStep {
 
 const tutorials: Tutorial[] = [
   {
+    id: "parent-account-management",
+    title: "Parent Account Management",
+    description: "Set up multiple parent accounts with full family coordination access",
+    duration: "4 min",
+    difficulty: "beginner",
+    icon: Users,
+    category: "family-coordination",
+    steps: [
+      {
+        title: "Invite Another Parent",
+        description: "From Settings > Family, click 'Invite Parent to Family'. Enter their email address and select their role (Mom, Dad, or Parent).",
+        action: "Fill out parent email and role information",
+        tips: ["Parent accounts have full app functionality", "Both parents can manage all family coordination", "No restrictions like teen accounts"]
+      },
+      {
+        title: "Send Parent Invitation",
+        description: "The system generates a unique invite code and sends it to the parent's email. They can use this code to join your family coordination.",
+        action: "Copy invite code or share directly with parent",
+        tips: ["Invite codes are secure and expire after 7 days", "Parents can create accounts or use existing ones", "Automatic family linking upon acceptance"]
+      },
+      {
+        title: "Parent Account Features",
+        description: "Invited parents get full access: calendar management, task creation, family member management, password vault, and all administrative features.",
+        tips: ["Both parents can invite teens and manage family", "Complete privacy control settings", "Shared access to all family data", "Equal administrative privileges"]
+      },
+      {
+        title: "Family Member Linking",
+        description: "Parent accounts automatically link to their family member profiles, enabling personalized colors, avatars, and notification preferences.",
+        tips: ["Parents see their personal calendar and family calendar", "Notification preferences sync across accounts", "Profile customization maintained"]
+      }
+    ]
+  },
+  {
     id: "teen-account-setup",
     title: "Teen Account Setup (Anti-Nagging System)",
-    description: "Set up teen accounts with smart notifications that handle chore reminders automatically",
+    description: "Set up teen accounts with smart notifications and task assignment that eliminates parent nagging",
     duration: "6 min",
     difficulty: "beginner",
     icon: Users,
@@ -55,21 +88,27 @@ const tutorials: Tutorial[] = [
         tips: ["Use their real phone number for SMS invites", "Set appropriate permissions based on age", "Teen accounts reduce parent 'nagging' by automating reminders"]
       },
       {
-        title: "Send Invitation",
-        description: "Choose to send via text message or email. The teen will receive an invite code and download instructions.",
-        action: "Click 'Send Via Text' or copy the invite code manually",
-        tips: ["SMS delivery is instant", "Invite codes expire in 7 days", "You can resend if needed"]
+        title: "Send Multi-Channel Invitation",
+        description: "Choose to send via SMS (Twilio) or email (SendGrid). The teen receives an invite code with setup instructions across multiple channels.",
+        action: "Click 'Send Via Text' or 'Send Via Email' with automatic failover",
+        tips: ["SMS delivery is instant", "Email includes professional HTML templates", "Invite codes expire in 7 days", "You can resend if needed"]
       },
       {
-        title: "Teen Onboarding",
-        description: "Guide your teen through creating their account using the invite code. They'll set up notifications and preferences.",
-        action: "Help teen complete profile setup",
-        tips: ["Let them customize notification preferences", "Explain the points and streak system", "Show them how to mark tasks complete"]
+        title: "Teen Dashboard & Gamification",
+        description: "Teens get a focused interface with points system (10-50 points per task), streak tracking, and achievement badges for completing tasks.",
+        action: "Help teen explore their dashboard and point system",
+        tips: ["Points motivate task completion", "Streaks build habits", "Dark mode and blue light filter available", "Calendar shows assigned tasks and family dinners"]
       },
       {
-        title: "Smart Notifications in Action",
-        description: "The app now handles progressive chore reminders automatically - no more parent nagging needed!",
-        tips: ["Gentle first reminders", "Escalation for overdue tasks", "Celebration messages for completion", "Respects quiet hours"]
+        title: "Parent Task Assignment",
+        description: "Assign tasks directly to teens with categories (chores, homework, family), time estimates, and point values. Tasks flow seamlessly to teen dashboard.",
+        action: "Use task assignment modal to create teen-specific tasks",
+        tips: ["Include clear descriptions and time estimates", "Set appropriate point values", "Use categories for organization", "Teens get notified automatically"]
+      },
+      {
+        title: "Smart Progressive Notifications",
+        description: "The app handles chore reminders automatically with gentle escalation, quiet hours respect, and celebration messages - eliminating parent nagging.",
+        tips: ["Gentle first reminders", "Escalation for overdue tasks", "Celebration messages for completion", "Respects quiet hours (9 PM - 8 AM)", "Parents get completion notifications"]
       }
     ]
   },
@@ -196,6 +235,45 @@ const tutorials: Tutorial[] = [
         title: "Parent Benefits",
         description: "Parents see real-time completion status and can focus on encouragement instead of reminders.",
         tips: ["No more repeated asking about chores", "Automatic escalation for overdue tasks", "Celebration messages for achievements"]
+      }
+    ]
+  },
+  {
+    id: "parent-teen-task-assignment",
+    title: "Parent-to-Teen Task Assignment",
+    description: "Assign tasks directly to teens with points, categories, and automatic notifications",
+    duration: "5 min",
+    difficulty: "beginner",
+    icon: Users,
+    category: "family-coordination",
+    steps: [
+      {
+        title: "Open Task Assignment",
+        description: "From your dashboard or task management page, click 'Assign Task to Teen' or use the task assignment modal.",
+        action: "Select the teen you want to assign a task to",
+        tips: ["Only teens with accounts can receive assigned tasks", "Demo teens (Alex, Jordan, Sam) are available for testing"]
+      },
+      {
+        title: "Create the Task",
+        description: "Enter task title, detailed description, category (chores, homework, family), and estimated time to complete.",
+        action: "Fill out task details with clear expectations",
+        tips: ["Include specific instructions", "Set realistic time estimates", "Choose appropriate categories for organization"]
+      },
+      {
+        title: "Set Points and Priority",
+        description: "Assign point values (10-50 points) based on task difficulty and set priority level (low, medium, high).",
+        action: "Choose points that motivate without overwhelming",
+        tips: ["10-20 points for simple tasks", "30-40 points for moderate tasks", "50 points for complex or important tasks"]
+      },
+      {
+        title: "Schedule and Assign",
+        description: "Set due date, assign to specific teen, and send the task. The teen receives automatic notifications and sees it on their dashboard.",
+        tips: ["Tasks appear immediately on teen dashboard", "Progressive reminders automatically handle follow-up", "Parents get completion notifications"]
+      },
+      {
+        title: "Track Progress",
+        description: "Monitor task completion, teen points, and streaks from your parent dashboard. Celebrate achievements and adjust point values as needed.",
+        tips: ["Completed tasks boost teen streaks", "Points accumulate for achievements", "Use completion data to refine task assignment"]
       }
     ]
   },

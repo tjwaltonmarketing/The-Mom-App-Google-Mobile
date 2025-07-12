@@ -15,6 +15,20 @@ interface FAQItem {
 
 const faqItems: FAQItem[] = [
   {
+    id: "parent-accounts-overview",
+    question: "How do parent accounts work? Do both parents get full access?",
+    answer: "Parent accounts have complete, unrestricted access to all family coordination features. Both parents can manage calendars, assign tasks, invite family members, access the password vault, and control all settings. When you invite another parent via Settings > Family > 'Invite Parent to Family', they receive full administrative privileges - not a limited view like teen accounts. This ensures true partnership in family coordination.",
+    category: "getting-started",
+    tags: ["parent", "accounts", "full-access", "administrative", "partnership"]
+  },
+  {
+    id: "parent-invite-process",
+    question: "How do I add my spouse/partner to the family coordination?",
+    answer: "From Settings > Family, click 'Invite Parent to Family'. Enter their email address and select their role (Mom, Dad, or Parent). The system generates a secure invite code that's sent to their email. They can create a new account or link an existing one. Once accepted, they have complete access to family coordination with their own personalized settings and profile.",
+    category: "getting-started",
+    tags: ["parent", "invite", "spouse", "partner", "setup"]
+  },
+  {
     id: "teen-accounts-overview",
     question: "How do teen accounts help reduce parent 'nagging'?",
     answer: "Teen accounts include smart notification systems that handle chore reminders automatically. Instead of parents repeatedly asking about tasks, the app sends progressive reminders to teens directly. It starts with gentle notifications and escalates appropriately, while celebrating completions. Parents get status updates without needing to ask, and teens develop independence through gamified task management with points and streaks.",
@@ -24,16 +38,30 @@ const faqItems: FAQItem[] = [
   {
     id: "teen-invite-process",
     question: "How do I set up a teen account for my child?",
-    answer: "From Settings > Family, click 'Invite Teen to Family'. Enter their name, phone number or email, set age-appropriate permissions, and send the invitation via SMS or email. They'll receive an invite code with download instructions. Teen accounts include task assignments, calendar access, and smart notifications while restricting access to adult features like family passwords or task assignment to others.",
+    answer: "From Settings > Family, click 'Invite Teen to Family'. Enter their name, phone number or email, set age-appropriate permissions, and send the invitation via SMS (Twilio) or email (SendGrid). They'll receive an invite code with download instructions across multiple channels. Teen accounts include task assignments, calendar access, and smart notifications while restricting access to adult features like family passwords or task assignment to others.",
     category: "getting-started",
-    tags: ["teen", "setup", "invite", "permissions", "SMS"]
+    tags: ["teen", "setup", "invite", "permissions", "SMS", "email"]
+  },
+  {
+    id: "parent-teen-task-assignment",
+    question: "How do I assign tasks directly to my teen?",
+    answer: "Use the task assignment modal to create tasks specifically for teens. Include task description, category (chores, homework, family), estimated time, and point value (10-50 points). Tasks automatically appear on the teen's dashboard with notifications. You can track completion, monitor teen points and streaks, and receive completion notifications without needing to ask about progress.",
+    category: "features",
+    tags: ["teen", "tasks", "assignment", "points", "tracking"]
   },
   {
     id: "teen-gamification",
     question: "How does the points and streaks system work for teens?",
-    answer: "Teens earn points for completing tasks on time, with bonus points for early completion. Daily streaks encourage consistent task completion. The teen dashboard shows weekly points, current streak, and today's completion status. This gamification makes chores more engaging while giving parents visibility into progress without constant check-ins. Achievement celebrations reinforce positive behavior.",
+    answer: "Teens earn 10-50 points for completing tasks on time, with bonus points for early completion. Daily streaks encourage consistent task completion. The teen dashboard shows weekly points, current streak, and today's completion status with tab navigation between Home, Calendar, and Passwords. This gamification makes chores more engaging while giving parents visibility into progress without constant check-ins. Achievement celebrations reinforce positive behavior.",
     category: "features",
-    tags: ["teen", "points", "streaks", "gamification", "motivation"]
+    tags: ["teen", "points", "streaks", "gamification", "motivation", "dashboard"]
+  },
+  {
+    id: "teen-dashboard-features",
+    question: "What can teens see and do in their dashboard?",
+    answer: "Teen dashboards include tab navigation with Home (assigned tasks, points, streaks), Calendar (family events and personal schedule), and Passwords (parent-shared family accounts). They can complete tasks, view family dinner plans, access dark mode and blue light filters, and receive achievement notifications. Parents control which family passwords are shared with teens for appropriate access to family accounts.",
+    category: "features",
+    tags: ["teen", "dashboard", "navigation", "calendar", "passwords", "features"]
   },
   {
     id: "teen-notifications",
@@ -41,6 +69,13 @@ const faqItems: FAQItem[] = [
     answer: "Teen accounts include progressive reminder systems that respect quiet hours and personal schedules. Notifications start gentle and escalate appropriately for overdue tasks. Teens can customize notification preferences, set quiet hours, and choose how they want to receive reminders. The system celebrates achievements and maintains positive engagement while ensuring tasks get completed.",
     category: "features",
     tags: ["teen", "notifications", "reminders", "quiet hours", "customization"]
+  },
+  {
+    id: "multi-channel-invites",
+    question: "What communication methods are used for teen and parent invites?",
+    answer: "Teen invites use multi-channel delivery with SMS via Twilio and email via SendGrid, providing reliable delivery with automatic failover. Parent invites are sent via email with secure invite codes. Both systems include professional HTML templates, setup instructions, and account creation guidance. All invite codes are secure, expire after 7 days, and can be resent if needed.",
+    category: "features",
+    tags: ["invites", "SMS", "email", "Twilio", "SendGrid", "delivery"]
   },
   {
     id: "voice-assistant-basics",
