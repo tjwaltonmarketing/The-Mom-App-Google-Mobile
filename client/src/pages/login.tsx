@@ -243,16 +243,29 @@ export default function Login() {
               </div>
             </div>
             
-            <Button 
-              variant="outline" 
-              className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
-              asChild
-            >
-              <Link href="/teen-onboarding-demo">
-                <Users className="w-4 h-4 mr-2" />
-                Join Family with Invite Code
-              </Link>
-            </Button>
+            <div className="space-y-2">
+              <Button 
+                variant="outline" 
+                className="w-full border-purple-200 text-purple-700 hover:bg-purple-50"
+                asChild
+              >
+                <Link href="/teen-login">
+                  <Users className="w-4 h-4 mr-2" />
+                  Teen Login
+                </Link>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
+                asChild
+              >
+                <Link href="/teen-onboarding-demo">
+                  <Users className="w-4 h-4 mr-2" />
+                  Join Family with Invite Code
+                </Link>
+              </Button>
+            </div>
 
             <div className="text-center space-y-3">
               <p className="text-sm text-gray-600">

@@ -1615,6 +1615,197 @@ themomapp.us@gmail.com`;
     }
   });
 
+  // Teen setup completion (full profile creation)
+  app.post("/api/teen/complete-setup", async (req, res) => {
+    try {
+      const { profile, notificationSettings } = req.body;
+      
+      // Hash password for security
+      const passwordHash = await hashPassword(profile.password);
+      
+      // Create teen account with full credentials
+      const teenAccount = {
+        id: Math.floor(Math.random() * 1000),
+        userId: Math.floor(Math.random() * 1000),
+        familyMemberId: Math.floor(Math.random() * 1000),
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        username: profile.username,
+        passwordHash, // Store hashed password
+        age: profile.age,
+        favoriteColor: profile.favoriteColor,
+        points: 0,
+        streak: 0,
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Set session for teen login
+      req.session!.teenId = teenAccount.id;
+      
+      console.log("Teen setup completed:", { 
+        username: teenAccount.username, 
+        id: teenAccount.id 
+      });
+      
+      res.json({ 
+        success: true, 
+        teenProfile: teenAccount,
+        notificationSettings 
+      });
+    } catch (error: any) {
+      console.error("Teen setup error:", error);
+      res.status(500).json({ message: "Failed to complete setup: " + error.message });
+    }
+  });
+
+  // Teen login with invite code
+  app.post("/api/teen/login-with-invite", async (req, res) => {
+    try {
+      const { inviteCode } = req.body;
+      
+      if (!inviteCode) {
+        return res.status(400).json({ error: "Invite code is required" });
+      }
+      
+      // Validate invite code format
+      const isValid = /^[A-Z0-9]{4,8}$/.test(inviteCode.toUpperCase());
+      
+      if (!isValid) {
+        return res.status(400).json({ error: "Invalid invite code format" });
+      }
+      
+      // Check if teen already has an account for this invite
+      // For demo purposes, assume teens with codes starting with specific letters need setup
+      const needsSetup = inviteCode.startsWith('NEW') || inviteCode.startsWith('SET');
+      
+      if (needsSetup) {
+        res.json({
+          needsSetup: true,
+          inviteCode,
+          family: {
+            id: 1,
+            name: "Walton",
+            parentName: "Mom"
+          }
+        });
+      } else {
+        // Mock existing teen profile
+        const teenProfile = {
+          id: 123,
+          firstName: "Adri",
+          lastName: "Walton",
+          username: "adri_w",
+          points: 285,
+          streak: 12,
+          favoriteColor: "purple"
+        };
+        
+        // Set session
+        req.session!.teenId = teenProfile.id;
+        
+        res.json({
+          needsSetup: false,
+          teenProfile,
+          family: {
+            id: 1,
+            name: "Walton",
+            parentName: "Mom"
+          }
+        });
+      }
+    } catch (error: any) {
+      console.error("Teen invite login error:", error);
+      res.status(500).json({ error: "Failed to login with invite code: " + error.message });
+    }
+  });
+
+  // Teen login with username/password
+  app.post("/api/teen/login", async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password are required" });
+      }
+      
+      // Mock teen authentication - in real app, check against database
+      const mockTeens = [
+        { id: 123, username: "adri_w", password: "password123", firstName: "Adri" },
+        { id: 124, username: "teen_demo", password: "demo123", firstName: "Demo" }
+      ];
+      
+      const teen = mockTeens.find(t => t.username === username);
+      
+      if (!teen) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      // In real app, use bcrypt to compare hashed passwords
+      const isValidPassword = teen.password === password;
+      
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      // Set session
+      req.session!.teenId = teen.id;
+      
+      res.json({
+        success: true,
+        teenProfile: {
+          id: teen.id,
+          firstName: teen.firstName,
+          username: teen.username
+        }
+      });
+    } catch (error: any) {
+      console.error("Teen login error:", error);
+      res.status(500).json({ error: "Failed to login: " + error.message });
+    }
+  });
+
+  // Teen auth check
+  app.get("/api/teen/auth/user", async (req, res) => {
+    try {
+      const teenId = req.session?.teenId;
+      
+      if (!teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      // Mock teen profile - in real app, fetch from database
+      const teenProfile = {
+        id: teenId,
+        firstName: "Adri",
+        lastName: "Walton",
+        username: "adri_w",
+        points: 285,
+        streak: 12,
+        favoriteColor: "purple",
+        family: {
+          id: 1,
+          name: "Walton"
+        }
+      };
+      
+      res.json(teenProfile);
+    } catch (error: any) {
+      console.error("Teen auth check error:", error);
+      res.status(500).json({ error: "Failed to get teen user" });
+    }
+  });
+
+  // Teen logout
+  app.post("/api/teen/logout", async (req, res) => {
+    try {
+      req.session!.teenId = undefined;
+      res.json({ message: "Logged out successfully" });
+    } catch (error: any) {
+      console.error("Teen logout error:", error);
+      res.status(500).json({ error: "Failed to logout" });
+    }
+  });
+
   // Teen dashboard data
   app.get("/api/teen/tasks", async (req, res) => {
     try {
