@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,139 +40,102 @@ export default function TeenCalendar() {
     type: "personal"
   });
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Mock combined calendar data - family events + teen's personal events
-  const allEvents = [
-    // Family shared events (visible to teen)
-    {
-      id: 1,
-      title: "Soccer Practice",
-      time: "4:00 PM - 5:30 PM",
-      date: "Today",
-      fullDate: new Date(),
-      type: "sport",
-      assignedTo: "Adri",
-      location: "Community Park",
-      privacy: "shared",
-      color: "#22c55e", // Green for shared family events
-      source: "family",
-      isOwnEvent: false
+  // Fetch real events from database
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ["/api/events"],
+    retry: false,
+  });
+
+  const createEventMutation = useMutation({
+    mutationFn: async (eventData: any) => {
+      const response = await apiRequest("POST", "/api/events", eventData);
+      return response;
     },
-    {
-      id: 2,
-      title: "Family Dinner",
-      time: "6:30 PM - 8:00 PM",
-      date: "Today",
-      fullDate: new Date(),
-      type: "family",
-      assignedTo: "Everyone",
-      location: "Home",
-      privacy: "shared",
-      color: "#3b82f6", // Blue for shared family events
-      source: "family",
-      isOwnEvent: false
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      toast({
+        title: "Event Created!",
+        description: `"${newEvent.title}" has been added to the family calendar`,
+      });
+      setNewEvent({
+        title: "",
+        date: "",
+        time: "",
+        endTime: "",
+        location: "",
+        description: "",
+        type: "personal"
+      });
+      setIsAddEventOpen(false);
     },
-    {
-      id: 3,
-      title: "Math Test",
-      time: "10:00 AM - 11:30 AM",
-      date: "Tomorrow",
-      fullDate: new Date(Date.now() + 86400000),
-      type: "school",
-      assignedTo: "Adri",
-      location: "Lincoln High School",
-      privacy: "shared",
-      color: "#3b82f6", // Blue for shared family events
-      source: "family",
-      isOwnEvent: false
+    onError: (error: any) => {
+      toast({
+        title: "Error Creating Event",
+        description: error.message || "Failed to create event",
+        variant: "destructive",
+      });
     },
-    {
-      id: 4,
-      title: "Mom's Meeting",
-      time: "2:00 PM - 3:00 PM",
-      date: "Tomorrow",
-      fullDate: new Date(Date.now() + 86400000),
-      type: "work",
-      assignedTo: "Mom",
-      location: "Office",
-      privacy: "busy",
-      color: "#6b7280", // Gray for busy events
-      source: "family",
-      isOwnEvent: false
-    },
-    {
-      id: 5,
-      title: "Private Appointment",
-      time: "11:00 AM - 12:00 PM",
-      date: "Friday",
-      fullDate: new Date(Date.now() + 4 * 86400000),
-      type: "personal",
-      assignedTo: "Dad",
-      location: "Unknown",
-      privacy: "private",
-      color: "#6b7280", // Gray for private events
-      source: "family",
-      isOwnEvent: false
-    },
-    {
-      id: 6,
-      title: "Basketball Game",
-      time: "7:00 PM - 9:00 PM",
-      date: "Saturday",
-      fullDate: new Date(Date.now() + 5 * 86400000),
-      type: "sport",
-      assignedTo: "Adri",
-      location: "School Gym",
-      privacy: "shared",
-      color: "#22c55e", // Green for shared family events
-      source: "family",
-      isOwnEvent: false
-    },
+  });
+
+  // Transform database events for display
+  const allEvents = events.map((event: any) => {
+    const startTime = new Date(event.startTime);
+    const endTime = event.endTime ? new Date(event.endTime) : null;
     
-    // Teen's personal events (purple theme)
-    {
-      id: 101,
-      title: "Study Group",
-      time: "3:00 PM - 5:00 PM",
-      date: "Today",
-      fullDate: new Date(),
-      type: "school",
-      assignedTo: "Adri",
-      location: "Library",
-      privacy: "shared",
-      color: "#a855f7", // Purple for teen's own events
-      source: "teen",
-      isOwnEvent: true
-    },
-    {
-      id: 102,
-      title: "Hang with Sarah",
-      time: "2:00 PM - 4:00 PM",
-      date: "Tomorrow",
-      fullDate: new Date(Date.now() + 86400000),
-      type: "personal",
-      assignedTo: "Adri",
-      location: "Downtown",
-      privacy: "shared",
-      color: "#a855f7", // Purple for teen's own events
-      source: "teen",
-      isOwnEvent: true
-    },
-    {
-      id: 103,
-      title: "Guitar Lesson",
-      time: "4:00 PM - 5:00 PM",
-      date: "Friday",
-      fullDate: new Date(Date.now() + 4 * 86400000),
-      type: "personal",
-      assignedTo: "Adri",
-      location: "Music Studio",
-      privacy: "shared",
-      color: "#a855f7", // Purple for teen's own events
-      source: "teen",
-      isOwnEvent: true
+    // Determine relative date label
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    let dateLabel = "This Week";
+    if (startTime.toDateString() === today.toDateString()) {
+      dateLabel = "Today";
+    } else if (startTime.toDateString() === tomorrow.toDateString()) {
+      dateLabel = "Tomorrow";
     }
-  ];
+
+    // Format time display
+    const timeStr = startTime.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit', 
+      hour12: true 
+    });
+    const endTimeStr = endTime ? endTime.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit', 
+      hour12: true 
+    }) : null;
+    const timeDisplay = endTimeStr ? `${timeStr} - ${endTimeStr}` : timeStr;
+
+    // Determine if this is the teen's own event (currently simulated)
+    const isOwnEvent = event.createdBy === 1; // Assume teen is family member ID 1 for demo
+    
+    // Color coding based on privacy and ownership
+    let color = "#6b7280"; // Default gray
+    if (event.visibilityType === "shared") {
+      color = isOwnEvent ? "#a855f7" : "#3b82f6"; // Purple for own, blue for family
+    } else if (event.visibilityType === "busy") {
+      color = "#f59e0b"; // Yellow for busy
+    }
+
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      time: timeDisplay,
+      date: dateLabel,
+      fullDate: startTime,
+      type: "personal", // Could be determined from event categories
+      assignedTo: "Family Member", // Would come from relation
+      location: event.location || "",
+      privacy: event.visibilityType,
+      color,
+      source: isOwnEvent ? "teen" : "family",
+      isOwnEvent
+    };
+  });
 
   const getEventsByDate = (dateLabel: string) => {
     return allEvents.filter(event => event.date === dateLabel);
@@ -225,21 +190,24 @@ export default function TeenCalendar() {
       return;
     }
 
-    toast({
-      title: "Event Created!",
-      description: `"${newEvent.title}" has been added to the family calendar`,
-    });
+    // Create proper datetime for the event
+    const startDateTime = new Date(`${newEvent.date}T${newEvent.time}:00`);
+    const endDateTime = newEvent.endTime 
+      ? new Date(`${newEvent.date}T${newEvent.endTime}:00`)
+      : null;
 
-    setNewEvent({
-      title: "",
-      date: "",
-      time: "",
-      endTime: "",
-      location: "",
-      description: "",
-      type: "personal"
-    });
-    setIsAddEventOpen(false);
+    const eventData = {
+      title: newEvent.title,
+      description: newEvent.description,
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime?.toISOString(),
+      location: newEvent.location,
+      visibilityType: "shared", // Default to shared for teen events
+      createdBy: 1, // Assume teen is family member ID 1
+      assignedTo: 1
+    };
+
+    createEventMutation.mutate(eventData);
   };
 
   const renderEvent = (event: any) => {
@@ -452,8 +420,12 @@ export default function TeenCalendar() {
                     </div>
 
                     <div className="flex gap-2 pt-2">
-                      <Button onClick={handleAddEvent} className="flex-1">
-                        Add Event
+                      <Button 
+                        onClick={handleAddEvent} 
+                        className="flex-1"
+                        disabled={createEventMutation.isPending}
+                      >
+                        {createEventMutation.isPending ? "Adding..." : "Add Event"}
                       </Button>
                       <Button 
                         variant="outline" 
@@ -471,6 +443,12 @@ export default function TeenCalendar() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+            <span className="ml-3 text-gray-600">Loading calendar events...</span>
+          </div>
+        ) : (
         <div className="space-y-6">
           
           {/* Privacy Legend */}
@@ -658,6 +636,7 @@ export default function TeenCalendar() {
           )}
 
         </div>
+        )}
       </div>
     </div>
   );
