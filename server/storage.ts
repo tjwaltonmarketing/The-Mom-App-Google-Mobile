@@ -98,6 +98,8 @@ export interface IStorage {
   completeTask(id: number, completedBy: number): Promise<Task | undefined>;
   deleteTask(id: number): Promise<boolean>;
   deleteAllTasks(): Promise<boolean>;
+  getTasksForTeen(teenId: number): Promise<Task[]>;
+  assignTaskToTeen(taskId: number, teenId: number): Promise<Task | undefined>;
   
   // Voice Notes
   getVoiceNotes(): Promise<VoiceNote[]>;
@@ -848,6 +850,30 @@ export class MemStorage {
       completedAt: new Date()
     };
     this.tasks.set(id, updatedTask);
+    return updatedTask;
+  }
+
+  async deleteTask(id: number): Promise<boolean> {
+    return this.tasks.delete(id);
+  }
+
+  async deleteAllTasks(): Promise<boolean> {
+    this.tasks.clear();
+    return true;
+  }
+
+  async getTasksForTeen(teenId: number): Promise<Task[]> {
+    return Array.from(this.tasks.values()).filter(task => 
+      task.teenId === teenId || task.assignedTo === teenId
+    );
+  }
+
+  async assignTaskToTeen(taskId: number, teenId: number): Promise<Task | undefined> {
+    const task = this.tasks.get(taskId);
+    if (!task) return undefined;
+    
+    const updatedTask = { ...task, teenId, assignedTo: teenId };
+    this.tasks.set(taskId, updatedTask);
     return updatedTask;
   }
 

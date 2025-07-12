@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { TaskModal } from "@/components/task-modal";
+import { TeenTaskAssignmentModal } from "@/components/teen-task-assignment-modal";
 import type { Task, FamilyMember } from "@shared/schema";
 import { format } from "date-fns";
 
@@ -158,6 +159,12 @@ export function AdvancedTaskManagement() {
               <Plus className="h-4 w-4" />
               Add Task
             </Button>
+            <TeenTaskAssignmentModal>
+              <Button variant="outline" className="gap-2">
+                <UserPlus className="h-4 w-4" />
+                Assign to Teen
+              </Button>
+            </TeenTaskAssignmentModal>
             {tasks.length > 0 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>

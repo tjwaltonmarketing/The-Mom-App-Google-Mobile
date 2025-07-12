@@ -74,6 +74,12 @@ export const tasks = pgTable("tasks", {
   assignedTo: integer("assigned_to").references(() => familyMembers.id),
   completedBy: integer("completed_by").references(() => familyMembers.id),
   completedAt: timestamp("completed_at"),
+  createdBy: integer("created_by").references(() => familyMembers.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  category: text("category").default("chores"), // "chores", "homework", "personal", "family"
+  estimatedTime: integer("estimated_time"), // in minutes
+  points: integer("points").default(10), // reward points for teens
+  teenId: integer("teen_id"), // reference to teen profile if assigned to teen
 });
 
 export const voiceNotes = pgTable("voice_notes", {

@@ -2130,25 +2130,21 @@ themomapp.us@gmail.com`;
         }
 
         // Get tasks assigned to this teen from the family's task system
-        const familyTasks = await storage.getTasks();
-        const teenTasks = familyTasks.filter(task => 
-          task.assignedTo === teenProfile.familyMemberId || 
-          task.assignedTo === sessionTeenId
-        );
+        const familyTasks = await storage.getTasksForTeen(sessionTeenId);
 
         // Transform family tasks to teen task format
-        const formattedTasks = teenTasks.map(task => ({
+        const formattedTasks = familyTasks.map(task => ({
           id: task.id,
           title: task.title,
           description: task.description || "",
           dueDate: task.dueDate ? task.dueDate.toISOString() : null,
           priority: task.priority || "medium",
           assignedBy: "Parent", // Could be enhanced to show actual assigner name
-          points: Math.floor(Math.random() * 20) + 10, // Points system not in main tasks yet
+          points: task.points || Math.floor(Math.random() * 20) + 10,
           isCompleted: task.isCompleted,
           reminderCount: 0,
-          category: "chores", // Default category - could be enhanced
-          estimatedTime: null,
+          category: task.category || "chores",
+          estimatedTime: task.estimatedTime || null,
           status: task.isCompleted ? "completed" : "pending"
         }));
 
@@ -2285,6 +2281,94 @@ themomapp.us@gmail.com`;
       }
     } catch (error: any) {
       res.status(500).json({ message: "Failed to update task: " + error.message });
+    }
+  });
+
+  // Parent assigns task to teen
+  app.post("/api/tasks/assign-to-teen", async (req, res) => {
+    try {
+      const { teenId, taskData } = req.body;
+      
+      // Create task with teen assignment
+      const task = await storage.createTask({
+        ...taskData,
+        teenId,
+        assignedTo: teenId,
+        createdBy: 1, // Parent ID
+        createdAt: new Date(),
+        category: taskData.category || "chores",
+        estimatedTime: taskData.estimatedTime || null,
+        points: taskData.points || Math.floor(Math.random() * 20) + 10
+      });
+
+      // Create notification for teen (if they have notification settings)
+      try {
+        await storage.createNotification({
+          type: "task_assigned",
+          title: "New Task Assigned",
+          message: `You've been assigned: ${task.title}`,
+          recipientId: teenId,
+          relatedTaskId: task.id,
+          scheduledFor: new Date(),
+          deliveryMethod: "sms",
+          status: "pending"
+        });
+      } catch (notifError) {
+        console.log("Could not create notification for teen task assignment:", notifError);
+      }
+
+      res.json({ 
+        success: true, 
+        task,
+        message: "Task assigned to teen successfully!" 
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to assign task to teen: " + error.message });
+    }
+  });
+
+  // Get available teens for task assignment
+  app.get("/api/teens/available", async (req, res) => {
+    try {
+      // Get teen profiles for this family
+      let teens = Array.from(teenProfiles.values()).map(profile => ({
+        id: profile.id,
+        name: profile.name,
+        avatar: profile.avatar,
+        points: profile.totalPoints,
+        streak: profile.currentStreak
+      }));
+      
+      // Add demo teens if no real teens exist
+      if (teens.length === 0) {
+        teens = [
+          {
+            id: 1001,
+            name: "Alex",
+            avatar: "A",
+            points: 145,
+            streak: 3
+          },
+          {
+            id: 1002,
+            name: "Jordan",
+            avatar: "J",
+            points: 89,
+            streak: 1
+          },
+          {
+            id: 1003,
+            name: "Sam",
+            avatar: "S",
+            points: 203,
+            streak: 7
+          }
+        ];
+      }
+      
+      res.json(teens);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch available teens: " + error.message });
     }
   });
 
