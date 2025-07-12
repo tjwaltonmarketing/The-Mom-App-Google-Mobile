@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Eye, EyeOff, Wifi, WifiOff, RefreshCw } from "lucide-react";
+import { Eye, EyeOff, Wifi, WifiOff, RefreshCw, Users } from "lucide-react";
 import { testServerConnectivity, getNetworkInfo } from "@/lib/connectivity";
 import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
 
@@ -232,18 +232,41 @@ export default function Login() {
             </form>
           </Form>
 
-          <div className="mt-6 text-center space-y-3">
-            <p className="text-sm text-gray-600">
-              <Link href="/forgot-password" className="text-pink-600 hover:text-pink-500 font-medium">
-                Forgot your password?
+          <div className="mt-6 space-y-4">
+            {/* Teen/Family Join Option */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-gray-500">Or</span>
+              </div>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
+              asChild
+            >
+              <Link href="/teen-onboarding-demo">
+                <Users className="w-4 h-4 mr-2" />
+                Join Family with Invite Code
               </Link>
-            </p>
-            <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <Link href="/register" className="text-pink-600 hover:text-pink-500 font-medium">
-                Create one
-              </Link>
-            </p>
+            </Button>
+
+            <div className="text-center space-y-3">
+              <p className="text-sm text-gray-600">
+                <Link href="/forgot-password" className="text-pink-600 hover:text-pink-500 font-medium">
+                  Forgot your password?
+                </Link>
+              </p>
+              <p className="text-sm text-gray-600">
+                Don't have an account?{" "}
+                <Link href="/register" className="text-pink-600 hover:text-pink-500 font-medium">
+                  Create one
+                </Link>
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
