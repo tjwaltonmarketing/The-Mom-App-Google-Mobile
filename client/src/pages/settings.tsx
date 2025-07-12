@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock } from "lucide-react";
+import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus } from "lucide-react";
 import { Link } from "wouter";
 import { CalendarSync } from "@/components/calendar-sync";
 import { ImportExportModal } from "@/components/import-export-modal";
@@ -24,6 +24,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { FamilyMember } from "@shared/schema";
+import { InviteTeenModal } from "@/components/family/invite-teen-modal";
 
 const addFamilyMemberSchema = z.object({
   name: z.string().min(1, "Name is required").max(50, "Name too long"),
@@ -67,6 +68,7 @@ export default function SettingsPage() {
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [showSecurityDialog, setShowSecurityDialog] = useState(false);
+  const [showInviteTeenModal, setShowInviteTeenModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
 
   // Fetch existing family members
@@ -534,6 +536,10 @@ export default function SettingsPage() {
                 <Button variant="outline" className="w-full justify-start" onClick={handleAddFamilyMember}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Family Member
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => setShowInviteTeenModal(true)}>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Invite Teen to Family
                 </Button>
                 <Button variant="outline" className="w-full justify-start" onClick={handleEditMemberRoles}>
                   Edit Member Roles
@@ -1237,6 +1243,19 @@ export default function SettingsPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Import/Export Modal */}
+        <ImportExportModal
+          isOpen={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          type={importType}
+        />
+
+        {/* Invite Teen Modal */}
+        <InviteTeenModal
+          isOpen={showInviteTeenModal}
+          onClose={() => setShowInviteTeenModal(false)}
+        />
       </main>
 
       <MobileNav />
