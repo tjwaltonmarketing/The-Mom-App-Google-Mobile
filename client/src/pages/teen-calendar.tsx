@@ -39,8 +39,9 @@ export default function TeenCalendar() {
   });
   const { toast } = useToast();
 
-  // Mock family calendar data
-  const familyEvents = [
+  // Mock combined calendar data - family events + teen's personal events
+  const allEvents = [
+    // Family shared events (visible to teen)
     {
       id: 1,
       title: "Soccer Practice",
@@ -51,7 +52,9 @@ export default function TeenCalendar() {
       assignedTo: "Adri",
       location: "Community Park",
       privacy: "shared",
-      color: "green"
+      color: "#22c55e", // Green for shared family events
+      source: "family",
+      isOwnEvent: false
     },
     {
       id: 2,
@@ -63,7 +66,9 @@ export default function TeenCalendar() {
       assignedTo: "Everyone",
       location: "Home",
       privacy: "shared",
-      color: "blue"
+      color: "#3b82f6", // Blue for shared family events
+      source: "family",
+      isOwnEvent: false
     },
     {
       id: 3,
@@ -75,7 +80,9 @@ export default function TeenCalendar() {
       assignedTo: "Adri",
       location: "Lincoln High School",
       privacy: "shared",
-      color: "purple"
+      color: "#3b82f6", // Blue for shared family events
+      source: "family",
+      isOwnEvent: false
     },
     {
       id: 4,
@@ -87,7 +94,9 @@ export default function TeenCalendar() {
       assignedTo: "Mom",
       location: "Office",
       privacy: "busy",
-      color: "gray"
+      color: "#6b7280", // Gray for busy events
+      source: "family",
+      isOwnEvent: false
     },
     {
       id: 5,
@@ -99,7 +108,9 @@ export default function TeenCalendar() {
       assignedTo: "Dad",
       location: "Unknown",
       privacy: "private",
-      color: "gray"
+      color: "#6b7280", // Gray for private events
+      source: "family",
+      isOwnEvent: false
     },
     {
       id: 6,
@@ -111,16 +122,62 @@ export default function TeenCalendar() {
       assignedTo: "Adri",
       location: "School Gym",
       privacy: "shared",
-      color: "orange"
+      color: "#22c55e", // Green for shared family events
+      source: "family",
+      isOwnEvent: false
+    },
+    
+    // Teen's personal events (purple theme)
+    {
+      id: 101,
+      title: "Study Group",
+      time: "3:00 PM - 5:00 PM",
+      date: "Today",
+      fullDate: new Date(),
+      type: "school",
+      assignedTo: "Adri",
+      location: "Library",
+      privacy: "shared",
+      color: "#a855f7", // Purple for teen's own events
+      source: "teen",
+      isOwnEvent: true
+    },
+    {
+      id: 102,
+      title: "Hang with Sarah",
+      time: "2:00 PM - 4:00 PM",
+      date: "Tomorrow",
+      fullDate: new Date(Date.now() + 86400000),
+      type: "personal",
+      assignedTo: "Adri",
+      location: "Downtown",
+      privacy: "shared",
+      color: "#a855f7", // Purple for teen's own events
+      source: "teen",
+      isOwnEvent: true
+    },
+    {
+      id: 103,
+      title: "Guitar Lesson",
+      time: "4:00 PM - 5:00 PM",
+      date: "Friday",
+      fullDate: new Date(Date.now() + 4 * 86400000),
+      type: "personal",
+      assignedTo: "Adri",
+      location: "Music Studio",
+      privacy: "shared",
+      color: "#a855f7", // Purple for teen's own events
+      source: "teen",
+      isOwnEvent: true
     }
   ];
 
   const getEventsByDate = (dateLabel: string) => {
-    return familyEvents.filter(event => event.date === dateLabel);
+    return allEvents.filter(event => event.date === dateLabel);
   };
 
   const getEventsForCalendarDate = (date: Date) => {
-    return familyEvents.filter(event => {
+    return allEvents.filter(event => {
       return event.fullDate.toDateString() === date.toDateString();
     });
   };
@@ -219,7 +276,9 @@ export default function TeenCalendar() {
     }
 
     return (
-      <div key={event.id} className="p-3 bg-white border border-gray-200 rounded-lg hover:shadow-sm transition-shadow">
+      <div key={event.id} className={`p-3 border rounded-lg hover:shadow-sm transition-shadow ${
+        event.isOwnEvent ? 'bg-purple-50 border-purple-200' : 'bg-white border-gray-200'
+      }`}>
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
@@ -228,6 +287,11 @@ export default function TeenCalendar() {
                 style={{ backgroundColor: event.color }}
               />
               <h4 className="font-medium text-sm">{event.title}</h4>
+              {event.isOwnEvent && (
+                <Badge variant="outline" className="text-xs text-purple-600 border-purple-300">
+                  Mine
+                </Badge>
+              )}
             </div>
             <div className="space-y-1 text-xs text-gray-600">
               <div className="flex items-center gap-1">
@@ -243,6 +307,9 @@ export default function TeenCalendar() {
               <div className="flex items-center gap-1">
                 <Users className="h-3 w-3" />
                 <span>{event.assignedTo}</span>
+                {event.source === "family" && (
+                  <span className="text-blue-600 font-medium">(Family)</span>
+                )}
               </div>
             </div>
           </div>
@@ -415,10 +482,14 @@ export default function TeenCalendar() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full" />
+                  <span><strong>My Events:</strong> Your personal events</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full" />
-                  <span><strong>Shared:</strong> Full details visible</span>
+                  <span><strong>Family Shared:</strong> Everyone can see</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-yellow-500 rounded-full" />
@@ -579,7 +650,7 @@ export default function TeenCalendar() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {familyEvents.filter(event => !["Today", "Tomorrow"].includes(event.date)).map(renderEvent)}
+                    {allEvents.filter(event => !["Today", "Tomorrow"].includes(event.date)).map(renderEvent)}
                   </div>
                 </CardContent>
               </Card>
