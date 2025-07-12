@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ import {
 
 export default function TeenDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [, setLocation] = useLocation();
 
   // Mock data for teen dashboard
   const teenProfile = {
@@ -275,8 +277,13 @@ export default function TeenDashboard() {
                   <p className="font-semibold">The Walton Family</p>
                   <p className="text-xs text-gray-500 mt-1">3 members</p>
                 </div>
-                <Button variant="outline" size="sm" className="w-full">
-                  <Plus className="h-3 w-3 mr-1" />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => setLocation("/teen-calendar")}
+                >
+                  <Calendar className="h-3 w-3 mr-1" />
                   View Family Calendar
                 </Button>
               </div>

@@ -24,6 +24,7 @@ import TeenOnboardingDemo from "@/pages/teen-onboarding-demo";
 import TeenOnboarding from "@/pages/teen-onboarding";
 import TeenLogin from "@/pages/teen-login";
 import TeenDashboard from "@/pages/teen-dashboard";
+import TeenCalendar from "@/pages/teen-calendar";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import ForgotPassword from "@/pages/forgot-password";
@@ -52,6 +53,7 @@ function Router() {
         <Route path="/teen-onboarding" component={TeenOnboarding} />
         <Route path="/teen-login" component={TeenLogin} />
         <Route path="/teen-dashboard" component={TeenDashboard} />
+        <Route path="/teen-calendar" component={TeenCalendar} />
         <Route component={Login} />
       </Switch>
     );
@@ -74,6 +76,7 @@ function Router() {
       <Route path="/teen-onboarding" component={TeenOnboarding} />
       <Route path="/teen-login" component={TeenLogin} />
       <Route path="/teen-dashboard" component={TeenDashboard} />
+      <Route path="/teen-calendar" component={TeenCalendar} />
       <Route component={NotFound} />
     </Switch>
   );
