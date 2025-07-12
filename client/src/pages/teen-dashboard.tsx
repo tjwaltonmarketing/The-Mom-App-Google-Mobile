@@ -100,12 +100,20 @@ export default function TeenDashboard() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div 
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
-                style={{ backgroundColor: teenProfile.color }}
-              >
-                {teenProfile.firstName.charAt(0)}
-              </div>
+              {teenProfile.avatar ? (
+                <img 
+                  src={teenProfile.avatar} 
+                  alt={`${teenProfile.firstName}'s avatar`}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                />
+              ) : (
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold"
+                  style={{ backgroundColor: teenProfile.color }}
+                >
+                  {teenProfile.firstName.charAt(0)}
+                </div>
+              )}
               <div>
                 <h1 className="text-xl font-semibold">Hey, {teenProfile.firstName}!</h1>
                 <p className="text-sm text-gray-600">{teenProfile.level}</p>
@@ -115,7 +123,11 @@ export default function TeenDashboard() {
               <Button variant="ghost" size="sm">
                 <Bell className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setLocation("/teen-profile")}
+              >
                 <Settings className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="sm">

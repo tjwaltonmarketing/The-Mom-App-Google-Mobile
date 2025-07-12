@@ -1,0 +1,344 @@
+import { useState, useRef } from "react";
+import { useLocation } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  ArrowLeft,
+  Camera,
+  User,
+  Upload,
+  X
+} from "lucide-react";
+
+export default function TeenProfile() {
+  const [, setLocation] = useLocation();
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Get teen profile data
+  const { data: teenProfile, isLoading } = useQuery({
+    queryKey: ["/api/teen/auth/user"],
+    retry: false,
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (profileData: any) => {
+      const response = await apiRequest("PUT", "/api/teen/profile", profileData);
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/auth/user"] });
+      toast({
+        title: "Profile Updated!",
+        description: "Your profile changes have been saved",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid File",
+        description: "Please select an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Please select an image smaller than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setAvatarPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAvatarUpload = async () => {
+    if (!avatarPreview) return;
+    
+    setIsUploading(true);
+    try {
+      // In a real app, you'd upload to a file storage service
+      // For now, we'll simulate saving the base64 data
+      await updateProfileMutation.mutateAsync({
+        avatar: avatarPreview
+      });
+      
+      toast({
+        title: "Avatar Updated!",
+        description: "Your profile picture has been changed",
+      });
+      
+      setAvatarPreview(null);
+    } catch (error) {
+      console.error("Avatar upload error:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeAvatarPreview = () => {
+    setAvatarPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const revertToInitial = async () => {
+    try {
+      await updateProfileMutation.mutateAsync({
+        avatar: null // Remove custom avatar, revert to initial
+      });
+      
+      toast({
+        title: "Avatar Reset",
+        description: "Reverted to your initial profile picture",
+      });
+    } catch (error) {
+      console.error("Avatar revert error:", error);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setLocation("/teen-dashboard")}
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Back
+            </Button>
+            <div>
+              <h1 className="text-xl font-semibold">Profile Settings</h1>
+              <p className="text-sm text-gray-600">Customize your profile and preferences</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        <div className="space-y-6">
+          
+          {/* Profile Picture Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Camera className="h-5 w-5" />
+                Profile Picture
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row gap-6 items-start">
+                
+                {/* Current Avatar Display */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="relative">
+                    {avatarPreview ? (
+                      <img 
+                        src={avatarPreview} 
+                        alt="Avatar preview"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                      />
+                    ) : teenProfile?.avatar ? (
+                      <img 
+                        src={teenProfile.avatar} 
+                        alt="Current avatar"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                      />
+                    ) : (
+                      <div 
+                        className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold border-4 border-gray-200"
+                        style={{ backgroundColor: teenProfile?.favoriteColor || "#a855f7" }}
+                      >
+                        {teenProfile?.firstName?.charAt(0) || "A"}
+                      </div>
+                    )}
+                    
+                    {avatarPreview && (
+                      <button
+                        onClick={removeAvatarPreview}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="text-center">
+                    <p className="text-sm font-medium">{teenProfile?.firstName} {teenProfile?.lastName}</p>
+                    <p className="text-xs text-gray-500">@{teenProfile?.username}</p>
+                  </div>
+                </div>
+
+                {/* Upload Controls */}
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <Label>Change Profile Picture</Label>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Upload a new photo to personalize your profile. JPG, PNG, or GIF up to 5MB.
+                    </p>
+                    
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Choose Photo
+                      </Button>
+                      
+                      {avatarPreview && (
+                        <Button
+                          onClick={handleAvatarUpload}
+                          disabled={isUploading}
+                        >
+                          {isUploading ? "Uploading..." : "Save New Photo"}
+                        </Button>
+                      )}
+                      
+                      {teenProfile?.avatar && (
+                        <Button
+                          variant="outline"
+                          onClick={revertToInitial}
+                          disabled={isUploading || updateProfileMutation.isPending}
+                        >
+                          Reset to Initial
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      <strong>Tip:</strong> Choose a clear photo where your face is visible. 
+                      This helps family members recognize you in the app!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Basic Info Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Basic Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label>First Name</Label>
+                  <Input value={teenProfile?.firstName || ""} disabled />
+                </div>
+                <div>
+                  <Label>Last Name</Label>
+                  <Input value={teenProfile?.lastName || ""} disabled />
+                </div>
+                <div>
+                  <Label>Username</Label>
+                  <Input value={teenProfile?.username || ""} disabled />
+                </div>
+                <div>
+                  <Label>Family</Label>
+                  <Input value={teenProfile?.family?.name || ""} disabled />
+                </div>
+              </div>
+              <p className="text-sm text-gray-500 mt-3">
+                Contact your family admin to update basic information.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Color Preference Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Theme Color</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <Label>Choose your favorite color for the interface</Label>
+                <div className="flex gap-3">
+                  {[
+                    { name: "Purple", value: "#a855f7" },
+                    { name: "Blue", value: "#3b82f6" },
+                    { name: "Green", value: "#22c55e" },
+                    { name: "Pink", value: "#ec4899" },
+                    { name: "Orange", value: "#f97316" },
+                    { name: "Red", value: "#ef4444" }
+                  ].map((color) => (
+                    <button
+                      key={color.name}
+                      onClick={() => updateProfileMutation.mutate({ favoriteColor: color.value })}
+                      className={`w-10 h-10 rounded-full border-2 hover:scale-110 transition-transform ${
+                        teenProfile?.favoriteColor === color.value 
+                          ? "border-gray-800 shadow-lg" 
+                          : "border-gray-300"
+                      }`}
+                      style={{ backgroundColor: color.value }}
+                      title={color.name}
+                    />
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+        </div>
+      </div>
+    </div>
+  );
+}

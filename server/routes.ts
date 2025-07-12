@@ -1782,6 +1782,7 @@ themomapp.us@gmail.com`;
         points: 285,
         streak: 12,
         favoriteColor: "purple",
+        avatar: null, // No custom avatar initially
         family: {
           id: 1,
           name: "Walton"
@@ -1803,6 +1804,47 @@ themomapp.us@gmail.com`;
     } catch (error: any) {
       console.error("Teen logout error:", error);
       res.status(500).json({ error: "Failed to logout" });
+    }
+  });
+
+  // Teen profile update
+  app.put("/api/teen/profile", async (req, res) => {
+    try {
+      const teenId = req.session?.teenId;
+      
+      if (!teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const updates = req.body;
+      
+      // In a real app, you would:
+      // 1. Validate the updates
+      // 2. Update the database
+      // 3. If avatar is provided, save to file storage (AWS S3, Cloudinary, etc.)
+      
+      console.log("Updating teen profile:", { teenId, updates });
+      
+      // Mock successful update - in reality, fetch updated profile from DB
+      const updatedProfile = {
+        id: teenId,
+        firstName: "Adri",
+        lastName: "Walton",
+        username: "adri_w",
+        points: 285,
+        streak: 12,
+        favoriteColor: updates.favoriteColor || "purple",
+        avatar: updates.avatar || null, // Store base64 or file URL
+        family: {
+          id: 1,
+          name: "Walton"
+        }
+      };
+      
+      res.json({ success: true, profile: updatedProfile });
+    } catch (error: any) {
+      console.error("Teen profile update error:", error);
+      res.status(500).json({ error: "Failed to update profile: " + error.message });
     }
   });
 
