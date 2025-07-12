@@ -118,6 +118,7 @@ The application uses a multi-tenant architecture with the following core entitie
 - Certificate signing for production releases
 
 ## Changelog
+- July 12, 2025. SMS system updated based on vendor feedback: LeadConnector/High Level confirmed their service cannot be used for this application. SMS system now uses Twilio as primary provider with AWS SNS as backup. Teen invite system fully operational with reliable SMS delivery
 - July 10, 2025. Multi-provider SMS system implementation: Complete SMS provider architecture with automatic failover between LeadConnector, Twilio, and AWS SNS. Twilio fully functional for teen invites, LeadConnector configured but API endpoints need verification
 - July 09, 2025. Comprehensive teen account system implementation: Complete invite workflow with SMS integration, teen dashboard with gamification (points/streaks), smart notification engine with progressive reminders and quiet hours, parent oversight without nagging, permission-based access controls
 - July 09, 2025. Updated tutorials and FAQs: Added comprehensive documentation for teen account setup, gamification system, SMS messaging, and anti-nagging benefits

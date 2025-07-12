@@ -69,8 +69,9 @@ export class AWSSNSProvider implements SMSProvider {
   }
 }
 
+// INACTIVE: LeadConnector/High Level confirmed their service cannot be used for this application
 export class LeadConnectorProvider implements SMSProvider {
-  name = "LeadConnector";
+  name = "LeadConnector (INACTIVE)";
   private apiKey: string;
   private locationId: string;
   private baseUrl: string;
@@ -198,17 +199,7 @@ export class SMSService {
   }
 
   private initializeProviders() {
-    // Try LeadConnector first (if available)
-    if (process.env.LEADCONNECTOR_API_KEY && process.env.LEADCONNECTOR_LOCATION_ID) {
-      try {
-        this.providers.push(new LeadConnectorProvider());
-        console.log("✅ LeadConnector SMS provider initialized");
-      } catch (error) {
-        console.warn("Failed to initialize LeadConnector provider:", error);
-      }
-    }
-
-    // Try Twilio
+    // Try Twilio first (primary SMS provider)
     if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
       try {
         this.providers.push(new TwilioProvider());
@@ -218,7 +209,7 @@ export class SMSService {
       }
     }
 
-    // Try AWS SNS
+    // Try AWS SNS as backup
     if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
       try {
         this.providers.push(new AWSSNSProvider());
@@ -228,8 +219,10 @@ export class SMSService {
       }
     }
 
+    // Note: LeadConnector/High Level confirmed their service cannot be used for this type of application
+    
     if (this.providers.length === 0) {
-      console.warn("No SMS providers available. Please configure LeadConnector, Twilio, or AWS SNS.");
+      console.warn("No SMS providers available. Please configure Twilio or AWS SNS.");
     } else {
       console.log(`📱 SMS service ready with ${this.providers.length} provider(s): ${this.getAvailableProviders().join(', ')}`);
     }
