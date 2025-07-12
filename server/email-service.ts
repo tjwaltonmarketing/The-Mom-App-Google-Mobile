@@ -36,6 +36,7 @@ export class SendGridProvider implements EmailProvider {
       };
     } catch (error: any) {
       console.error('SendGrid email error:', error);
+      console.error('SendGrid error details:', error.response?.body);
       
       // Provide specific error messages for common issues
       let errorMessage = error.message || 'Failed to send email via SendGrid';
@@ -43,7 +44,7 @@ export class SendGridProvider implements EmailProvider {
       if (error.code === 403 || errorMessage.includes('Forbidden')) {
         errorMessage = 'SendGrid API key lacks Mail Send permissions. Please update your API key permissions in SendGrid dashboard.';
       } else if (error.code === 401 || errorMessage.includes('Unauthorized')) {
-        errorMessage = 'Invalid SendGrid API key. Please check your SENDGRID_API_KEY.';
+        errorMessage = `SendGrid authentication failed. Details: ${JSON.stringify(error.response?.body || 'No details available')}`;
       } else if (error.code === 400) {
         errorMessage = 'Invalid email parameters. Check from/to email addresses and content.';
       }
