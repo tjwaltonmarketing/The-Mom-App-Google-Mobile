@@ -589,6 +589,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/family-members", async (req, res) => {
+    try {
+      const validatedData = insertFamilyMemberSchema.parse(req.body);
+      const member = await storage.createFamilyMember(validatedData);
+      res.status(201).json(member);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid family member data", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Failed to create family member" });
+      }
+    }
+  });
+
+  app.delete("/api/family-members/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteFamilyMember(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Family member not found" });
+      }
+      
+      res.json({ message: "Family member deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete family member" });
+    }
+  });
+
   // Events
   app.get("/api/events", async (req, res) => {
     try {

@@ -80,6 +80,7 @@ export interface IStorage {
   getFamilyMembers(): Promise<FamilyMember[]>;
   getFamilyMember(id: number): Promise<FamilyMember | undefined>;
   createFamilyMember(member: InsertFamilyMember): Promise<FamilyMember>;
+  deleteFamilyMember(id: number): Promise<boolean>;
   
   // Events
   getEvents(): Promise<Event[]>;
@@ -248,6 +249,11 @@ export class DatabaseStorage implements IStorage {
   async createFamilyMember(insertMember: InsertFamilyMember): Promise<FamilyMember> {
     const [member] = await db.insert(familyMembers).values(insertMember).returning();
     return member;
+  }
+
+  async deleteFamilyMember(id: number): Promise<boolean> {
+    const result = await db.delete(familyMembers).where(eq(familyMembers.id, id));
+    return result.rowCount > 0;
   }
 
   async getEvents(): Promise<Event[]> {
