@@ -27,6 +27,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup session middleware
   setupSession(app);
+  
+  // Simple in-memory storage for teen profiles (for demo purposes)
+  const teenProfiles = new Map<number, any>();
 
   // SMS service is initialized automatically with available providers
 
@@ -1851,21 +1854,27 @@ themomapp.us@gmail.com`;
         return res.status(401).json({ error: "Not authenticated" });
       }
       
-      // Mock teen profile - in real app, fetch from database
-      const teenProfile = {
-        id: teenId,
-        firstName: "Adri",
-        lastName: "Walton",
-        username: "adri_w",
-        points: 285,
-        streak: 12,
-        favoriteColor: "purple",
-        avatar: null, // No custom avatar initially
-        family: {
-          id: 1,
-          name: "Walton"
-        }
-      };
+      // Get stored profile or create default
+      let teenProfile = teenProfiles.get(teenId);
+      if (!teenProfile) {
+        teenProfile = {
+          id: teenId,
+          firstName: "Adri",
+          lastName: "Walton",
+          username: "adri_w",
+          points: 285,
+          streak: 12,
+          favoriteColor: "purple",
+          avatar: null,
+          family: {
+            id: 1,
+            name: "Walton"
+          }
+        };
+        teenProfiles.set(teenId, teenProfile);
+      }
+      
+      console.log("Fetching teen profile for ID:", teenId, "Has avatar:", !!teenProfile.avatar);
       
       res.json(teenProfile);
     } catch (error: any) {
@@ -1903,21 +1912,39 @@ themomapp.us@gmail.com`;
       
       console.log("Updating teen profile:", { teenId, updates });
       
-      // Mock successful update - in reality, fetch updated profile from DB
+      // Get existing profile or create default
+      let existingProfile = teenProfiles.get(teenId);
+      if (!existingProfile) {
+        existingProfile = {
+          id: teenId,
+          firstName: "Adri",
+          lastName: "Walton",
+          username: "adri_w",
+          points: 285,
+          streak: 12,
+          favoriteColor: "purple",
+          avatar: null,
+          family: {
+            id: 1,
+            name: "Walton"
+          }
+        };
+      }
+      
+      // Update only the provided fields
       const updatedProfile = {
-        id: teenId,
-        firstName: "Adri",
-        lastName: "Walton",
-        username: "adri_w",
-        points: 285,
-        streak: 12,
-        favoriteColor: updates.favoriteColor || "purple",
-        avatar: updates.avatar || null, // Store base64 or file URL
-        family: {
-          id: 1,
-          name: "Walton"
-        }
+        ...existingProfile,
+        ...updates
       };
+      
+      // Store the updated profile
+      teenProfiles.set(teenId, updatedProfile);
+      
+      console.log("Profile update result:", { 
+        teenId, 
+        updatedAvatar: updatedProfile.avatar ? "Base64 data saved" : "No avatar",
+        favoriteColor: updatedProfile.favoriteColor 
+      });
       
       res.json({ success: true, profile: updatedProfile });
     } catch (error: any) {

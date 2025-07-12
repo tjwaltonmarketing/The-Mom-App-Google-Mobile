@@ -122,14 +122,23 @@ export default function TeenProfile() {
         avatar: avatarPreview
       });
       
+      // Clear preview first
+      setAvatarPreview(null);
+      
+      // Force refresh the teen profile data to show updated avatar
+      await queryClient.invalidateQueries({ queryKey: ["/api/teen/auth/user"] });
+      
       toast({
         title: "Avatar Updated!",
         description: "Your profile picture has been changed",
       });
-      
-      setAvatarPreview(null);
     } catch (error) {
       console.error("Avatar upload error:", error);
+      toast({
+        title: "Upload Failed", 
+        description: "Failed to update profile picture. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsUploading(false);
     }
