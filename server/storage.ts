@@ -252,8 +252,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteFamilyMember(id: number): Promise<boolean> {
-    const result = await db.delete(familyMembers).where(eq(familyMembers.id, id));
-    return result.rowCount > 0;
+    try {
+      // First, delete related records to avoid foreign key constraint violations
+      await db.delete(deadlines).where(eq(deadlines.relatedTo, id));
+      await db.delete(notifications).where(eq(notifications.recipientId, id));
+      await db.delete(tasks).where(eq(tasks.assignedTo, id));
+      await db.delete(tasks).where(eq(tasks.completedBy, id));
+      await db.delete(events).where(eq(events.assignedTo, id));
+      await db.delete(voiceNotes).where(eq(voiceNotes.createdBy, id));
+      
+      // Now delete the family member
+      const result = await db.delete(familyMembers).where(eq(familyMembers.id, id));
+      console.log(`Successfully deleted family member ${id} and all related records`);
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete family member ${id}:`, error);
+      return false;
+    }
   }
 
   async getEvents(): Promise<Event[]> {
