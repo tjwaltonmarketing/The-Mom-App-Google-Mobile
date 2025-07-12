@@ -20,6 +20,7 @@ import SettingsPage from "@/pages/settings";
 import TutorialsPage from "@/pages/tutorials";
 import VoiceTestPage from "@/pages/voice-test";
 import TeenTestPage from "@/pages/teen-test";
+import TeenOnboardingDemo from "@/pages/teen-onboarding-demo";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import ForgotPassword from "@/pages/forgot-password";
@@ -44,6 +45,7 @@ function Router() {
         <Route path="/login" component={Login} />
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPassword} />
+        <Route path="/teen-onboarding-demo" component={TeenOnboardingDemo} />
         <Route component={Login} />
       </Switch>
     );
