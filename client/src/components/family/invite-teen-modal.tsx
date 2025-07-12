@@ -30,6 +30,7 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [teenName, setTeenName] = useState("");
+  const [role, setRole] = useState("teen");
   const [generatedInvite, setGeneratedInvite] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -147,6 +148,7 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
     setPhone("");
     setEmail("");
     setTeenName("");
+    setRole("teen");
     setGeneratedInvite(null);
     onClose();
   };
