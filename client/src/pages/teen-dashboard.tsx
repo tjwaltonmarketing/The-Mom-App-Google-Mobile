@@ -15,13 +15,18 @@ import {
   Plus,
   Settings,
   LogOut,
-  Users
+  Users,
+  Moon,
+  Sun,
+  Eye
 } from "lucide-react";
 import TeenNotifications from "@/components/teen/teen-notifications";
 
 export default function TeenDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [, setLocation] = useLocation();
+  const [darkMode, setDarkMode] = useState(false);
+  const [blueLight, setBlueLight] = useState(false);
 
   // Mock data for teen dashboard
   const teenProfile = {
@@ -120,6 +125,33 @@ export default function TeenDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Dark Mode Toggle */}
+              <Button 
+                variant={darkMode ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => {
+                  setDarkMode(!darkMode);
+                  document.documentElement.classList.toggle('dark', !darkMode);
+                }}
+                title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+              
+              {/* Blue Light Filter Toggle */}
+              <Button 
+                variant={blueLight ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => {
+                  setBlueLight(!blueLight);
+                  const filter = blueLight ? 'none' : 'sepia(10%) saturate(120%) hue-rotate(15deg)';
+                  document.documentElement.style.filter = filter;
+                }}
+                title={blueLight ? "Turn Off Blue Light Filter" : "Turn On Blue Light Filter"}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+              
               <TeenNotifications />
               <Button 
                 variant="ghost" 

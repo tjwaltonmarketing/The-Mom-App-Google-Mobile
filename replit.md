@@ -118,6 +118,7 @@ The application uses a multi-tenant architecture with the following core entitie
 - Certificate signing for production releases
 
 ## Changelog
+- July 12, 2025. Enhanced teen interface with accessibility features: Added dark mode and blue light filter toggles directly to teen dashboard header for quick access. Implemented proper notifications panel with empty state messaging. Avatar upload system complete with profile customization options including theme colors and display preferences
 - July 12, 2025. Teen invite integrated into Family Settings: Moved teen invite functionality from test page to proper location in Settings > Family tab. Now accessible alongside "Add Family Member" with consistent UX. Fixed database constraints and authentication issues. Complete SMS + email invite system operational
 - July 12, 2025. Multi-channel teen invite system complete: Built comprehensive SMS + email invite system with Twilio (operational) and SendGrid (pending activation). Teen invite modal allows choosing contact method with automatic failover. Professional HTML email templates ready. SendGrid API keys experiencing activation delays - will retest shortly
 - July 12, 2025. SMS system updated based on vendor feedback: LeadConnector/High Level confirmed their service cannot be used for this application. SMS system now uses Twilio as primary provider with AWS SNS as backup. Teen invite system fully operational with reliable SMS delivery
