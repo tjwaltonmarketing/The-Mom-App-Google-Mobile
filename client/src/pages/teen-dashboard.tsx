@@ -220,6 +220,34 @@ export default function TeenDashboard() {
             </CardContent>
           </Card>
 
+          {/* Family Connection */}
+          <Card className="md:col-span-1">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-purple-500" />
+                Family
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-2">Connected to</p>
+                  <p className="font-semibold">The Walton Family</p>
+                  <p className="text-xs text-gray-500 mt-1">3 members</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => setLocation("/teen-calendar")}
+                >
+                  <Calendar className="h-3 w-3 mr-1" />
+                  View Family Calendar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Recent Achievements */}
           <Card className="md:col-span-2">
             <CardHeader>
@@ -304,34 +332,6 @@ export default function TeenDashboard() {
                   })}
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Family Connection */}
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-purple-500" />
-                Family
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-2">Connected to</p>
-                  <p className="font-semibold">The Walton Family</p>
-                  <p className="text-xs text-gray-500 mt-1">3 members</p>
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full"
-                  onClick={() => setLocation("/teen-calendar")}
-                >
-                  <Calendar className="h-3 w-3 mr-1" />
-                  View Family Calendar
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>
