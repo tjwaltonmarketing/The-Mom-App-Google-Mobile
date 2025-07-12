@@ -12,13 +12,18 @@ import {
   Camera,
   User,
   Upload,
-  X
+  X,
+  Moon,
+  Sun,
+  Eye
 } from "lucide-react";
 
 export default function TeenProfile() {
   const [, setLocation] = useLocation();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [blueLight, setBlueLight] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -303,35 +308,99 @@ export default function TeenProfile() {
             </CardContent>
           </Card>
 
-          {/* Color Preference Section */}
+          {/* Theme Preferences Section */}
           <Card>
             <CardHeader>
-              <CardTitle>Theme Color</CardTitle>
+              <CardTitle>Theme & Display</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <Label>Choose your favorite color for the interface</Label>
-                <div className="flex gap-3">
-                  {[
-                    { name: "Purple", value: "#a855f7" },
-                    { name: "Blue", value: "#3b82f6" },
-                    { name: "Green", value: "#22c55e" },
-                    { name: "Pink", value: "#ec4899" },
-                    { name: "Orange", value: "#f97316" },
-                    { name: "Red", value: "#ef4444" }
-                  ].map((color) => (
-                    <button
-                      key={color.name}
-                      onClick={() => updateProfileMutation.mutate({ favoriteColor: color.value })}
-                      className={`w-10 h-10 rounded-full border-2 hover:scale-110 transition-transform ${
-                        teenProfile?.favoriteColor === color.value 
-                          ? "border-gray-800 shadow-lg" 
-                          : "border-gray-300"
-                      }`}
-                      style={{ backgroundColor: color.value }}
-                      title={color.name}
-                    />
-                  ))}
+              <div className="space-y-6">
+                
+                {/* Color Theme */}
+                <div className="space-y-3">
+                  <Label>Choose your favorite color for the interface</Label>
+                  <div className="flex gap-3">
+                    {[
+                      { name: "Purple", value: "#a855f7" },
+                      { name: "Blue", value: "#3b82f6" },
+                      { name: "Green", value: "#22c55e" },
+                      { name: "Pink", value: "#ec4899" },
+                      { name: "Orange", value: "#f97316" },
+                      { name: "Red", value: "#ef4444" }
+                    ].map((color) => (
+                      <button
+                        key={color.name}
+                        onClick={() => updateProfileMutation.mutate({ favoriteColor: color.value })}
+                        className={`w-10 h-10 rounded-full border-2 hover:scale-110 transition-transform ${
+                          teenProfile?.favoriteColor === color.value 
+                            ? "border-gray-800 shadow-lg" 
+                            : "border-gray-300"
+                        }`}
+                        style={{ backgroundColor: color.value }}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dark Mode */}
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gray-100 rounded-lg">
+                      {darkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                    </div>
+                    <div>
+                      <Label className="text-base font-medium">Dark Mode</Label>
+                      <p className="text-sm text-gray-600">
+                        Easy on the eyes, especially at night
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant={darkMode ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setDarkMode(!darkMode);
+                      // In a real app, you'd save this preference
+                      document.documentElement.classList.toggle('dark', !darkMode);
+                    }}
+                  >
+                    {darkMode ? "On" : "Off"}
+                  </Button>
+                </div>
+
+                {/* Blue Light Filter */}
+                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Eye className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <Label className="text-base font-medium">Blue Light Filter</Label>
+                      <p className="text-sm text-gray-600">
+                        Reduces blue light for better sleep
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant={blueLight ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => {
+                      setBlueLight(!blueLight);
+                      // Apply blue light filter CSS
+                      const filter = blueLight ? 'none' : 'sepia(10%) saturate(120%) hue-rotate(15deg)';
+                      document.documentElement.style.filter = filter;
+                    }}
+                  >
+                    {blueLight ? "On" : "Off"}
+                  </Button>
+                </div>
+
+                <div className="bg-amber-50 p-3 rounded-lg">
+                  <p className="text-sm text-amber-700">
+                    <strong>Tip:</strong> Blue light filter is great for evening use. 
+                    It helps reduce eye strain and may improve sleep quality.
+                  </p>
                 </div>
               </div>
             </CardContent>

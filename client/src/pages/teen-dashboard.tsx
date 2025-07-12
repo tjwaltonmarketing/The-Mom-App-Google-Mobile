@@ -13,11 +13,11 @@ import {
   Flame, 
   Trophy, 
   Plus,
-  Bell,
   Settings,
   LogOut,
   Users
 } from "lucide-react";
+import TeenNotifications from "@/components/teen/teen-notifications";
 
 export default function TeenDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -120,9 +120,7 @@ export default function TeenDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm">
-                <Bell className="h-4 w-4" />
-              </Button>
+              <TeenNotifications />
               <Button 
                 variant="ghost" 
                 size="sm"

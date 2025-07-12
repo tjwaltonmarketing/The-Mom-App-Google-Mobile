@@ -1848,6 +1848,27 @@ themomapp.us@gmail.com`;
     }
   });
 
+  // Teen notifications
+  app.get("/api/teen/notifications", async (req, res) => {
+    try {
+      const teenId = req.session?.teenId;
+      
+      if (!teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      // Mock notifications - in real app, fetch from database
+      const notifications = [
+        // Currently empty for demo - will show "No notifications yet" message
+      ];
+      
+      res.json(notifications);
+    } catch (error: any) {
+      console.error("Teen notifications error:", error);
+      res.status(500).json({ error: "Failed to get notifications: " + error.message });
+    }
+  });
+
   // Teen dashboard data
   app.get("/api/teen/tasks", async (req, res) => {
     try {
