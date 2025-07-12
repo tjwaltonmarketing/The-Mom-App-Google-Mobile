@@ -159,6 +159,9 @@ export interface IStorage {
   
   createTeenTaskHistory(history: InsertTeenTaskHistory): Promise<TeenTaskHistory>;
   logTeenNotification(log: InsertTeenNotificationLog): Promise<TeenNotificationLog>;
+  
+  // Additional methods for notifications
+  getTask(id: number): Promise<Task | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -445,6 +448,11 @@ export class DatabaseStorage implements IStorage {
     return true; // Always return true since we're clearing all tasks
   }
 
+  async getTask(id: number): Promise<Task | undefined> {
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+    return task;
+  }
+
   async getVoiceNotes(): Promise<VoiceNote[]> {
     return await db.select().from(voiceNotes);
   }
@@ -583,8 +591,8 @@ export class DatabaseStorage implements IStorage {
     const [password] = await db
       .update(passwords)
       .set({ 
-        shared_with: sharedWith,
-        updatedAt: new Date()
+        sharedWith: JSON.stringify(sharedWith),
+        lastUpdated: new Date()
       })
       .where(eq(passwords.id, id))
       .returning();
@@ -967,6 +975,10 @@ export class MemStorage {
   async deleteAllTasks(): Promise<boolean> {
     this.tasks.clear();
     return true;
+  }
+
+  async getTask(id: number): Promise<Task | undefined> {
+    return this.tasks.get(id);
   }
 
   async getTasksForTeen(teenId: number): Promise<Task[]> {

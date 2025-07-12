@@ -7,9 +7,23 @@ interface DashboardStats {
   familyEventsAttended: number;
 }
 
+interface User {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export function WelcomeHeader() {
   const { data: stats } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
+  });
+
+  const { data: user } = useQuery<User>({
+    queryKey: ["/api/auth/user"],
   });
 
   const getGreeting = () => {
@@ -24,7 +38,7 @@ export function WelcomeHeader() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-text-primary">
-            {getGreeting()}, Johnson Family! 👋
+            {getGreeting()}, {user?.lastName || "Walton"} Family! 👋
           </h2>
           <p className="text-gray-600 mt-1">Here's what's happening today</p>
         </div>

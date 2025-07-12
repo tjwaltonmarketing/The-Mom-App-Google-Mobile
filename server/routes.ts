@@ -22,6 +22,7 @@ if (!process.env.LEADCONNECTOR_API_KEY) {
 
 import { smsService } from "./sms-providers";
 import { emailService } from "./email-service";
+import { notificationService } from "./notification-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
