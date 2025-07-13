@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { TaskEditModal } from "@/components/task-edit-modal";
-import { EventEditModal } from "@/components/event-edit-modal";
+import { TeenTaskDetailModal } from "@/components/teen-task-detail-modal";
+import { TeenEventDetailModal } from "@/components/teen-event-detail-modal";
 import { 
   Calendar, 
   CheckCircle2, 
@@ -388,7 +388,7 @@ export default function TeenDashboard() {
 
       {/* Modals */}
       {editingTask && (
-        <TaskEditModal 
+        <TeenTaskDetailModal 
           task={editingTask}
           isOpen={!!editingTask}
           onClose={() => setEditingTask(null)}
@@ -396,10 +396,10 @@ export default function TeenDashboard() {
       )}
       
       {editingEvent && (
-        <EventEditModal 
+        <TeenEventDetailModal 
           event={editingEvent}
-          onEventUpdated={() => setEditingEvent(null)}
-          onEventDeleted={() => setEditingEvent(null)}
+          isOpen={!!editingEvent}
+          onClose={() => setEditingEvent(null)}
         />
       )}
     </div>
