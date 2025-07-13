@@ -25,10 +25,10 @@ export function setupSession(app: Express) {
     resave: false,
     saveUninitialized: true, // Create session for mobile apps
     cookie: {
-      secure: false, // Keep false for mobile apps
+      secure: isProduction, // HTTPS only in production
       httpOnly: false, // Allow client access for mobile apps
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax', // Important for mobile/cross-origin
+      sameSite: isProduction ? 'none' : 'lax', // Cross-origin for mobile in production
     },
     name: 'momapp.sid', // Custom session name
   }));
