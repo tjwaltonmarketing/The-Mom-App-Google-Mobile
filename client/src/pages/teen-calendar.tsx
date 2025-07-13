@@ -545,8 +545,7 @@ export default function TeenCalendar() {
               onClick={() => setViewMode("calendar")}
               className="text-xs sm:text-sm px-2 sm:px-3"
             >
-              <Grid3X3 className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">Calendar</span>
+              <span>Calendar</span>
             </Button>
             <Button
               variant={viewMode === "list" ? "default" : "outline"}
@@ -554,8 +553,7 @@ export default function TeenCalendar() {
               onClick={() => setViewMode("list")}
               className="text-xs sm:text-sm px-2 sm:px-3"
             >
-              <Calendar className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">List</span>
+              <span>List</span>
             </Button>
             <Button
               variant="outline"
@@ -563,15 +561,12 @@ export default function TeenCalendar() {
               onClick={handleGoogleCalendarSync}
               className="text-xs sm:text-sm px-2 sm:px-3"
             >
-              <Calendar className="h-4 w-4 sm:mr-1" />
-              <span className="hidden sm:inline">Sync Google</span>
+              <span>Sync Google</span>
             </Button>
             <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
               <DialogTrigger asChild>
                 <Button className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Add Event</span>
-                  <span className="sm:hidden">Add</span>
+                  <span>Add</span>
                 </Button>
               </DialogTrigger>
               <DialogContent>

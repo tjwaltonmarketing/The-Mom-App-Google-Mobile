@@ -64,8 +64,8 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
               <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white font-logo uppercase">THE MOM APP</h1>
             </div>
             
-            {/* Profile Section */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            {/* Profile Section - Avatar only, no greeting */}
+            <div className="flex items-center gap-2 sm:gap-3">
               {teenProfile?.avatar ? (
                 <img 
                   src={teenProfile.avatar} 
@@ -80,10 +80,6 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
                   {teenProfile?.firstName?.charAt(0) || "A"}
                 </div>
               )}
-              <div className="min-w-0 flex-1">
-                <h1 className="text-sm sm:text-lg font-semibold truncate">Hey, {teenProfile?.firstName || "Adri"}!</h1>
-                <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Family Helper</p>
-              </div>
             </div>
           </div>
 
@@ -155,29 +151,36 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4">
-          {navItems.map((item) => {
-            const isActive = currentPath === item.path;
-            return (
-              <Button
-                key={item.path}
-                variant={isActive ? "default" : "ghost"}
-                onClick={() => setLocation(item.path)}
-                className={`flex items-center gap-1.5 sm:gap-2 rounded-none border-b-2 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base ${
-                  isActive 
-                    ? "border-primary bg-primary text-primary-foreground" 
-                    : "border-transparent hover:border-gray-300"
-                }`}
-              >
-                <span className="h-3.5 w-3.5 sm:h-4 sm:w-4">
-                  {item.icon}
-                </span>
-                <span className="hidden xs:inline sm:inline">
-                  {item.label}
-                </span>
-              </Button>
-            );
-          })}
+        <div className="flex items-center justify-between px-3 sm:px-4">
+          <div className="flex items-center gap-1 sm:gap-2">
+            {navItems.map((item) => {
+              const isActive = currentPath === item.path;
+              return (
+                <Button
+                  key={item.path}
+                  variant={isActive ? "default" : "ghost"}
+                  onClick={() => setLocation(item.path)}
+                  className={`flex items-center gap-1.5 sm:gap-2 rounded-none border-b-2 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base ${
+                    isActive 
+                      ? "border-primary bg-primary text-primary-foreground" 
+                      : "border-transparent hover:border-gray-300"
+                  }`}
+                >
+                  <span className="h-3.5 w-3.5 sm:h-4 sm:w-4">
+                    {item.icon}
+                  </span>
+                  <span className="hidden xs:inline sm:inline">
+                    {item.label}
+                  </span>
+                </Button>
+              );
+            })}
+          </div>
+          
+          {/* Greeting moved to tab line - far right */}
+          <div className="text-sm font-medium text-gray-700 hidden sm:block">
+            Hey, {teenProfile?.firstName || "Adri"}!
+          </div>
         </div>
       </div>
     </div>
