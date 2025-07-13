@@ -2128,12 +2128,10 @@ themomapp.us@gmail.com`;
         return res.status(401).json({ error: "Not authenticated" });
       }
       
-      // Get teen profile from database
-      let teenProfile = await db.select().from(teenProfiles).where(eq(teenProfiles.id, teenId)).then(rows => rows[0]);
-      
+      // Get stored profile or create default
+      let teenProfile = teenProfiles.get(teenId);
       if (!teenProfile) {
-        // Create default teen profile in database
-        const [newProfile] = await db.insert(teenProfiles).values({
+        teenProfile = {
           id: teenId,
           firstName: "Adri",
           lastName: "Walton",
@@ -2142,26 +2140,12 @@ themomapp.us@gmail.com`;
           streak: 12,
           favoriteColor: "purple",
           avatar: null,
-          userId: null,
-          familyMemberId: null
-        }).returning();
-        
-        teenProfile = {
-          ...newProfile,
           family: {
             id: 1,
             name: "Walton"
           }
         };
-      } else {
-        // Add family info to existing profile
-        teenProfile = {
-          ...teenProfile,
-          family: {
-            id: 1,
-            name: "Walton"
-          }
-        };
+        teenProfiles.set(teenId, teenProfile);
       }
       
       console.log("Fetching teen profile for ID:", teenId, "Has avatar:", !!teenProfile.avatar);
@@ -2202,35 +2186,30 @@ themomapp.us@gmail.com`;
       
       console.log("Updating teen profile:", { teenId, updates });
       
-      // Get existing profile from database
-      let existingProfile = await db.select().from(teenProfiles).where(eq(teenProfiles.id, teenId)).then(rows => rows[0]);
+      // Get current profile (mock for now)
+      let existingProfile = teenProfiles.get(teenId) || {
+        id: teenId,
+        firstName: "Adri",
+        lastName: "Walton",
+        username: "adri_w",
+        points: 285,
+        streak: 12,
+        favoriteColor: "purple",
+        avatar: null,
+        family: {
+          id: 1,
+          name: "Walton"
+        }
+      };
       
-      if (!existingProfile) {
-        // Create default profile if it doesn't exist
-        const [newProfile] = await db.insert(teenProfiles).values({
-          id: teenId,
-          firstName: "Adri",
-          lastName: "Walton",
-          username: "adri_w",
-          points: 285,
-          streak: 12,
-          favoriteColor: "purple",
-          avatar: null,
-          userId: null,
-          familyMemberId: null
-        }).returning();
-        
-        existingProfile = newProfile;
-      }
+      // Update profile with new values
+      const updatedProfile = {
+        ...existingProfile,
+        ...updates
+      };
       
-      // Update profile in database
-      const [updatedProfile] = await db.update(teenProfiles)
-        .set({
-          ...updates,
-          updatedAt: new Date()
-        })
-        .where(eq(teenProfiles.id, teenId))
-        .returning();
+      // Store updated profile in memory (this will persist avatar uploads)
+      teenProfiles.set(teenId, updatedProfile);
       
       console.log("Profile update result:", { 
         teenId, 
