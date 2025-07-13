@@ -149,18 +149,24 @@ export default function TeenCalendar() {
       return;
     }
 
+    // Convert date and time to proper datetime
+    const startDateTime = new Date(`${newEvent.date}T${newEvent.time}`);
+    const endDateTime = newEvent.endTime ? new Date(`${newEvent.date}T${newEvent.endTime}`) : null;
+
     const eventData = {
       title: newEvent.title,
       description: newEvent.description,
-      startTime: new Date(`${newEvent.date}T${newEvent.time}`).toISOString(),
-      endTime: newEvent.endTime ? new Date(`${newEvent.date}T${newEvent.endTime}`).toISOString() : null,
+      startTime: startDateTime.toISOString(),
+      endTime: endDateTime?.toISOString(),
       location: newEvent.location,
-      visibilityType: "shared", // Default to shared for teens
-      familyId: 1, // Would be dynamic based on teen's family
+      visibilityType: "shared", // Default for teen events
+      assignedTo: 1, // Teen's ID
     };
 
     createEventMutation.mutate(eventData);
   };
+
+
 
   const renderEvent = (event: any) => {
     if (event.privacy === "private") {
@@ -244,6 +250,211 @@ export default function TeenCalendar() {
     );
   };
 
+  // List view rendering (current implementation)
+  const renderListView = () => (
+    <>
+      {/* Privacy Legend */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            Privacy Levels
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-purple-500 rounded-full" />
+              <span><strong>My Events:</strong> Your personal events</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-full" />
+              <span><strong>Family Shared:</strong> Everyone can see</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+              <span><strong>Busy:</strong> Time blocked only</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-gray-500 rounded-full" />
+              <span><strong>Private:</strong> Hidden details</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Today's Events */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-green-600" />
+            Today - {new Date().toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {getEventsByDate("Today").length > 0 ? (
+              getEventsByDate("Today").map(renderEvent)
+            ) : (
+              <p className="text-gray-500 text-center py-4">No events today</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tomorrow's Events */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-blue-600" />
+            Tomorrow - {(() => {
+              const tomorrow = new Date();
+              tomorrow.setDate(tomorrow.getDate() + 1);
+              return tomorrow.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+              });
+            })()}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {getEventsByDate("Tomorrow").length > 0 ? (
+              getEventsByDate("Tomorrow").map(renderEvent)
+            ) : (
+              <p className="text-gray-500 text-center py-4">No events tomorrow</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Upcoming Events */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-purple-600" />
+            This Week
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {allEvents.filter(event => !["Today", "Tomorrow"].includes(event.date)).length > 0 ? (
+              allEvents.filter(event => !["Today", "Tomorrow"].includes(event.date)).map(renderEvent)
+            ) : (
+              <p className="text-gray-500 text-center py-4">No other events this week</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  );
+
+  // Calendar view rendering (grid format)
+  const renderCalendarView = () => {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    // Get first day of month and how many days
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDayOfWeek = firstDay.getDay();
+    
+    // Create calendar grid
+    const calendarDays = [];
+    
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      calendarDays.push(null);
+    }
+    
+    // Add all days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      calendarDays.push(new Date(currentYear, currentMonth, day));
+    }
+    
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              {today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="sm">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Days of week headers */}
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
+                {day}
+              </div>
+            ))}
+          </div>
+          
+          {/* Calendar grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {calendarDays.map((date, index) => {
+              if (!date) {
+                return <div key={index} className="aspect-square p-1"></div>;
+              }
+              
+              const isToday = date.toDateString() === today.toDateString();
+              const dayEvents = allEvents.filter(event => {
+                const eventDate = new Date(event.fullDate);
+                return eventDate.toDateString() === date.toDateString();
+              });
+              
+              return (
+                <div 
+                  key={index} 
+                  className={`aspect-square p-1 border rounded-lg ${
+                    isToday ? 'bg-primary/10 border-primary' : 'border-gray-200'
+                  }`}
+                >
+                  <div className={`text-sm font-medium mb-1 ${
+                    isToday ? 'text-primary' : 'text-gray-900'
+                  }`}>
+                    {date.getDate()}
+                  </div>
+                  <div className="space-y-1">
+                    {dayEvents.slice(0, 2).map(event => (
+                      <div 
+                        key={event.id}
+                        className="text-xs p-1 rounded truncate"
+                        style={{ backgroundColor: event.color + '40' }}
+                      >
+                        {event.title}
+                      </div>
+                    ))}
+                    {dayEvents.length > 2 && (
+                      <div className="text-xs text-gray-500">+{dayEvents.length - 2}</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
@@ -251,33 +462,36 @@ export default function TeenCalendar() {
       
       <div className="max-w-6xl mx-auto p-4">
         {/* Page Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">My Calendar</h1>
-            <p className="text-gray-600">Your events and family schedule</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold truncate">My Calendar</h1>
+            <p className="text-sm sm:text-base text-gray-600 truncate">Your events and family schedule</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <Button
               variant={viewMode === "calendar" ? "default" : "outline"}
               size="sm"
               onClick={() => setViewMode("calendar")}
+              className="text-xs sm:text-sm px-2 sm:px-3"
             >
-              <Grid3X3 className="h-4 w-4 mr-1" />
-              Calendar
+              <Grid3X3 className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Calendar</span>
             </Button>
             <Button
               variant={viewMode === "list" ? "default" : "outline"}
               size="sm"
               onClick={() => setViewMode("list")}
+              className="text-xs sm:text-sm px-2 sm:px-3"
             >
-              <Calendar className="h-4 w-4 mr-1" />
-              List
+              <Calendar className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">List</span>
             </Button>
             <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
               <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
+                <Button className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
                   <Plus className="h-4 w-4" />
-                  Add Event
+                  <span className="hidden sm:inline">Add Event</span>
+                  <span className="sm:hidden">Add</span>
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -375,104 +589,8 @@ export default function TeenCalendar() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Privacy Legend */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  Privacy Levels
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-purple-500 rounded-full" />
-                    <span><strong>My Events:</strong> Your personal events</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full" />
-                    <span><strong>Family Shared:</strong> Everyone can see</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full" />
-                    <span><strong>Busy:</strong> Time blocked only</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-gray-500 rounded-full" />
-                    <span><strong>Private:</strong> Hidden details</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Today's Events */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-green-600" />
-                  Today - {new Date().toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {getEventsByDate("Today").length > 0 ? (
-                    getEventsByDate("Today").map(renderEvent)
-                  ) : (
-                    <p className="text-gray-500 text-center py-4">No events today</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Tomorrow's Events */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                  Tomorrow - {(() => {
-                    const tomorrow = new Date();
-                    tomorrow.setDate(tomorrow.getDate() + 1);
-                    return tomorrow.toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    });
-                  })()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {getEventsByDate("Tomorrow").length > 0 ? (
-                    getEventsByDate("Tomorrow").map(renderEvent)
-                  ) : (
-                    <p className="text-gray-500 text-center py-4">No events tomorrow</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Upcoming Events */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-purple-600" />
-                  This Week
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {allEvents.filter(event => !["Today", "Tomorrow"].includes(event.date)).length > 0 ? (
-                    allEvents.filter(event => !["Today", "Tomorrow"].includes(event.date)).map(renderEvent)
-                  ) : (
-                    <p className="text-gray-500 text-center py-4">No other events this week</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            {viewMode === "list" && renderListView()}
+            {viewMode === "calendar" && renderCalendarView()}
           </div>
         )}
       </div>
