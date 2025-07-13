@@ -6,9 +6,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { TaskEditModal } from "@/components/task-edit-modal";
+import { TaskModal } from "@/components/task-modal";
 import type { Task, FamilyMember } from "@shared/schema";
+import { useState } from "react";
 
 export function QuickTasks() {
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks/pending"],
   });
@@ -59,7 +65,11 @@ export function QuickTasks() {
           <CheckCircle className="text-secondary mr-2 h-5 w-5" />
           Quick Tasks
         </CardTitle>
-        <Button variant="link" className="text-primary hover:text-blue-600 text-sm font-medium p-0">
+        <Button 
+          variant="link" 
+          className="text-primary hover:text-blue-600 text-sm font-medium p-0"
+          onClick={() => setIsTaskModalOpen(true)}
+        >
           <Plus className="mr-1 h-4 w-4" />
           Add Task
         </Button>
@@ -80,15 +90,17 @@ export function QuickTasks() {
               return (
                 <div 
                   key={task.id} 
-                  className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-3 p-3 rounded-lg transition-colors cursor-pointer ${
                     task.isCompleted 
                       ? 'bg-gray-50 opacity-75' 
                       : 'bg-gray-50 hover:bg-gray-100'
                   }`}
+                  onClick={() => setEditingTask(task)}
                 >
                   <Checkbox
                     checked={task.isCompleted || false}
                     onCheckedChange={() => !task.isCompleted && handleCompleteTask(task.id)}
+                    onClick={(e) => e.stopPropagation()}
                     disabled={task.isCompleted || completeTaskMutation.isPending}
                   />
                   <div className="flex-1">
@@ -125,6 +137,22 @@ export function QuickTasks() {
           </div>
         )}
       </CardContent>
+      
+      {/* Modals */}
+      {isTaskModalOpen && (
+        <TaskModal 
+          isOpen={isTaskModalOpen} 
+          onClose={() => setIsTaskModalOpen(false)}
+        />
+      )}
+      
+      {editingTask && (
+        <TaskEditModal 
+          task={editingTask}
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+        />
+      )}
     </Card>
   );
 }

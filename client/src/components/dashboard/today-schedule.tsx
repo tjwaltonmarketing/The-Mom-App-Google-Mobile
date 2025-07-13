@@ -4,11 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
+import { EventEditModal } from "@/components/event-edit-modal";
 import type { Event, FamilyMember } from "@shared/schema";
 import { format } from "date-fns";
 import { formatTimeInUserTimezone } from "@/lib/timezone";
+import { useState } from "react";
 
 export function TodaySchedule() {
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  
   const { data: events = [] } = useQuery<Event[]>({
     queryKey: ["/api/events/today"],
   });
@@ -43,7 +47,11 @@ export function TodaySchedule() {
             events.map((event) => {
               const member = getMemberById(event.assignedTo);
               return (
-                <div key={event.id} className="flex items-start space-x-3">
+                <div 
+                  key={event.id} 
+                  className="flex items-start space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
+                  onClick={() => setEditingEvent(event)}
+                >
                   <div className="flex-shrink-0">
                     <div 
                       className="w-3 h-3 rounded-full mt-2"
@@ -68,6 +76,15 @@ export function TodaySchedule() {
           )}
         </div>
       </CardContent>
+      
+      {/* Event Edit Modal */}
+      {editingEvent && (
+        <EventEditModal 
+          event={editingEvent}
+          onEventUpdated={() => setEditingEvent(null)}
+          onEventDeleted={() => setEditingEvent(null)}
+        />
+      )}
     </Card>
   );
 }
