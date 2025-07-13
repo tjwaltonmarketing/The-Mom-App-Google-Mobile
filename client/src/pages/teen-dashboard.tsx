@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { TaskEditModal } from "@/components/task-edit-modal";
+import { EventEditModal } from "@/components/event-edit-modal";
 import { 
   Calendar, 
   CheckCircle2, 
@@ -19,9 +21,12 @@ import {
   Utensils
 } from "lucide-react";
 import TeenNavigation from "@/components/teen/teen-navigation";
+import type { Task, Event } from "@shared/schema";
 
 export default function TeenDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [, setLocation] = useLocation();
 
   // Fetch weekly meal plans for teen dashboard
@@ -40,26 +45,44 @@ export default function TeenDashboard() {
     {
       id: 1,
       title: "Take out trash",
+      description: "Take the trash bins to the curb for pickup",
       dueTime: "6:00 PM",
-      priority: "medium",
+      dueDate: new Date().toISOString(),
+      priority: "medium" as const,
       points: 15,
-      isCompleted: false
+      isCompleted: false,
+      assignedTo: 123,
+      completedBy: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       id: 2,
       title: "Feed the dog",
+      description: "Give Max his evening meal",
       dueTime: "7:30 AM",
-      priority: "high",
+      dueDate: new Date().toISOString(),
+      priority: "high" as const,
       points: 10,
-      isCompleted: true
+      isCompleted: true,
+      assignedTo: 123,
+      completedBy: 123,
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       id: 3,
       title: "Clean bedroom",
+      description: "Make bed, organize desk, and pick up clothes",
       dueTime: "8:00 PM",
-      priority: "medium",
+      dueDate: new Date().toISOString(),
+      priority: "medium" as const,
       points: 25,
-      isCompleted: false
+      isCompleted: false,
+      assignedTo: 123,
+      completedBy: null,
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   ];
 
@@ -67,6 +90,14 @@ export default function TeenDashboard() {
     {
       id: 1,
       title: "Soccer Practice",
+      description: "Weekly soccer practice at the local field",
+      location: "Community Sports Field",
+      startTime: new Date().toISOString(),
+      endTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+      isAllDay: false,
+      assignedTo: 123,
+      createdAt: new Date(),
+      updatedAt: new Date(),
       time: "4:00 PM",
       date: "Today",
       type: "sport"
@@ -74,6 +105,14 @@ export default function TeenDashboard() {
     {
       id: 2,
       title: "Family Dinner",
+      description: "Weekly family dinner together",
+      location: "Home",
+      startTime: new Date().toISOString(),
+      endTime: new Date(Date.now() + 1.5 * 60 * 60 * 1000).toISOString(),
+      isAllDay: false,
+      assignedTo: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
       time: "6:30 PM",
       date: "Today",
       type: "family"
@@ -81,6 +120,14 @@ export default function TeenDashboard() {
     {
       id: 3,
       title: "Math Test",
+      description: "Algebra II Chapter 5 test",
+      location: "Room 203",
+      startTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      endTime: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
+      isAllDay: false,
+      assignedTo: 123,
+      createdAt: new Date(),
+      updatedAt: new Date(),
       time: "10:00 AM",
       date: "Tomorrow",
       type: "school"
@@ -151,11 +198,12 @@ export default function TeenDashboard() {
                 {todayTasks.map((task) => (
                   <div 
                     key={task.id} 
-                    className={`p-3 rounded-lg border flex items-center justify-between ${
+                    className={`p-3 rounded-lg border flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors ${
                       task.isCompleted 
                         ? 'bg-green-50 border-green-200' 
                         : 'bg-white border-gray-200'
                     }`}
+                    onClick={() => setEditingTask(task)}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
@@ -201,7 +249,11 @@ export default function TeenDashboard() {
             <CardContent>
               <div className="space-y-3">
                 {upcomingEvents.map((event) => (
-                  <div key={event.id} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div 
+                    key={event.id} 
+                    className="p-3 bg-blue-50 rounded-lg border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
+                    onClick={() => setEditingEvent(event)}
+                  >
                     <div className="flex items-start justify-between">
                       <div>
                         <p className="font-medium text-sm">{event.title}</p>
@@ -333,6 +385,23 @@ export default function TeenDashboard() {
           </Card>
         </div>
       </div>
+
+      {/* Modals */}
+      {editingTask && (
+        <TaskEditModal 
+          task={editingTask}
+          isOpen={!!editingTask}
+          onClose={() => setEditingTask(null)}
+        />
+      )}
+      
+      {editingEvent && (
+        <EventEditModal 
+          event={editingEvent}
+          onEventUpdated={() => setEditingEvent(null)}
+          onEventDeleted={() => setEditingEvent(null)}
+        />
+      )}
     </div>
   );
 }
