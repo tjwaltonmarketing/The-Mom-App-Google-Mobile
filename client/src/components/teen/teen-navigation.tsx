@@ -61,7 +61,7 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
             {/* The Mom App Logo */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <Logo className="h-7 w-7 sm:h-8 sm:w-8" />
-              <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white font-logo uppercase hidden sm:block">THE MOM APP</h1>
+              <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white font-logo uppercase">THE MOM APP</h1>
             </div>
             
             {/* Profile Section */}
@@ -89,7 +89,7 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
 
           {/* Quick Controls */}
           <div className="flex items-center gap-1 sm:gap-2">
-            {/* Dark Mode Toggle - Always visible */}
+            {/* Dark Mode Toggle - Hidden on mobile, visible on tablet+ */}
             <Button 
               variant={darkMode ? "default" : "ghost"} 
               size="sm"
@@ -98,12 +98,12 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
                 document.documentElement.classList.toggle('dark', !darkMode);
               }}
               title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              className="h-8 w-8 p-0"
+              className="hidden sm:flex h-8 w-8 p-0"
             >
               {darkMode ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             </Button>
             
-            {/* Blue Light Filter Toggle - Always visible */}
+            {/* Blue Light Filter Toggle - Hidden on mobile, visible on tablet+ */}
             <Button 
               variant={blueLight ? "default" : "ghost"} 
               size="sm"
@@ -113,7 +113,7 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
                 document.documentElement.style.filter = filter;
               }}
               title={blueLight ? "Turn Off Blue Light Filter" : "Turn On Blue Light Filter"}
-              className="h-8 w-8 p-0"
+              className="hidden sm:flex h-8 w-8 p-0"
             >
               <Eye className="h-3.5 w-3.5" />
             </Button>
