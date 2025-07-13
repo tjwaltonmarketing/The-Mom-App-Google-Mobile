@@ -1150,6 +1150,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test email endpoint
+  app.post("/api/test-email", async (req, res) => {
+    try {
+      const { to, subject, message } = req.body;
+      
+      if (!to || !subject || !message) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Missing required fields: to, subject, message" 
+        });
+      }
+
+      console.log('🧪 Testing email service...');
+      const { emailService } = await import('./email-service');
+      
+      if (!emailService) {
+        return res.status(500).json({ 
+          success: false, 
+          error: "Email service not initialized" 
+        });
+      }
+
+      const result = await emailService.sendEmail(
+        to,
+        subject,
+        `<p>${message}</p><br><p><em>This is a test email from The Mom App</em></p>`,
+        message
+      );
+
+      console.log('📧 Email test result:', result);
+      res.json(result);
+    } catch (error: any) {
+      console.error('❌ Email test error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message || "Failed to send test email" 
+      });
+    }
+  });
+
   // AI Assistant Routes
   app.post("/api/ai/chat", async (req, res) => {
     try {
