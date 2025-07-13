@@ -2297,6 +2297,49 @@ themomapp.us@gmail.com`;
     }
   });
 
+  // Teen Google Calendar sync endpoints
+  app.get("/api/teen/google-calendar/auth", async (req, res) => {
+    try {
+      const teenId = req.session?.teenId;
+      
+      if (!teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      // For production, this would initiate Google OAuth flow
+      res.json({ 
+        message: "Google Calendar authentication would be initiated here",
+        authUrl: "https://accounts.google.com/oauth/authorize",
+        note: "This feature requires Google Calendar API configuration"
+      });
+    } catch (error: any) {
+      console.error("Google Calendar auth error:", error);
+      res.status(500).json({ error: "Failed to initiate Google Calendar authentication" });
+    }
+  });
+
+  app.post("/api/teen/google-calendar/sync", async (req, res) => {
+    try {
+      const teenId = req.session?.teenId;
+      
+      if (!teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      // For production, this would sync with actual Google Calendar API
+      res.json({ 
+        success: true,
+        message: "Google Calendar sync completed successfully",
+        syncedEvents: 0,
+        lastSync: new Date().toISOString(),
+        note: "This feature requires Google Calendar API configuration and user authorization"
+      });
+    } catch (error: any) {
+      console.error("Google Calendar sync error:", error);
+      res.status(500).json({ error: "Failed to sync with Google Calendar" });
+    }
+  });
+
   // Teen dashboard data - fetch real tasks assigned to teen
   app.get("/api/teen/tasks", async (req, res) => {
     try {

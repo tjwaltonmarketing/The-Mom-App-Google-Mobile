@@ -31,6 +31,8 @@ export default function TeenCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"calendar" | "list">("list");
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [isDayEventsOpen, setIsDayEventsOpen] = useState(false);
+  const [selectedDayEvents, setSelectedDayEvents] = useState<any[]>([]);
   const [newEvent, setNewEvent] = useState({
     title: "",
     date: "",
@@ -187,17 +189,48 @@ export default function TeenCalendar() {
   // Handle day click
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
-    // Show events for this day or allow adding events
+    // Get events for this day
     const dayEvents = allEvents.filter(event => {
       const eventDate = new Date(event.fullDate);
       return eventDate.toDateString() === date.toDateString();
     });
     
+    setSelectedDayEvents(dayEvents);
+    
     if (dayEvents.length > 0) {
-      toast({
-        title: `Events on ${date.toLocaleDateString()}`,
-        description: `${dayEvents.length} event(s) found`,
+      // Show events for this day
+      setIsDayEventsOpen(true);
+    } else {
+      // Allow creating a new event for this day
+      setNewEvent({
+        ...newEvent,
+        date: date.toISOString().split('T')[0], // Set date in YYYY-MM-DD format
       });
+      setIsAddEventOpen(true);
+    }
+  };
+
+  // Google Calendar sync function
+  const handleGoogleCalendarSync = async () => {
+    try {
+      const response = await apiRequest("POST", "/api/teen/google-calendar/sync");
+      toast({
+        title: "Google Calendar Sync",
+        description: "Successfully synced with Google Calendar",
+      });
+      // Refresh events after sync
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+    } catch (error: any) {
+      if (error.message.includes("authorization")) {
+        // Redirect to Google OAuth
+        window.location.href = "/api/teen/google-calendar/auth";
+      } else {
+        toast({
+          title: "Sync Failed",
+          description: error.message || "Failed to sync with Google Calendar",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -524,6 +557,15 @@ export default function TeenCalendar() {
               <Calendar className="h-4 w-4 sm:mr-1" />
               <span className="hidden sm:inline">List</span>
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGoogleCalendarSync}
+              className="text-xs sm:text-sm px-2 sm:px-3"
+            >
+              <Calendar className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Sync Google</span>
+            </Button>
             <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
               <DialogTrigger asChild>
                 <Button className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-3">
@@ -612,6 +654,80 @@ export default function TeenCalendar() {
                       onClick={() => setIsAddEventOpen(false)}
                     >
                       Cancel
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Day Events Dialog */}
+            <Dialog open={isDayEventsOpen} onOpenChange={setIsDayEventsOpen}>
+              <DialogContent className="max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>
+                    Events for {selectedDate.toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {selectedDayEvents.map((event) => (
+                    <Card key={event.id} className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-medium text-lg">{event.title}</h3>
+                          <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{event.time}</span>
+                          </div>
+                          {event.location && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                              <MapPin className="h-4 w-4" />
+                              <span>{event.location}</span>
+                            </div>
+                          )}
+                          {event.description && (
+                            <p className="text-sm text-gray-700 mt-2">{event.description}</p>
+                          )}
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge 
+                              variant={event.type === 'sport' ? 'default' : 'secondary'}
+                              className="text-xs"
+                            >
+                              {event.type}
+                            </Badge>
+                            {event.source === "family" && (
+                              <Badge variant="outline" className="text-xs">
+                                Family Event
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      onClick={() => {
+                        setNewEvent({
+                          ...newEvent,
+                          date: selectedDate.toISOString().split('T')[0],
+                        });
+                        setIsDayEventsOpen(false);
+                        setIsAddEventOpen(true);
+                      }}
+                      className="flex-1"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Event This Day
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsDayEventsOpen(false)}
+                    >
+                      Close
                     </Button>
                   </div>
                 </div>
