@@ -11,8 +11,11 @@ import {
   insertVoiceNoteSchema,
   insertDeadlineSchema,
   insertNotificationSchema,
-  insertMealPlanSchema
+  insertMealPlanSchema,
+  teenProfiles
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 // Set LeadConnector environment variables before importing SMS service
 if (!process.env.LEADCONNECTOR_API_KEY) {
   process.env.LEADCONNECTOR_API_KEY = "215c65d0-72a8-4221-a0bc-cf39ebfc6acf";
@@ -2125,10 +2128,12 @@ themomapp.us@gmail.com`;
         return res.status(401).json({ error: "Not authenticated" });
       }
       
-      // Get stored profile or create default
-      let teenProfile = teenProfiles.get(teenId);
+      // Get teen profile from database
+      let teenProfile = await db.select().from(teenProfiles).where(eq(teenProfiles.id, teenId)).then(rows => rows[0]);
+      
       if (!teenProfile) {
-        teenProfile = {
+        // Create default teen profile in database
+        const [newProfile] = await db.insert(teenProfiles).values({
           id: teenId,
           firstName: "Adri",
           lastName: "Walton",
@@ -2137,12 +2142,26 @@ themomapp.us@gmail.com`;
           streak: 12,
           favoriteColor: "purple",
           avatar: null,
+          userId: null,
+          familyMemberId: null
+        }).returning();
+        
+        teenProfile = {
+          ...newProfile,
           family: {
             id: 1,
             name: "Walton"
           }
         };
-        teenProfiles.set(teenId, teenProfile);
+      } else {
+        // Add family info to existing profile
+        teenProfile = {
+          ...teenProfile,
+          family: {
+            id: 1,
+            name: "Walton"
+          }
+        };
       }
       
       console.log("Fetching teen profile for ID:", teenId, "Has avatar:", !!teenProfile.avatar);
@@ -2183,10 +2202,12 @@ themomapp.us@gmail.com`;
       
       console.log("Updating teen profile:", { teenId, updates });
       
-      // Get existing profile or create default
-      let existingProfile = teenProfiles.get(teenId);
+      // Get existing profile from database
+      let existingProfile = await db.select().from(teenProfiles).where(eq(teenProfiles.id, teenId)).then(rows => rows[0]);
+      
       if (!existingProfile) {
-        existingProfile = {
+        // Create default profile if it doesn't exist
+        const [newProfile] = await db.insert(teenProfiles).values({
           id: teenId,
           firstName: "Adri",
           lastName: "Walton",
@@ -2195,21 +2216,21 @@ themomapp.us@gmail.com`;
           streak: 12,
           favoriteColor: "purple",
           avatar: null,
-          family: {
-            id: 1,
-            name: "Walton"
-          }
-        };
+          userId: null,
+          familyMemberId: null
+        }).returning();
+        
+        existingProfile = newProfile;
       }
       
-      // Update only the provided fields
-      const updatedProfile = {
-        ...existingProfile,
-        ...updates
-      };
-      
-      // Store the updated profile
-      teenProfiles.set(teenId, updatedProfile);
+      // Update profile in database
+      const [updatedProfile] = await db.update(teenProfiles)
+        .set({
+          ...updates,
+          updatedAt: new Date()
+        })
+        .where(eq(teenProfiles.id, teenId))
+        .returning();
       
       console.log("Profile update result:", { 
         teenId, 

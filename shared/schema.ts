@@ -53,6 +53,8 @@ export const familyMembers = pgTable("family_members", {
   isActive: boolean("is_active").default(true), // For soft deletion/deactivation
 });
 
+
+
 export const events = pgTable("events", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -195,12 +197,17 @@ export const teenProfiles = pgTable("teen_profiles", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull().unique(),
   familyMemberId: integer("family_member_id").references(() => familyMembers.id).notNull(),
+  firstName: varchar("first_name", { length: 100 }).notNull(),
+  lastName: varchar("last_name", { length: 100 }),
+  username: varchar("username", { length: 50 }).notNull().unique(),
+  avatar: text("avatar"), // base64 image data - persistent storage
   age: integer("age"),
-  favoriteColor: varchar("favorite_color", { length: 20 }).default("blue"),
+  favoriteColor: varchar("favorite_color", { length: 20 }).default("purple"),
   points: integer("points").default(0),
   streak: integer("streak").default(0), // consecutive days of completing tasks
   lastActivityDate: timestamp("last_activity_date"),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const teenNotificationSettings = pgTable("teen_notification_settings", {
