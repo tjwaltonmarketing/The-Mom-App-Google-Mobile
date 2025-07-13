@@ -28,6 +28,7 @@ import TeenNavigation from "@/components/teen/teen-navigation";
 export default function TeenCalendar() {
   const [, setLocation] = useLocation();
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"calendar" | "list">("list");
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
@@ -164,6 +165,40 @@ export default function TeenCalendar() {
     };
 
     createEventMutation.mutate(eventData);
+  };
+
+  // Month navigation functions
+  const goToPreviousMonth = () => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(prev.getMonth() - 1);
+      return newDate;
+    });
+  };
+
+  const goToNextMonth = () => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(prev.getMonth() + 1);
+      return newDate;
+    });
+  };
+
+  // Handle day click
+  const handleDayClick = (date: Date) => {
+    setSelectedDate(date);
+    // Show events for this day or allow adding events
+    const dayEvents = allEvents.filter(event => {
+      const eventDate = new Date(event.fullDate);
+      return eventDate.toDateString() === date.toDateString();
+    });
+    
+    if (dayEvents.length > 0) {
+      toast({
+        title: `Events on ${date.toLocaleDateString()}`,
+        description: `${dayEvents.length} event(s) found`,
+      });
+    }
   };
 
 
@@ -357,8 +392,8 @@ export default function TeenCalendar() {
   // Calendar view rendering (grid format)
   const renderCalendarView = () => {
     const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
     
     // Get first day of month and how many days
     const firstDay = new Date(currentYear, currentMonth, 1);
@@ -385,13 +420,13 @@ export default function TeenCalendar() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              {today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={goToPreviousMonth}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={goToNextMonth}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -401,14 +436,14 @@ export default function TeenCalendar() {
           {/* Days of week headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
+              <div key={day} className="p-1 sm:p-2 text-center text-xs sm:text-sm font-medium text-gray-500">
                 {day}
               </div>
             ))}
           </div>
           
           {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {calendarDays.map((date, index) => {
               if (!date) {
                 return <div key={index} className="aspect-square p-1"></div>;
@@ -423,27 +458,30 @@ export default function TeenCalendar() {
               return (
                 <div 
                   key={index} 
-                  className={`aspect-square p-1 border rounded-lg ${
+                  className={`aspect-square p-1 sm:p-2 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${
                     isToday ? 'bg-primary/10 border-primary' : 'border-gray-200'
+                  } ${
+                    selectedDate?.toDateString() === date.toDateString() ? 'ring-2 ring-primary' : ''
                   }`}
+                  onClick={() => handleDayClick(date)}
                 >
-                  <div className={`text-sm font-medium mb-1 ${
+                  <div className={`text-xs sm:text-sm font-medium mb-1 ${
                     isToday ? 'text-primary' : 'text-gray-900'
                   }`}>
                     {date.getDate()}
                   </div>
                   <div className="space-y-1">
-                    {dayEvents.slice(0, 2).map(event => (
+                    {dayEvents.slice(0, 1).map(event => (
                       <div 
                         key={event.id}
-                        className="text-xs p-1 rounded truncate"
-                        style={{ backgroundColor: event.color + '40' }}
+                        className="text-xs p-0.5 sm:p-1 rounded truncate bg-blue-100 text-blue-800"
+                        title={event.title}
                       >
-                        {event.title}
+                        {event.title.length > 8 ? event.title.substring(0, 8) + '...' : event.title}
                       </div>
                     ))}
-                    {dayEvents.length > 2 && (
-                      <div className="text-xs text-gray-500">+{dayEvents.length - 2}</div>
+                    {dayEvents.length > 1 && (
+                      <div className="text-xs text-gray-500 text-center">+{dayEvents.length - 1}</div>
                     )}
                   </div>
                 </div>
