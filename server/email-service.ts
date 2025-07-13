@@ -15,7 +15,10 @@ export class SendGridProvider implements EmailProvider {
     
     const apiKey = process.env.SENDGRID_API_KEY.trim();
     sgMail.setApiKey(apiKey);
-    console.log('✅ SendGrid email provider initialized with key format:', apiKey.startsWith('SG.') ? 'Valid format' : 'Invalid format');
+    console.log('✅ SendGrid email provider initialized');
+    console.log('   Key format:', apiKey.startsWith('SG.') ? 'Valid format' : 'Invalid format');
+    console.log('   Key length:', apiKey.length);
+    console.log('   Key preview:', `${apiKey.substring(0, 15)}...`);
   }
 
   async sendEmail(to: string, subject: string, html: string, text?: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
