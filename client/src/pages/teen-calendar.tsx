@@ -210,29 +210,7 @@ export default function TeenCalendar() {
     }
   };
 
-  // Google Calendar sync function
-  const handleGoogleCalendarSync = async () => {
-    try {
-      const response = await apiRequest("POST", "/api/teen/google-calendar/sync");
-      toast({
-        title: "Google Calendar Sync",
-        description: "Successfully synced with Google Calendar",
-      });
-      // Refresh events after sync
-      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
-    } catch (error: any) {
-      if (error.message.includes("authorization")) {
-        // Redirect to Google OAuth
-        window.location.href = "/api/teen/google-calendar/auth";
-      } else {
-        toast({
-          title: "Sync Failed",
-          description: error.message || "Failed to sync with Google Calendar",
-          variant: "destructive",
-        });
-      }
-    }
-  };
+
 
 
 
@@ -554,14 +532,6 @@ export default function TeenCalendar() {
               className="text-xs sm:text-sm px-2 sm:px-3"
             >
               <span>List</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleGoogleCalendarSync}
-              className="text-xs sm:text-sm px-2 sm:px-3"
-            >
-              <span>Sync Google</span>
             </Button>
             <Dialog open={isAddEventOpen} onOpenChange={setIsAddEventOpen}>
               <DialogTrigger asChild>
