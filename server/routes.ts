@@ -2245,6 +2245,115 @@ themomapp.us@gmail.com`;
     }
   });
 
+  // Parent: Get teen points and stats (for management)
+  app.get("/api/teen/points/:teenId", requireAuth, async (req, res) => {
+    try {
+      const teenId = parseInt(req.params.teenId);
+      
+      if (isNaN(teenId)) {
+        return res.status(400).json({ error: "Invalid teen ID" });
+      }
+      
+      // Get teen profile
+      let teenProfile = teenProfiles.get(teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen not found" });
+      }
+      
+      res.json({
+        teenId: teenProfile.id,
+        name: `${teenProfile.firstName} ${teenProfile.lastName}`,
+        username: teenProfile.username,
+        points: teenProfile.points,
+        streak: teenProfile.streak,
+        lastActivity: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error("Get teen points error:", error);
+      res.status(500).json({ error: "Failed to get teen points: " + error.message });
+    }
+  });
+
+  // Parent: Deduct points from teen
+  app.post("/api/teen/points/:teenId/deduct", requireAuth, async (req, res) => {
+    try {
+      const teenId = parseInt(req.params.teenId);
+      const { amount, reason } = req.body;
+      
+      if (isNaN(teenId)) {
+        return res.status(400).json({ error: "Invalid teen ID" });
+      }
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ error: "Deduction amount must be positive" });
+      }
+      
+      // Get teen profile
+      let teenProfile = teenProfiles.get(teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen not found" });
+      }
+      
+      // Calculate new points (can't go below 0)
+      const previousPoints = teenProfile.points;
+      const newPoints = Math.max(0, previousPoints - amount);
+      const actualDeduction = previousPoints - newPoints;
+      
+      // Update teen profile
+      teenProfile.points = newPoints;
+      teenProfiles.set(teenId, teenProfile);
+      
+      console.log(`Parent deducted ${actualDeduction} points from teen ${teenId}. Reason: ${reason || 'No reason provided'}`);
+      
+      res.json({
+        success: true,
+        previousPoints,
+        newPoints,
+        deducted: actualDeduction,
+        reason: reason || 'Points redeemed for reward'
+      });
+    } catch (error: any) {
+      console.error("Deduct teen points error:", error);
+      res.status(500).json({ error: "Failed to deduct points: " + error.message });
+    }
+  });
+
+  // Parent: Reset teen points to zero
+  app.post("/api/teen/points/:teenId/reset", requireAuth, async (req, res) => {
+    try {
+      const teenId = parseInt(req.params.teenId);
+      const { reason } = req.body;
+      
+      if (isNaN(teenId)) {
+        return res.status(400).json({ error: "Invalid teen ID" });
+      }
+      
+      // Get teen profile
+      let teenProfile = teenProfiles.get(teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen not found" });
+      }
+      
+      const previousPoints = teenProfile.points;
+      
+      // Reset points to zero
+      teenProfile.points = 0;
+      teenProfiles.set(teenId, teenProfile);
+      
+      console.log(`Parent reset teen ${teenId} points from ${previousPoints} to 0. Reason: ${reason || 'No reason provided'}`);
+      
+      res.json({
+        success: true,
+        previousPoints,
+        newPoints: 0,
+        reason: reason || 'Points reset by parent'
+      });
+    } catch (error: any) {
+      console.error("Reset teen points error:", error);
+      res.status(500).json({ error: "Failed to reset points: " + error.message });
+    }
+  });
+
   // Teen shared passwords
   app.get("/api/teen/shared-passwords", async (req, res) => {
     try {

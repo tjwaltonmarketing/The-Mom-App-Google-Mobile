@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus } from "lucide-react";
+import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star } from "lucide-react";
 import { Link } from "wouter";
 import { CalendarSync } from "@/components/calendar-sync";
 import { ImportExportModal } from "@/components/import-export-modal";
@@ -26,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { FamilyMember } from "@shared/schema";
 import { InviteTeenModal } from "@/components/family/invite-teen-modal";
 import { ParentInviteModal } from "@/components/parent-invite-modal";
+import { TeenPointManager } from "@/components/family/teen-point-manager";
 
 const addFamilyMemberSchema = z.object({
   name: z.string().min(1, "Name is required").max(50, "Name too long"),
@@ -555,6 +556,20 @@ export default function SettingsPage() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Teen Point Management Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Star className="h-5 w-5 text-yellow-500" />
+                Teen Reward Management
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Manage points and rewards for teen family members
+              </p>
+              
+              {/* Demo teen for point management */}
+              <TeenPointManager teenId={123} teenName="Adri Walton" />
+            </div>
 
             <Card>
               <CardHeader>
