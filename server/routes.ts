@@ -1280,6 +1280,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Family merge request endpoints
+  app.post("/api/family/merge", async (req, res) => {
+    try {
+      const { partnerEmail } = req.body;
+      
+      if (!partnerEmail) {
+        return res.status(400).json({ message: "Partner email is required" });
+      }
+
+      const userId = (req as any).user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const result = await storage.createFamilyMergeRequest(partnerEmail, userId);
+      
+      if (result.success) {
+        res.json(result);
+      } else {
+        res.status(400).json(result);
+      }
+    } catch (error) {
+      console.error("Error creating family merge request:", error);
+      res.status(500).json({ message: "Failed to create merge request" });
+    }
+  });
+
+  app.get("/api/family/merge-requests", async (req, res) => {
+    try {
+      const userEmail = (req as any).user?.email;
+      if (!userEmail) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const requests = await storage.getFamilyMergeRequestsForUser(userEmail);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching merge requests:", error);
+      res.status(500).json({ message: "Failed to fetch merge requests" });
+    }
+  });
+
+  app.post("/api/family/merge-requests/:id/approve", async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      const userId = (req as any).user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const result = await storage.approveFamilyMergeRequest(requestId, userId);
+      
+      if (result.success) {
+        res.json(result);
+      } else {
+        res.status(400).json(result);
+      }
+    } catch (error) {
+      console.error("Error approving merge request:", error);
+      res.status(500).json({ message: "Failed to approve merge request" });
+    }
+  });
+
+  app.post("/api/family/merge-requests/:id/reject", async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      const result = await storage.rejectFamilyMergeRequest(requestId);
+      
+      if (result.success) {
+        res.json(result);
+      } else {
+        res.status(400).json(result);
+      }
+    } catch (error) {
+      console.error("Error rejecting merge request:", error);
+      res.status(500).json({ message: "Failed to reject merge request" });
+    }
+  });
+
   // Test teen notification system demo
   app.post("/api/test-teen-notification", async (req, res) => {
     try {

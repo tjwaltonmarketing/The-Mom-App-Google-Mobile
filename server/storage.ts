@@ -77,6 +77,12 @@ export interface IStorage {
   moveEventsToFamily(fromFamilyId: number, toFamilyId: number): Promise<void>;
   moveTasksToFamily(fromFamilyId: number, toFamilyId: number): Promise<void>;
   
+  // Family Merge Requests
+  createFamilyMergeRequest(partnerEmail: string, requesterId: number): Promise<{ success: boolean; message: string }>;
+  getFamilyMergeRequestsForUser(userEmail: string): Promise<any[]>;
+  approveFamilyMergeRequest(requestId: number, partnerId: number): Promise<{ success: boolean; message: string }>;
+  rejectFamilyMergeRequest(requestId: number): Promise<{ success: boolean; message: string }>;
+  
   // Family Memberships
   createFamilyMembership(membership: InsertFamilyMembership): Promise<FamilyMembership>;
   
@@ -693,6 +699,137 @@ export class DatabaseStorage implements IStorage {
   async deleteMealPlan(id: number): Promise<boolean> {
     const result = await db.delete(mealPlans).where(eq(mealPlans.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // Family Merge Request Implementation
+  async createFamilyMergeRequest(partnerEmail: string, requesterId: number): Promise<{ success: boolean; message: string }> {
+    try {
+      // Check if partner exists
+      const partnerUser = await this.getUserByEmail(partnerEmail);
+      if (!partnerUser) {
+        return { success: false, message: "No account found with that email address." };
+      }
+
+      // Check if partner has a family
+      const partnerFamily = await this.getFamilyByUserId(partnerUser.id);
+      if (!partnerFamily) {
+        return { success: false, message: "Partner doesn't have a family account to merge with." };
+      }
+
+      // Get requester's family
+      const requesterFamily = await this.getFamilyByUserId(requesterId);
+      if (!requesterFamily) {
+        return { success: false, message: "You must have a family account to request a merge." };
+      }
+
+      // Check if they're already in the same family
+      if (partnerFamily.id === requesterFamily.id) {
+        return { success: false, message: "You're already in the same family." };
+      }
+
+      // Store the merge request in notifications table temporarily
+      const notification: InsertNotification = {
+        type: "family_merge_request",
+        title: "Family Merge Request",
+        message: `${partnerUser.email} has requested to merge families with you.`,
+        recipientId: partnerUser.id, // Store as user ID for now
+        relatedTaskId: null,
+        relatedEventId: null,
+        scheduledFor: new Date(),
+        deliveryMethod: "email",
+        status: "pending"
+      };
+
+      await this.createNotification(notification);
+
+      return { success: true, message: "Merge request sent successfully. Your partner will receive a notification to approve or reject the request." };
+    } catch (error) {
+      console.error("Error creating family merge request:", error);
+      return { success: false, message: "Failed to send merge request. Please try again." };
+    }
+  }
+
+  async getFamilyMergeRequestsForUser(userEmail: string): Promise<any[]> {
+    try {
+      const user = await this.getUserByEmail(userEmail);
+      if (!user) return [];
+
+      // Get pending merge requests from notifications
+      const mergeRequests = await db.select()
+        .from(notifications)
+        .where(and(
+          eq(notifications.type, "family_merge_request"),
+          eq(notifications.recipientId, user.id),
+          eq(notifications.status, "pending")
+        ));
+
+      return mergeRequests;
+    } catch (error) {
+      console.error("Error fetching merge requests:", error);
+      return [];
+    }
+  }
+
+  async approveFamilyMergeRequest(requestId: number, partnerId: number): Promise<{ success: boolean; message: string }> {
+    try {
+      // Get the merge request notification
+      const [request] = await db.select()
+        .from(notifications)
+        .where(and(
+          eq(notifications.id, requestId),
+          eq(notifications.type, "family_merge_request")
+        ));
+
+      if (!request) {
+        return { success: false, message: "Merge request not found." };
+      }
+
+      // Get both families
+      const partnerFamily = await this.getFamilyByUserId(partnerId);
+      const requesterFamily = await this.getFamilyByUserId(request.recipientId);
+
+      if (!partnerFamily || !requesterFamily) {
+        return { success: false, message: "One of the families no longer exists." };
+      }
+
+      // Merge the families - move everything to the partner's family
+      await this.moveEventsToFamily(requesterFamily.id, partnerFamily.id);
+      await this.moveTasksToFamily(requesterFamily.id, partnerFamily.id);
+
+      // Update family memberships
+      await db.update(familyMemberships)
+        .set({ familyId: partnerFamily.id })
+        .where(eq(familyMemberships.familyId, requesterFamily.id));
+
+      // Update family members
+      await db.update(familyMembers)
+        .set({ familyId: partnerFamily.id })
+        .where(eq(familyMembers.familyId, requesterFamily.id));
+
+      // Mark the request as approved
+      await db.update(notifications)
+        .set({ status: "approved" })
+        .where(eq(notifications.id, requestId));
+
+      return { success: true, message: "Families merged successfully!" };
+    } catch (error) {
+      console.error("Error approving merge request:", error);
+      return { success: false, message: "Failed to merge families. Please try again." };
+    }
+  }
+
+  async rejectFamilyMergeRequest(requestId: number): Promise<{ success: boolean; message: string }> {
+    try {
+      // Mark the request as rejected
+      await db.update(notifications)
+        .set({ status: "rejected" })
+        .where(eq(notifications.id, requestId));
+
+      return { success: true, message: "Merge request rejected." };
+    } catch (error) {
+      console.error("Error rejecting merge request:", error);
+      return { success: false, message: "Failed to reject merge request." };
+    }
   }
 }
 

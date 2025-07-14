@@ -359,6 +359,31 @@ export const sessions = pgTable("sessions", {
   expire: timestamp("expire").notNull(),
 });
 
+// Family merge requests table
+export const familyMergeRequests = pgTable("family_merge_requests", {
+  id: serial("id").primaryKey(),
+  requesterId: integer("requester_id").references(() => users.id).notNull(),
+  requesterFamilyId: integer("requester_family_id").references(() => families.id).notNull(),
+  partnerEmail: text("partner_email").notNull(),
+  partnerId: integer("partner_id").references(() => users.id), // Null until partner claims request
+  partnerFamilyId: integer("partner_family_id").references(() => families.id), // Null until partner claims request
+  status: text("status").notNull().default("pending"), // "pending", "approved", "rejected", "expired"
+  requestMessage: text("request_message"),
+  approvedAt: timestamp("approved_at"),
+  rejectedAt: timestamp("rejected_at"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertFamilyMergeRequestSchema = createInsertSchema(familyMergeRequests).omit({
+  id: true,
+  partnerId: true,
+  partnerFamilyId: true,
+  approvedAt: true,
+  rejectedAt: true,
+  createdAt: true,
+});
+
 // Relations
 export const familyMembersRelations = relations(familyMembers, ({ many }) => ({
   events: many(events),
@@ -501,3 +526,6 @@ export type InsertTeenTaskHistory = z.infer<typeof insertTeenTaskHistorySchema>;
 
 export type TeenNotificationLog = typeof teenNotificationLog.$inferSelect;
 export type InsertTeenNotificationLog = z.infer<typeof insertTeenNotificationLogSchema>;
+
+export type FamilyMergeRequest = typeof familyMergeRequests.$inferSelect;
+export type InsertFamilyMergeRequest = z.infer<typeof insertFamilyMergeRequestSchema>;

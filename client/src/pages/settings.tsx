@@ -85,6 +85,11 @@ export default function SettingsPage() {
     queryKey: ["/api/family-members"],
   });
 
+  // Fetch pending merge requests
+  const { data: mergeRequests = [] } = useQuery<any[]>({
+    queryKey: ["/api/family/merge-requests"],
+  });
+
   // Form for adding family member
   const form = useForm<AddFamilyMemberForm>({
     resolver: zodResolver(addFamilyMemberSchema),
@@ -197,8 +202,8 @@ export default function SettingsPage() {
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
       toast({
-        title: "Families Merged!",
-        description: data.message || "Your partner's family has been merged with yours.",
+        title: "Merge Request Sent!",
+        description: data.message || "Your partner will receive a notification to approve the merge request.",
       });
       setShowFamilyMergeDialog(false);
       mergeForm.reset();
@@ -207,6 +212,49 @@ export default function SettingsPage() {
       toast({
         title: "Merge Failed",
         description: error.message || "Failed to merge families",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation for approving merge requests
+  const approveMergeRequestMutation = useMutation({
+    mutationFn: async (requestId: number) => {
+      return apiRequest("POST", `/api/family/merge-requests/${requestId}/approve`);
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/family/merge-requests"] });
+      toast({
+        title: "Merge Request Approved!",
+        description: data.message || "Families have been successfully merged.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Approval Failed",
+        description: error.message || "Failed to approve merge request",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mutation for rejecting merge requests
+  const rejectMergeRequestMutation = useMutation({
+    mutationFn: async (requestId: number) => {
+      return apiRequest("POST", `/api/family/merge-requests/${requestId}/reject`);
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/family/merge-requests"] });
+      toast({
+        title: "Merge Request Rejected",
+        description: data.message || "Merge request has been rejected.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Rejection Failed",
+        description: error.message || "Failed to reject merge request",
         variant: "destructive",
       });
     },
@@ -569,6 +617,43 @@ export default function SettingsPage() {
                               className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                             >
                               <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Pending Merge Requests */}
+                {mergeRequests.length > 0 && (
+                  <div className="space-y-2 mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <h4 className="font-medium text-sm text-amber-800 dark:text-amber-200">Pending Family Merge Requests:</h4>
+                    <div className="space-y-3">
+                      {mergeRequests.map((request) => (
+                        <div key={request.id} className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">{request.title}</div>
+                            <div className="text-xs text-muted-foreground">{request.message}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => approveMergeRequestMutation.mutate(request.id)}
+                              disabled={approveMergeRequestMutation.isPending}
+                              className="text-green-600 hover:text-green-700"
+                            >
+                              {approveMergeRequestMutation.isPending ? "Approving..." : "Approve"}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => rejectMergeRequestMutation.mutate(request.id)}
+                              disabled={rejectMergeRequestMutation.isPending}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              {rejectMergeRequestMutation.isPending ? "Rejecting..." : "Reject"}
                             </Button>
                           </div>
                         </div>
@@ -1338,7 +1423,7 @@ export default function SettingsPage() {
                 Merge with Partner's Family
               </DialogTitle>
               <DialogDescription>
-                Combine your family with your partner's family to create a unified family unit. This will merge all family members, tasks, and events.
+                Send a merge request to your partner. They will receive a notification and can approve or reject the request. This will combine all family members, tasks, and events into one unified family.
               </DialogDescription>
             </DialogHeader>
             <Form {...mergeForm}>
@@ -1360,9 +1445,9 @@ export default function SettingsPage() {
                     </FormItem>
                   )}
                 />
-                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    <strong>Important:</strong> This action will merge all family data from your partner's family into yours. Make sure both families are ready for this merge.
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    <strong>How it works:</strong> Your partner will receive a notification and can approve or reject the merge request. If approved, their family data will be combined with yours.
                   </p>
                 </div>
                 <DialogFooter>
@@ -1374,7 +1459,7 @@ export default function SettingsPage() {
                     Cancel
                   </Button>
                   <Button type="submit" disabled={mergeFamilyMutation.isPending}>
-                    {mergeFamilyMutation.isPending ? "Merging..." : "Merge Families"}
+                    {mergeFamilyMutation.isPending ? "Sending Request..." : "Send Merge Request"}
                   </Button>
                 </DialogFooter>
               </form>
