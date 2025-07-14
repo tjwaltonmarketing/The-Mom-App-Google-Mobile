@@ -10,6 +10,7 @@ import {
   groceryItems,
   mealPlans,
   users,
+  userSubscriptions,
   families,
   familyMemberships,
   familyInvites,
@@ -53,6 +54,8 @@ import {
   type InsertTeenTaskHistory,
   type TeenNotificationLog,
   type InsertTeenNotificationLog,
+  type UserSubscription,
+  type InsertUserSubscription,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lt, desc, isNull, or } from "drizzle-orm";
@@ -63,6 +66,17 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserPassword(userId: number, passwordHash: string): Promise<User | undefined>;
+  
+  // Trial and Subscription Management
+  initializeUserTrial(userId: number): Promise<User | undefined>;
+  getUserTrialStatus(userId: number): Promise<{ isActive: boolean; daysRemaining: number; expiresAt: Date | null }>;
+  updateUserSubscription(userId: number, subscriptionData: {
+    plan: string;
+    status: string;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+    nextBillingDate?: Date;
+  }): Promise<User | undefined>;
   
   // Password Reset
   createPasswordResetToken(token: InsertPasswordResetToken): Promise<PasswordResetToken>;
@@ -226,6 +240,69 @@ export class DatabaseStorage implements IStorage {
       .update(passwordResetTokens)
       .set({ isUsed: true })
       .where(eq(passwordResetTokens.id, tokenId));
+  }
+
+  // Trial and Subscription Management using separate table
+  async initializeUserTrial(userId: number): Promise<User | undefined> {
+    const trialStartDate = new Date();
+    const trialEndDate = new Date();
+    trialEndDate.setDate(trialEndDate.getDate() + 14); // 14-day trial
+
+    // Create subscription record in separate table
+    try {
+      await db.insert(userSubscriptions).values({
+        userId,
+        trialStartDate,
+        trialEndDate,
+        subscriptionPlan: "trial",
+        subscriptionStatus: "active"
+      });
+    } catch (error) {
+      console.log("Trial already exists or error:", error);
+    }
+
+    // Return the user
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    return user;
+  }
+
+  async getUserTrialStatus(userId: number): Promise<{ isActive: boolean; daysRemaining: number; expiresAt: Date | null }> {
+    const [subscription] = await db.select().from(userSubscriptions).where(eq(userSubscriptions.userId, userId));
+    
+    if (!subscription || !subscription.trialEndDate) {
+      return { isActive: false, daysRemaining: 0, expiresAt: null };
+    }
+
+    const now = new Date();
+    const expiresAt = subscription.trialEndDate;
+    const daysRemaining = Math.max(0, Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+    const isActive = now < expiresAt && subscription.subscriptionStatus === "active";
+
+    return { isActive, daysRemaining, expiresAt };
+  }
+
+  async updateUserSubscription(userId: number, subscriptionData: {
+    plan: string;
+    status: string;
+    stripeCustomerId?: string;
+    stripeSubscriptionId?: string;
+    nextBillingDate?: Date;
+  }): Promise<User | undefined> {
+    await db
+      .update(userSubscriptions)
+      .set({
+        subscriptionPlan: subscriptionData.plan,
+        subscriptionStatus: subscriptionData.status,
+        stripeCustomerId: subscriptionData.stripeCustomerId,
+        stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
+        nextBillingDate: subscriptionData.nextBillingDate,
+        updatedAt: new Date()
+      })
+      .where(eq(userSubscriptions.userId, userId));
+    
+    // Return the user
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    return user;
   }
 
   // Family Management Methods

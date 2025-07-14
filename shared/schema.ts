@@ -14,6 +14,22 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Separate table for trial and billing information
+export const userSubscriptions = pgTable("user_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  trialStartDate: timestamp("trial_start_date").defaultNow(),
+  trialEndDate: timestamp("trial_end_date"),
+  subscriptionPlan: varchar("subscription_plan", { length: 50 }).default("trial"), // "trial", "individual", "family", "expired"
+  subscriptionStatus: varchar("subscription_status", { length: 50 }).default("active"), // "active", "cancelled", "past_due", "expired"
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+  stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
+  lastPaymentDate: timestamp("last_payment_date"),
+  nextBillingDate: timestamp("next_billing_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const passwordResetTokens = pgTable("password_reset_tokens", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
@@ -352,6 +368,12 @@ export const insertFamilyMembershipSchema = createInsertSchema(familyMemberships
   joinedAt: true,
 });
 
+export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Sessions table for authentication
 export const sessions = pgTable("sessions", {
   sid: varchar("sid").primaryKey(),
@@ -526,6 +548,9 @@ export type InsertTeenTaskHistory = z.infer<typeof insertTeenTaskHistorySchema>;
 
 export type TeenNotificationLog = typeof teenNotificationLog.$inferSelect;
 export type InsertTeenNotificationLog = z.infer<typeof insertTeenNotificationLogSchema>;
+
+export type UserSubscription = typeof userSubscriptions.$inferSelect;
+export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
 
 export type FamilyMergeRequest = typeof familyMergeRequests.$inferSelect;
 export type InsertFamilyMergeRequest = z.infer<typeof insertFamilyMergeRequestSchema>;

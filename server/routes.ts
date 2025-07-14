@@ -1280,8 +1280,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Trial and subscription endpoints
+  app.get("/api/trial/status", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Calculate trial status based on user creation date
+      const trialStartDate = user.createdAt;
+      const trialEndDate = new Date(trialStartDate);
+      trialEndDate.setDate(trialEndDate.getDate() + 14); // 14-day trial
+
+      const now = new Date();
+      const daysRemaining = Math.max(0, Math.ceil((trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+      const isActive = now < trialEndDate;
+
+      res.json({
+        isActive,
+        daysRemaining,
+        trialStartDate,
+        trialEndDate,
+        subscriptionPlan: "trial",
+        subscriptionStatus: isActive ? "active" : "expired"
+      });
+    } catch (error) {
+      console.error("Error fetching trial status:", error);
+      res.status(500).json({ message: "Failed to fetch trial status" });
+    }
+  });
+
+  app.post("/api/billing/upgrade", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const { plan, stripeToken } = req.body;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      // Here you would integrate with Stripe to process payment
+      // For now, return a mock response
+      res.json({
+        success: true,
+        message: "Subscription upgraded successfully",
+        plan,
+        status: "active"
+      });
+    } catch (error) {
+      console.error("Error upgrading subscription:", error);
+      res.status(500).json({ message: "Failed to upgrade subscription" });
+    }
+  });
+
   // Family merge request endpoints
-  app.post("/api/family/merge", async (req, res) => {
+  app.post("/api/family/merge", requireAuth, async (req, res) => {
     try {
       const { partnerEmail } = req.body;
       
@@ -1289,7 +1348,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Partner email is required" });
       }
 
-      const userId = (req as any).user?.id;
+      const userId = req.session.userId;
       if (!userId) {
         return res.status(401).json({ message: "User not authenticated" });
       }
@@ -1307,14 +1366,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/family/merge-requests", async (req, res) => {
+  app.get("/api/family/merge-requests", requireAuth, async (req, res) => {
     try {
-      const userEmail = (req as any).user?.email;
-      if (!userEmail) {
+      const userId = req.session.userId;
+      if (!userId) {
         return res.status(401).json({ message: "User not authenticated" });
       }
 
-      const requests = await storage.getFamilyMergeRequestsForUser(userEmail);
+      // Get user email from database
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      const requests = await storage.getFamilyMergeRequestsForUser(user.email);
       res.json(requests);
     } catch (error) {
       console.error("Error fetching merge requests:", error);
@@ -1322,10 +1387,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/family/merge-requests/:id/approve", async (req, res) => {
+  app.post("/api/family/merge-requests/:id/approve", requireAuth, async (req, res) => {
     try {
       const requestId = parseInt(req.params.id);
-      const userId = (req as any).user?.id;
+      const userId = req.session.userId;
       
       if (!userId) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -1344,7 +1409,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/family/merge-requests/:id/reject", async (req, res) => {
+  app.post("/api/family/merge-requests/:id/reject", requireAuth, async (req, res) => {
     try {
       const requestId = parseInt(req.params.id);
       const result = await storage.rejectFamilyMergeRequest(requestId);

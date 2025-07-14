@@ -90,6 +90,11 @@ export default function SettingsPage() {
     queryKey: ["/api/family/merge-requests"],
   });
 
+  // Fetch trial status
+  const { data: trialStatus } = useQuery<any>({
+    queryKey: ["/api/trial/status"],
+  });
+
   // Form for adding family member
   const form = useForm<AddFamilyMemberForm>({
     resolver: zodResolver(addFamilyMemberSchema),
@@ -747,6 +752,86 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="account" className="space-y-6">
+            {/* Trial Status and Billing Section */}
+            {trialStatus && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-primary" />
+                    Trial Status
+                  </CardTitle>
+                  <CardDescription>
+                    Your 14-day free trial status
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                    <div>
+                      <div className="font-medium">
+                        {trialStatus.isActive ? (
+                          <span className="text-green-600">Trial Active</span>
+                        ) : (
+                          <span className="text-red-600">Trial Expired</span>
+                        )}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {trialStatus.isActive ? (
+                          `${trialStatus.daysRemaining} days remaining`
+                        ) : (
+                          "Your trial has expired"
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">Free Trial</div>
+                      <div className="text-sm text-muted-foreground">
+                        {trialStatus.isActive ? "Until " : "Expired on "}
+                        {new Date(trialStatus.trialEndDate).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {!trialStatus.isActive && (
+                    <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                      <div className="font-medium text-orange-800 dark:text-orange-200">
+                        Trial Expired
+                      </div>
+                      <div className="text-sm text-orange-700 dark:text-orange-300">
+                        Please upgrade to continue using The Mom App
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => {
+                        toast({
+                          title: "Individual Plan",
+                          description: "$9.99/month - Perfect for single parents",
+                        });
+                      }}
+                    >
+                      Individual Plan - $9.99/month
+                    </Button>
+                    <Button 
+                      variant="default" 
+                      className="w-full"
+                      onClick={() => {
+                        toast({
+                          title: "Family Plan",
+                          description: "$19.99/month - Up to 4 family members",
+                        });
+                      }}
+                    >
+                      Family Plan - $19.99/month
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
