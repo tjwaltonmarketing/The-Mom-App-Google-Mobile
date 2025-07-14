@@ -36,7 +36,7 @@ export function TeenPointManager({ teenId, teenName }: TeenPointManagerProps) {
 
   // Get teen points data
   const { data: teenPoints, isLoading, error } = useQuery<TeenPointsData>({
-    queryKey: ["/api/teen/points", teenId],
+    queryKey: [`/api/teen/points/${teenId}`],
     enabled: !!teenId,
     retry: 1,
   });
@@ -55,7 +55,7 @@ export function TeenPointManager({ teenId, teenName }: TeenPointManagerProps) {
         title: "Points Deducted",
         description: `Deducted ${data.deducted} points from ${teenName}. New balance: ${data.newPoints}`,
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/teen/points", teenId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/teen/points/${teenId}`] });
       setShowDeductDialog(false);
       setDeductAmount("");
       setDeductReason("");
@@ -82,7 +82,7 @@ export function TeenPointManager({ teenId, teenName }: TeenPointManagerProps) {
         title: "Points Reset",
         description: `Reset ${teenName}'s points from ${data.previousPoints} to 0`,
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/teen/points", teenId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/teen/points/${teenId}`] });
       setShowResetDialog(false);
       setResetReason("");
     },
