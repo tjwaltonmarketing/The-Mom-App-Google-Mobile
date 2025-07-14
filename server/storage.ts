@@ -847,7 +847,17 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async approveFamilyMergeRequest(requestId: number, partnerId: number): Promise<{ success: boolean; message: string }> {
+  async getFamilyMergeRequestById(requestId: number): Promise<any> {
+    const [request] = await db.select()
+      .from(notifications)
+      .where(and(
+        eq(notifications.id, requestId),
+        eq(notifications.type, "family_merge_request")
+      ));
+    return request;
+  }
+
+  async approveFamilyMergeRequest(requestId: number, partnerId: number, billingOptions?: { billingStrategy: string; primaryBiller: number }): Promise<{ success: boolean; message: string }> {
     try {
       // Get the merge request notification
       const [request] = await db.select()
@@ -867,6 +877,19 @@ export class DatabaseStorage implements IStorage {
 
       if (!partnerFamily || !requesterFamily) {
         return { success: false, message: "One of the families no longer exists." };
+      }
+
+      // Handle billing transition
+      if (billingOptions) {
+        console.log(`Family merge approved with billing strategy: ${billingOptions.billingStrategy}, primary biller: ${billingOptions.primaryBiller}`);
+        
+        // Here you would implement billing transition logic:
+        // 1. If upgrading to family plan, initiate Stripe subscription upgrade
+        // 2. If keeping existing plan, ensure primary biller takes over billing
+        // 3. Cancel secondary subscription if needed
+        
+        // For now, log the billing decision
+        console.log(`Billing will be handled by user ID: ${billingOptions.primaryBiller}`);
       }
 
       // Merge the families - move everything to the partner's family

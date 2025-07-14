@@ -1391,15 +1391,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const requestId = parseInt(req.params.id);
       const userId = req.session.userId;
+      const { billingPreference } = req.body; // 'keep_mine', 'keep_theirs', or 'upgrade_to_family'
       
       if (!userId) {
         return res.status(401).json({ message: "User not authenticated" });
       }
 
-      const result = await storage.approveFamilyMergeRequest(requestId, userId);
+      // Get both users' trial status to determine billing approach
+      const currentUser = await storage.getUserById(userId);
+      const mergeRequest = await storage.getFamilyMergeRequestById(requestId);
+      
+      if (!currentUser || !mergeRequest) {
+        return res.status(404).json({ message: "User or merge request not found" });
+      }
+
+      const requesterUser = await storage.getUserByEmail(mergeRequest.requesterEmail);
+      if (!requesterUser) {
+        return res.status(404).json({ message: "Requester not found" });
+      }
+
+      // Calculate trial status for both users
+      const currentUserTrialEnd = new Date(currentUser.createdAt);
+      currentUserTrialEnd.setDate(currentUserTrialEnd.getDate() + 14);
+      const currentUserTrialActive = new Date() < currentUserTrialEnd;
+
+      const requesterTrialEnd = new Date(requesterUser.createdAt);
+      requesterTrialEnd.setDate(requesterTrialEnd.getDate() + 14);
+      const requesterTrialActive = new Date() < requesterTrialEnd;
+
+      // Determine billing strategy
+      let billingStrategy = 'trial'; // default to trial
+      let primaryBiller = currentUser.id;
+      
+      if (billingPreference === 'keep_mine') {
+        primaryBiller = currentUser.id;
+      } else if (billingPreference === 'keep_theirs') {
+        primaryBiller = requesterUser.id;
+      } else if (billingPreference === 'upgrade_to_family') {
+        // Choose the user with longer trial remaining or current user as default
+        if (currentUserTrialActive && !requesterTrialActive) {
+          primaryBiller = currentUser.id;
+        } else if (requesterTrialActive && !currentUserTrialActive) {
+          primaryBiller = requesterUser.id;
+        } else {
+          // Both have same trial status, default to current user
+          primaryBiller = currentUser.id;
+        }
+      }
+
+      const result = await storage.approveFamilyMergeRequest(requestId, userId, {
+        billingStrategy,
+        primaryBiller
+      });
       
       if (result.success) {
-        res.json(result);
+        res.json({
+          ...result,
+          billingInfo: {
+            primaryBiller,
+            strategy: billingStrategy,
+            trialStatus: {
+              currentUser: currentUserTrialActive,
+              requester: requesterTrialActive
+            }
+          }
+        });
       } else {
         res.status(400).json(result);
       }

@@ -79,6 +79,9 @@ export default function SettingsPage() {
   const [showParentInviteModal, setShowParentInviteModal] = useState(false);
   const [showFamilyMergeDialog, setShowFamilyMergeDialog] = useState(false);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
+  const [showBillingDecisionDialog, setShowBillingDecisionDialog] = useState(false);
+  const [pendingMergeRequestId, setPendingMergeRequestId] = useState<number | null>(null);
+  const [billingPreference, setBillingPreference] = useState<string>("keep_mine");
 
   // Fetch existing family members
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
@@ -224,15 +227,29 @@ export default function SettingsPage() {
 
   // Mutation for approving merge requests
   const approveMergeRequestMutation = useMutation({
-    mutationFn: async (requestId: number) => {
-      return apiRequest("POST", `/api/family/merge-requests/${requestId}/approve`);
+    mutationFn: async ({ requestId, billingPreference }: { requestId: number; billingPreference: string }) => {
+      return apiRequest("POST", `/api/family/merge-requests/${requestId}/approve`, { billingPreference });
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
       queryClient.invalidateQueries({ queryKey: ["/api/family/merge-requests"] });
+      setShowBillingDecisionDialog(false);
+      setPendingMergeRequestId(null);
+      
+      const billingInfo = data.billingInfo;
+      let billingMessage = "Families have been successfully merged.";
+      
+      if (billingInfo) {
+        if (billingInfo.strategy === 'trial') {
+          billingMessage += " Trial billing will be managed by the designated account.";
+        } else {
+          billingMessage += ` Billing will be handled by the ${billingInfo.primaryBiller === data.currentUserId ? 'primary' : 'secondary'} account.`;
+        }
+      }
+      
       toast({
         title: "Merge Request Approved!",
-        description: data.message || "Families have been successfully merged.",
+        description: billingMessage,
       });
     },
     onError: (error: any) => {
@@ -645,7 +662,10 @@ export default function SettingsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => approveMergeRequestMutation.mutate(request.id)}
+                              onClick={() => {
+                                setPendingMergeRequestId(request.id);
+                                setShowBillingDecisionDialog(true);
+                              }}
                               disabled={approveMergeRequestMutation.isPending}
                               className="text-green-600 hover:text-green-700"
                             >
@@ -1549,6 +1569,120 @@ export default function SettingsPage() {
                 </DialogFooter>
               </form>
             </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Billing Decision Dialog */}
+        <Dialog open={showBillingDecisionDialog} onOpenChange={setShowBillingDecisionDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5 text-primary" />
+                Choose Billing Plan
+              </DialogTitle>
+              <DialogDescription>
+                When merging families, you need to decide how billing will be handled. This affects who pays for the subscription and what plan you'll use.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="grid gap-3">
+                <div 
+                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                    billingPreference === 'keep_mine' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setBillingPreference('keep_mine')}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      billingPreference === 'keep_mine' ? 'border-primary' : 'border-gray-300'
+                    }`}>
+                      {billingPreference === 'keep_mine' && <div className="w-2 h-2 bg-primary rounded-full" />}
+                    </div>
+                    <div>
+                      <div className="font-medium">Keep My Billing</div>
+                      <div className="text-sm text-muted-foreground">
+                        Your trial/subscription continues and covers both families
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div 
+                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                    billingPreference === 'keep_theirs' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setBillingPreference('keep_theirs')}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      billingPreference === 'keep_theirs' ? 'border-primary' : 'border-gray-300'
+                    }`}>
+                      {billingPreference === 'keep_theirs' && <div className="w-2 h-2 bg-primary rounded-full" />}
+                    </div>
+                    <div>
+                      <div className="font-medium">Keep Their Billing</div>
+                      <div className="text-sm text-muted-foreground">
+                        Their trial/subscription continues and covers both families
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div 
+                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                    billingPreference === 'upgrade_to_family' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setBillingPreference('upgrade_to_family')}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      billingPreference === 'upgrade_to_family' ? 'border-primary' : 'border-gray-300'
+                    }`}>
+                      {billingPreference === 'upgrade_to_family' && <div className="w-2 h-2 bg-primary rounded-full" />}
+                    </div>
+                    <div>
+                      <div className="font-medium">Upgrade to Family Plan</div>
+                      <div className="text-sm text-muted-foreground">
+                        $19.99/month for up to 4 users with enhanced features
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Important:</h4>
+                <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                  <li>• The merged family will share all events, tasks, and data</li>
+                  <li>• Only one subscription will remain active</li>
+                  <li>• You can change your plan later in Account Settings</li>
+                </ul>
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowBillingDecisionDialog(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (pendingMergeRequestId) {
+                    approveMergeRequestMutation.mutate({
+                      requestId: pendingMergeRequestId,
+                      billingPreference
+                    });
+                  }
+                }}
+                disabled={approveMergeRequestMutation.isPending}
+              >
+                {approveMergeRequestMutation.isPending ? "Approving..." : "Approve & Merge"}
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </main>
