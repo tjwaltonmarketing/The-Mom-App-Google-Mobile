@@ -2254,10 +2254,29 @@ themomapp.us@gmail.com`;
         return res.status(400).json({ error: "Invalid teen ID" });
       }
       
-      // Get teen profile
+      // Get teen profile or create default demo data
       let teenProfile = teenProfiles.get(teenId);
       if (!teenProfile) {
-        return res.status(404).json({ error: "Teen not found" });
+        // Create default demo teen profile for ID 123
+        if (teenId === 123) {
+          teenProfile = {
+            id: 123,
+            firstName: "Adri",
+            lastName: "Walton",
+            username: "adri_w",
+            points: 285,
+            streak: 12,
+            favoriteColor: "purple",
+            avatar: null,
+            family: {
+              id: 1,
+              name: "Walton"
+            }
+          };
+          teenProfiles.set(teenId, teenProfile);
+        } else {
+          return res.status(404).json({ error: "Teen not found" });
+        }
       }
       
       res.json({

@@ -35,9 +35,10 @@ export function TeenPointManager({ teenId, teenName }: TeenPointManagerProps) {
   const [resetReason, setResetReason] = useState("");
 
   // Get teen points data
-  const { data: teenPoints, isLoading } = useQuery<TeenPointsData>({
+  const { data: teenPoints, isLoading, error } = useQuery<TeenPointsData>({
     queryKey: ["/api/teen/points", teenId],
     enabled: !!teenId,
+    retry: 1,
   });
 
   // Deduct points mutation
@@ -141,7 +142,14 @@ export function TeenPointManager({ teenId, teenName }: TeenPointManagerProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500">Teen not found or no points data available.</p>
+          <p className="text-gray-500">
+            {error ? `Error loading teen data: ${error.message}` : "Teen not found or no points data available."}
+          </p>
+          {error && (
+            <div className="mt-2 text-sm text-red-600 dark:text-red-400">
+              Please ensure you're logged in as a parent to manage teen points.
+            </div>
+          )}
         </CardContent>
       </Card>
     );
