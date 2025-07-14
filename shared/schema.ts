@@ -211,55 +211,55 @@ export const familyInvites = pgTable("family_invites", {
 
 export const teenProfiles = pgTable("teen_profiles", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).notNull().unique(),
-  familyMemberId: integer("family_member_id").references(() => familyMembers.id).notNull(),
-  firstName: varchar("first_name", { length: 100 }).notNull(),
-  lastName: varchar("last_name", { length: 100 }),
+  userId: integer("userId").references(() => users.id).notNull().unique(),
+  familyMemberId: integer("familyMemberId").references(() => familyMembers.id).notNull(),
+  firstName: varchar("firstName", { length: 100 }).notNull(),
+  lastName: varchar("lastName", { length: 100 }),
   username: varchar("username", { length: 50 }).notNull().unique(),
   avatar: text("avatar"), // base64 image data - persistent storage
   age: integer("age"),
-  favoriteColor: varchar("favorite_color", { length: 20 }).default("purple"),
+  favoriteColor: varchar("favoriteColor", { length: 20 }).default("purple"),
   points: integer("points").default(0),
   streak: integer("streak").default(0), // consecutive days of completing tasks
-  lastActivityDate: timestamp("last_activity_date"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  lastActivityDate: timestamp("lastActivityDate"),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow(),
 });
 
 export const teenNotificationSettings = pgTable("teen_notification_settings", {
   id: serial("id").primaryKey(),
-  teenProfileId: integer("teen_profile_id").references(() => teenProfiles.id).notNull().unique(),
-  taskReminders: boolean("task_reminders").default(true),
-  eventNotifications: boolean("event_notifications").default(true),
-  dailyDigest: boolean("daily_digest").default(true),
-  quietHours: boolean("quiet_hours").default(true),
-  quietStart: varchar("quiet_start", { length: 5 }).default("22:00"),
-  quietEnd: varchar("quiet_end", { length: 5 }).default("08:00"),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  teenProfileId: integer("teenProfileId").references(() => teenProfiles.id).notNull().unique(),
+  taskReminders: boolean("taskReminders").default(true),
+  eventNotifications: boolean("eventNotifications").default(true),
+  dailyDigest: boolean("dailyDigest").default(true),
+  quietHours: boolean("quietHours").default(true),
+  quietStart: varchar("quietStart", { length: 5 }).default("22:00"),
+  quietEnd: varchar("quietEnd", { length: 5 }).default("08:00"),
+  updatedAt: timestamp("updatedAt").defaultNow(),
 });
 
 export const teenTaskHistory = pgTable("teen_task_history", {
   id: serial("id").primaryKey(),
-  teenProfileId: integer("teen_profile_id").references(() => teenProfiles.id).notNull(),
-  taskId: integer("task_id").references(() => tasks.id).notNull(),
-  pointsEarned: integer("points_earned").default(0),
-  completedAt: timestamp("completed_at").defaultNow(),
-  streakDay: integer("streak_day"), // Which day of their streak this was
+  teenProfileId: integer("teenProfileId").references(() => teenProfiles.id).notNull(),
+  taskId: integer("taskId").references(() => tasks.id).notNull(),
+  pointsEarned: integer("pointsEarned").default(0),
+  completedAt: timestamp("completedAt").defaultNow(),
+  streakDay: integer("streakDay"), // Which day of their streak this was
 });
 
 export const teenNotificationLog = pgTable("teen_notification_log", {
   id: serial("id").primaryKey(),
-  teenProfileId: integer("teen_profile_id").references(() => teenProfiles.id).notNull(),
-  taskId: integer("task_id").references(() => tasks.id),
-  notificationType: text("notification_type").notNull(), // "task_reminder", "task_overdue", etc.
-  templateId: varchar("template_id", { length: 50 }).notNull(),
+  teenProfileId: integer("teenProfileId").references(() => teenProfiles.id).notNull(),
+  taskId: integer("taskId").references(() => tasks.id),
+  notificationType: text("notificationType").notNull(), // "task_reminder", "task_overdue", etc.
+  templateId: varchar("templateId", { length: 50 }).notNull(),
   title: text("title").notNull(),
   message: text("message").notNull(),
-  scheduledFor: timestamp("scheduled_for").notNull(),
-  sentAt: timestamp("sent_at"),
-  wasDelivered: boolean("was_delivered").default(false),
-  wasOpened: boolean("was_opened").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
+  scheduledFor: timestamp("scheduledFor").notNull(),
+  sentAt: timestamp("sentAt"),
+  wasDelivered: boolean("wasDelivered").default(false),
+  wasOpened: boolean("wasOpened").default(false),
+  createdAt: timestamp("createdAt").defaultNow(),
 });
 
 export const insertFamilyMemberSchema = createInsertSchema(familyMembers).omit({
