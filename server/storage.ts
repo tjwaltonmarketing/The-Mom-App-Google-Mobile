@@ -931,6 +931,130 @@ export class DatabaseStorage implements IStorage {
       return { success: false, message: "Failed to reject merge request." };
     }
   }
+
+  // Teen Profile methods
+  async createTeenProfile(profile: InsertTeenProfile): Promise<TeenProfile> {
+    const [teenProfile] = await db.insert(teenProfiles).values(profile).returning();
+    return teenProfile;
+  }
+
+  async getTeenProfile(userId: number): Promise<TeenProfile | undefined> {
+    const [profile] = await db.select().from(teenProfiles).where(eq(teenProfiles.userId, userId));
+    return profile || undefined;
+  }
+
+  async updateTeenPoints(teenProfileId: number, points: number): Promise<void> {
+    await db.update(teenProfiles)
+      .set({ points, updatedAt: new Date() })
+      .where(eq(teenProfiles.id, teenProfileId));
+  }
+
+  async updateTeenStreak(teenProfileId: number, streak: number): Promise<void> {
+    await db.update(teenProfiles)
+      .set({ streak, updatedAt: new Date() })
+      .where(eq(teenProfiles.id, teenProfileId));
+  }
+
+  // Teen notification settings
+  async createTeenNotificationSettings(settings: InsertTeenNotificationSettings): Promise<TeenNotificationSettings> {
+    const [notificationSettings] = await db.insert(teenNotificationSettings).values(settings).returning();
+    return notificationSettings;
+  }
+
+  async getTeenNotificationSettings(teenProfileId: number): Promise<TeenNotificationSettings | undefined> {
+    const [settings] = await db.select().from(teenNotificationSettings).where(eq(teenNotificationSettings.teenProfileId, teenProfileId));
+    return settings || undefined;
+  }
+
+  async updateTeenNotificationSettings(teenProfileId: number, settings: Partial<TeenNotificationSettings>): Promise<void> {
+    await db.update(teenNotificationSettings)
+      .set({ ...settings, updatedAt: new Date() })
+      .where(eq(teenNotificationSettings.teenProfileId, teenProfileId));
+  }
+
+  // Teen task methods
+  async getTeenTasks(teenProfileId: number): Promise<Task[]> {
+    const tasks = await db.select().from(tasks).where(eq(tasks.teenId, teenProfileId));
+    return tasks;
+  }
+
+  async getTeenStats(teenProfileId: number): Promise<{ weeklyPoints: number; streak: number; completedToday: number }> {
+    const profile = await this.getTeenProfile(teenProfileId);
+    if (!profile) return { weeklyPoints: 0, streak: 0, completedToday: 0 };
+    
+    const today = new Date();
+    const weekStart = new Date(today.setDate(today.getDate() - today.getDay()));
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    const weeklyTasks = await db.select()
+      .from(teenTaskHistory)
+      .where(
+        and(
+          eq(teenTaskHistory.teenProfileId, teenProfileId),
+          gte(teenTaskHistory.completedAt, weekStart)
+        )
+      );
+    
+    const todayTasks = await db.select()
+      .from(teenTaskHistory)
+      .where(
+        and(
+          eq(teenTaskHistory.teenProfileId, teenProfileId),
+          gte(teenTaskHistory.completedAt, todayStart)
+        )
+      );
+    
+    const weeklyPoints = weeklyTasks.reduce((sum, task) => sum + (task.pointsEarned || 0), 0);
+    
+    return {
+      weeklyPoints,
+      streak: profile.streak,
+      completedToday: todayTasks.length
+    };
+  }
+
+  async completeTeenTask(taskId: number, teenProfileId: number): Promise<{ task: Task; pointsEarned: number }> {
+    const task = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
+    if (!task[0]) throw new Error("Task not found");
+    
+    const pointsEarned = task[0].points || 5; // Default 5 points
+    
+    // Update task as completed
+    await db.update(tasks)
+      .set({ isCompleted: true, completedBy: teenProfileId, completedAt: new Date() })
+      .where(eq(tasks.id, taskId));
+    
+    // Update teen points
+    const profile = await this.getTeenProfile(teenProfileId);
+    if (profile) {
+      await this.updateTeenPoints(profile.id, (profile.points || 0) + pointsEarned);
+    }
+    
+    // Log task completion
+    await this.createTeenTaskHistory({
+      teenProfileId,
+      taskId,
+      pointsEarned,
+      streakDay: profile?.streak || 0
+    });
+    
+    return { task: task[0], pointsEarned };
+  }
+
+  async createTeenTaskHistory(history: InsertTeenTaskHistory): Promise<TeenTaskHistory> {
+    const [taskHistory] = await db.insert(teenTaskHistory).values(history).returning();
+    return taskHistory;
+  }
+
+  async logTeenNotification(log: InsertTeenNotificationLog): Promise<TeenNotificationLog> {
+    const [notificationLog] = await db.insert(teenNotificationLog).values(log).returning();
+    return notificationLog;
+  }
+
+  async getTask(id: number): Promise<Task | undefined> {
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+    return task || undefined;
+  }
 }
 
 /* Temporarily disabled MemStorage to fix TypeScript errors

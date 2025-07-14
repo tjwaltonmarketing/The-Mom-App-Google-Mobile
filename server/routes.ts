@@ -2416,29 +2416,39 @@ themomapp.us@gmail.com`;
         return res.status(401).json({ error: "Not authenticated" });
       }
       
-      // Get stored profile or create default
-      let teenProfile = teenProfiles.get(teenId);
+      // Get stored profile from database or create default
+      let teenProfile = await storage.getTeenProfile(teenId);
       if (!teenProfile) {
-        teenProfile = {
-          id: teenId,
+        teenProfile = await storage.createTeenProfile({
+          userId: teenId,
+          familyMemberId: 1,
           firstName: "Adri",
           lastName: "Walton",
           username: "adri_w",
+          age: 16,
+          favoriteColor: "purple",
           points: 285,
           streak: 12,
-          favoriteColor: "purple",
-          avatar: null,
-          family: {
-            id: 1,
-            name: "Walton"
-          }
-        };
-        teenProfiles.set(teenId, teenProfile);
+          lastActivityDate: new Date()
+        });
       }
       
       console.log("Fetching teen profile for ID:", teenId, "Has avatar:", !!teenProfile.avatar);
       
-      res.json(teenProfile);
+      res.json({
+        id: teenProfile.id,
+        firstName: teenProfile.firstName,
+        lastName: teenProfile.lastName,
+        username: teenProfile.username,
+        points: teenProfile.points,
+        streak: teenProfile.streak,
+        favoriteColor: teenProfile.favoriteColor,
+        avatar: teenProfile.avatar,
+        family: {
+          id: 1,
+          name: "Walton"
+        }
+      });
     } catch (error: any) {
       console.error("Teen auth check error:", error);
       res.status(500).json({ error: "Failed to get teen user" });
@@ -2542,26 +2552,24 @@ themomapp.us@gmail.com`;
         return res.status(400).json({ error: "Invalid teen ID" });
       }
       
-      // Get teen profile or create default demo data
-      let teenProfile = teenProfiles.get(teenId);
+      // Get teen profile from database or create default demo data
+      let teenProfile = await storage.getTeenProfile(teenId);
+      
       if (!teenProfile) {
         // Create default demo teen profile for ID 123
         if (teenId === 123) {
-          teenProfile = {
-            id: 123,
+          teenProfile = await storage.createTeenProfile({
+            userId: 123,
+            familyMemberId: 1,
             firstName: "Adri",
             lastName: "Walton",
             username: "adri_w",
+            age: 16,
+            favoriteColor: "purple",
             points: 285,
             streak: 12,
-            favoriteColor: "purple",
-            avatar: null,
-            family: {
-              id: 1,
-              name: "Walton"
-            }
-          };
-          teenProfiles.set(teenId, teenProfile);
+            lastActivityDate: new Date()
+          });
         } else {
           return res.status(404).json({ error: "Teen not found" });
         }
@@ -2573,7 +2581,7 @@ themomapp.us@gmail.com`;
         username: teenProfile.username,
         points: teenProfile.points,
         streak: teenProfile.streak,
-        lastActivity: new Date().toISOString()
+        lastActivity: teenProfile.lastActivityDate?.toISOString() || new Date().toISOString()
       });
     } catch (error: any) {
       console.error("Get teen points error:", error);
@@ -2595,8 +2603,8 @@ themomapp.us@gmail.com`;
         return res.status(400).json({ error: "Deduction amount must be positive" });
       }
       
-      // Get teen profile
-      let teenProfile = teenProfiles.get(teenId);
+      // Get teen profile from database
+      let teenProfile = await storage.getTeenProfile(teenId);
       if (!teenProfile) {
         return res.status(404).json({ error: "Teen not found" });
       }
@@ -2606,9 +2614,8 @@ themomapp.us@gmail.com`;
       const newPoints = Math.max(0, previousPoints - amount);
       const actualDeduction = previousPoints - newPoints;
       
-      // Update teen profile
-      teenProfile.points = newPoints;
-      teenProfiles.set(teenId, teenProfile);
+      // Update teen profile in database
+      await storage.updateTeenPoints(teenProfile.id, newPoints);
       
       console.log(`Parent deducted ${actualDeduction} points from teen ${teenId}. Reason: ${reason || 'No reason provided'}`);
       
@@ -2635,17 +2642,16 @@ themomapp.us@gmail.com`;
         return res.status(400).json({ error: "Invalid teen ID" });
       }
       
-      // Get teen profile
-      let teenProfile = teenProfiles.get(teenId);
+      // Get teen profile from database
+      let teenProfile = await storage.getTeenProfile(teenId);
       if (!teenProfile) {
         return res.status(404).json({ error: "Teen not found" });
       }
       
       const previousPoints = teenProfile.points;
       
-      // Reset points to zero
-      teenProfile.points = 0;
-      teenProfiles.set(teenId, teenProfile);
+      // Reset points to zero in database
+      await storage.updateTeenPoints(teenProfile.id, 0);
       
       console.log(`Parent reset teen ${teenId} points from ${previousPoints} to 0. Reason: ${reason || 'No reason provided'}`);
       
