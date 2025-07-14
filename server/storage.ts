@@ -72,6 +72,10 @@ export interface IStorage {
   // Family Management
   createFamily(family: InsertFamily): Promise<Family>;
   getFamilyByUserId(userId: number): Promise<Family | undefined>;
+  getUserFamily(userId: number): Promise<Family | undefined>;
+  updateUserFamily(userId: number, familyId: number): Promise<void>;
+  moveEventsToFamily(fromFamilyId: number, toFamilyId: number): Promise<void>;
+  moveTasksToFamily(fromFamilyId: number, toFamilyId: number): Promise<void>;
   
   // Family Memberships
   createFamilyMembership(membership: InsertFamilyMembership): Promise<FamilyMembership>;
@@ -79,6 +83,7 @@ export interface IStorage {
   // Family Members
   getFamilyMembers(): Promise<FamilyMember[]>;
   getFamilyMembersByFamily(familyId: number): Promise<FamilyMember[]>;
+  getFamilyMembersByFamilyId(familyId: number): Promise<FamilyMember[]>;
   getFamilyMember(id: number): Promise<FamilyMember | undefined>;
   createFamilyMember(member: InsertFamilyMember): Promise<FamilyMember>;
   updateFamilyMember(id: number, updates: Partial<InsertFamilyMember>): Promise<FamilyMember | undefined>;
@@ -240,6 +245,51 @@ export class DatabaseStorage implements IStorage {
     return family || undefined;
   }
 
+  async getUserFamily(userId: number): Promise<Family | undefined> {
+    return this.getFamilyByUserId(userId);
+  }
+
+  async updateUserFamily(userId: number, familyId: number): Promise<void> {
+    await db
+      .update(familyMemberships)
+      .set({ familyId })
+      .where(eq(familyMemberships.userId, userId));
+  }
+
+  async moveEventsToFamily(fromFamilyId: number, toFamilyId: number): Promise<void> {
+    // Move all events from one family to another
+    const membersFromFamily = await this.getFamilyMembersByFamilyId(fromFamilyId);
+    const membersToFamily = await this.getFamilyMembersByFamilyId(toFamilyId);
+    
+    // For simplicity, reassign events to the first member of the target family
+    const targetMember = membersToFamily[0];
+    if (targetMember) {
+      for (const member of membersFromFamily) {
+        await db
+          .update(events)
+          .set({ assignedTo: targetMember.id })
+          .where(eq(events.assignedTo, member.id));
+      }
+    }
+  }
+
+  async moveTasksToFamily(fromFamilyId: number, toFamilyId: number): Promise<void> {
+    // Move all tasks from one family to another
+    const membersFromFamily = await this.getFamilyMembersByFamilyId(fromFamilyId);
+    const membersToFamily = await this.getFamilyMembersByFamilyId(toFamilyId);
+    
+    // For simplicity, reassign tasks to the first member of the target family
+    const targetMember = membersToFamily[0];
+    if (targetMember) {
+      for (const member of membersFromFamily) {
+        await db
+          .update(tasks)
+          .set({ assignedTo: targetMember.id })
+          .where(eq(tasks.assignedTo, member.id));
+      }
+    }
+  }
+
   async createFamilyMembership(insertMembership: InsertFamilyMembership): Promise<FamilyMembership> {
     const [membership] = await db.insert(familyMemberships).values(insertMembership).returning();
     return membership;
@@ -255,6 +305,10 @@ export class DatabaseStorage implements IStorage {
         eq(familyMembers.familyId, familyId),
         eq(familyMembers.isActive, true)
       ));
+  }
+
+  async getFamilyMembersByFamilyId(familyId: number): Promise<FamilyMember[]> {
+    return this.getFamilyMembersByFamily(familyId);
   }
 
   async getFamilyMember(id: number): Promise<FamilyMember | undefined> {

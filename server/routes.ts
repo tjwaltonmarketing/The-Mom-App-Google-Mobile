@@ -380,6 +380,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: "owner",
       });
       
+      // Create family member entry for the parent
+      await storage.createFamilyMember({
+        familyId: family.id,
+        name: `${validatedData.firstName} ${validatedData.lastName}`,
+        role: "parent",
+        color: "#EC4899", // Default parent color (pink)
+        avatar: validatedData.firstName.charAt(0).toUpperCase(),
+        userId: user.id, // Link to user account
+      });
+      
       // Login user
       req.session!.userId = user.id;
       
@@ -639,6 +649,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Family member deleted successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete family member" });
+    }
+  });
+
+  // Family merge functionality
+  app.post("/api/family/generate-merge-code", requireAuth, async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const mergeCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      
+      res.json({ 
+        mergeCode,
+        familyId: user.familyId,
+        familyName: user.familyName || "Your Family",
+        message: "Share this code with your partner to merge families"
+      });
+    } catch (error) {
+      console.error("Generate merge code error:", error);
+      res.status(500).json({ error: "Failed to generate merge code" });
+    }
+  });
+
+  app.post("/api/family/merge", requireAuth, async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      
+      const { partnerEmail } = req.body;
+      
+      if (!partnerEmail) {
+        return res.status(400).json({ error: "Partner email is required" });
+      }
+      
+      // Find partner user
+      const partner = await storage.getUserByEmail(partnerEmail);
+      if (!partner) {
+        return res.status(404).json({ error: "Partner not found. They need to create an account first." });
+      }
+      
+      // Get both families
+      const userFamily = await storage.getUserFamily(user.id);
+      const partnerFamily = await storage.getUserFamily(partner.id);
+      
+      if (!userFamily || !partnerFamily) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+      
+      if (userFamily.id === partnerFamily.id) {
+        return res.status(400).json({ error: "You're already in the same family" });
+      }
+      
+      // Move all members from partner's family to user's family
+      const partnerMembers = await storage.getFamilyMembersByFamilyId(partnerFamily.id);
+      for (const member of partnerMembers) {
+        await storage.updateFamilyMember(member.id, { familyId: userFamily.id });
+      }
+      
+      // Move all events and tasks from partner's family to user's family
+      await storage.moveEventsToFamily(partnerFamily.id, userFamily.id);
+      await storage.moveTasksToFamily(partnerFamily.id, userFamily.id);
+      
+      // Update partner's family membership
+      await storage.updateUserFamily(partner.id, userFamily.id);
+      
+      res.json({ 
+        success: true, 
+        message: "Families merged successfully! Your partner is now part of your family.",
+        mergedFamilyName: userFamily.name
+      });
+    } catch (error) {
+      console.error("Family merge error:", error);
+      res.status(500).json({ error: "Failed to merge families" });
     }
   });
 

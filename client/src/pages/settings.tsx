@@ -49,8 +49,13 @@ const editMemberSchema = z.object({
   notificationPreference: z.string().optional(),
 });
 
+const familyMergeSchema = z.object({
+  partnerEmail: z.string().email("Please enter a valid email address"),
+});
+
 type AddFamilyMemberForm = z.infer<typeof addFamilyMemberSchema>;
 type EditMemberForm = z.infer<typeof editMemberSchema>;
+type FamilyMergeForm = z.infer<typeof familyMergeSchema>;
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -72,6 +77,7 @@ export default function SettingsPage() {
   const [showSecurityDialog, setShowSecurityDialog] = useState(false);
   const [showInviteTeenModal, setShowInviteTeenModal] = useState(false);
   const [showParentInviteModal, setShowParentInviteModal] = useState(false);
+  const [showFamilyMergeDialog, setShowFamilyMergeDialog] = useState(false);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
 
   // Fetch existing family members
@@ -105,6 +111,14 @@ export default function SettingsPage() {
       phone: "",
       email: "",
       notificationPreference: "sms",
+    },
+  });
+
+  // Form for family merge
+  const mergeForm = useForm<FamilyMergeForm>({
+    resolver: zodResolver(familyMergeSchema),
+    defaultValues: {
+      partnerEmail: "",
     },
   });
 
@@ -175,6 +189,29 @@ export default function SettingsPage() {
     },
   });
 
+  // Mutation for merging families
+  const mergeFamilyMutation = useMutation({
+    mutationFn: async (data: FamilyMergeForm) => {
+      return apiRequest("POST", "/api/family/merge", data);
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
+      toast({
+        title: "Families Merged!",
+        description: data.message || "Your partner's family has been merged with yours.",
+      });
+      setShowFamilyMergeDialog(false);
+      mergeForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Merge Failed",
+        description: error.message || "Failed to merge families",
+        variant: "destructive",
+      });
+    },
+  });
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
@@ -234,6 +271,10 @@ export default function SettingsPage() {
 
   const onSubmitEditMember = (data: EditMemberForm) => {
     editMemberMutation.mutate(data);
+  };
+
+  const onSubmitFamilyMerge = (data: FamilyMergeForm) => {
+    mergeFamilyMutation.mutate(data);
   };
 
   const handleProfileSettings = () => {
@@ -547,6 +588,10 @@ export default function SettingsPage() {
                 <Button variant="outline" className="w-full justify-start" onClick={() => setShowInviteTeenModal(true)}>
                   <UserPlus className="h-4 w-4 mr-2" />
                   Invite Teen to Family
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => setShowFamilyMergeDialog(true)}>
+                  <Heart className="h-4 w-4 mr-2" />
+                  Merge with Partner's Family
                 </Button>
                 <Button variant="outline" className="w-full justify-start" onClick={handleEditMemberRoles}>
                   Edit Member Roles
@@ -1283,6 +1328,59 @@ export default function SettingsPage() {
           isOpen={showParentInviteModal}
           onClose={() => setShowParentInviteModal(false)}
         />
+
+        {/* Family Merge Dialog */}
+        <Dialog open={showFamilyMergeDialog} onOpenChange={setShowFamilyMergeDialog}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5 text-primary" />
+                Merge with Partner's Family
+              </DialogTitle>
+              <DialogDescription>
+                Combine your family with your partner's family to create a unified family unit. This will merge all family members, tasks, and events.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...mergeForm}>
+              <form onSubmit={mergeForm.handleSubmit(onSubmitFamilyMerge)} className="space-y-4">
+                <FormField
+                  control={mergeForm.control}
+                  name="partnerEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Partner's Email Address</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="partner@example.com" 
+                          type="email" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <strong>Important:</strong> This action will merge all family data from your partner's family into yours. Make sure both families are ready for this merge.
+                  </p>
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowFamilyMergeDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={mergeFamilyMutation.isPending}>
+                    {mergeFamilyMutation.isPending ? "Merging..." : "Merge Families"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </main>
 
       <MobileNav />
