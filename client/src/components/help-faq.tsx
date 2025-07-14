@@ -141,6 +141,41 @@ const faqItems: FAQItem[] = [
     tags: ["tasks", "assignment", "multiple", "family"]
   },
   {
+    id: "family-merge-process",
+    question: "How do I merge accounts when both parents already use the app?",
+    answer: "Go to Settings > Family and click 'Merge Families'. Enter your partner's email to send a merge request. When they accept, you'll see a billing decision dialog with three options: Keep Your Billing, Keep Their Billing, or Upgrade to Family Plan ($19.99/month). The app recommends the best option based on trial status and existing subscriptions. After merging, both parents have equal access to all family data.",
+    category: "billing",
+    tags: ["merge", "families", "accounts", "billing", "parents"]
+  },
+  {
+    id: "billing-plans-overview",
+    question: "What are the billing options and pricing?",
+    answer: "Individual Plan: $9.99/month for 1 user with full family coordination features. Family Plan: $19.99/month for up to 4 users including teen accounts and advanced family features. Every new account gets a 14-day free trial with full access. No credit card required to start. Monthly billing only, cancel anytime.",
+    category: "billing",
+    tags: ["pricing", "plans", "trial", "billing", "individual", "family"]
+  },
+  {
+    id: "trial-period",
+    question: "How does the 14-day trial work?",
+    answer: "Your trial starts when you create your account and gives you full access to all features for 14 days. Trial countdown is visible in Settings > Account. No credit card required to start. You can upgrade anytime during or after the trial period. Trial time remaining is preserved when upgrading or merging accounts.",
+    category: "billing",
+    tags: ["trial", "14-day", "free", "upgrade", "account"]
+  },
+  {
+    id: "teen-points-persistence",
+    question: "Are teen points and achievements saved permanently?",
+    answer: "Yes! Teen points, streaks, and task completion history are saved in the database and persist across app restarts and updates. Parents can view complete point history, adjust point values for tasks, and track long-term achievement patterns. The gamification system builds lasting motivation through consistent progress tracking.",
+    category: "features",
+    tags: ["teen", "points", "persistence", "database", "achievements", "history"]
+  },
+  {
+    id: "family-billing-management",
+    question: "Who manages billing when families merge accounts?",
+    answer: "During family merge, you choose which account handles billing. The billing decision dialog shows three options with recommendations based on trial status and existing subscriptions. The chosen billing account manages the subscription for both parents. You can change billing responsibility later in Settings > Account.",
+    category: "billing",
+    tags: ["billing", "management", "merge", "families", "responsibility"]
+  },
+  {
     id: "subscription-features",
     question: "What's included in the premium subscription?",
     answer: "Premium includes unlimited voice notes, AI meal planning, advanced calendar integration, password vault, priority support, and upcoming features like habit tracking and allowance management. Free accounts get 10 voice notes per month and basic features.",

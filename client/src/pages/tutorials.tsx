@@ -278,6 +278,69 @@ const tutorials: Tutorial[] = [
     ]
   },
   {
+    id: "family-merge-billing",
+    title: "Family Account Merging & Billing",
+    description: "Combine accounts when both parents are already using the app and manage billing",
+    duration: "4 min",
+    difficulty: "intermediate",
+    icon: Users,
+    category: "family-coordination",
+    steps: [
+      {
+        title: "When to Merge Accounts",
+        description: "If both you and your partner already have accounts, you can merge them into one family account to share calendars, tasks, and coordination.",
+        tips: ["Merging combines all family data", "One billing account manages the subscription", "Both parents keep equal access"]
+      },
+      {
+        title: "Send Merge Request",
+        description: "Go to Settings > Family and click 'Merge Families'. Enter your partner's email address to send a merge request.",
+        action: "Your partner will receive a notification to accept the merge",
+        tips: ["Both accounts must be active", "Request expires after 7 days", "Either parent can initiate the merge"]
+      },
+      {
+        title: "Choose Billing Management",
+        description: "When merging, you'll see a billing decision dialog with three options: Keep Your Billing, Keep Partner's Billing, or Upgrade to Family Plan.",
+        tips: ["Family plan supports up to 4 users for $19.99/month", "Individual plans are $9.99/month", "Trial status affects billing recommendations"]
+      },
+      {
+        title: "Billing Decision Guide",
+        description: "The app recommends the best option based on trial status and existing subscriptions. Family plan is suggested when you have teens or need more users.",
+        tips: ["Active trials are prioritized", "Family plan includes teen accounts", "You can change billing later in Settings"]
+      },
+      {
+        title: "Complete the Merge",
+        description: "After billing decisions, accounts combine immediately. Both parents have equal access to all family data and settings.",
+        tips: ["All events and tasks are preserved", "Teen accounts transfer automatically", "Notification preferences merge intelligently"]
+      }
+    ]
+  },
+  {
+    id: "trial-and-billing",
+    title: "14-Day Trial & Subscription Management",
+    description: "Understand your trial period and billing options for The Mom App",
+    duration: "3 min",
+    difficulty: "beginner",
+    icon: Star,
+    category: "getting-started",
+    steps: [
+      {
+        title: "Your 14-Day Trial",
+        description: "Every new account gets 14 days of full access to test all features. Trial countdown is visible in Settings > Account.",
+        tips: ["Trial starts when you create your account", "Full access to all features", "No credit card required to start"]
+      },
+      {
+        title: "Billing Plans",
+        description: "Choose between Individual Plan ($9.99/month for 1 user) or Family Plan ($19.99/month for up to 4 users including teens).",
+        tips: ["Family plan includes teen accounts", "Monthly billing only", "Cancel anytime"]
+      },
+      {
+        title: "Upgrade Options",
+        description: "Upgrade directly from Settings > Account or during family merge process. Billing automatically adjusts for your needs.",
+        tips: ["Trial time remaining is preserved", "Immediate access after upgrade", "Billing cycle starts from upgrade date"]
+      }
+    ]
+  },
+  {
     id: "import-export",
     title: "Import Your Existing Data",
     description: "Transfer notes, tasks, and passwords from other apps",

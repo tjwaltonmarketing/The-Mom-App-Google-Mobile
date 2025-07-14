@@ -83,13 +83,13 @@ const tutorialSteps: TutorialStep[] = [
   {
     id: 5,
     title: "Points & Achievements",
-    description: "Earn points by completing tasks and helping your family. Level up and show your progress!",
+    description: "Earn points by completing tasks and helping your family. Your progress is automatically saved and tracked over time!",
     icon: <Trophy className="h-8 w-8 text-yellow-500" />,
     tips: [
-      "Complete tasks to earn points",
+      "Complete tasks to earn 10-50 points (varies by difficulty)",
       "Keep your streak going for bonus points",
-      "Watch your level grow as you help more",
-      "Points show you're an awesome family member!"
+      "All your points and achievements are permanently saved",
+      "Parents can track your progress and celebrate milestones!"
     ]
   },
   {
