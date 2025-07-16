@@ -113,7 +113,9 @@ export interface IStorage {
   
   // Events
   getEvents(): Promise<Event[]>;
+  getEventsByFamily(familyId: number): Promise<Event[]>;
   getTodayEvents(): Promise<Event[]>;
+  getTodayEventsByFamily(familyId: number): Promise<Event[]>;
   createEvent(event: InsertEvent): Promise<Event>;
   updateEvent(id: number, updates: Partial<InsertEvent>): Promise<Event | undefined>;
   deleteEvent(id: number): Promise<boolean>;
@@ -121,8 +123,11 @@ export interface IStorage {
   
   // Tasks
   getTasks(): Promise<Task[]>;
+  getTasksByFamily(familyId: number): Promise<Task[]>;
   getTasksForToday(): Promise<Task[]>;
+  getTasksForTodayByFamily(familyId: number): Promise<Task[]>;
   getPendingTasks(): Promise<Task[]>;
+  getPendingTasksByFamily(familyId: number): Promise<Task[]>;
   createTask(task: InsertTask): Promise<Task>;
   updateTask(id: number, updates: Partial<Task>): Promise<Task | undefined>;
   completeTask(id: number, completedBy: number): Promise<Task | undefined>;
@@ -501,6 +506,24 @@ export class DatabaseStorage implements IStorage {
       ));
   }
 
+  async getEventsByFamily(familyId: number): Promise<Event[]> {
+    return await db.select().from(events)
+      .where(eq(events.familyId, familyId));
+  }
+
+  async getTodayEventsByFamily(familyId: number): Promise<Event[]> {
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    return await db.select().from(events)
+      .where(and(
+        eq(events.familyId, familyId),
+        gte(events.startTime, todayStart),
+        lt(events.startTime, todayEnd)
+      ));
+  }
+
   async createEvent(insertEvent: InsertEvent): Promise<Event> {
     const [event] = await db.insert(events).values(insertEvent).returning();
     
@@ -549,6 +572,32 @@ export class DatabaseStorage implements IStorage {
 
   async getPendingTasks(): Promise<Task[]> {
     return await db.select().from(tasks).where(eq(tasks.isCompleted, false));
+  }
+
+  async getTasksByFamily(familyId: number): Promise<Task[]> {
+    return await db.select().from(tasks)
+      .where(eq(tasks.familyId, familyId));
+  }
+
+  async getTasksForTodayByFamily(familyId: number): Promise<Task[]> {
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    return await db.select().from(tasks)
+      .where(and(
+        eq(tasks.familyId, familyId),
+        gte(tasks.dueDate, todayStart),
+        lt(tasks.dueDate, todayEnd)
+      ));
+  }
+
+  async getPendingTasksByFamily(familyId: number): Promise<Task[]> {
+    return await db.select().from(tasks)
+      .where(and(
+        eq(tasks.familyId, familyId),
+        eq(tasks.isCompleted, false)
+      ));
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {

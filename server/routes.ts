@@ -594,24 +594,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Family Members
-  app.get("/api/family-members", async (req, res) => {
+  app.get("/api/family-members", requireAuth, async (req, res) => {
     try {
-      const members = await storage.getFamilyMembers();
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      // Get user's family
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
+      // Get family members for this specific family
+      const members = await storage.getFamilyMembersByFamily(family.id);
       res.json(members);
     } catch (error) {
+      console.error("Get family members error:", error);
       res.status(500).json({ message: "Failed to fetch family members" });
     }
   });
 
-  app.post("/api/family-members", async (req, res) => {
+  app.post("/api/family-members", requireAuth, async (req, res) => {
     try {
-      const validatedData = insertFamilyMemberSchema.parse(req.body);
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      // Get user's family
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
+      // Add family ID to the data
+      const validatedData = insertFamilyMemberSchema.parse({
+        ...req.body,
+        familyId: family.id
+      });
+      
       const member = await storage.createFamilyMember(validatedData);
       res.status(201).json(member);
     } catch (error) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid family member data", errors: error.errors });
       } else {
+        console.error("Create family member error:", error);
         res.status(500).json({ message: "Failed to create family member" });
       }
     }
@@ -779,28 +809,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Events
-  app.get("/api/events", async (req, res) => {
+  app.get("/api/events", requireAuth, async (req, res) => {
     try {
-      const events = await storage.getEvents();
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
+      const events = await storage.getEventsByFamily(family.id);
       res.json(events);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch events" });
     }
   });
 
-  app.get("/api/events/today", async (req, res) => {
+  app.get("/api/events/today", requireAuth, async (req, res) => {
     try {
-      const events = await storage.getTodayEvents();
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
+      const events = await storage.getTodayEventsByFamily(family.id);
       res.json(events);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch today's events" });
     }
   });
 
-  app.post("/api/events", async (req, res) => {
+  app.post("/api/events", requireAuth, async (req, res) => {
     try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
       // Convert date strings to Date objects if needed
-      const eventData = { ...req.body };
+      const eventData = { ...req.body, familyId: family.id };
       if (eventData.startTime && typeof eventData.startTime === 'string') {
         eventData.startTime = new Date(eventData.startTime);
       }
@@ -821,37 +881,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Tasks
-  app.get("/api/tasks", async (req, res) => {
+  app.get("/api/tasks", requireAuth, async (req, res) => {
     try {
-      const tasks = await storage.getTasks();
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
+      const tasks = await storage.getTasksByFamily(family.id);
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch tasks" });
     }
   });
 
-  app.get("/api/tasks/today", async (req, res) => {
+  app.get("/api/tasks/today", requireAuth, async (req, res) => {
     try {
-      const tasks = await storage.getTasksForToday();
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
+      const tasks = await storage.getTasksForTodayByFamily(family.id);
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch today's tasks" });
     }
   });
 
-  app.get("/api/tasks/pending", async (req, res) => {
+  app.get("/api/tasks/pending", requireAuth, async (req, res) => {
     try {
-      const tasks = await storage.getPendingTasks();
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
+      const tasks = await storage.getPendingTasksByFamily(family.id);
       res.json(tasks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch pending tasks" });
     }
   });
 
-  app.post("/api/tasks", async (req, res) => {
+  app.post("/api/tasks", requireAuth, async (req, res) => {
     try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
       // Convert date strings to Date objects if needed
-      const taskData = { ...req.body };
+      const taskData = { ...req.body, familyId: family.id };
       if (taskData.dueDate && typeof taskData.dueDate === 'string') {
         taskData.dueDate = new Date(taskData.dueDate);
       }
