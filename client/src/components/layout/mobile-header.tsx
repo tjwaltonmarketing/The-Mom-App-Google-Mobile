@@ -17,33 +17,33 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ onStartVoiceNote }: MobileHeaderProps) {
   return (
-    <header className="md:hidden bg-white dark:bg-card shadow-sm border-b border-gray-200 dark:border-border sticky top-0 z-50">
-      <div className="px-4 py-3">
-        <div className="flex justify-between items-center">
-          <Link href="/" className="flex items-center space-x-2">
+    <header className="md:hidden bg-white dark:bg-card shadow-sm border-b border-gray-200 dark:border-border sticky top-0 z-50 mobile-container">
+      <div className="px-3 py-3">
+        <div className="flex justify-between items-center max-w-full min-w-0">
+          <Link href="/" className="flex items-center space-x-2 min-w-0 flex-1">
             <Logo className="h-8 w-8 flex-shrink-0" />
-            <h1 className="text-lg font-bold text-gray-900 dark:text-white font-logo uppercase">THE MOM APP</h1>
+            <h1 className="text-base mobile-header-text font-bold text-gray-900 dark:text-white font-logo uppercase truncate">THE MOM APP</h1>
           </Link>
           
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             <Button
               onClick={onStartVoiceNote}
-              className="bg-accent hover:bg-accent/90 text-white"
+              className="bg-accent hover:bg-accent/90 text-white p-2 h-8 w-8"
               size="sm"
             >
-              <Mic className="h-4 w-4" />
+              <Mic className="h-3 w-3" />
             </Button>
             
-            <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground" size="sm">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground p-2 h-8 w-8" size="sm">
               <Link href="/ai-assistant">
-                <Bot className="h-4 w-4" />
+                <Bot className="h-3 w-3" />
               </Link>
             </Button>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Settings className="h-4 w-4" />
+                <Button variant="ghost" className="p-2 h-8 w-8" size="sm">
+                  <Settings className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
