@@ -29,12 +29,12 @@ export default function AIAssistantPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 order-2 lg:order-1">
             <AIAssistant />
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-6 order-1 lg:order-2">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -77,7 +77,7 @@ export default function AIAssistantPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hidden lg:block">
               <CardHeader>
                 <CardTitle>Quick Tips</CardTitle>
               </CardHeader>

@@ -95,7 +95,7 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
   ];
 
   return (
-    <Card className="h-[600px] flex flex-col">
+    <Card className="h-[500px] lg:h-[600px] flex flex-col">
       <CardHeader className="flex-shrink-0 pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
