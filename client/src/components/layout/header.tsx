@@ -65,60 +65,9 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
             </nav>
           </div>
           
-          <div className="flex items-center space-x-1 sm:space-x-2 pr-12">
-            {/* Do Not Disturb Toggle - Hidden on mobile */}
-            <div className="hidden md:flex items-center space-x-2">
-              <span className="text-sm text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600">DND</span>
-              <Switch
-                checked={dndEnabled}
-                onCheckedChange={setDndEnabled}
-                className="data-[state=checked]:bg-primary"
-              />
-            </div>
-            
-            {/* Theme Toggle - Hidden on mobile */}
-            <div className="hidden sm:block">
-              <ThemeToggle />
-            </div>
-            
+          <div className="flex items-center space-x-3">
             {/* Notification Bell */}
             <NotificationBell />
-            
-            {/* Voice Note Button */}
-            <Button
-              onClick={onStartVoiceNote}
-              className="bg-accent hover:bg-orange-400 text-white p-2 rounded-full transition-colors"
-              size="icon"
-            >
-              <Mic className="h-4 w-4" />
-            </Button>
-
-            {/* Help/Tutorials Button */}
-            <Button asChild className="bg-amber-500 hover:bg-amber-600 text-white p-2 rounded-full transition-colors" size="icon">
-              <Link href="/tutorials">
-                <HelpCircle className="h-4 w-4" />
-              </Link>
-            </Button>
-
-            {/* AI Assistant Button */}
-            <Button asChild className="bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white p-2 rounded-full transition-colors" size="icon">
-              <Link href="/ai-assistant">
-                <Bot className="h-4 w-4" />
-              </Link>
-            </Button>
-            
-            {/* Family Members Quick Access - Hidden on mobile */}
-            <div className="hidden md:flex items-center space-x-1">
-              {familyMembers.map((member) => (
-                <div
-                  key={member.id}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
-                  style={{ backgroundColor: member.color }}
-                >
-                  {member.avatar}
-                </div>
-              ))}
-            </div>
 
             {/* Settings Menu */}
             <DropdownMenu>

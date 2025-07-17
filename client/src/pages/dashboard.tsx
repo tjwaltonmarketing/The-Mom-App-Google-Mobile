@@ -21,6 +21,9 @@ import { MindfulUsage } from "@/components/mindful-usage";
 import { SmartVoiceAssistant } from "@/components/smart-voice-assistant";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Mic, Bot, BookOpen } from "lucide-react";
+import { Link } from "wouter";
 
 export default function Dashboard() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
@@ -32,6 +35,31 @@ export default function Dashboard() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
         <WelcomeHeader />
+        
+        {/* Quick Action Buttons */}
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <Button 
+            onClick={() => setIsVoiceModalOpen(true)}
+            className="bg-accent hover:bg-orange-400 text-white p-4 h-auto flex flex-col items-center gap-2 transition-colors"
+          >
+            <Mic className="h-6 w-6" />
+            <span className="text-sm">Voice Notes</span>
+          </Button>
+          
+          <Button asChild className="bg-amber-500 hover:bg-amber-600 text-white p-4 h-auto flex flex-col items-center gap-2 transition-colors">
+            <Link href="/tutorials">
+              <BookOpen className="h-6 w-6" />
+              <span className="text-sm">Tutorials</span>
+            </Link>
+          </Button>
+          
+          <Button asChild className="bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white p-4 h-auto flex flex-col items-center gap-2 transition-colors">
+            <Link href="/ai-assistant">
+              <Bot className="h-6 w-6" />
+              <span className="text-sm">AI Assistant</span>
+            </Link>
+          </Button>
+        </div>
         
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="w-full mb-6 h-auto p-1">

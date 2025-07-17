@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HelpFAQ } from "@/components/help-faq";
+import { Header } from "@/components/layout/header";
+import { MobileNav } from "@/components/layout/mobile-nav";
+import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { 
   Play, 
   CheckCircle, 
@@ -725,13 +728,17 @@ export default function TutorialsPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Tutorials & Guides</h1>
-        <p className="text-muted-foreground">
-          Learn how to make the most of The Mom App with step-by-step tutorials
-        </p>
-      </div>
+    <div className="min-h-screen bg-neutral dark:bg-background blue-light-filter:bg-neutral">
+      <Header onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
+      <MobileNav />
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Tutorials & Guides</h1>
+          <p className="text-muted-foreground">
+            Learn how to make the most of The Mom App with step-by-step tutorials
+          </p>
+        </div>
 
       <Tabs defaultValue="getting-started" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1 h-auto">
@@ -844,6 +851,12 @@ export default function TutorialsPage() {
           <HelpFAQ />
         </TabsContent>
       </Tabs>
+      </main>
+      
+      <VoiceNoteModal 
+        isOpen={isVoiceModalOpen} 
+        onClose={() => setIsVoiceModalOpen(false)} 
+      />
     </div>
   );
 }

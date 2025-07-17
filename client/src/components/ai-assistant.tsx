@@ -144,23 +144,25 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
           </Button>
         </div>
 
-        {/* Quick Prompts */}
+        {/* Quick Prompts - Scrollable */}
         {messages.length === 1 && (
-          <div className="space-y-2">
+          <div className="space-y-2 flex-1 min-h-0">
             <p className="text-sm text-muted-foreground">Quick suggestions:</p>
-            <div className="grid grid-cols-1 gap-2">
-              {quickPrompts.map((prompt, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  size="sm"
-                  className="text-left justify-start h-auto p-2 text-xs"
-                  onClick={() => setInputValue(prompt)}
-                >
-                  {prompt}
-                </Button>
-              ))}
-            </div>
+            <ScrollArea className="h-full">
+              <div className="grid grid-cols-1 gap-2 pb-4">
+                {quickPrompts.map((prompt, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    className="text-left justify-start h-auto p-2 text-xs"
+                    onClick={() => setInputValue(prompt)}
+                  >
+                    {prompt}
+                  </Button>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
         )}
 
