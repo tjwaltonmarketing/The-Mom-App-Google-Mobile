@@ -43,8 +43,8 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
   return (
     <header className="bg-white dark:bg-card blue-light-filter:bg-card shadow-sm border-b border-gray-200 dark:border-border blue-light-filter:border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center h-16 px-2">
-          <div className="flex items-center space-x-2 md:space-x-4 flex-1">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center space-x-2 md:space-x-4">
             <Link href="/" className="flex items-center space-x-2 hover:opacity-90 transition-opacity">
               <Logo className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 flex-shrink-0" />
               <h1 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 dark:text-white blue-light-filter:text-gray-900 truncate font-logo uppercase">THE MOM APP</h1>
@@ -65,7 +65,7 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
             </nav>
           </div>
           
-          <div className="flex items-center space-x-1 sm:space-x-2 justify-center flex-1 max-w-md">
+          <div className="flex items-center space-x-1 sm:space-x-2 pr-4">
             {/* Do Not Disturb Toggle - Hidden on mobile */}
             <div className="hidden md:flex items-center space-x-2">
               <span className="text-sm text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600">DND</span>
