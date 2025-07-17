@@ -65,7 +65,7 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
             </nav>
           </div>
           
-          <div className="flex items-center space-x-1 sm:space-x-2 pr-4">
+          <div className="flex items-center space-x-1 sm:space-x-2 pr-8">
             {/* Do Not Disturb Toggle - Hidden on mobile */}
             <div className="hidden md:flex items-center space-x-2">
               <span className="text-sm text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600">DND</span>
