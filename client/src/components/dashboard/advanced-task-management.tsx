@@ -306,28 +306,31 @@ export function AdvancedTaskManagement() {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <CardTitle className="text-lg font-semibold flex items-center">
               <Flag className="text-primary mr-2 h-5 w-5" />
               Advanced Task Management
             </CardTitle>
-            <div className="flex gap-2">
-              <Button onClick={() => setIsTaskModalOpen(true)} className="gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={() => setIsTaskModalOpen(true)} className="gap-2 flex-1 sm:flex-none">
                 <Plus className="h-4 w-4" />
-                Add Task
+                <span className="hidden xs:inline">Add Task</span>
+                <span className="xs:hidden">Add</span>
               </Button>
               <TeenTaskAssignmentModal>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2 flex-1 sm:flex-none">
                   <UserPlus className="h-4 w-4" />
-                  Assign to Teen
+                  <span className="hidden xs:inline">Assign to Teen</span>
+                  <span className="xs:hidden">Assign</span>
                 </Button>
               </TeenTaskAssignmentModal>
               {tasks.length > 0 && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="gap-2">
+                    <Button variant="destructive" className="gap-2 flex-1 sm:flex-none">
                       <Trash2 className="h-4 w-4" />
-                      Clear All
+                      <span className="hidden xs:inline">Clear All</span>
+                      <span className="xs:hidden">Clear</span>
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
