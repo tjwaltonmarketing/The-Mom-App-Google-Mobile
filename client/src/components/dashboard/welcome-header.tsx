@@ -1,4 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Mic, BookOpen, Bot } from "lucide-react";
+import { Link } from "wouter";
 
 interface DashboardStats {
   todayTasks: number;
@@ -17,7 +20,11 @@ interface User {
   updatedAt: string;
 }
 
-export function WelcomeHeader() {
+interface WelcomeHeaderProps {
+  onStartVoiceNote?: () => void;
+}
+
+export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
   const { data: stats } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
   });
@@ -42,7 +49,7 @@ export function WelcomeHeader() {
           </h2>
           <p className="text-gray-600 mt-1">Here's what's happening today</p>
         </div>
-        <div className="mt-4 sm:mt-0 flex space-x-4">
+        <div className="mt-4 sm:mt-0 flex items-center space-x-4">
           <div className="text-center">
             <div className="text-3xl font-bold text-pink-500">
               {stats?.todayTasks || 0}
@@ -54,6 +61,27 @@ export function WelcomeHeader() {
               {stats?.todayEvents || 0}
             </div>
             <div className="text-sm text-gray-900 dark:text-gray-100 blue-light-filter:text-gray-900 font-semibold">Events Today</div>
+          </div>
+          
+          {/* Mobile: Circular quick action buttons */}
+          <div className="md:hidden flex space-x-2 ml-4">
+            <Button
+              onClick={onStartVoiceNote}
+              size="sm"
+              className="bg-accent hover:bg-orange-400 text-white w-8 h-8 p-0 rounded-full"
+            >
+              <Mic className="h-4 w-4" />
+            </Button>
+            <Button asChild size="sm" className="bg-amber-500 hover:bg-amber-600 text-white w-8 h-8 p-0 rounded-full">
+              <Link href="/tutorials">
+                <BookOpen className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild size="sm" className="bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white w-8 h-8 p-0 rounded-full">
+              <Link href="/ai-assistant">
+                <Bot className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
         </div>
       </div>

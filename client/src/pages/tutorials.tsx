@@ -526,6 +526,7 @@ export default function TutorialsPage() {
   const [selectedTutorial, setSelectedTutorial] = useState<Tutorial | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
 
   // Handle URL parameters for direct tutorial access
   useEffect(() => {

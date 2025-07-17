@@ -34,10 +34,15 @@ export default function Dashboard() {
       <MobileNav />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
-        <WelcomeHeader />
+        {/* Mobile: Trial Banner at top */}
+        <div className="md:hidden mb-4">
+          <TrialBanner />
+        </div>
         
-        {/* Quick Action Buttons */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <WelcomeHeader onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
+        
+        {/* Desktop-only Quick Action Buttons */}
+        <div className="hidden md:grid md:grid-cols-3 gap-4 mb-6">
           <Button 
             onClick={() => setIsVoiceModalOpen(true)}
             className="bg-accent hover:bg-orange-400 text-white p-4 h-auto flex flex-col items-center gap-2 transition-colors"
@@ -81,7 +86,8 @@ export default function Dashboard() {
           </TabsList>
           
           <TabsContent value="dashboard">
-            <div className="mb-6">
+            {/* Desktop: Trial Banner */}
+            <div className="hidden md:block mb-6">
               <TrialBanner />
             </div>
             

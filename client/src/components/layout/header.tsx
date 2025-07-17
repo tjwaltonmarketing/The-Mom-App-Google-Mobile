@@ -66,6 +66,27 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
           </div>
           
           <div className="flex items-center space-x-3">
+            {/* Desktop: Action buttons */}
+            <div className="hidden md:flex items-center space-x-2">
+              <Button
+                onClick={onStartVoiceNote}
+                size="sm"
+                className="bg-accent hover:bg-orange-400 text-white"
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
+              <Button asChild size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
+                <Link href="/tutorials">
+                  <BookOpen className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild size="sm" className="bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
+                <Link href="/ai-assistant">
+                  <Bot className="h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+            
             {/* Notification Bell */}
             <NotificationBell />
 
