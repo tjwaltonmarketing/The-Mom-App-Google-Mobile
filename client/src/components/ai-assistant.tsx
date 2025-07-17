@@ -112,9 +112,9 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="flex-1 flex flex-col p-4 gap-4">
+      <CardContent className="flex-1 flex flex-col p-4 gap-4 min-h-0">
         {/* Messages */}
-        <ScrollArea className="flex-1" ref={scrollAreaRef}>
+        <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
           <div className="space-y-4">
             {messages.map((message) => (
               <div
@@ -191,7 +191,7 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
         )}
 
         {/* Input */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-shrink-0">
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}

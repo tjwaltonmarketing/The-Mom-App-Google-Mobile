@@ -65,7 +65,7 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
             </nav>
           </div>
           
-          <div className="flex items-center space-x-1 sm:space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2 pr-2">
             {/* Do Not Disturb Toggle - Hidden on mobile */}
             <div className="hidden md:flex items-center space-x-2">
               <span className="text-sm text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600">DND</span>
@@ -123,7 +123,7 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
             {/* Settings Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 mr-2">
                   <Settings className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
