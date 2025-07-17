@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Mic, BookOpen, Bot } from "lucide-react";
 import { Link } from "wouter";
+import { useState, useEffect } from "react";
 
 interface DashboardStats {
   todayTasks: number;
@@ -25,6 +26,29 @@ interface WelcomeHeaderProps {
 }
 
 export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
+  const [trialBannerDismissed, setTrialBannerDismissed] = useState(false);
+
+  // Check if trial banner was dismissed
+  useEffect(() => {
+    const checkBannerStatus = () => {
+      const isDismissed = sessionStorage.getItem('trialBannerDismissed');
+      setTrialBannerDismissed(isDismissed === 'true');
+    };
+    
+    checkBannerStatus();
+    
+    // Listen for storage changes to update when banner is dismissed
+    const handleStorageChange = () => checkBannerStatus();
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Poll for sessionStorage changes since storage event doesn't fire for same-window changes
+    const interval = setInterval(checkBannerStatus, 500);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
   const { data: stats } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
   });
@@ -41,7 +65,7 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
   };
 
   return (
-    <div className="mb-6 animate-fadeIn">
+    <div className={`animate-fadeIn ${trialBannerDismissed ? 'mb-6 md:mb-6 -mt-2 md:mt-0' : 'mb-6'}`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-text-primary">
