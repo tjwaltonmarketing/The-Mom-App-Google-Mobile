@@ -19,13 +19,22 @@ export class TwilioProvider implements SMSProvider {
 
   async sendSMS(to: string, message: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
+      console.log(`🔧 Twilio SMS Debug:`);
+      console.log(`- From: ${process.env.TWILIO_PHONE_NUMBER}`);
+      console.log(`- To: ${to}`);
+      console.log(`- Message: ${message.substring(0, 50)}...`);
+      
       const result = await this.client.messages.create({
         body: message,
         from: process.env.TWILIO_PHONE_NUMBER,
         to: to
       });
+      
+      console.log(`✅ Twilio SMS sent successfully: ${result.sid}`);
       return { success: true, messageId: result.sid };
     } catch (error: any) {
+      console.error(`❌ Twilio SMS failed: ${error.message}`);
+      console.error(`Full error:`, error);
       return { success: false, error: error.message };
     }
   }
