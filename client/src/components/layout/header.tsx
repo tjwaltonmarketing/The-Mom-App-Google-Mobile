@@ -43,7 +43,7 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
   return (
     <header className="bg-white dark:bg-card blue-light-filter:bg-card shadow-sm border-b border-gray-200 dark:border-border blue-light-filter:border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex items-center h-16">
           <div className="flex items-center space-x-2 md:space-x-4">
             <Link href="/" className="flex items-center space-x-2 hover:opacity-90 transition-opacity">
               <Logo className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 flex-shrink-0" />
@@ -65,83 +65,84 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
             </nav>
           </div>
           
-          <div className="flex items-center justify-end flex-1">
-            {/* Desktop: Action buttons - moved to far right */}
-            <div className="hidden md:flex items-center space-x-2 mr-4">
-              <Button
-                onClick={onStartVoiceNote}
-                size="sm"
-                className="bg-accent hover:bg-orange-400 text-white"
-              >
-                <Mic className="h-4 w-4" />
-              </Button>
-              <Button asChild size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
-                <Link href="/tutorials">
-                  <BookOpen className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild size="sm" className="bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
-                <Link href="/ai-assistant">
-                  <Bot className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
+          {/* Spacer to push everything to the right */}
+          <div className="flex-1"></div>
+          
+          {/* Desktop: Action buttons - absolute right edge */}
+          <div className="hidden md:flex items-center space-x-2">
+            <Button
+              onClick={onStartVoiceNote}
+              size="sm"
+              className="bg-accent hover:bg-orange-400 text-white"
+            >
+              <Mic className="h-4 w-4" />
+            </Button>
+            <Button asChild size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
+              <Link href="/tutorials">
+                <BookOpen className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button asChild size="sm" className="bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
+              <Link href="/ai-assistant">
+                <Bot className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          
+          {/* Notification Bell and Settings */}
+          <div className="flex items-center space-x-3 ml-4">
+            <NotificationBell />
             
-            {/* Notification Bell and Settings */}
-            <div className="flex items-center space-x-3">
-              <NotificationBell />
-              
-              {/* Settings Menu */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild>
-                    <Link href="/tutorials" className="w-full flex items-center">
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      Tutorials & Help
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/ai-assistant" className="w-full flex items-center">
-                      <Bot className="mr-2 h-4 w-4" />
-                      AI Assistant
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/subscription" className="w-full flex items-center">
-                      <Crown className="mr-2 h-4 w-4" />
-                      Subscription
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings" className="w-full flex items-center">
-                      <Settings className="mr-2 h-4 w-4" />
-                      App Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings?tab=family" className="w-full flex items-center">
-                      <User className="mr-2 h-4 w-4" />
-                      Family Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={handleSignOut}
-                    disabled={isLoggingOut}
-                    className="w-full flex items-center text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {isLoggingOut ? "Signing Out..." : "Sign Out"}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            {/* Settings Menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem asChild>
+                  <Link href="/tutorials" className="w-full flex items-center">
+                    <BookOpen className="mr-2 h-4 w-4" />
+                    Tutorials & Help
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/ai-assistant" className="w-full flex items-center">
+                    <Bot className="mr-2 h-4 w-4" />
+                    AI Assistant
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/subscription" className="w-full flex items-center">
+                    <Crown className="mr-2 h-4 w-4" />
+                    Subscription
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="w-full flex items-center">
+                    <Settings className="mr-2 h-4 w-4" />
+                    App Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings?tab=family" className="w-full flex items-center">
+                    <User className="mr-2 h-4 w-4" />
+                    Family Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={handleSignOut}
+                  disabled={isLoggingOut}
+                  className="w-full flex items-center text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {isLoggingOut ? "Signing Out..." : "Sign Out"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

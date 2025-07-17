@@ -49,22 +49,24 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
           </h2>
           <p className="text-gray-600 mt-1">Here's what's happening today</p>
         </div>
-        <div className="mt-4 sm:mt-0 flex items-center space-x-4">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-pink-500">
-              {stats?.todayTasks || 0}
+        <div className="mt-4 sm:mt-0 flex items-center justify-between w-full">
+          <div className="flex items-center space-x-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-pink-500">
+                {stats?.todayTasks || 0}
+              </div>
+              <div className="text-sm text-gray-900 dark:text-gray-100 blue-light-filter:text-gray-900 font-semibold">Tasks Due</div>
             </div>
-            <div className="text-sm text-gray-900 dark:text-gray-100 blue-light-filter:text-gray-900 font-semibold">Tasks Due</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-pink-500">
-              {stats?.todayEvents || 0}
+            <div className="text-center">
+              <div className="text-3xl font-bold text-pink-500">
+                {stats?.todayEvents || 0}
+              </div>
+              <div className="text-sm text-gray-900 dark:text-gray-100 blue-light-filter:text-gray-900 font-semibold">Events Today</div>
             </div>
-            <div className="text-sm text-gray-900 dark:text-gray-100 blue-light-filter:text-gray-900 font-semibold">Events Today</div>
           </div>
           
-          {/* Mobile: Circular quick action buttons */}
-          <div className="md:hidden flex space-x-2 ml-4">
+          {/* Mobile: Circular quick action buttons - pushed to far right */}
+          <div className="md:hidden flex space-x-2 ml-auto">
             <Button
               onClick={onStartVoiceNote}
               size="sm"
