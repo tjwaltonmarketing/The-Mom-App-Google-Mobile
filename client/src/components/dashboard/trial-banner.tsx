@@ -1,11 +1,30 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Crown, Clock } from "lucide-react";
+import { Crown, Clock, X } from "lucide-react";
 import { Link } from "wouter";
 
 export function TrialBanner() {
-  // Mock trial data - in real app this would come from API
+  const [isVisible, setIsVisible] = useState(true);
   const trialDaysLeft = 12;
+
+  // Check if banner was dismissed in this session
+  useEffect(() => {
+    const isDismissed = sessionStorage.getItem('trialBannerDismissed');
+    if (isDismissed === 'true') {
+      setIsVisible(false);
+    }
+  }, []);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    // Only hide for this session, will show again on next login
+    sessionStorage.setItem('trialBannerDismissed', 'true');
+  };
+
+  if (!isVisible) {
+    return null;
+  }
   
   return (
     <Card className="bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-900/20 dark:to-rose-900/20 blue-light-filter:from-pink-25 blue-light-filter:to-rose-25 border-pink-200 dark:border-pink-800 blue-light-filter:border-pink-200">
@@ -25,11 +44,21 @@ export function TrialBanner() {
               </p>
             </div>
           </div>
-          <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Link href="/subscription">
-              Upgrade Now
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Link href="/subscription">
+                Upgrade Now
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClose}
+              className="h-8 w-8 p-0 text-pink-600 hover:text-pink-800 hover:bg-pink-100 dark:text-pink-400 dark:hover:text-pink-300 dark:hover:bg-pink-900/20"
+            >
+              <X size={16} />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
