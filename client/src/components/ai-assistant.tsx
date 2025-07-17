@@ -113,62 +113,36 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-4 gap-4 min-h-0">
-        {/* Messages */}
-        <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${
-                  message.type === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                {message.type === "assistant" && (
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Bot className="text-white" size={16} />
-                  </div>
-                )}
-                
-                <div
-                  className={`max-w-[80%] p-3 rounded-lg ${
-                    message.type === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                  <span className="text-xs opacity-70 mt-1 block">
-                    {message.timestamp.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit"
-                    })}
-                  </span>
-                </div>
-
-                {message.type === "user" && (
-                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                    <User className="text-primary-foreground" size={16} />
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            {isLoading && (
-              <div className="flex gap-3 justify-start">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <Bot className="text-white" size={16} />
-                </div>
-                <div className="bg-muted p-3 rounded-lg">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                  </div>
-                </div>
-              </div>
-            )}
+        {/* Welcome Message - No Scroll */}
+        {messages.length === 1 && (
+          <div className="flex gap-3 justify-start">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+              <Bot className="text-white" size={16} />
+            </div>
+            <div className="bg-muted p-3 rounded-lg">
+              <p className="text-sm whitespace-pre-wrap">{messages[0].content}</p>
+            </div>
           </div>
-        </ScrollArea>
+        )}
+
+        {/* Input - Above Quick Prompts */}
+        <div className="flex gap-2 flex-shrink-0">
+          <Input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ask me anything about managing your family..."
+            disabled={isLoading}
+            className="flex-1"
+          />
+          <Button
+            onClick={handleSendMessage}
+            disabled={!inputValue.trim() || isLoading}
+            size="sm"
+          >
+            <Send size={16} />
+          </Button>
+        </div>
 
         {/* Quick Prompts */}
         {messages.length === 1 && (
@@ -190,24 +164,64 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
           </div>
         )}
 
-        {/* Input */}
-        <div className="flex gap-2 flex-shrink-0">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Ask me anything about managing your family..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button
-            onClick={handleSendMessage}
-            disabled={!inputValue.trim() || isLoading}
-            size="sm"
-          >
-            <Send size={16} />
-          </Button>
-        </div>
+        {/* Messages - Only for conversation history */}
+        {messages.length > 1 && (
+          <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
+            <div className="space-y-4">
+              {messages.slice(1).map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex gap-3 ${
+                    message.type === "user" ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  {message.type === "assistant" && (
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Bot className="text-white" size={16} />
+                    </div>
+                  )}
+                  
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      message.type === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <span className="text-xs opacity-70 mt-1 block">
+                      {message.timestamp.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit"
+                      })}
+                    </span>
+                  </div>
+
+                  {message.type === "user" && (
+                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                      <User className="text-primary-foreground" size={16} />
+                    </div>
+                  )}
+                </div>
+              ))}
+              
+              {isLoading && (
+                <div className="flex gap-3 justify-start">
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <Bot className="text-white" size={16} />
+                  </div>
+                  <div className="bg-muted p-3 rounded-lg">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        )}
       </CardContent>
     </Card>
   );
