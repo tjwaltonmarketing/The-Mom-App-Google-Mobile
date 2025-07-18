@@ -94,7 +94,7 @@ const tutorials: Tutorial[] = [
         title: "Send Multi-Channel Invitation",
         description: "Choose to send via SMS (Twilio) or email (SendGrid). The teen receives an invite code with setup instructions across multiple channels.",
         action: "Click 'Send Via Text' or 'Send Via Email' with automatic failover",
-        tips: ["SMS delivery is instant", "Email includes professional HTML templates", "Invite codes expire in 7 days", "You can resend if needed"]
+        tips: ["SMS delivery is instant with A2P 10DLC compliance", "Email includes professional HTML templates", "Invite codes expire in 7 days", "SMS: 'Hi [Teen Name]! You've been invited to join your family's Mom App. Use code [CODE] or visit: [URL]'"]
       },
       {
         title: "Teen Dashboard & Gamification",
