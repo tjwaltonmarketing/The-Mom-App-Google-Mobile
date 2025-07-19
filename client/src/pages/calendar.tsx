@@ -38,6 +38,7 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [view, setView] = useState<CalendarView>("month");
+  const [showEventModal, setShowEventModal] = useState(false);
 
   // Scroll to top when page loads
   useEffect(() => {
@@ -82,9 +83,16 @@ export default function CalendarPage() {
   };
 
   const handleDateClick = (date: Date) => {
-    setSelectedDate(date);
-    setCurrentDate(date);
-    setView("day");
+    const dayEvents = getEventsForDay(date);
+    if (dayEvents.length > 0) {
+      setSelectedDate(date);
+      setCurrentDate(date);
+      setView("day");
+    } else {
+      // Show create event modal for empty days
+      setSelectedDate(date);
+      setShowEventModal(true);
+    }
   };
 
   const backToMonth = () => {
@@ -95,10 +103,15 @@ export default function CalendarPage() {
   // Get date ranges for different views
   const getDateRange = () => {
     if (view === "month") {
+      const monthStart = startOfMonth(currentDate);
+      const monthEnd = endOfMonth(currentDate);
+      const calendarStart = startOfWeek(monthStart);
+      const calendarEnd = endOfWeek(monthEnd);
+      
       return {
-        start: startOfMonth(currentDate),
-        end: endOfMonth(currentDate),
-        days: eachDayOfInterval({ start: startOfMonth(currentDate), end: endOfMonth(currentDate) })
+        start: monthStart,
+        end: monthEnd,
+        days: eachDayOfInterval({ start: calendarStart, end: calendarEnd })
       };
     } else if (view === "week") {
       return {
@@ -129,73 +142,85 @@ export default function CalendarPage() {
     }
   };
 
-  const renderMonthView = () => (
-    <div>
-      <div className="grid grid-cols-7 gap-1 mb-4">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
-            {day}
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-7 gap-1">
-        {days.map(day => {
-          const dayEvents = getEventsForDay(day);
-          const isCurrentDay = isToday(day);
-          const hasEvents = dayEvents.length > 0;
-          
-          return (
-            <div 
-              key={day.toISOString()} 
-              onClick={() => hasEvents ? handleDateClick(day) : null}
-              className={`min-h-[80px] p-2 border rounded-lg transition-all ${
-                isCurrentDay 
-                  ? 'bg-primary/10 border-primary' 
-                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-              } ${hasEvents ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20' : ''}`}
-            >
-              <div className={`text-sm font-medium mb-1 ${
-                isCurrentDay ? 'text-primary' : 'text-gray-900 dark:text-white'
-              }`}>
-                {format(day, 'd')}
-              </div>
-              <div className="space-y-1">
-                {dayEvents.slice(0, 2).map(event => {
-                  const member = getMemberById(event.assignedTo);
-                  return (
-                    <div 
-                      key={event.id} 
-                      className="text-xs p-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 truncate group relative"
-                      style={{ backgroundColor: member?.color ? `${member.color}20` : undefined }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>{format(new Date(event.startTime), 'h:mm a')} {event.title}</span>
-                        <EventEditModal 
-                          event={event}
-                          trigger={
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <Edit size={8} />
-                            </Button>
-                          }
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-                {dayEvents.length > 2 && (
-                  <div className="text-xs text-gray-500">+{dayEvents.length - 2} more</div>
-                )}
-              </div>
+  const renderMonthView = () => {
+    const { start: monthStart, end: monthEnd } = getDateRange();
+    
+    return (
+      <div>
+        <div className="grid grid-cols-7 gap-1 mb-4">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
+              {day}
             </div>
-          );
-        })}
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {days.map(day => {
+            const dayEvents = getEventsForDay(day);
+            const isCurrentDay = isToday(day);
+            const hasEvents = dayEvents.length > 0;
+            const isCurrentMonth = day >= monthStart && day <= monthEnd;
+            
+            return (
+              <div 
+                key={day.toISOString()} 
+                onClick={() => handleDateClick(day)}
+                className={`min-h-[80px] p-2 border rounded-lg transition-all cursor-pointer ${
+                  isCurrentDay 
+                    ? 'bg-primary/10 border-primary' 
+                    : isCurrentMonth
+                      ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                      : 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 opacity-50'
+                }`}
+              >
+                <div className={`text-sm font-medium mb-1 ${
+                  isCurrentDay 
+                    ? 'text-primary' 
+                    : isCurrentMonth 
+                      ? 'text-gray-900 dark:text-white'
+                      : 'text-gray-400 dark:text-gray-600'
+                }`}>
+                  {format(day, 'd')}
+                </div>
+                <div className="space-y-1">
+                  {dayEvents.slice(0, 2).map(event => {
+                    const member = getMemberById(event.assignedTo);
+                    return (
+                      <div 
+                        key={event.id} 
+                        className="text-xs p-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 truncate group relative"
+                        style={{ backgroundColor: member?.color ? `${member.color}20` : undefined }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span>{format(new Date(event.startTime), 'h:mm a')} {event.title}</span>
+                          <EventEditModal 
+                            event={event}
+                            trigger={
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Edit size={8} />
+                              </Button>
+                            }
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {dayEvents.length > 2 && (
+                    <div className="text-xs text-gray-500">+{dayEvents.length - 2} more</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderWeekView = () => (
     <div>
@@ -507,6 +532,18 @@ export default function CalendarPage() {
       <VoiceNoteModal 
         isOpen={isVoiceModalOpen} 
         onClose={() => setIsVoiceModalOpen(false)} 
+      />
+
+      {/* Event Creation Modal for Empty Days */}
+      <EventModal 
+        trigger={null}
+        open={showEventModal}
+        onOpenChange={setShowEventModal}
+        selectedDate={selectedDate}
+        onSuccess={() => {
+          setShowEventModal(false);
+          setSelectedDate(null);
+        }}
       />
     </div>
   );

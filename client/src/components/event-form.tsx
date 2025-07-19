@@ -30,9 +30,10 @@ type EventFormData = z.infer<typeof eventFormSchema>;
 
 interface EventFormProps {
   onSuccess?: () => void;
+  selectedDate?: Date | null;
 }
 
-export function EventForm({ onSuccess }: EventFormProps) {
+export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
   const [isAllDay, setIsAllDay] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -41,6 +42,8 @@ export function EventForm({ onSuccess }: EventFormProps) {
     queryKey: ["/api/family-members"],
   });
 
+  const defaultDate = selectedDate || new Date();
+  
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -51,9 +54,9 @@ export function EventForm({ onSuccess }: EventFormProps) {
       isAllDay: false,
       visibilityType: "shared",
       sharedWith: [],
-      startDate: format(new Date(), "yyyy-MM-dd"),
+      startDate: format(defaultDate, "yyyy-MM-dd"),
       startTime: "09:00",
-      endDate: format(new Date(), "yyyy-MM-dd"),
+      endDate: format(defaultDate, "yyyy-MM-dd"),
       endTime: "22:00",
     },
   });

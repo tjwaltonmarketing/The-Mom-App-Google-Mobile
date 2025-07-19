@@ -3208,6 +3208,92 @@ themomapp.us@gmail.com`;
     }
   });
 
+  // Google Calendar Integration Endpoints
+  app.post("/api/calendar/connect", async (req, res) => {
+    try {
+      const { provider } = req.body;
+      
+      if (provider !== "google") {
+        return res.status(400).json({ message: "Only Google Calendar is supported" });
+      }
+
+      // Mock Google OAuth flow response
+      // In a real implementation, this would:
+      // 1. Redirect to Google OAuth
+      // 2. Handle the callback with authorization code
+      // 3. Exchange code for access token
+      // 4. Store tokens securely
+      
+      // For now, simulate successful connection
+      const mockCalendars = [
+        {
+          id: "primary",
+          name: "Primary Calendar",
+          description: "Your main Google Calendar",
+          primary: true
+        },
+        {
+          id: "family@gmail.com",
+          name: "Family Calendar", 
+          description: "Shared family events",
+          primary: false
+        }
+      ];
+
+      res.json({
+        success: true,
+        message: "Calendar connected successfully",
+        calendars: mockCalendars,
+        note: "Google Calendar OAuth integration needs to be configured with API keys"
+      });
+      
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to connect calendar: " + error.message });
+    }
+  });
+
+  app.post("/api/calendar/disconnect", async (req, res) => {
+    try {
+      // In real implementation, would revoke OAuth tokens
+      res.json({
+        success: true,
+        message: "Calendar disconnected successfully"
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to disconnect calendar: " + error.message });
+    }
+  });
+
+  app.post("/api/calendar/sync", async (req, res) => {
+    try {
+      const { calendarId, direction } = req.body;
+      
+      // Mock sync operation
+      // In real implementation, this would:
+      // 1. Fetch events from Google Calendar
+      // 2. Compare with local events
+      // 3. Sync based on direction (bidirectional, import only, export only)
+      
+      const mockSyncResult = {
+        eventCount: Math.floor(Math.random() * 10) + 1,
+        imported: Math.floor(Math.random() * 5),
+        exported: Math.floor(Math.random() * 5),
+        calendarId,
+        direction
+      };
+
+      res.json({
+        success: true,
+        message: "Calendar sync completed",
+        ...mockSyncResult,
+        note: "Google Calendar API integration needs OAuth setup for real sync"
+      });
+      
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to sync calendar: " + error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
