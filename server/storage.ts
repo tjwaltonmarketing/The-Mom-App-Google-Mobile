@@ -58,7 +58,7 @@ import {
   type InsertUserSubscription,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lt, desc, isNull, or } from "drizzle-orm";
+import { eq, and, gte, lt, desc, isNull, or, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User Authentication
@@ -103,6 +103,7 @@ export interface IStorage {
   // Family Members
   getFamilyMembers(): Promise<FamilyMember[]>;
   getFamilyMembersByFamily(familyId: number): Promise<FamilyMember[]>;
+  getFamilyMemberByUserId(userId: number): Promise<FamilyMember | undefined>;
   getFamilyMembersByFamilyId(familyId: number): Promise<FamilyMember[]>;
   getFamilyMember(id: number): Promise<FamilyMember | undefined>;
   createFamilyMember(member: InsertFamilyMember): Promise<FamilyMember>;
@@ -404,6 +405,14 @@ export class DatabaseStorage implements IStorage {
     return member || undefined;
   }
 
+  async getFamilyMemberByUserId(userId: number): Promise<FamilyMember | undefined> {
+    const [member] = await db.select()
+      .from(familyMembers)
+      .where(eq(familyMembers.userId, userId))
+      .limit(1);
+    return member || undefined;
+  }
+
   async createFamilyMember(insertMember: InsertFamilyMember): Promise<FamilyMember> {
     const [member] = await db.insert(familyMembers).values(insertMember).returning();
     return member;
@@ -507,8 +516,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getEventsByFamily(familyId: number): Promise<Event[]> {
+    // Get all family members for this family
+    const familyMemberIds = await db.select({ id: familyMembers.id })
+      .from(familyMembers)
+      .where(eq(familyMembers.familyId, familyId));
+    
+    if (familyMemberIds.length === 0) {
+      return [];
+    }
+    
+    const memberIds = familyMemberIds.map(fm => fm.id);
+    
+    // Get events created by any family member
     return await db.select().from(events)
-      .where(eq(events.familyId, familyId));
+      .where(inArray(events.createdBy, memberIds));
   }
 
   async getTodayEventsByFamily(familyId: number): Promise<Event[]> {
@@ -516,9 +537,21 @@ export class DatabaseStorage implements IStorage {
     const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
     
+    // Get all family members for this family
+    const familyMemberIds = await db.select({ id: familyMembers.id })
+      .from(familyMembers)
+      .where(eq(familyMembers.familyId, familyId));
+    
+    if (familyMemberIds.length === 0) {
+      return [];
+    }
+    
+    const memberIds = familyMemberIds.map(fm => fm.id);
+    
+    // Get today's events created by any family member
     return await db.select().from(events)
       .where(and(
-        eq(events.familyId, familyId),
+        inArray(events.createdBy, memberIds),
         gte(events.startTime, todayStart),
         lt(events.startTime, todayEnd)
       ));
@@ -575,8 +608,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTasksByFamily(familyId: number): Promise<Task[]> {
+    // Get all family members for this family
+    const familyMemberIds = await db.select({ id: familyMembers.id })
+      .from(familyMembers)
+      .where(eq(familyMembers.familyId, familyId));
+    
+    if (familyMemberIds.length === 0) {
+      return [];
+    }
+    
+    const memberIds = familyMemberIds.map(fm => fm.id);
+    
+    // Get tasks created by any family member
     return await db.select().from(tasks)
-      .where(eq(tasks.familyId, familyId));
+      .where(inArray(tasks.createdBy, memberIds));
   }
 
   async getTasksForTodayByFamily(familyId: number): Promise<Task[]> {
@@ -593,9 +638,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPendingTasksByFamily(familyId: number): Promise<Task[]> {
+    // Get all family members for this family
+    const familyMemberIds = await db.select({ id: familyMembers.id })
+      .from(familyMembers)
+      .where(eq(familyMembers.familyId, familyId));
+    
+    if (familyMemberIds.length === 0) {
+      return [];
+    }
+    
+    const memberIds = familyMemberIds.map(fm => fm.id);
+    
+    // Get pending tasks created by any family member
     return await db.select().from(tasks)
       .where(and(
-        eq(tasks.familyId, familyId),
+        inArray(tasks.createdBy, memberIds),
         eq(tasks.isCompleted, false)
       ));
   }

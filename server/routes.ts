@@ -824,7 +824,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const events = await storage.getEventsByFamily(family.id);
       res.json(events);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch events" });
+      console.error("Events fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch events: " + (error as Error).message });
     }
   });
 
@@ -843,7 +844,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const events = await storage.getTodayEventsByFamily(family.id);
       res.json(events);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch today's events" });
+      console.error("Today's events fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch today's events: " + (error as Error).message });
     }
   });
 
@@ -854,13 +856,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Not authenticated" });
       }
 
-      const family = await storage.getFamilyByUserId(userId);
-      if (!family) {
-        return res.status(404).json({ message: "Family not found" });
+      // Get the user's family member record
+      const familyMember = await storage.getFamilyMemberByUserId(userId);
+      if (!familyMember) {
+        return res.status(404).json({ message: "Family member not found" });
       }
 
       // Convert date strings to Date objects if needed
-      const eventData = { ...req.body, familyId: family.id };
+      const eventData = { ...req.body, createdBy: familyMember.id };
       if (eventData.startTime && typeof eventData.startTime === 'string') {
         eventData.startTime = new Date(eventData.startTime);
       }
@@ -872,10 +875,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const event = await storage.createEvent(validatedData);
       res.status(201).json(event);
     } catch (error) {
+      console.error("Event creation error:", error);
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid event data", errors: error.errors });
       } else {
-        res.status(500).json({ message: "Failed to create event" });
+        res.status(500).json({ message: "Failed to create event: " + (error as Error).message });
       }
     }
   });
@@ -896,7 +900,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const tasks = await storage.getTasksByFamily(family.id);
       res.json(tasks);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch tasks" });
+      console.error("Tasks fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch tasks: " + (error as Error).message });
     }
   });
 
@@ -934,7 +939,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const tasks = await storage.getPendingTasksByFamily(family.id);
       res.json(tasks);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch pending tasks" });
+      console.error("Pending tasks fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch pending tasks: " + (error as Error).message });
     }
   });
 
@@ -3217,34 +3223,47 @@ themomapp.us@gmail.com`;
         return res.status(400).json({ message: "Only Google Calendar is supported" });
       }
 
-      // Mock Google OAuth flow response
-      // In a real implementation, this would:
-      // 1. Redirect to Google OAuth
-      // 2. Handle the callback with authorization code
-      // 3. Exchange code for access token
-      // 4. Store tokens securely
-      
-      // For now, simulate successful connection
+      // Simulate Google OAuth flow
+      // In production, this would redirect to Google OAuth
+      const authUrl = `https://accounts.google.com/oauth/authorize?` +
+        `client_id=YOUR_GOOGLE_CLIENT_ID&` +
+        `redirect_uri=${encodeURIComponent(process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/google/callback')}&` +
+        `scope=${encodeURIComponent('https://www.googleapis.com/auth/calendar')}&` +
+        `response_type=code&` +
+        `access_type=offline`;
+
+      // For demo purposes, simulate user selection
       const mockCalendars = [
         {
           id: "primary",
-          name: "Primary Calendar",
+          name: `${req.session?.userEmail || 'Your'} Primary Calendar`,
           description: "Your main Google Calendar",
-          primary: true
+          primary: true,
+          selected: true
         },
         {
-          id: "family@gmail.com",
-          name: "Family Calendar", 
-          description: "Shared family events",
-          primary: false
+          id: "family.shared@gmail.com",
+          name: "Family Shared Calendar", 
+          description: "Shared family events and activities",
+          primary: false,
+          selected: false
+        },
+        {
+          id: "work.calendar@company.com",
+          name: "Work Calendar",
+          description: "Professional meetings and deadlines", 
+          primary: false,
+          selected: false
         }
       ];
 
       res.json({
         success: true,
-        message: "Calendar connected successfully",
+        message: "Google Calendar connection initiated",
+        authUrl, // In production, frontend would redirect here
         calendars: mockCalendars,
-        note: "Google Calendar OAuth integration needs to be configured with API keys"
+        instructions: "To complete setup: 1) Select calendars to sync, 2) Choose sync direction, 3) Confirm connection",
+        note: "Demo mode - Google Calendar OAuth needs client credentials for live connection"
       });
       
     } catch (error: any) {

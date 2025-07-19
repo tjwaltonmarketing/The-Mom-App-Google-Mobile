@@ -28,27 +28,40 @@ export function CalendarSync() {
   const handleConnect = async () => {
     setIsConnecting(true);
     try {
-      // Simulate Google OAuth flow
       const response = await apiRequest("POST", "/api/calendar/connect", {
         provider: "google"
       });
       
       if (response.ok) {
         const data = await response.json();
-        setIsConnected(true);
-        setCalendars(data.calendars || []);
+        
+        // Show calendar selection dialog
         if (data.calendars?.length > 0) {
-          setSelectedCalendar(data.calendars[0].id);
+          setCalendars(data.calendars);
+          // Auto-select primary calendar
+          const primaryCalendar = data.calendars.find((cal: any) => cal.primary);
+          if (primaryCalendar) {
+            setSelectedCalendar(primaryCalendar.id);
+          }
+          setIsConnected(true);
+          
+          toast({
+            title: "Calendars Found",
+            description: `Found ${data.calendars.length} calendar(s). Select which one to sync with.`
+          });
+        } else {
+          toast({
+            title: "No Calendars Found", 
+            description: "No accessible calendars found in your Google account",
+            variant: "destructive"
+          });
         }
-        toast({
-          title: "Calendar Connected",
-          description: "Successfully connected to Google Calendar"
-        });
       }
     } catch (error) {
+      console.error("Calendar connection error:", error);
       toast({
         title: "Connection Failed",
-        description: "Please check your Google account permissions",
+        description: "Failed to connect to Google Calendar. Please try again.",
         variant: "destructive"
       });
     } finally {
