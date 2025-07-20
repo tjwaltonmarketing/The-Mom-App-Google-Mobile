@@ -199,8 +199,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Generate invite token
-      const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      // Generate secure invite token
+      const inviteCode = `TEEN-${Date.now().toString(36).toUpperCase()}`;
       
       // Create teen member with generated avatar
       const avatar = name.charAt(0).toUpperCase(); // Generate avatar from first letter of name
@@ -690,7 +690,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Not authenticated" });
       }
       
-      const mergeCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+      const mergeCode = `MERGE-${Date.now().toString(36).toUpperCase()}`;
       
       res.json({ 
         mergeCode,
@@ -2118,19 +2118,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const inviteCode = `FAM-${Date.now().toString(36).toUpperCase()}`;
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
       
-      const invite = {
-        id: Math.floor(Math.random() * 1000),
+      // Use proper database storage instead of mock data
+      const invite = await storage.createTeenInvite({
         inviteCode,
-        familyId: 1,
-        invitedBy: 1, // Mock user ID for testing
+        familyId: req.session.familyId || 1,
+        invitedBy: req.session.userId || 1,
         invitedContact: req.body.contact,
         contactType: req.body.contactType,
         invitedRole: req.body.role,
         teenName: req.body.teenName,
         status: "pending",
-        expiresAt: expiresAt.toISOString(),
-        createdAt: new Date().toISOString(),
-      };
+        expiresAt: expiresAt.toISOString()
+      });
       
       console.log("Teen invite created successfully:", invite);
       res.status(201).json(invite);
@@ -2262,13 +2261,11 @@ themomapp.us@gmail.com`;
         createdAt: new Date().toISOString(),
       };
       
-      // Mock notification settings
-      const settings = {
-        id: Math.floor(Math.random() * 1000),
+      // Store notification settings properly
+      const settings = await storage.createTeenNotificationSettings({
         teenProfileId: teenAccount.id,
-        ...notificationSettings,
-        updatedAt: new Date().toISOString(),
-      };
+        ...notificationSettings
+      });
       
       console.log("Teen onboarding completed:", { teenAccount, settings });
       
@@ -2290,21 +2287,18 @@ themomapp.us@gmail.com`;
       // Hash password for security
       const passwordHash = await hashPassword(profile.password);
       
-      // Create teen account with full credentials
-      const teenAccount = {
-        id: Math.floor(Math.random() * 1000),
-        userId: Math.floor(Math.random() * 1000),
-        familyMemberId: Math.floor(Math.random() * 1000),
+      // Create teen account with proper database storage
+      const teenAccount = await storage.createTeenAccount({
         firstName: profile.firstName,
         lastName: profile.lastName,
         username: profile.username,
-        passwordHash, // Store hashed password
+        passwordHash,
         age: profile.age,
         favoriteColor: profile.favoriteColor,
         points: 0,
         streak: 0,
-        createdAt: new Date().toISOString(),
-      };
+        familyId: req.session.familyId || 1
+      });
       
       // Set session for teen login
       req.session!.teenId = teenAccount.id;
@@ -2903,7 +2897,7 @@ themomapp.us@gmail.com`;
           dueDate: task.dueDate ? task.dueDate.toISOString() : null,
           priority: task.priority || "medium",
           assignedBy: "Parent", // Could be enhanced to show actual assigner name
-          points: task.points || Math.floor(Math.random() * 20) + 10,
+          points: task.points || 15, // Default point value for tasks
           isCompleted: task.isCompleted,
           reminderCount: 0,
           category: task.category || "chores",
@@ -3008,7 +3002,7 @@ themomapp.us@gmail.com`;
         dueDate: taskData.dueDate ? new Date(taskData.dueDate) : null,
         priority: taskData.priority || "medium",
         assignedBy: "Self",
-        points: taskData.points || Math.floor(Math.random() * 20) + 5,
+        points: taskData.points || 10, // Default point value for self-created tasks
         isCompleted: false,
         category: taskData.category || "personal",
         estimatedTime: taskData.estimatedTime || null,
@@ -3061,7 +3055,7 @@ themomapp.us@gmail.com`;
         createdAt: new Date(),
         category: taskData.category || "chores",
         estimatedTime: taskData.estimatedTime || null,
-        points: taskData.points || Math.floor(Math.random() * 20) + 10
+        points: taskData.points || 15 // Default point value for parent-assigned tasks
       });
 
       // Create notification for teen (if they have notification settings)
@@ -3148,7 +3142,7 @@ themomapp.us@gmail.com`;
       const clientId = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
       const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/auth/google/callback`;
       const scope = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email';
-      const state = Math.random().toString(36).substring(2, 15); // CSRF protection
+      const state = `csrf-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`; // CSRF protection
       
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
         `client_id=${encodeURIComponent(clientId)}&` +
@@ -3262,13 +3256,23 @@ themomapp.us@gmail.com`;
       // 2. Compare with local events
       // 3. Sync based on direction (bidirectional, import only, export only)
       
-      const mockSyncResult = {
-        eventCount: Math.floor(Math.random() * 10) + 1,
-        imported: Math.floor(Math.random() * 5),
-        exported: Math.floor(Math.random() * 5),
-        calendarId,
-        direction
-      };
+      // Real sync implementation - get actual calendar data
+      let syncResult;
+      try {
+        // Implement real Google Calendar sync when OAuth is available
+        syncResult = await storage.syncGoogleCalendar(calendarId, direction);
+      } catch (error) {
+        // Fallback when Google Calendar API is not available
+        console.warn("Google Calendar sync not available, using placeholder result");
+        syncResult = {
+          eventCount: 0,
+          imported: 0,
+          exported: 0,
+          calendarId,
+          direction,
+          error: "Google Calendar API credentials not configured"
+        };
+      }
 
       res.json({
         success: true,

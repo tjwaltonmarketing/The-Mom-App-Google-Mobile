@@ -11,15 +11,9 @@ export function useVoiceRecording({ onTranscript }: UseVoiceRecordingOptions) {
 
   const startRecording = useCallback(() => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      // Fallback for browsers that don't support Speech Recognition
-      console.warn("Speech recognition not supported, using mock transcription");
-      setIsRecording(true);
-      
-      // Simulate transcription for demo purposes
-      setTimeout(() => {
-        onTranscript("This is a simulated voice note transcription. In a real implementation, this would be the actual spoken words converted to text.");
-      }, 2000);
-      
+      // Fallback to show proper error message instead of mock data
+      console.warn("Speech recognition not supported in this browser");
+      onError?.("Speech recognition is not supported in this browser. Please use Chrome, Safari, or Edge for voice features.");
       return;
     }
 

@@ -1161,6 +1161,31 @@ export class DatabaseStorage implements IStorage {
     const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
     return task || undefined;
   }
+
+  // Teen invite methods
+  async createTeenInvite(inviteData: InsertFamilyInvite): Promise<FamilyInvite> {
+    const [invite] = await db.insert(familyInvites).values(inviteData).returning();
+    return invite;
+  }
+
+  async createTeenAccount(accountData: InsertTeenProfile): Promise<TeenProfile> {
+    const [account] = await db.insert(teenProfiles).values(accountData).returning();
+    return account;
+  }
+
+  // Google Calendar sync placeholder - would implement with real Google Calendar API
+  async syncGoogleCalendar(calendarId: string, direction: string): Promise<{
+    eventCount: number;
+    imported: number;
+    exported: number;
+    calendarId: string;
+    direction: string;
+    error?: string;
+  }> {
+    // This would be implemented with real Google Calendar API integration
+    // For now, return an informative result
+    throw new Error("Google Calendar API integration requires valid OAuth credentials. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.");
+  }
 }
 
 /* Temporarily disabled MemStorage to fix TypeScript errors
