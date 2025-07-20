@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { EventModal } from "@/components/event-modal";
 import { EventEditModal } from "@/components/event-edit-modal";
+import { CalendarSync } from "@/components/calendar-sync";
 import { useQuery } from "@tanstack/react-query";
 import type { Event, FamilyMember } from "@shared/schema";
 import { 
@@ -525,6 +526,9 @@ export default function CalendarPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Google Calendar Sync */}
+            <CalendarSync />
           </div>
         </div>
       </main>
