@@ -3141,7 +3141,7 @@ themomapp.us@gmail.com`;
       // Generate a proper Google OAuth URL
       const clientId = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
       const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/auth/google/callback`;
-      const scope = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email';
+      const scope = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email';
       const state = `csrf-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`; // CSRF protection
       
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
@@ -3190,28 +3190,50 @@ themomapp.us@gmail.com`;
         return res.redirect('/?error=no_auth_code');
       }
 
-      // In a real implementation, exchange the code for tokens here
-      const mockCalendars = [
-        {
-          id: "primary",
-          name: "Primary Calendar",
-          description: "Your main Google Calendar",
-          primary: true
-        },
-        {
-          id: "family@example.com",
-          name: "Family Calendar", 
-          description: "Shared family events",
-          primary: false
-        }
-      ];
+      // Exchange authorization code for access tokens
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+      const redirectUri = process.env.GOOGLE_REDIRECT_URI;
 
-      // Store calendar data in session temporarily
-      req.session.googleCalendars = mockCalendars;
+      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code: code as string,
+          client_id: clientId!,
+          client_secret: clientSecret!,
+          redirect_uri: redirectUri!,
+          grant_type: 'authorization_code'
+        })
+      });
+
+      if (!tokenResponse.ok) {
+        const errorData = await tokenResponse.text();
+        console.error('Token exchange failed:', errorData);
+        return res.redirect('/?error=token_exchange_failed');
+      }
+
+      const tokens = await tokenResponse.json();
+      
+      // Fetch actual Google calendars
+      const calendarsResponse = await fetch('https://www.googleapis.com/calendar/v3/calendar/list', {
+        headers: { 'Authorization': `Bearer ${tokens.access_token}` }
+      });
+
+      if (!calendarsResponse.ok) {
+        console.error('Calendar fetch failed:', await calendarsResponse.text());
+        return res.redirect('/?error=calendar_fetch_failed');
+      }
+
+      const calendarsData = await calendarsResponse.json();
+      
+      // Store real calendar data and tokens in session
+      req.session.googleTokens = tokens;
+      req.session.googleCalendars = calendarsData.items || [];
       req.session.googleConnected = true;
 
       // Redirect back to calendar page with success
-      res.redirect('/?calendar_connected=true');
+      res.redirect('/calendar?calendar_connected=true');
       
     } catch (error) {
       console.error('Google callback error:', error);
