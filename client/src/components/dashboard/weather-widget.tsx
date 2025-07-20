@@ -28,7 +28,7 @@ export function WeatherWidget() {
       
       // Fetch weather data from a free weather service
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${position.latitude}&longitude=${position.longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto`
+        `https://api.open-meteo.com/v1/forecast?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto`
       );
       
       if (!response.ok) {
