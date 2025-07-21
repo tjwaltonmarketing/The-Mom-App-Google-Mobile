@@ -43,9 +43,32 @@ export function CalendarSync() {
       const error = urlParams.get('error');
       window.history.replaceState({}, '', window.location.pathname);
       
+      let errorMessage = `OAuth error: ${error}`;
+      let instructions = "";
+      
+      if (error === 'access_denied' || error === 'disallowed_useragent') {
+        errorMessage = "Google OAuth Verification Required";
+        instructions = "Add your email to test users in Google Cloud Console, or wait for app verification. Using demo mode for now.";
+        
+        // Activate demo mode
+        setTimeout(() => {
+          setIsConnected(true);
+          setCalendars([
+            { id: "primary", name: "Your Calendar", primary: true, backgroundColor: "#4285f4" },
+            { id: "family", name: "Family Calendar", primary: false, backgroundColor: "#33b679" }
+          ]);
+          setSelectedCalendar("primary");
+          
+          toast({
+            title: "Demo Mode Active",
+            description: "Calendar sync is in demo mode. Add your email to Google OAuth test users for real access.",
+          });
+        }, 2000);
+      }
+      
       toast({
-        title: "Connection Failed",
-        description: `OAuth error: ${error}`,
+        title: errorMessage,
+        description: instructions || `Error: ${error}`,
         variant: "destructive"
       });
     }
@@ -86,32 +109,8 @@ export function CalendarSync() {
             description: "Opening Google sign-in window...",
           });
           
-          // For unverified apps, we need to provide clear instructions
-          if (data.authUrl.includes('814173562340')) {
-            toast({
-              title: "Google OAuth Setup Required",
-              description: "The app needs to be verified with Google for calendar access. Using demo mode for now.",
-              variant: "destructive"
-            });
-            
-            // Simulate successful connection with demo data
-            setTimeout(() => {
-              setIsConnected(true);
-              setCalendars([
-                { id: "primary", name: "Your Calendar", primary: true, backgroundColor: "#4285f4" },
-                { id: "family", name: "Family Calendar", primary: false, backgroundColor: "#33b679" }
-              ]);
-              setSelectedCalendar("primary");
-              
-              toast({
-                title: "Demo Mode Active",
-                description: "Calendar sync is in demo mode. Contact support for production access.",
-              });
-            }, 1000);
-          } else {
-            // Open Google OAuth for verified apps
-            window.location.href = data.authUrl;
-          }
+          // Always try the real OAuth flow first
+          window.location.href = data.authUrl;
         } else if (data.calendars?.length > 0) {
           // Already authenticated, show calendars
           setCalendars(data.calendars);

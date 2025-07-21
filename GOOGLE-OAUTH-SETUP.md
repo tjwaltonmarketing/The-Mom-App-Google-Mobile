@@ -55,21 +55,45 @@ To enable real Google Calendar sync in production:
 - Ensure HTTPS is properly configured
 - Set up proper OAuth consent screen
 
-## Alternative Solutions
+## Enable Real Testing (Recommended)
+
+### Add Test Users to Google Cloud Console
+
+**This allows your real Google account to access the calendar without full verification:**
+
+1. **Go to Google Cloud Console**
+   - Visit: https://console.cloud.google.com/apis/credentials/consent
+   - Select your project (if you have multiple)
+
+2. **Configure OAuth Consent Screen**
+   - Click "Edit App" or "OAuth consent screen"
+   - Scroll down to "Test users" section
+   - Click "Add users"
+
+3. **Add Your Email**
+   - Add your email: `wearesubsonic@gmail.com` (or the Google account you want to test with)
+   - Click "Save"
+
+4. **Test the Connection**
+   - Go back to The Mom App calendar page
+   - Click "Connect Google Calendar"
+   - You should now be able to authenticate successfully!
+
+### Alternative Solutions
 
 ### Option 1: Use Service Account (Server-to-Server)
 - For organization-wide calendar access
 - Requires Google Workspace admin setup
 - No user consent required once configured
 
-### Option 2: Limited Testing
-- Add specific user emails to test users list
-- Allows testing with up to 100 users before verification
-- Good for beta testing with family/friends
+### Option 2: Full App Verification
+- Submit app for Google OAuth verification
+- Takes 2-6 weeks for review
+- Allows unlimited users
 
 ### Option 3: Publish Status
 - Set OAuth consent screen to "In Production"
-- Allows unverified access but shows warning to users
+- Shows warning to users but allows access
 - Limited to 100 users total
 
 ## Current Demo Mode Features
