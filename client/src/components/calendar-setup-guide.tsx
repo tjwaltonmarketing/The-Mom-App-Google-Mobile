@@ -54,10 +54,23 @@ export function CalendarSetupGuide() {
           </div>
         </div>
 
+        <div className="bg-orange-50 dark:bg-orange-950 p-3 rounded-lg mb-3">
+          <div className="flex items-center gap-2 mb-2">
+            <ExternalLink className="h-4 w-4 text-orange-600" />
+            <span className="font-medium text-orange-700 dark:text-orange-300">Google OAuth Verification Required</span>
+          </div>
+          <p className="text-sm text-orange-600 dark:text-orange-400 mb-2">
+            Google requires apps to be verified before accessing calendar data. Until verification is complete, calendar sync will operate in demo mode.
+          </p>
+          <p className="text-sm text-orange-600 dark:text-orange-400">
+            For production use, the app needs to go through Google's OAuth verification process, which includes security review and policy compliance.
+          </p>
+        </div>
+
         <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle className="h-4 w-4 text-blue-600" />
-            <span className="font-medium text-blue-700 dark:text-blue-300">What gets synced:</span>
+            <span className="font-medium text-blue-700 dark:text-blue-300">What gets synced (when verified):</span>
           </div>
           <ul className="text-sm text-blue-600 dark:text-blue-400 space-y-1">
             <li>• Family events and appointments</li>

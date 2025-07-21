@@ -3141,7 +3141,7 @@ themomapp.us@gmail.com`;
       // Generate a proper Google OAuth URL
       const clientId = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID';
       const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${req.protocol}://${req.get('host')}/auth/google/callback`;
-      const scope = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email';
+      const scope = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email';
       const state = `csrf-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`; // CSRF protection
       
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
