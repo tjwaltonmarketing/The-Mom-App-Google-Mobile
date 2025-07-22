@@ -3369,11 +3369,15 @@ themomapp.us@gmail.com`;
         return res.status(400).json({ message: "User is not a member of any family" });
       }
 
-      // Find the family member record for this user
-      const [userFamilyMember] = await db.select().from(familyMembers).where(eq(familyMembers.userId, userId));
+      // Find the family member record for this user, or use the membership id as fallback
+      let [userFamilyMember] = await db.select().from(familyMembers).where(eq(familyMembers.userId, userId));
       
-      if (!userFamilyMember) {
-        return res.status(400).json({ message: "User family member record not found" });
+      let updatedByValue = userMembership.id; // Use membership ID as fallback
+      
+      if (userFamilyMember) {
+        updatedByValue = userFamilyMember.id;
+      } else {
+        console.log("No family member record found, using membership ID:", updatedByValue);
       }
 
       // Update or create household settings
@@ -3384,7 +3388,7 @@ themomapp.us@gmail.com`;
           .set({
             dishwasherIsClean: isClean,
             dishwasherLastUpdated: new Date(),
-            dishwasherLastUpdatedBy: userFamilyMember.id,
+            dishwasherLastUpdatedBy: updatedByValue,
             updatedAt: new Date()
           })
           .where(eq(householdSettings.familyId, userMembership.familyId))
@@ -3393,7 +3397,7 @@ themomapp.us@gmail.com`;
         [settings] = await db.insert(householdSettings).values({
           familyId: userMembership.familyId,
           dishwasherIsClean: isClean,
-          dishwasherLastUpdatedBy: userFamilyMember.id
+          dishwasherLastUpdatedBy: updatedByValue
         }).returning();
       }
       
