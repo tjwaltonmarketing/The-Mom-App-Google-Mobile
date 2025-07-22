@@ -3312,16 +3312,21 @@ themomapp.us@gmail.com`;
   app.get("/api/household-settings", requireAuth, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      console.log("Getting household settings for user:", userId);
       
       // Get user's family membership to find their familyId
       const userMembership = await storage.getUserFamilyMembership(userId);
+      console.log("User membership:", userMembership);
+      
       if (!userMembership) {
         return res.status(400).json({ message: "User is not a member of any family" });
       }
 
       const settings = await storage.getHouseholdSettings(userMembership.familyId);
+      console.log("Household settings:", settings);
       res.json(settings);
     } catch (error: any) {
+      console.error("Household settings error:", error);
       res.status(500).json({ message: "Failed to get household settings: " + error.message });
     }
   });
