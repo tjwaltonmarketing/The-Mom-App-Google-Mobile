@@ -14,7 +14,7 @@ import { TrialBanner } from "@/components/dashboard/trial-banner";
 import { TutorialCards } from "@/components/dashboard/tutorial-cards";
 import { AdvancedTaskManagement } from "@/components/dashboard/advanced-task-management";
 import { MealPlanning } from "@/components/dashboard/meal-planning";
-import { FreshStart } from "@/components/dashboard/fresh-start";
+
 import { HouseholdStatus } from "@/components/household-status";
 
 import { VoiceNoteModal } from "@/components/voice-note-modal";
@@ -79,7 +79,6 @@ export default function Dashboard() {
 
               {/* Right Column */}
               <div className="space-y-6">
-                <FreshStart />
                 <TutorialCards />
                 <HouseholdStatus />
                 <NotificationDemo />

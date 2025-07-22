@@ -1,6 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useState } from "react";
 import { 
   Play, 
   Clock, 
@@ -9,6 +11,7 @@ import {
   Brain,
   Calendar,
   ChevronRight,
+  ChevronDown,
   Shield
 } from "lucide-react";
 import { Link } from "wouter";
@@ -61,25 +64,36 @@ const getDifficultyColor = (difficulty: "beginner" | "intermediate" | "advanced"
 };
 
 export function TutorialCards() {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-lg">Quick Tutorials</CardTitle>
-            <CardDescription>
-              Learn key features in just a few minutes
-            </CardDescription>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <CollapsibleTrigger className="flex items-center gap-2 hover:opacity-70 transition-opacity">
+                <CardTitle className="text-lg text-left">Quick Tutorials</CardTitle>
+                {isOpen ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </CollapsibleTrigger>
+              <CardDescription>
+                Learn key features in just a few minutes
+              </CardDescription>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/tutorials">
+                View All
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Link>
+            </Button>
           </div>
-          <Button asChild variant="outline" size="sm">
-            <Link href="/tutorials">
-              View All
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
+        </CardHeader>
+        <CollapsibleContent>
+          <CardContent className="space-y-3">
         {quickTutorials.map((tutorial) => (
           <div
             key={tutorial.id}
@@ -127,7 +141,9 @@ export function TutorialCards() {
             </Button>
           </div>
         </div>
-      </CardContent>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 }
