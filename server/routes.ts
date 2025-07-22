@@ -12,7 +12,10 @@ import {
   insertDeadlineSchema,
   insertNotificationSchema,
   insertMealPlanSchema,
-  teenProfiles
+  teenProfiles,
+  familyMemberships,
+  familyMembers,
+  householdSettings
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
