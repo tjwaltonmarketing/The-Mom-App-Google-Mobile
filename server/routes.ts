@@ -3311,18 +3311,33 @@ themomapp.us@gmail.com`;
   // Household Settings API
   app.get("/api/household-settings", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      console.log("Getting household settings for user:", userId);
+      // Get userId from session (this is what requireAuth actually checks)
+      const userId = req.session.userId;
+      console.log("Getting household settings for user:", userId, "session:", req.session.userId);
       
-      // Get user's family membership to find their familyId
-      const userMembership = await storage.getUserFamilyMembership(userId);
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      // Direct database query to bypass TypeScript issues
+      const [userMembership] = await db.select().from(familyMemberships).where(eq(familyMemberships.userId, userId));
       console.log("User membership:", userMembership);
       
       if (!userMembership) {
         return res.status(400).json({ message: "User is not a member of any family" });
       }
 
-      const settings = await storage.getHouseholdSettings(userMembership.familyId);
+      // Get or create household settings
+      let [settings] = await db.select().from(householdSettings).where(eq(householdSettings.familyId, userMembership.familyId));
+      
+      if (!settings) {
+        // Create default settings if they don't exist
+        [settings] = await db.insert(householdSettings).values({
+          familyId: userMembership.familyId,
+          dishwasherIsClean: false
+        }).returning();
+      }
+      
       console.log("Household settings:", settings);
       res.json(settings);
     } catch (error: any) {
@@ -3333,28 +3348,51 @@ themomapp.us@gmail.com`;
 
   app.put("/api/household-settings/dishwasher", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      // Get userId from session (this is what requireAuth actually checks)
+      const userId = req.session.userId;
       const { isClean } = req.body;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
 
       if (typeof isClean !== "boolean") {
         return res.status(400).json({ message: "isClean must be a boolean value" });
       }
 
-      // Get user's family membership
-      const userMembership = await storage.getUserFamilyMembership(userId);
+      // Direct database queries to bypass TypeScript issues
+      const [userMembership] = await db.select().from(familyMemberships).where(eq(familyMemberships.userId, userId));
       if (!userMembership) {
         return res.status(400).json({ message: "User is not a member of any family" });
       }
 
       // Find the family member record for this user
-      const familyMembers = await storage.getFamilyMembersByFamily(userMembership.familyId);
-      const userFamilyMember = familyMembers.find(member => member.userId === userId);
+      const [userFamilyMember] = await db.select().from(familyMembers).where(eq(familyMembers.userId, userId));
       
       if (!userFamilyMember) {
         return res.status(400).json({ message: "User family member record not found" });
       }
 
-      const settings = await storage.updateDishwasherStatus(userMembership.familyId, isClean, userFamilyMember.id);
+      // Update or create household settings
+      let [settings] = await db.select().from(householdSettings).where(eq(householdSettings.familyId, userMembership.familyId));
+      
+      if (settings) {
+        [settings] = await db.update(householdSettings)
+          .set({
+            dishwasherIsClean: isClean,
+            dishwasherLastUpdated: new Date(),
+            dishwasherLastUpdatedBy: userFamilyMember.id,
+            updatedAt: new Date()
+          })
+          .where(eq(householdSettings.familyId, userMembership.familyId))
+          .returning();
+      } else {
+        [settings] = await db.insert(householdSettings).values({
+          familyId: userMembership.familyId,
+          dishwasherIsClean: isClean,
+          dishwasherLastUpdatedBy: userFamilyMember.id
+        }).returning();
+      }
       
       res.json({
         success: true,
@@ -3362,6 +3400,7 @@ themomapp.us@gmail.com`;
         message: `Dishwasher marked as ${isClean ? 'clean' : 'dirty'}`
       });
     } catch (error: any) {
+      console.error("Update dishwasher error:", error);
       res.status(500).json({ message: "Failed to update dishwasher status: " + error.message });
     }
   });
