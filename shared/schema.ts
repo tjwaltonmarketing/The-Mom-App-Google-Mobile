@@ -192,6 +192,16 @@ export const mealPlans = pgTable("meal_plans", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const householdSettings = pgTable("household_settings", {
+  id: serial("id").primaryKey(),
+  familyId: integer("family_id").references(() => families.id).notNull(),
+  dishwasherIsClean: boolean("dishwasher_is_clean").default(false),
+  dishwasherLastUpdated: timestamp("dishwasher_last_updated").defaultNow(),
+  dishwasherLastUpdatedBy: integer("dishwasher_last_updated_by").references(() => familyMembers.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Teen account system tables
 export const familyInvites = pgTable("family_invites", {
   id: serial("id").primaryKey(),
@@ -314,6 +324,12 @@ export const insertGroceryItemSchema = createInsertSchema(groceryItems).omit({
 export const insertMealPlanSchema = createInsertSchema(mealPlans).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertHouseholdSettingsSchema = createInsertSchema(householdSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Teen account schemas
@@ -554,3 +570,6 @@ export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema
 
 export type FamilyMergeRequest = typeof familyMergeRequests.$inferSelect;
 export type InsertFamilyMergeRequest = z.infer<typeof insertFamilyMergeRequestSchema>;
+
+export type HouseholdSettings = typeof householdSettings.$inferSelect;
+export type InsertHouseholdSettings = z.infer<typeof insertHouseholdSettingsSchema>;

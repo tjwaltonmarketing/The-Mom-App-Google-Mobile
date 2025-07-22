@@ -9,6 +9,7 @@ import {
   passwordResetTokens,
   groceryItems,
   mealPlans,
+  householdSettings,
   users,
   userSubscriptions,
   families,
@@ -56,6 +57,8 @@ import {
   type InsertTeenNotificationLog,
   type UserSubscription,
   type InsertUserSubscription,
+  type HouseholdSettings,
+  type InsertHouseholdSettings,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lt, desc, isNull, or, inArray } from "drizzle-orm";
@@ -168,6 +171,10 @@ export interface IStorage {
   getWeeklyMealPlans(): Promise<MealPlan[]>;
   createMealPlan(plan: InsertMealPlan): Promise<MealPlan>;
   deleteMealPlan(id: number): Promise<boolean>;
+
+  // Household Settings
+  getHouseholdSettings(familyId: number): Promise<HouseholdSettings | undefined>;
+  updateDishwasherStatus(familyId: number, isClean: boolean, updatedBy: number): Promise<HouseholdSettings>;
 
   // Teen Account System
   createFamilyInvite(invite: InsertFamilyInvite): Promise<FamilyInvite>;
@@ -1185,6 +1192,44 @@ export class DatabaseStorage implements IStorage {
     // This would be implemented with real Google Calendar API integration
     // For now, return an informative result
     throw new Error("Google Calendar API integration requires valid OAuth credentials. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.");
+  }
+
+  // Household Settings
+  async getHouseholdSettings(familyId: number): Promise<HouseholdSettings | undefined> {
+    const [settings] = await db.select().from(householdSettings).where(eq(householdSettings.familyId, familyId));
+    if (!settings) {
+      // Create default settings if they don't exist
+      const [newSettings] = await db.insert(householdSettings).values({
+        familyId,
+        dishwasherIsClean: false
+      }).returning();
+      return newSettings;
+    }
+    return settings;
+  }
+
+  async updateDishwasherStatus(familyId: number, isClean: boolean, updatedBy: number): Promise<HouseholdSettings> {
+    const existing = await this.getHouseholdSettings(familyId);
+    
+    if (existing) {
+      const [updated] = await db.update(householdSettings)
+        .set({
+          dishwasherIsClean: isClean,
+          dishwasherLastUpdated: new Date(),
+          dishwasherLastUpdatedBy: updatedBy,
+          updatedAt: new Date()
+        })
+        .where(eq(householdSettings.familyId, familyId))
+        .returning();
+      return updated;
+    } else {
+      const [newSettings] = await db.insert(householdSettings).values({
+        familyId,
+        dishwasherIsClean: isClean,
+        dishwasherLastUpdatedBy: updatedBy
+      }).returning();
+      return newSettings;
+    }
   }
 }
 
