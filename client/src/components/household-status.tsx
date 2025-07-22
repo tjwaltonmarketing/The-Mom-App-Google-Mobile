@@ -124,11 +124,11 @@ export function HouseholdStatus() {
         <div className="text-sm text-muted-foreground">
           {settings?.dishwasherIsClean ? (
             <span className="text-green-600 dark:text-green-400 font-medium">
-              ✓ Clean and ready to load
+              ✓ Clean or needs to be unloaded
             </span>
           ) : (
             <span className="text-orange-600 dark:text-orange-400 font-medium">
-              ○ Needs to be unloaded or is dirty
+              ○ Dirty or needs to be loaded
             </span>
           )}
         </div>
