@@ -21,7 +21,7 @@ export function HouseholdStatus() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings, isLoading, error } = useQuery({
     queryKey: ["/api/household-settings"],
     retry: 1
   });
@@ -65,7 +65,7 @@ export function HouseholdStatus() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Household Status</CardTitle>
+          <CardTitle>Dishwasher Status</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-3">
@@ -77,18 +77,34 @@ export function HouseholdStatus() {
     );
   }
 
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Dishwasher Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground py-4">
+            <p className="text-sm">Unable to load dishwasher status</p>
+            <p className="text-xs mt-1">Please refresh the page or try again later</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span>Household Status</span>
+          <span>Dishwasher Status</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <Label htmlFor="dishwasher-status" className="text-base font-medium">
-              Dishwasher is Clean
+              Clean / Dirty
             </Label>
             {settings?.dishwasherLastUpdated && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">

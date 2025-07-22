@@ -3311,12 +3311,15 @@ themomapp.us@gmail.com`;
   // Household Settings API
   app.get("/api/household-settings", requireAuth, async (req: any, res) => {
     try {
-      const familyId = req.user.familyId;
-      if (!familyId) {
-        return res.status(400).json({ message: "No family found for user" });
+      const userId = req.user.id;
+      
+      // Get user's family membership to find their familyId
+      const userMembership = await storage.getUserFamilyMembership(userId);
+      if (!userMembership) {
+        return res.status(400).json({ message: "User is not a member of any family" });
       }
 
-      const settings = await storage.getHouseholdSettings(familyId);
+      const settings = await storage.getHouseholdSettings(userMembership.familyId);
       res.json(settings);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to get household settings: " + error.message });
@@ -3325,27 +3328,28 @@ themomapp.us@gmail.com`;
 
   app.put("/api/household-settings/dishwasher", requireAuth, async (req: any, res) => {
     try {
-      const familyId = req.user.familyId;
       const userId = req.user.id;
       const { isClean } = req.body;
-
-      if (!familyId) {
-        return res.status(400).json({ message: "No family found for user" });
-      }
 
       if (typeof isClean !== "boolean") {
         return res.status(400).json({ message: "isClean must be a boolean value" });
       }
 
-      // Find the family member ID for the user
-      const familyMembers = await storage.getFamilyMembersByFamily(familyId);
+      // Get user's family membership
+      const userMembership = await storage.getUserFamilyMembership(userId);
+      if (!userMembership) {
+        return res.status(400).json({ message: "User is not a member of any family" });
+      }
+
+      // Find the family member record for this user
+      const familyMembers = await storage.getFamilyMembersByFamily(userMembership.familyId);
       const userFamilyMember = familyMembers.find(member => member.userId === userId);
       
       if (!userFamilyMember) {
-        return res.status(400).json({ message: "User is not a family member" });
+        return res.status(400).json({ message: "User family member record not found" });
       }
 
-      const settings = await storage.updateDishwasherStatus(familyId, isClean, userFamilyMember.id);
+      const settings = await storage.updateDishwasherStatus(userMembership.familyId, isClean, userFamilyMember.id);
       
       res.json({
         success: true,

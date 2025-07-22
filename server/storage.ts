@@ -102,6 +102,7 @@ export interface IStorage {
   
   // Family Memberships
   createFamilyMembership(membership: InsertFamilyMembership): Promise<FamilyMembership>;
+  getUserFamilyMembership(userId: number): Promise<FamilyMembership | undefined>;
   
   // Family Members
   getFamilyMembers(): Promise<FamilyMember[]>;
@@ -1192,6 +1193,12 @@ export class DatabaseStorage implements IStorage {
     // This would be implemented with real Google Calendar API integration
     // For now, return an informative result
     throw new Error("Google Calendar API integration requires valid OAuth credentials. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.");
+  }
+
+  // Family membership helper
+  async getUserFamilyMembership(userId: number): Promise<FamilyMembership | undefined> {
+    const [membership] = await db.select().from(familyMemberships).where(eq(familyMemberships.userId, userId));
+    return membership || undefined;
   }
 
   // Household Settings
