@@ -104,7 +104,7 @@ export function HouseholdStatus() {
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <Label htmlFor="dishwasher-status" className="text-base font-medium">
-              Clean / Dirty
+              Dirty / Clean
             </Label>
             {settings?.dishwasherLastUpdated && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
