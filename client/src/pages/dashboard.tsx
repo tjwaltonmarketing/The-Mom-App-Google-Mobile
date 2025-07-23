@@ -11,7 +11,7 @@ import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines";
 import { NotificationDemo } from "@/components/dashboard/notification-demo";
 import { PasswordVault } from "@/components/dashboard/password-vault";
 import { TrialBanner } from "@/components/dashboard/trial-banner";
-import { TutorialCards } from "@/components/dashboard/tutorial-cards";
+
 import { AdvancedTaskManagement } from "@/components/dashboard/advanced-task-management";
 import { MealPlanning } from "@/components/dashboard/meal-planning";
 
@@ -79,12 +79,11 @@ export default function Dashboard() {
 
               {/* Right Column */}
               <div className="space-y-6">
-                <TutorialCards />
+                <QuickActions />
                 <HouseholdStatus />
                 <NotificationDemo />
                 <WeatherWidget />
                 <FamilyProgress />
-                <QuickActions />
                 <UpcomingDeadlines />
               </div>
             </div>
