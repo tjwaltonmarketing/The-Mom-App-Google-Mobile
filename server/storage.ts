@@ -656,13 +656,17 @@ export class DatabaseStorage implements IStorage {
     }
     
     const memberIds = familyMemberIds.map(fm => fm.id);
+    console.log(`DEBUG: Family ${familyId} member IDs:`, memberIds);
     
     // Get pending tasks created by any family member
-    return await db.select().from(tasks)
+    const result = await db.select().from(tasks)
       .where(and(
         inArray(tasks.createdBy, memberIds),
         eq(tasks.isCompleted, false)
       ));
+      
+    console.log(`DEBUG: Found ${result.length} pending tasks for family ${familyId}:`, result.map(t => ({ id: t.id, title: t.title })));
+    return result;
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {

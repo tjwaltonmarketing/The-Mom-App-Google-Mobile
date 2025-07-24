@@ -958,6 +958,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const tasks = await storage.getPendingTasksByFamily(family.id);
+      console.log(`DEBUG API: Returning ${tasks.length} pending tasks:`, tasks.map(t => ({ id: t.id, title: t.title })));
       res.json(tasks);
     } catch (error) {
       console.error("Pending tasks fetch error:", error);
