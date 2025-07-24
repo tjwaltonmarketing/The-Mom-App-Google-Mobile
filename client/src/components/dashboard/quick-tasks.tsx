@@ -18,8 +18,6 @@ export function QuickTasks() {
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks/pending"],
   });
-  
-  console.log('Quick Tasks - Received tasks:', tasks.length, tasks);
 
   const { data: familyMembers = [], isLoading: membersLoading } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
