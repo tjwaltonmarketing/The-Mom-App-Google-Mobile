@@ -254,7 +254,9 @@ export function AdvancedTaskManagement() {
               {task.dueDate && (
                 <div className="flex items-center space-x-1">
                   <Calendar className="h-3 w-3" />
-                  <span>Due: {format(new Date(task.dueDate), 'MMM dd, yyyy')}</span>
+                  <span>
+                    Due: {format(new Date(task.dueDate), 'MMM dd, yyyy')} at {format(new Date(task.dueDate), 'h:mm a')}
+                  </span>
                 </div>
               )}
               <span>

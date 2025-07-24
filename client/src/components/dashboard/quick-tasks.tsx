@@ -115,6 +115,11 @@ export function QuickTasks() {
                       >
                         {task.isCompleted ? 'Completed' : `${task.priority} Priority`}
                       </Badge>
+                      {task.dueDate && (
+                        <span className="text-xs text-gray-500">
+                          Due: {new Date(task.dueDate).toLocaleDateString()} {new Date(task.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
                       <span className="text-xs text-gray-500">
                         {task.isCompleted 
                           ? `Completed by ${getMemberById(task.completedBy)?.name || 'Unknown'}`

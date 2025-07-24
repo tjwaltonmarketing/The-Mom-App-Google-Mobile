@@ -41,6 +41,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/events/today"] });
       toast({
         title: "Task created",
         description: "Your task has been created successfully",
