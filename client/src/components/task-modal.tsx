@@ -25,6 +25,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const [priority, setPriority] = useState<string>("medium");
   const [assignedTo, setAssignedTo] = useState<string>("unassigned");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [dueTime, setDueTime] = useState<string>("");
   const [points, setPoints] = useState<string>("10");
   const { toast } = useToast();
 
@@ -65,12 +66,25 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       return;
     }
 
+    // Combine date and time if both are provided
+    let finalDueDate: Date | null = null;
+    if (dueDate) {
+      if (dueTime) {
+        const [hours, minutes] = dueTime.split(':').map(Number);
+        finalDueDate = new Date(dueDate);
+        finalDueDate.setHours(hours, minutes, 0, 0);
+      } else {
+        finalDueDate = new Date(dueDate);
+        finalDueDate.setHours(9, 0, 0, 0); // Default to 9:00 AM if no time specified
+      }
+    }
+
     const taskData: InsertTask = {
       title: title.trim(),
       description: description.trim() || null,
       priority,
       assignedTo: assignedTo !== "unassigned" ? parseInt(assignedTo) : null,
-      dueDate: dueDate ? dueDate.toISOString() : null,
+      dueDate: finalDueDate ? finalDueDate.toISOString() : null,
       points: parseInt(points),
     };
 
@@ -83,6 +97,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
     setPriority("medium");
     setAssignedTo("unassigned");
     setDueDate(undefined);
+    setDueTime("");
     setPoints("10");
     onClose();
   };
@@ -151,25 +166,25 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium">Points Reward</label>
-              <Select value={points} onValueChange={setPoints}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5 points</SelectItem>
-                  <SelectItem value="10">10 points</SelectItem>
-                  <SelectItem value="15">15 points</SelectItem>
-                  <SelectItem value="20">20 points</SelectItem>
-                  <SelectItem value="25">25 points</SelectItem>
-                  <SelectItem value="30">30 points</SelectItem>
-                  <SelectItem value="50">50 points</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <label className="text-sm font-medium">Points Reward</label>
+            <Select value={points} onValueChange={setPoints}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5 points</SelectItem>
+                <SelectItem value="10">10 points</SelectItem>
+                <SelectItem value="15">15 points</SelectItem>
+                <SelectItem value="20">20 points</SelectItem>
+                <SelectItem value="25">25 points</SelectItem>
+                <SelectItem value="30">30 points</SelectItem>
+                <SelectItem value="50">50 points</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">Due Date</label>
               <Popover>
@@ -194,6 +209,17 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Due Time</label>
+              <Input
+                type="time"
+                value={dueTime}
+                onChange={(e) => setDueTime(e.target.value)}
+                className="mt-1"
+                placeholder="Select time"
+              />
             </div>
           </div>
 
