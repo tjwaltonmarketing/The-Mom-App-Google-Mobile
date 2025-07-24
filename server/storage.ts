@@ -652,15 +652,20 @@ export class DatabaseStorage implements IStorage {
       .where(eq(familyMembers.familyId, familyId));
     
     if (familyMemberIds.length === 0) {
-      return [];
+      // If no family members, return all pending tasks (for backwards compatibility)
+      return await db.select().from(tasks)
+        .where(eq(tasks.isCompleted, false));
     }
     
     const memberIds = familyMemberIds.map(fm => fm.id);
     
-    // Get pending tasks created by any family member
+    // Get pending tasks created by any family member OR tasks with no createdBy (legacy tasks)
     return await db.select().from(tasks)
       .where(and(
-        inArray(tasks.createdBy, memberIds),
+        or(
+          inArray(tasks.createdBy, memberIds),
+          isNull(tasks.createdBy)
+        ),
         eq(tasks.isCompleted, false)
       ));
   }

@@ -959,8 +959,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Family not found" });
       }
 
+      // Get the family member for the current user
+      const familyMember = await storage.getFamilyMemberByUserId(userId);
+      
       // Convert date strings to Date objects if needed
-      const taskData = { ...req.body, familyId: family.id };
+      const taskData = { 
+        ...req.body, 
+        createdBy: familyMember?.id || null
+      };
       if (taskData.dueDate && typeof taskData.dueDate === 'string') {
         taskData.dueDate = new Date(taskData.dueDate);
       }
