@@ -1211,25 +1211,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard stats
-  app.get("/api/dashboard/stats", async (req, res) => {
+  app.get("/api/dashboard/stats", requireAuth, async (req, res) => {
     try {
-      const [todayTasks, todayEvents, allTasks] = await Promise.all([
-        storage.getTasksForToday(),
-        storage.getTodayEvents(),
-        storage.getTasks()
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      // Get user's family ID
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
+      const familyId = family.id;
+
+      // Get family-scoped data
+      const [allTasks, allEvents] = await Promise.all([
+        storage.getTasksByFamily(familyId),
+        storage.getEventsByFamily(familyId)
       ]);
 
+      // Filter for today's data
+      const today = new Date();
+      const todayString = today.toDateString();
+
+      const todayTasks = allTasks.filter(task => {
+        if (!task.dueDate) return false;
+        return new Date(task.dueDate).toDateString() === todayString && !task.isCompleted;
+      });
+
+      const todayEvents = allEvents.filter(event => {
+        const eventDate = new Date(event.startTime);
+        return eventDate.toDateString() === todayString;
+      });
+
+      // Calculate weekly completion rate
       const completedTasks = allTasks.filter(task => task.isCompleted).length;
       const totalTasks = allTasks.length;
       const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
       res.json({
-        todayTasks: todayTasks.filter(task => !task.isCompleted).length,
+        todayTasks: todayTasks.length,
         todayEvents: todayEvents.length,
         weeklyTasksCompletion: completionRate,
-        familyEventsAttended: 100 // Mock data as requested in design
+        familyEventsAttended: Math.min(100, allEvents.length * 10) // Dynamic calculation based on events
       });
     } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
     }
   });

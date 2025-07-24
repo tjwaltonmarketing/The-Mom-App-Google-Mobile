@@ -113,6 +113,7 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events/today"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       toast({
         title: "Event created",
         description: "Your event has been added to the calendar.",
