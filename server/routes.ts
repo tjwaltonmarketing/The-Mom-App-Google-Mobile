@@ -860,9 +860,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get the user's family member record
-      const familyMember = await storage.getFamilyMemberByUserId(userId);
+      let familyMember = await storage.getFamilyMemberByUserId(userId);
       if (!familyMember) {
-        return res.status(404).json({ message: "Family member not found" });
+        // Try to get user and family info to create missing family member
+        const user = await storage.getUserById(userId);
+        const family = await storage.getFamilyByUserId(userId);
+        
+        if (user && family) {
+          // Create a family member record for this user
+          const newMember = await storage.createFamilyMember({
+            name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+            role: 'parent',
+            userId: userId,
+            familyId: family.id,
+            canLogin: true,
+            isActive: true,
+            color: '#3B82F6'
+          });
+          familyMember = newMember;
+        } else {
+          return res.status(404).json({ message: "Family member not found and could not be created" });
+        }
       }
 
       // Convert date strings to Date objects if needed
