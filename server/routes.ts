@@ -707,61 +707,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/family/merge", requireAuth, async (req, res) => {
-    try {
-      const user = await getCurrentUser(req);
-      if (!user) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-      
-      const { partnerEmail } = req.body;
-      
-      if (!partnerEmail) {
-        return res.status(400).json({ error: "Partner email is required" });
-      }
-      
-      // Find partner user
-      const partner = await storage.getUserByEmail(partnerEmail);
-      if (!partner) {
-        return res.status(404).json({ error: "Partner not found. They need to create an account first." });
-      }
-      
-      // Get both families
-      const userFamily = await storage.getUserFamily(user.id);
-      const partnerFamily = await storage.getUserFamily(partner.id);
-      
-      if (!userFamily || !partnerFamily) {
-        return res.status(404).json({ error: "Family not found" });
-      }
-      
-      if (userFamily.id === partnerFamily.id) {
-        return res.status(400).json({ error: "You're already in the same family" });
-      }
-      
-      // Move all members from partner's family to user's family
-      const partnerMembers = await storage.getFamilyMembersByFamilyId(partnerFamily.id);
-      for (const member of partnerMembers) {
-        await storage.updateFamilyMember(member.id, { familyId: userFamily.id });
-      }
-      
-      // Move all events and tasks from partner's family to user's family
-      await storage.moveEventsToFamily(partnerFamily.id, userFamily.id);
-      await storage.moveTasksToFamily(partnerFamily.id, userFamily.id);
-      
-      // Update partner's family membership
-      await storage.updateUserFamily(partner.id, userFamily.id);
-      
-      res.json({ 
-        success: true, 
-        message: "Families merged successfully! Your partner is now part of your family.",
-        mergedFamilyName: userFamily.name
-      });
-    } catch (error) {
-      console.error("Family merge error:", error);
-      res.status(500).json({ error: "Failed to merge families" });
-    }
-  });
-
   // Parent account linking and invites
   app.post("/api/family/invite-parent", async (req, res) => {
     try {
