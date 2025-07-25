@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
+import logoPath from "@assets/The Mom app (2)_1753471031852.png";
 
 interface SplashScreenProps {
   isLoading: boolean;
@@ -41,7 +41,6 @@ export function SplashScreen({ isLoading, onComplete }: SplashScreenProps) {
             src={logoPath} 
             alt="The Mom App" 
             className="w-64 h-64 object-contain animate-pulse"
-            style={{ background: 'transparent' }}
           />
           {/* Subtle glow effect behind the logo */}
           <div className="absolute inset-0 bg-gradient-to-r from-pink-200/20 to-purple-200/20 rounded-full blur-xl animate-pulse -z-10" />
