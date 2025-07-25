@@ -35,20 +35,19 @@ const queryClient = new QueryClient({
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [splashCompleted, setSplashCompleted] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
 
-  // Show splash screen on initial load only if we're still loading auth
-  if (!splashCompleted && isLoading) {
+  // Show splash screen on initial load for a minimum duration
+  if (!splashCompleted && initialLoad) {
     return (
       <SplashScreen 
         isLoading={isLoading} 
-        onComplete={() => setSplashCompleted(true)} 
+        onComplete={() => {
+          setSplashCompleted(true);
+          setInitialLoad(false);
+        }} 
       />
     );
-  }
-
-  // Mark splash as completed if auth is no longer loading
-  if (!splashCompleted && !isLoading) {
-    setSplashCompleted(true);
   }
 
   // Check if user is a teen based on session or user data

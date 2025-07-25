@@ -68,16 +68,14 @@ export default function Login() {
       return await response.json();
     },
     onSuccess: (data: any) => {
-      // Store token in localStorage for mobile compatibility
-      if (data.token && typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem('auth_token', data.token);
-      }
-      
-      // Set the user data immediately and invalidate to trigger re-fetch
-      queryClient.setQueryData(["/api/auth/user"], data.user);
+      // Clear all cached data and refetch user info
+      queryClient.clear();
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      // Navigate to dashboard
-      setLocation("/");
+      
+      // Small delay to ensure session is established, then navigate
+      setTimeout(() => {
+        setLocation("/");
+      }, 100);
     },
     onError: (error: any) => {
       // Enhanced error reporting for mobile
