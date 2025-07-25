@@ -905,7 +905,7 @@ export default function SettingsPage() {
 
         {/* Add Family Member Dialog */}
         <Dialog open={showAddMemberDialog} onOpenChange={setShowAddMemberDialog}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto top-[5%] sm:top-[50%] translate-y-0 sm:-translate-y-1/2">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Plus className="h-5 w-5 text-primary" />
@@ -916,7 +916,7 @@ export default function SettingsPage() {
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmitAddMember)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmitAddMember)} className="space-y-4 pb-4">
                 <FormField
                   control={form.control}
                   name="name"
@@ -924,7 +924,18 @@ export default function SettingsPage() {
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter family member's name" {...field} />
+                        <Input 
+                          placeholder="Enter family member's name" 
+                          {...field}
+                          onFocus={(e) => {
+                            setTimeout(() => {
+                              e.target.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'center' 
+                              });
+                            }, 100);
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -963,7 +974,18 @@ export default function SettingsPage() {
                     <FormItem>
                       <FormLabel>Phone Number (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter phone number" {...field} />
+                        <Input 
+                          placeholder="Enter phone number" 
+                          {...field}
+                          onFocus={(e) => {
+                            setTimeout(() => {
+                              e.target.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'center' 
+                              });
+                            }, 100);
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -976,7 +998,19 @@ export default function SettingsPage() {
                     <FormItem>
                       <FormLabel>Email (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter email address" type="email" {...field} />
+                        <Input 
+                          placeholder="Enter email address" 
+                          type="email" 
+                          {...field}
+                          onFocus={(e) => {
+                            setTimeout(() => {
+                              e.target.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'center' 
+                              });
+                            }, 100);
+                          }}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -1022,6 +1056,14 @@ export default function SettingsPage() {
                             placeholder="#3b82f6" 
                             {...field}
                             className="flex-1"
+                            onFocus={(e) => {
+                              setTimeout(() => {
+                                e.target.scrollIntoView({ 
+                                  behavior: 'smooth', 
+                                  block: 'center' 
+                                });
+                              }, 100);
+                            }}
                           />
                         </div>
                       </FormControl>
