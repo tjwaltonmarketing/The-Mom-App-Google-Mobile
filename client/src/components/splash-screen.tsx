@@ -40,10 +40,11 @@ export function SplashScreen({ isLoading, onComplete }: SplashScreenProps) {
           <img 
             src={logoPath} 
             alt="The Mom App" 
-            className="w-48 h-48 object-contain animate-pulse"
+            className="w-64 h-64 object-contain animate-pulse"
+            style={{ background: 'transparent' }}
           />
-          {/* Subtle glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-pink-200/20 to-purple-200/20 rounded-full blur-xl animate-pulse" />
+          {/* Subtle glow effect behind the logo */}
+          <div className="absolute inset-0 bg-gradient-to-r from-pink-200/20 to-purple-200/20 rounded-full blur-xl animate-pulse -z-10" />
         </div>
         
         {/* App title */}
