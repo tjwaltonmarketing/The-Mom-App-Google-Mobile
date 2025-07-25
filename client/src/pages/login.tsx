@@ -68,11 +68,6 @@ export default function Login() {
       return await response.json();
     },
     onSuccess: (data: any) => {
-      toast({
-        title: "Success",
-        description: "Logged in successfully!",
-      });
-      
       // Store token in localStorage for mobile compatibility
       if (data.token && typeof window !== 'undefined' && window.localStorage) {
         localStorage.setItem('auth_token', data.token);
