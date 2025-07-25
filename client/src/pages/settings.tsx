@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star } from "lucide-react";
+import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star, Mail } from "lucide-react";
 import { Link } from "wouter";
 import { CalendarSync } from "@/components/calendar-sync";
 import { ImportExportModal } from "@/components/import-export-modal";
@@ -687,22 +687,86 @@ export default function SettingsPage() {
                   </div>
                 )}
                 
-                <Button variant="outline" className="w-full justify-start" onClick={handleAddFamilyMember}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Family Member
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => setShowParentInviteModal(true)}>
-                  <Users className="h-4 w-4 mr-2" />
-                  Invite Parent to Family
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => setShowInviteTeenModal(true)}>
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Invite Teen to Family
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => setShowFamilyMergeDialog(true)}>
-                  <Heart className="h-4 w-4 mr-2" />
-                  Merge with Partner's Family
-                </Button>
+                {/* Add Family Member Options */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-sm text-muted-foreground">Add New Family Members</h4>
+                  
+                  {/* Option 1: Add Child/Teen Profile */}
+                  <div className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                        <Plus className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-medium">Add Child or Teen Profile</h5>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Create a coordination profile for children or teens. Perfect for assigning chores, tracking activities, and family planning. No account needed.
+                        </p>
+                        <Button variant="outline" size="sm" onClick={handleAddFamilyMember}>
+                          <Plus className="h-3 w-3 mr-2" />
+                          Add Profile
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Option 2: Invite New Parent */}
+                  <div className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                        <UserPlus className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-medium">Invite New Parent</h5>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Send an invitation to a parent who doesn't have an account yet. They'll get an email invitation to create their own account and join your family.
+                        </p>
+                        <Button variant="outline" size="sm" onClick={() => setShowParentInviteModal(true)}>
+                          <Mail className="h-3 w-3 mr-2" />
+                          Send Invitation
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Option 3: Connect Existing Parent */}
+                  <div className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                        <Heart className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-medium">Connect Existing Parent Account</h5>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          If your partner already has a Mom App account, merge your families together. This combines all your family data into one unified system.
+                        </p>
+                        <Button variant="outline" size="sm" onClick={() => setShowFamilyMergeDialog(true)}>
+                          <Heart className="h-3 w-3 mr-2" />
+                          Merge Families
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Teen Invite (keeping separate for clarity) */}
+                  <div className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                        <Users className="h-4 w-4 text-orange-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h5 className="font-medium">Invite Teen with App Access</h5>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Give older teens their own login to view tasks, earn points, and access family information. Includes gamification and parental oversight.
+                        </p>
+                        <Button variant="outline" size="sm" onClick={() => setShowInviteTeenModal(true)}>
+                          <Users className="h-3 w-3 mr-2" />
+                          Create Teen Account
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <Button variant="outline" className="w-full justify-start" onClick={handleEditMemberRoles}>
                   Edit Member Roles
                 </Button>
@@ -909,10 +973,10 @@ export default function SettingsPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Plus className="h-5 w-5 text-primary" />
-                Add Family Member
+                Create Family Profile
               </DialogTitle>
               <DialogDescription>
-                Add a new family member to your coordination system.
+                Create a coordination profile for a family member. Perfect for children, teens, or family members who don't need their own login account. For parents who need account access, use the invite options instead.
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
@@ -972,10 +1036,10 @@ export default function SettingsPage() {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone Number (Optional)</FormLabel>
+                      <FormLabel>Phone Number (Optional - For Notifications)</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Enter phone number" 
+                          placeholder="Enter phone number for SMS notifications" 
                           {...field}
                           onFocus={(e) => {
                             setTimeout(() => {
@@ -996,10 +1060,10 @@ export default function SettingsPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email (Optional)</FormLabel>
+                      <FormLabel>Email (Optional - For Notifications)</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Enter email address" 
+                          placeholder="Enter email address for notifications" 
                           type="email" 
                           {...field}
                           onFocus={(e) => {
