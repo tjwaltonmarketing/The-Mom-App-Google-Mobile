@@ -68,14 +68,16 @@ export default function Login() {
       return await response.json();
     },
     onSuccess: (data: any) => {
-      // Clear all cached data and refetch user info
+      // Clear all cached data first
       queryClient.clear();
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
-      // Small delay to ensure session is established, then navigate
+      // Wait longer for session to be established, then refetch and navigate
       setTimeout(() => {
-        setLocation("/");
-      }, 100);
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        setTimeout(() => {
+          setLocation("/");
+        }, 200);
+      }, 500);
     },
     onError: (error: any) => {
       // Enhanced error reporting for mobile
