@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -107,9 +107,47 @@ export function ParentInviteModal({ isOpen, onClose }: ParentInviteModalProps) {
     inviteParentMutation.mutate(data);
   };
 
+  // Handle mobile keyboard visibility
+  useEffect(() => {
+    const handleFocus = (event: FocusEvent) => {
+      const target = event.target as HTMLElement;
+      if (target && target.tagName === 'INPUT') {
+        // Small delay to ensure keyboard is shown
+        setTimeout(() => {
+          target.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          });
+        }, 300);
+      }
+    };
+
+    const handleBlur = () => {
+      // Reset viewport when keyboard closes
+      setTimeout(() => {
+        if (window.innerHeight < window.outerHeight * 0.75) {
+          // Keyboard might still be open, don't scroll yet
+          return;
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+    };
+
+    if (isOpen) {
+      document.addEventListener('focusin', handleFocus);
+      document.addEventListener('focusout', handleBlur);
+    }
+
+    return () => {
+      document.removeEventListener('focusin', handleFocus);
+      document.removeEventListener('focusout', handleBlur);
+    };
+  }, [isOpen]);
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto top-[10%] sm:top-[50%] translate-y-0 sm:-translate-y-1/2 fixed">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
@@ -122,7 +160,7 @@ export function ParentInviteModal({ isOpen, onClose }: ParentInviteModalProps) {
 
         {!inviteResult ? (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-4">
               <FormField
                 control={form.control}
                 name="email"
@@ -136,6 +174,15 @@ export function ParentInviteModal({ isOpen, onClose }: ParentInviteModalProps) {
                           placeholder="parent@example.com"
                           className="pl-10"
                           {...field}
+                          onFocus={(e) => {
+                            // Ensure input is visible on mobile
+                            setTimeout(() => {
+                              e.target.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'center' 
+                              });
+                            }, 100);
+                          }}
                         />
                       </div>
                     </FormControl>
