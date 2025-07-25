@@ -776,19 +776,30 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Teen Point Management Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Star className="h-5 w-5 text-yellow-500" />
-                Teen Reward Management
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Manage points and rewards for teen family members
-              </p>
-              
-              {/* Demo teen for point management */}
-              <TeenPointManager teenId={123} teenName="Adri Walton" />
-            </div>
+            {/* Teen Point Management Section - Only show if there are teen family members */}
+            {familyMembers.some(member => member.role === 'teen') && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Star className="h-5 w-5 text-yellow-500" />
+                  Teen Reward Management
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Manage points and rewards for teen family members
+                </p>
+                
+                {/* Show Teen Point Manager for each teen family member */}
+                {familyMembers
+                  .filter(member => member.role === 'teen')
+                  .map(teenMember => (
+                    <TeenPointManager 
+                      key={teenMember.id} 
+                      teenId={teenMember.id} 
+                      teenName={teenMember.name} 
+                    />
+                  ))
+                }
+              </div>
+            )}
 
             <Card>
               <CardHeader>

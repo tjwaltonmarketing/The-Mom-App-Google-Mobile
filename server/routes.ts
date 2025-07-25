@@ -2629,27 +2629,11 @@ themomapp.us@gmail.com`;
         return res.status(400).json({ error: "Invalid teen ID" });
       }
       
-      // Get teen profile from database or create default demo data
-      let teenProfile = await storage.getTeenProfile(teenId);
+      // Get teen profile from database
+      const teenProfile = await storage.getTeenProfile(teenId);
       
       if (!teenProfile) {
-        // Create default demo teen profile for ID 123
-        if (teenId === 123) {
-          teenProfile = await storage.createTeenProfile({
-            userId: 123,
-            familyMemberId: 1,
-            firstName: "Adri",
-            lastName: "Walton",
-            username: "adri_w",
-            age: 16,
-            favoriteColor: "purple",
-            points: 285,
-            streak: 12,
-            lastActivityDate: new Date()
-          });
-        } else {
-          return res.status(404).json({ error: "Teen not found" });
-        }
+        return res.status(404).json({ error: "Teen not found" });
       }
       
       res.json({
