@@ -36,8 +36,8 @@ function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [splashCompleted, setSplashCompleted] = useState(false);
 
-  // Show splash screen on initial load
-  if (!splashCompleted) {
+  // Show splash screen on initial load only if we're still loading auth
+  if (!splashCompleted && isLoading) {
     return (
       <SplashScreen 
         isLoading={isLoading} 
@@ -46,8 +46,13 @@ function Router() {
     );
   }
 
+  // Mark splash as completed if auth is no longer loading
+  if (!splashCompleted && !isLoading) {
+    setSplashCompleted(true);
+  }
+
   // Check if user is a teen based on session or user data
-  const isTeenUser = user?.role === 'teen' || (typeof window !== 'undefined' && window.sessionStorage?.getItem('teenId'));
+  const isTeenUser = (user as any)?.role === 'teen' || (typeof window !== 'undefined' && window.sessionStorage?.getItem('teenId'));
 
   return (
     <Switch>
