@@ -68,16 +68,25 @@ export default function Login() {
       return await response.json();
     },
     onSuccess: (data: any) => {
-      // Clear all cached data first
-      queryClient.clear();
+      console.log("Login successful, user data:", data);
       
-      // Wait longer for session to be established, then refetch and navigate
+      // Set user data immediately to avoid authentication delay
+      if (data.user) {
+        queryClient.setQueryData(["/api/auth/user"], data.user);
+      }
+      
+      // Clear other cached data but keep the user data
+      queryClient.removeQueries({ 
+        predicate: (query) => query.queryKey[0] !== "/api/auth/user" 
+      });
+      
+      // Navigate immediately since we have the user data
+      setLocation("/");
+      
+      // Invalidate in the background to ensure fresh data
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        setTimeout(() => {
-          setLocation("/");
-        }, 200);
-      }, 500);
+      }, 100);
     },
     onError: (error: any) => {
       // Enhanced error reporting for mobile
