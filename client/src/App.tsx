@@ -1,114 +1,96 @@
+import { useState } from "react";
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "@/components/theme-provider";
-import { LoadingProvider } from "@/components/ui/loading-provider";
-import { PageLoadingHandler } from "@/components/ui/page-loading";
-import { useNotifications } from "@/hooks/use-notifications";
 import { useAuth } from "@/hooks/useAuth";
-import Dashboard from "@/pages/dashboard";
-import CalendarPage from "@/pages/calendar";
-import TasksPage from "@/pages/tasks";
-import MealPlanPage from "@/pages/meal-plan";
-import GroceryListPage from "@/pages/grocery-list";
-import FamilyChatPage from "@/pages/family-chat";
-import SubscriptionPage from "@/pages/subscription";
-import AIAssistantPage from "@/pages/ai-assistant";
-import SettingsPage from "@/pages/settings";
-import TutorialsPage from "@/pages/tutorials";
-import VoiceTestPage from "@/pages/voice-test";
-import TeenTestPage from "@/pages/teen-test";
-import TeenOnboardingDemo from "@/pages/teen-onboarding-demo";
-import TeenOnboarding from "@/pages/teen-onboarding";
-import TeenLogin from "@/pages/teen-login";
-import TeenDashboard from "@/pages/teen-dashboard";
-import TeenCalendar from "@/pages/teen-calendar";
-import TeenProfile from "@/pages/teen-profile";
-import TeenTutorial from "@/pages/teen-tutorial";
-import TeenPasswords from "@/pages/teen-passwords";
-import TeenTasks from "@/pages/teen-tasks";
+import { SplashScreen } from "@/components/splash-screen";
+
+// Pages
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
+import Dashboard from "@/pages/dashboard";
+import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
+import Calendar from "@/pages/calendar";
+import Tasks from "@/pages/tasks";
+import TeenLogin from "@/pages/teen-login";
+import TeenOnboarding from "@/pages/teen-onboarding";
+import TeenDashboard from "@/pages/teen-dashboard";
+import TeenProfile from "@/pages/teen-profile";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: (failureCount, error: any) => {
+        if (error?.message?.includes('401')) return false;
+        return failureCount < 3;
+      },
+    },
+  },
+});
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const [splashCompleted, setSplashCompleted] = useState(false);
 
-  if (isLoading) {
+  // Show splash screen on initial load
+  if (!splashCompleted) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
+      <SplashScreen 
+        isLoading={isLoading} 
+        onComplete={() => setSplashCompleted(true)} 
+      />
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <Switch>
-        <Route path="/register" component={Register} />
-        <Route path="/login" component={Login} />
-        <Route path="/forgot-password" component={ForgotPassword} />
-        <Route path="/reset-password" component={ResetPassword} />
-        <Route path="/teen-onboarding-demo" component={TeenOnboardingDemo} />
-        <Route path="/teen-onboarding" component={TeenOnboarding} />
-        <Route path="/teen-login" component={TeenLogin} />
-        <Route path="/teen-dashboard" component={TeenDashboard} />
-        <Route path="/teen-calendar" component={TeenCalendar} />
-        <Route path="/teen-profile" component={TeenProfile} />
-        <Route path="/teen-tutorial" component={TeenTutorial} />
-        <Route path="/teen-passwords" component={TeenPasswords} />
-        <Route path="/teen-tasks" component={TeenTasks} />
-        <Route component={Login} />
-      </Switch>
-    );
-  }
+  // Check if user is a teen based on session or user data
+  const isTeenUser = user?.role === 'teen' || (typeof window !== 'undefined' && window.sessionStorage?.getItem('teenId'));
 
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/calendar" component={CalendarPage} />
-      <Route path="/tasks" component={TasksPage} />
-      <Route path="/meal-plan" component={MealPlanPage} />
-      <Route path="/grocery-list" component={GroceryListPage} />
-      <Route path="/family-chat" component={FamilyChatPage} />
-      <Route path="/subscription" component={SubscriptionPage} />
-      <Route path="/ai-assistant" component={AIAssistantPage} />
-      <Route path="/settings" component={SettingsPage} />
-      <Route path="/tutorials" component={TutorialsPage} />
-      <Route path="/voice-test" component={VoiceTestPage} />
-      <Route path="/teen-test" component={TeenTestPage} />
-      <Route path="/teen-onboarding" component={TeenOnboarding} />
-      <Route path="/teen-login" component={TeenLogin} />
-      <Route path="/teen-dashboard" component={TeenDashboard} />
-      <Route path="/teen-calendar" component={TeenCalendar} />
-      <Route path="/teen-profile" component={TeenProfile} />
-      <Route component={NotFound} />
+      {/* Public routes - always accessible */}
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/teen/login" component={TeenLogin} />
+      <Route path="/teen/join" component={TeenOnboarding} />
+
+      {/* Teen routes - for teen users */}
+      {isTeenUser ? (
+        <>
+          <Route path="/" component={TeenDashboard} />
+          <Route path="/profile" component={TeenProfile} />
+          <Route component={NotFound} />
+        </>
+      ) : (
+        // Parent/Admin routes - for authenticated users
+        <>
+          {isLoading || !isAuthenticated ? (
+            <Route path="/" component={Login} />
+          ) : (
+            <>
+              <Route path="/" component={Dashboard} />
+              <Route path="/settings" component={Settings} />
+              <Route path="/calendar" component={Calendar} />
+              <Route path="/tasks" component={Tasks} />
+            </>
+          )}
+          <Route component={NotFound} />
+        </>
+      )}
     </Switch>
   );
 }
 
-function NotificationWrapper() {
-  useNotifications(); // Initialize notification system
-  return <Router />;
-}
-
-function App() {
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <LoadingProvider>
-          <TooltipProvider>
-            <Toaster />
-            <NotificationWrapper />
-          </TooltipProvider>
-        </LoadingProvider>
-      </ThemeProvider>
+      <Router />
+      <Toaster />
     </QueryClientProvider>
   );
 }
-
-export default App;
