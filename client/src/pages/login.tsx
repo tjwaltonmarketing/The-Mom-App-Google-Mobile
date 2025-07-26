@@ -70,23 +70,16 @@ export default function Login() {
     onSuccess: (data: any) => {
       console.log("Login successful, user data:", data);
       
-      // Set user data immediately to avoid authentication delay
+      // Set user data immediately and navigate
       if (data.user) {
         queryClient.setQueryData(["/api/auth/user"], data.user);
+        
+        // Navigate immediately
+        setLocation("/");
+        
+        // Don't invalidate the query - let it refresh naturally on next request
+        // This prevents the authentication state from flickering
       }
-      
-      // Clear other cached data but keep the user data
-      queryClient.removeQueries({ 
-        predicate: (query) => query.queryKey[0] !== "/api/auth/user" 
-      });
-      
-      // Navigate immediately since we have the user data
-      setLocation("/");
-      
-      // Invalidate in the background to ensure fresh data
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      }, 100);
     },
     onError: (error: any) => {
       // Enhanced error reporting for mobile
