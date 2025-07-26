@@ -84,9 +84,14 @@ export default function SettingsPage() {
   const [billingPreference, setBillingPreference] = useState<string>("keep_mine");
 
   // Fetch existing family members
-  const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
+  const { data: familyMembers = [], isLoading: isFamilyMembersLoading, error: familyMembersError } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
   });
+
+  // Debug family members data
+  console.log("Family members data:", familyMembers);
+  console.log("Family members loading:", isFamilyMembersLoading);
+  console.log("Family members error:", familyMembersError);
 
   // Fetch pending merge requests
   const { data: mergeRequests = [] } = useQuery<any[]>({
