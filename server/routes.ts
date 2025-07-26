@@ -601,17 +601,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       if (!userId) {
+        console.log("Family members API: No userId in session");
         return res.status(401).json({ message: "Not authenticated" });
       }
+
+      console.log("Family members API: User ID:", userId);
 
       // Get user's family
       const family = await storage.getFamilyByUserId(userId);
       if (!family) {
+        console.log("Family members API: No family found for user", userId);
         return res.status(404).json({ message: "Family not found" });
       }
 
+      console.log("Family members API: Found family:", family.id, family.name);
+
       // Get family members for this specific family
       const members = await storage.getFamilyMembersByFamily(family.id);
+      console.log("Family members API: Found members:", members.length);
       res.json(members);
     } catch (error) {
       console.error("Get family members error:", error);
