@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/useAuth";
 import { SplashScreen } from "@/components/splash-screen";
+import { ThemeProvider } from "@/components/theme-provider";
 
 // Pages
 import Login from "@/pages/login";
@@ -96,8 +97,10 @@ function Router() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <ThemeProvider>
+        <Router />
+        <Toaster />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
