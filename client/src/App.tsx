@@ -37,6 +37,9 @@ function Router() {
   const [splashCompleted, setSplashCompleted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
 
+  // Debug authentication state
+  console.log("Auth state:", { isAuthenticated, isLoading, hasUser: !!user });
+
   // Show splash screen on initial load for a minimum duration
   if (!splashCompleted && initialLoad) {
     return (
@@ -73,7 +76,7 @@ function Router() {
       ) : (
         // Parent/Admin routes - for authenticated users
         <>
-          {isLoading || !isAuthenticated ? (
+          {!isAuthenticated ? (
             <Route path="/" component={Login} />
           ) : (
             <>
