@@ -597,7 +597,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Family Members
-  app.get("/api/family-members", requireAuth, async (req, res) => {
+  app.get("/api/family-members", async (req, res) => {
     try {
       const userId = req.session.userId;
       if (!userId) {
