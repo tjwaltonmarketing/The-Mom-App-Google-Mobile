@@ -603,14 +603,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("UserId:", req.session?.userId);
     
     try {
-      // For debugging, let's use a hardcoded user ID
-      const userId = req.session?.userId || 6; // Default to user 6 for testing
-      console.log("Family members API: Using User ID:", userId);
+      // Use the getCurrentUser utility that handles both session and JWT token auth
+      const user = await getCurrentUser(req);
+      if (!user) {
+        console.log("Family members API: User not authenticated");
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      console.log("Family members API: Using User ID:", user.id);
 
       // Get user's family
-      const family = await storage.getFamilyByUserId(userId);
+      const family = await storage.getFamilyByUserId(user.id);
       if (!family) {
-        console.log("Family members API: No family found for user", userId);
+        console.log("Family members API: No family found for user", user.id);
         return res.status(404).json({ message: "Family not found" });
       }
 
