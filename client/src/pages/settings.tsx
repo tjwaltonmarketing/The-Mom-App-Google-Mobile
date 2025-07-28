@@ -92,6 +92,11 @@ export default function SettingsPage() {
   console.log("Family members data:", familyMembers);
   console.log("Family members loading:", isFamilyMembersLoading);
   console.log("Family members error:", familyMembersError);
+  
+  // Debug cookies in browser
+  useEffect(() => {
+    console.log("Current document cookies:", document.cookie);
+  }, []);
 
   // Fetch pending merge requests
   const { data: mergeRequests = [] } = useQuery<any[]>({

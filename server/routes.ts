@@ -604,6 +604,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("=== FAMILY MEMBERS API CALLED ===");
     console.log("Session:", req.session?.id);
     console.log("UserId:", req.session?.userId);
+    console.log("Cookies:", req.headers.cookie);
+    console.log("Authorization header:", req.headers.authorization);
     
     try {
       // Use the getCurrentUser utility that handles both session and JWT token auth
