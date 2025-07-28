@@ -86,6 +86,9 @@ export default function SettingsPage() {
   // Fetch existing family members
   const { data: familyMembers = [], isLoading: isFamilyMembersLoading, error: familyMembersError } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
+    retry: 1,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // Debug family members data
@@ -96,6 +99,25 @@ export default function SettingsPage() {
   // Debug cookies in browser
   useEffect(() => {
     console.log("Current document cookies:", document.cookie);
+    console.log("Making direct fetch test...");
+    
+    // Test direct fetch to see what happens
+    fetch('/api/family-members', {
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    .then(response => {
+      console.log("Direct fetch response status:", response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log("Direct fetch data:", data);
+    })
+    .catch(error => {
+      console.log("Direct fetch error:", error);
+    });
   }, []);
 
   // Fetch pending merge requests
