@@ -38,20 +38,62 @@ export function AdvancedTaskManagement() {
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
+    queryFn: async () => {
+      const response = await fetch('/api/tasks', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    }
   });
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
+    queryFn: async () => {
+      const response = await fetch('/api/family-members', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    }
   });
 
   // Get current user to separate tasks
   const { data: currentUser } = useQuery({
     queryKey: ["/api/auth/user"],
+    queryFn: async () => {
+      const response = await fetch('/api/auth/user', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    }
   });
 
   // Find current user's family member ID
   const currentUserMember = familyMembers.find(member => 
-    member.linkedUserId === currentUser?.id
+    member.userId === currentUser?.id
   );
 
   // Separate tasks by owner/assignee

@@ -31,6 +31,20 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
+    queryFn: async () => {
+      const response = await fetch('/api/family-members', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    }
   });
 
   const createTaskMutation = useMutation({
