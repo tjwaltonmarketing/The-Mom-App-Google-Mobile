@@ -90,7 +90,6 @@ export default function SettingsPage() {
     staleTime: 0,
     gcTime: 0,
     queryFn: async () => {
-      console.log("Custom query function called for family members");
       const response = await fetch('/api/family-members', {
         credentials: 'include',
         headers: {
@@ -98,46 +97,15 @@ export default function SettingsPage() {
         }
       });
       
-      console.log("Custom query response status:", response.status);
-      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      const data = await response.json();
-      console.log("Custom query data:", data);
-      return data;
+      return response.json();
     }
   });
 
-  // Debug family members data
-  console.log("Family members data:", familyMembers);
-  console.log("Family members loading:", isFamilyMembersLoading);
-  console.log("Family members error:", familyMembersError);
-  
-  // Debug cookies in browser
-  useEffect(() => {
-    console.log("Current document cookies:", document.cookie);
-    console.log("Making direct fetch test...");
-    
-    // Test direct fetch to see what happens
-    fetch('/api/family-members', {
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
-    .then(response => {
-      console.log("Direct fetch response status:", response.status);
-      return response.json();
-    })
-    .then(data => {
-      console.log("Direct fetch data:", data);
-    })
-    .catch(error => {
-      console.log("Direct fetch error:", error);
-    });
-  }, []);
+
 
   // Fetch pending merge requests
   const { data: mergeRequests = [] } = useQuery<any[]>({

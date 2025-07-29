@@ -30,7 +30,7 @@ export function useAuth() {
       // Small delay to ensure logout completes, then redirect
       setTimeout(() => {
         if (typeof window !== 'undefined') {
-          window.location.reload();
+          window.location.href = '/login';
         }
       }, 100);
     },
