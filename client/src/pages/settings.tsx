@@ -89,6 +89,25 @@ export default function SettingsPage() {
     retry: 1,
     staleTime: 0,
     gcTime: 0,
+    queryFn: async () => {
+      console.log("Custom query function called for family members");
+      const response = await fetch('/api/family-members', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      console.log("Custom query response status:", response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Custom query data:", data);
+      return data;
+    }
   });
 
   // Debug family members data
