@@ -337,6 +337,16 @@ export default function CalendarPage() {
           <div className="text-lg font-medium">
             {dayEvents.length} event{dayEvents.length !== 1 ? 's' : ''} scheduled
           </div>
+          <Button 
+            onClick={() => {
+              setSelectedDate(currentDate);
+              setShowEventModal(true);
+            }}
+            className="ml-auto bg-primary hover:bg-primary/90"
+          >
+            <Plus size={16} className="mr-1" />
+            Add Event
+          </Button>
         </div>
         
         <div className="grid grid-cols-1 gap-2">
