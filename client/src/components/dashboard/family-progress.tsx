@@ -13,6 +13,20 @@ interface DashboardStats {
 export function FamilyProgress() {
   const { data: stats } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
+    queryFn: async () => {
+      const response = await fetch('/api/dashboard/stats', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    }
   });
 
   const weeklyProgress = stats?.weeklyTasksCompletion || 0;

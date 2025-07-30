@@ -15,10 +15,38 @@ export function TodaySchedule() {
   
   const { data: events = [] } = useQuery<Event[]>({
     queryKey: ["/api/events/today"],
+    queryFn: async () => {
+      const response = await fetch('/api/events/today', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    }
   });
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
+    queryFn: async () => {
+      const response = await fetch('/api/family-members', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    }
   });
 
   const getMemberById = (id: number | null) => {
