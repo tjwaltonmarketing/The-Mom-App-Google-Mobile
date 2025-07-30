@@ -1194,12 +1194,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storage.getEventsByFamily(familyId)
       ]);
 
-      // Filter for today's data
+      // Filter for today's data using UTC for consistent comparison
       const today = new Date();
       const todayString = today.toDateString();
 
       const todayTasks = allTasks.filter(task => {
         if (!task.dueDate) return false;
+        // Convert to local date string for comparison to handle timezone differences
         return new Date(task.dueDate).toDateString() === todayString && !task.isCompleted;
       });
 
@@ -1208,6 +1209,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return eventDate.toDateString() === todayString;
       });
 
+      // Get all pending (incomplete) tasks for "Tasks Due" count
+      const pendingTasks = allTasks.filter(task => !task.isCompleted);
+
       // Calculate weekly completion rate
       const completedTasks = allTasks.filter(task => task.isCompleted).length;
       const totalTasks = allTasks.length;
@@ -1215,6 +1219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         todayTasks: todayTasks.length,
+        pendingTasks: pendingTasks.length, // This will be used for "Tasks Due" count
         todayEvents: todayEvents.length,
         weeklyTasksCompletion: completionRate,
         familyEventsAttended: Math.min(100, allEvents.length * 10) // Dynamic calculation based on events

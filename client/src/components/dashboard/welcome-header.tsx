@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 
 interface DashboardStats {
   todayTasks: number;
+  pendingTasks: number;
   todayEvents: number;
   weeklyTasksCompletion: number;
   familyEventsAttended: number;
@@ -105,7 +106,7 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
           <div className="flex items-center space-x-4">
             <div className="text-center">
               <div className="text-3xl font-bold text-pink-500">
-                {stats?.todayTasks || 0}
+                {stats?.pendingTasks || 0}
               </div>
               <div className="text-sm text-gray-900 dark:text-gray-100 blue-light-filter:text-gray-900 font-semibold">Tasks Due</div>
             </div>
