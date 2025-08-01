@@ -1743,7 +1743,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Helper function to parse events from voice commands
-  function parseEventFromVoice(message: string) {
+  function parseEventFromVoice(message: string, familyMemberId: number) {
     const lowerMessage = message.toLowerCase();
     
     // Extract title
@@ -1823,7 +1823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       startTime,
       endTime: new Date(startTime.getTime() + 60 * 60 * 1000), // 1 hour duration
       isAllDay: false,
-      assignedTo: 1 // Default to first family member
+      assignedTo: familyMemberId
     };
   }
 
@@ -1867,11 +1867,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Voice command processing endpoint
-  app.post("/api/ai/voice-command", async (req, res) => {
+  app.post("/api/ai/voice-command", requireAuth, async (req, res) => {
     try {
       const { message } = req.body;
       const lowerMessage = message.toLowerCase();
       const actions = [];
+      
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      // Get the family member record for this user
+      const familyMember = await storage.getFamilyMemberByUserId(userId);
+      if (!familyMember) {
+        return res.status(404).json({ message: "Family member not found" });
+      }
       
       // Get fresh family context
       const familyMembers = await storage.getFamilyMembers();
@@ -1882,7 +1893,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (lowerMessage.includes('schedule') || lowerMessage.includes('appointment') || 
           lowerMessage.includes('event') || lowerMessage.includes('meeting')) {
         try {
-          const eventData = parseEventFromVoice(message);
+          const eventData = parseEventFromVoice(message, familyMember.id);
           const event = await storage.createEvent(eventData);
           actions.push({
             type: "create_event",
