@@ -1,4 +1,5 @@
 import { useState } from "react";
+import * as React from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,6 +49,19 @@ export function MealPlanning() {
   // Fetch real meal plans data from API
   const { data: mealPlans = [], refetch: refetchMeals, isLoading: mealsLoading, error: mealsError } = useQuery<MealPlan[]>({
     queryKey: ["/api/meal-plans"],
+    queryFn: async () => {
+      console.log("🍽️ Direct fetch to /api/meal-plans");
+      const response = await fetch("/api/meal-plans", {
+        credentials: "include",
+      });
+      console.log("🍽️ Response status:", response.status);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("🍽️ Fetched meal data:", data);
+      return data;
+    },
     staleTime: 0, // Always refetch to ensure fresh data
     refetchOnMount: true,
     refetchOnWindowFocus: true,
@@ -58,7 +72,8 @@ export function MealPlanning() {
     firstMeal: mealPlans[0],
     allMeals: mealPlans,
     loading: mealsLoading, 
-    error: mealsError 
+    error: mealsError,
+    errorDetails: JSON.stringify(mealsError)
   });
 
   // Force refresh if no data and not loading
