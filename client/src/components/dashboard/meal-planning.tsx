@@ -210,14 +210,45 @@ export function MealPlanning() {
     addGroceryMutation.mutate(newGroceryItem);
   };
 
-  const generateGroceryFromMeals = () => {
+  const generateGroceryFromMeals = async () => {
     const ingredients = mealPlans.flatMap(meal => meal.ingredients || []);
     const uniqueIngredients = Array.from(new Set(ingredients));
     
-    toast({
-      title: "Grocery list generated",
-      description: `Added ${uniqueIngredients.length} items from meal plans`,
-    });
+    if (uniqueIngredients.length === 0) {
+      toast({
+        title: "No ingredients found",
+        description: "No ingredients available in your meal plans",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Add each unique ingredient as a grocery item
+      const promises = uniqueIngredients.map(ingredient =>
+        apiRequest("POST", "/api/grocery-items", {
+          item: ingredient,
+          quantity: "1", // Default quantity
+          category: "pantry", // Default category
+          addedBy: 1,
+        })
+      );
+
+      await Promise.all(promises);
+      await queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+      await refetchGrocery();
+
+      toast({
+        title: "Grocery list updated",
+        description: `Added ${uniqueIngredients.length} ingredients from meal plans`,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to generate list",
+        description: "Could not add ingredients to grocery list",
+        variant: "destructive",
+      });
+    }
   };
 
   const shareGroceryList = async () => {
