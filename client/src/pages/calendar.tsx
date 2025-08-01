@@ -3,7 +3,7 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Plus, ChevronLeft, ChevronRight, ArrowLeft, Edit } from "lucide-react";
+import { Calendar, Clock, Plus, ChevronLeft, ChevronRight, ArrowLeft, Edit, List, Grid3X3 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { EventModal } from "@/components/event-modal";
@@ -32,7 +32,7 @@ import {
 } from "date-fns";
 import { formatTimeInUserTimezone } from "@/lib/timezone";
 
-type CalendarView = "month" | "week" | "day";
+type CalendarView = "month" | "week" | "day" | "list";
 
 export default function CalendarPage() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
@@ -465,10 +465,11 @@ export default function CalendarPage() {
                 </div>
                 
                 <Tabs value={view} onValueChange={(value) => setView(value as CalendarView)}>
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="month">Month</TabsTrigger>
                     <TabsTrigger value="week">Week</TabsTrigger>
                     <TabsTrigger value="day">Day</TabsTrigger>
+                    <TabsTrigger value="list">List</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </CardHeader>
@@ -477,6 +478,7 @@ export default function CalendarPage() {
                 {view === "month" && renderMonthView()}
                 {view === "week" && renderWeekView()}
                 {view === "day" && renderDayView()}
+                {view === "list" && renderListView()}
               </CardContent>
             </Card>
           </div>
@@ -589,4 +591,79 @@ export default function CalendarPage() {
       />
     </div>
   );
+
+  // List view rendering function
+  const renderListView = () => {
+    const sortedEvents = [...events].sort((a, b) => 
+      new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    );
+
+    const groupedEvents = sortedEvents.reduce((groups: Record<string, Event[]>, event) => {
+      const date = format(new Date(event.startTime), 'yyyy-MM-dd');
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(event);
+      return groups;
+    }, {});
+
+    return (
+      <div className="space-y-6">
+        {Object.entries(groupedEvents).map(([date, dayEvents]) => {
+          const eventDate = new Date(date);
+          const isToday = format(eventDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+          const isTomorrow = format(eventDate, 'yyyy-MM-dd') === format(addDays(new Date(), 1), 'yyyy-MM-dd');
+          
+          let dateLabel = format(eventDate, 'EEEE, MMMM d');
+          if (isToday) dateLabel = 'Today';
+          else if (isTomorrow) dateLabel = 'Tomorrow';
+
+          return (
+            <div key={date} className={`rounded-lg border p-4 ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-white'}`}>
+              <h3 className="font-semibold text-lg mb-3 text-gray-800">{dateLabel}</h3>
+              <div className="space-y-2">
+                {dayEvents.map(event => {
+                  const eventStart = new Date(event.startTime);
+                  const eventEnd = event.endTime ? new Date(event.endTime) : null;
+                  const timeStr = formatTimeInUserTimezone(eventStart, 'h:mm a');
+                  const endTimeStr = eventEnd ? formatTimeInUserTimezone(eventEnd, 'h:mm a') : null;
+                  const timeDisplay = endTimeStr ? `${timeStr} - ${endTimeStr}` : timeStr;
+
+                  return (
+                    <div 
+                      key={event.id} 
+                      className="flex items-center justify-between p-3 bg-white rounded border border-gray-200 hover:border-gray-300 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                        <div>
+                          <div className="font-medium text-gray-900">{event.title}</div>
+                          <div className="text-sm text-gray-600 flex items-center gap-1">
+                            <Clock size={14} />
+                            {timeDisplay}
+                          </div>
+                          {event.description && (
+                            <div className="text-sm text-gray-500 mt-1">{event.description}</div>
+                          )}
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm">
+                        <Edit size={16} />
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+        {events.length === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <Calendar size={48} className="mx-auto mb-4 opacity-50" />
+            <p>No events scheduled</p>
+          </div>
+        )}
+      </div>
+    );
+  };
 }
