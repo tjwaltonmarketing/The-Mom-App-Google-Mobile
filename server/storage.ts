@@ -418,6 +418,10 @@ export class DatabaseStorage implements IStorage {
     return member || undefined;
   }
 
+  async getFamilyMemberById(id: number): Promise<FamilyMember | undefined> {
+    return this.getFamilyMember(id);
+  }
+
   async getFamilyMemberByUserId(userId: number): Promise<FamilyMember | undefined> {
     const [member] = await db.select()
       .from(familyMembers)
@@ -592,6 +596,11 @@ export class DatabaseStorage implements IStorage {
       .set(updates)
       .where(eq(events.id, id))
       .returning();
+    return event || undefined;
+  }
+
+  async getEventById(id: number): Promise<Event | undefined> {
+    const [event] = await db.select().from(events).where(eq(events.id, id));
     return event || undefined;
   }
 

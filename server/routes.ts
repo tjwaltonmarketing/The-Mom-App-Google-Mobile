@@ -995,7 +995,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  app.put("/api/events/:id", async (req, res) => {
+  app.put("/api/events/:id", requireAuth, async (req, res) => {
     try {
       const eventId = parseInt(req.params.id);
       const eventData = { ...req.body };
@@ -1025,9 +1025,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/events/:id", async (req, res) => {
+  app.delete("/api/events/:id", requireAuth, async (req, res) => {
     try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
       const eventId = parseInt(req.params.id);
+      
+      // Verify the event belongs to the user's family before deleting
+      const event = await storage.getEventById(eventId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      // Check if event belongs to user's family by verifying creator is in same family
+      const creator = await storage.getFamilyMemberById(event.createdBy);
+      if (!creator || creator.familyId !== family.id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
       const deleted = await storage.deleteEvent(eventId);
       
       if (!deleted) {
@@ -1036,6 +1059,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ success: true });
     } catch (error) {
+      console.error("Delete event error:", error);
       res.status(500).json({ message: "Failed to delete event" });
     }
   });
