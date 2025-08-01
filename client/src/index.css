@@ -4,6 +4,65 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile-friendly scroll behavior for form inputs */
+@layer base {
+  /* Ensure all containers are scrollable */
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Fix for mobile keyboard overlap */
+  @media (max-width: 768px) {
+    /* Smooth scrolling for all containers */
+    * {
+      scroll-behavior: smooth;
+    }
+    
+    /* Ensure dialog content is scrollable */
+    [role="dialog"] {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    /* Auto-scroll focused inputs into view */
+    input:focus,
+    textarea:focus,
+    select:focus {
+      scroll-margin-top: 100px;
+      scroll-margin-bottom: 100px;
+    }
+    
+    /* Prevent zoom on input focus (mobile safari) */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="url"],
+    textarea,
+    select {
+      font-size: 16px;
+    }
+    
+    /* Ensure modal dialogs scroll properly */
+    .modal-content,
+    [data-radix-dialog-content] {
+      max-height: 85vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+  
+  /* Enhanced focus ring for mobile accessibility */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
 :root {
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(240, 10%, 3.9%);

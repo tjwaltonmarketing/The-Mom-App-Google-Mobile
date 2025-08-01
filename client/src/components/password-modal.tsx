@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { useMobileScroll } from "@/hooks/use-mobile-scroll";
 import { Plus, Eye, EyeOff } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { insertPasswordSchema } from "@shared/schema";
@@ -38,6 +39,7 @@ export function PasswordModal({ trigger }: PasswordModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState<number[]>([1]); // Default to mom
+  const scrollRef = useMobileScroll({ offset: 100, delay: 200 });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -119,7 +121,7 @@ export function PasswordModal({ trigger }: PasswordModalProps) {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" ref={scrollRef}>
         <DialogHeader>
           <DialogTitle>Add New Password</DialogTitle>
         </DialogHeader>
@@ -308,7 +310,7 @@ export function PasswordModal({ trigger }: PasswordModalProps) {
                   </div>
                   <FormControl>
                     <Switch
-                      checked={field.value}
+                      checked={field.value || false}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
