@@ -44,6 +44,7 @@ export function MealPlanning() {
   const [isMealModalOpen, setIsMealModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState("");
+  const [expandedMeal, setExpandedMeal] = useState<number | null>(null);
   const { toast } = useToast();
 
   // Fetch real meal plans data from API
@@ -83,8 +84,23 @@ export function MealPlanning() {
   }
 
   // Fetch real grocery list data from API
-  const { data: groceryList = [] } = useQuery<GroceryItem[]>({
+  const { data: groceryList = [], refetch: refetchGrocery } = useQuery<GroceryItem[]>({
     queryKey: ["/api/grocery-items"],
+    queryFn: async () => {
+      console.log("🛒 Direct fetch to /api/grocery-items");
+      const response = await fetch("/api/grocery-items", {
+        credentials: "include",
+      });
+      console.log("🛒 Response status:", response.status);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("🛒 Fetched grocery data:", data);
+      return data;
+    },
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   // Fetch family members for sharing
@@ -120,8 +136,9 @@ export function MealPlanning() {
       });
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+      await refetchGrocery();
       toast({
         title: "Item added",
         description: "Item has been added to your grocery list",
@@ -137,8 +154,9 @@ export function MealPlanning() {
       });
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+      await refetchGrocery();
       toast({
         title: "Item updated",
         description: "Grocery item status updated",
@@ -358,7 +376,7 @@ export function MealPlanning() {
                       <p className="text-gray-500 text-sm text-center py-4">No meals planned</p>
                     ) : (
                       getMealsForDay(day).map(meal => (
-                        <div key={meal.id} className="bg-gray-50 rounded p-3">
+                        <div key={meal.id} className="bg-gray-50 rounded p-3 cursor-pointer hover:bg-gray-100 transition-colors">
                           <div className="flex justify-between items-start mb-1">
                             <Badge variant="outline" className="text-xs">
                               {meal.mealType}
@@ -367,23 +385,56 @@ export function MealPlanning() {
                               variant="ghost"
                               size="sm"
                               className="h-6 w-6 p-0"
-                              onClick={() => deleteMealMutation.mutate(meal.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteMealMutation.mutate(meal.id);
+                              }}
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
                           </div>
-                          <p className="font-medium text-sm">{meal.meal}</p>
-                          {meal.ingredients && (
-                            <p className="text-xs text-gray-600 mt-1">
-                              {meal.ingredients.slice(0, 2).join(', ')}
-                              {meal.ingredients.length > 2 && '...'}
-                            </p>
-                          )}
-                          {meal.prepTime && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              {meal.prepTime} min prep
-                            </p>
-                          )}
+                          <div onClick={() => setExpandedMeal(expandedMeal === meal.id ? null : meal.id)}>
+                            <p className="font-medium text-sm">{meal.meal}</p>
+                            {expandedMeal === meal.id ? (
+                              <div className="mt-2 space-y-2">
+                                {meal.ingredients && meal.ingredients.length > 0 && (
+                                  <div>
+                                    <p className="text-xs font-medium text-gray-700">Ingredients:</p>
+                                    <ul className="text-xs text-gray-600 ml-2">
+                                      {meal.ingredients.map((ingredient, index) => (
+                                        <li key={index}>• {ingredient}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+                                {meal.notes && (
+                                  <div>
+                                    <p className="text-xs font-medium text-gray-700">Notes:</p>
+                                    <p className="text-xs text-gray-600">{meal.notes}</p>
+                                  </div>
+                                )}
+                                {meal.prepTime && (
+                                  <p className="text-xs text-gray-500">
+                                    <span className="font-medium">Prep time:</span> {meal.prepTime} min
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <>
+                                {meal.ingredients && (
+                                  <p className="text-xs text-gray-600 mt-1">
+                                    {meal.ingredients.slice(0, 2).join(', ')}
+                                    {meal.ingredients.length > 2 && '...'}
+                                  </p>
+                                )}
+                                {meal.prepTime && (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {meal.prepTime} min prep
+                                  </p>
+                                )}
+                              </>
+                            )}
+                          </div>
                         </div>
                       ))
                     )}
