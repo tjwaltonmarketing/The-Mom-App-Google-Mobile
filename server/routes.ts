@@ -2034,20 +2034,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Password management endpoints
-  app.get("/api/passwords", async (_req, res) => {
+  app.get("/api/passwords", requireAuth, async (req, res) => {
     try {
-      const passwords = await storage.getPasswords();
-      res.json(passwords);
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      // Get the family member record for this user
+      const familyMember = await storage.getFamilyMemberByUserId(userId);
+      if (!familyMember) {
+        return res.status(404).json({ message: "Family member not found" });
+      }
+
+      // Get all passwords for the family
+      const family = await storage.getFamilyByUserId(userId);
+      if (!family) {
+        return res.status(404).json({ message: "Family not found" });
+      }
+
+      const allPasswords = await storage.getPasswordsByFamily(family.id);
+      
+      // Filter passwords based on sharing permissions
+      const accessiblePasswords = allPasswords.filter(password => {
+        if (!password.sharedWith) return false;
+        
+        try {
+          const sharedWithIds = JSON.parse(password.sharedWith);
+          return sharedWithIds.includes(familyMember.id);
+        } catch (e) {
+          console.error('Error parsing sharedWith for password:', password.id, e);
+          return false;
+        }
+      });
+
+      res.json(accessiblePasswords);
     } catch (error: any) {
+      console.error("Passwords fetch error:", error);
       res.status(500).json({ message: error.message });
     }
   });
 
-  app.post("/api/passwords", async (req, res) => {
+  app.post("/api/passwords", requireAuth, async (req, res) => {
     try {
-      const password = await storage.createPassword(req.body);
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      // Get the family member record for this user
+      const familyMember = await storage.getFamilyMemberByUserId(userId);
+      if (!familyMember) {
+        return res.status(404).json({ message: "Family member not found" });
+      }
+
+      // Set the creator of the password
+      const passwordData = {
+        ...req.body,
+        createdBy: familyMember.id
+      };
+
+      const password = await storage.createPassword(passwordData);
       res.status(201).json(password);
     } catch (error: any) {
+      console.error("Password creation error:", error);
       res.status(500).json({ message: error.message });
     }
   });

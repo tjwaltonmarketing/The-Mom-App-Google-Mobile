@@ -849,6 +849,26 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(passwords);
   }
 
+  async getPasswordsByFamily(familyId: number): Promise<Password[]> {
+    // Get all family member IDs for this family
+    const familyMemberList = await db
+      .select({ id: familyMembers.id })
+      .from(familyMembers)
+      .where(eq(familyMembers.familyId, familyId));
+    
+    const memberIds = familyMemberList.map(m => m.id);
+    
+    if (memberIds.length === 0) {
+      return [];
+    }
+    
+    // Get passwords created by any family member
+    return await db
+      .select()
+      .from(passwords)
+      .where(inArray(passwords.createdBy, memberIds));
+  }
+
   async createPassword(insertPassword: InsertPassword): Promise<Password> {
     const [password] = await db.insert(passwords).values(insertPassword).returning();
     return password;
