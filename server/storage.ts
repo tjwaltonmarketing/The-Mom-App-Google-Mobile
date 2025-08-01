@@ -605,10 +605,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteEvent(id: number): Promise<boolean> {
-    const result = await db
-      .delete(events)
-      .where(eq(events.id, id));
-    return result.rowCount !== null && result.rowCount > 0;
+    try {
+      // First delete any related notifications to avoid foreign key constraint violations
+      await db.delete(notifications).where(eq(notifications.relatedEventId, id));
+      
+      // Then delete the event
+      const result = await db
+        .delete(events)
+        .where(eq(events.id, id));
+      return result.rowCount !== null && result.rowCount > 0;
+    } catch (error) {
+      console.error(`Failed to delete event ${id}:`, error);
+      return false;
+    }
   }
 
   async deleteAllEvents(): Promise<boolean> {

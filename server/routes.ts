@@ -1046,9 +1046,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if event belongs to user's family by verifying creator is in same family
-      const creator = await storage.getFamilyMemberById(event.createdBy);
-      if (!creator || creator.familyId !== family.id) {
-        return res.status(403).json({ message: "Access denied" });
+      // Allow deletion if creator is null (legacy events) or if creator is in same family
+      if (event.createdBy !== null) {
+        const creator = await storage.getFamilyMemberById(event.createdBy);
+        if (!creator || creator.familyId !== family.id) {
+          return res.status(403).json({ message: "Access denied" });
+        }
       }
 
       const deleted = await storage.deleteEvent(eventId);
