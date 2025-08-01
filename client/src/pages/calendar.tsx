@@ -328,7 +328,7 @@ export default function CalendarPage() {
 
   const renderWeekView = () => (
     <div>
-      <div className="grid grid-cols-7 gap-2 mb-4">
+      <div className="grid grid-cols-7 gap-1 mb-4">
         {days.map(day => (
           <div key={day.toISOString()} className="text-center">
             <div className="text-sm font-medium text-gray-500 mb-1">
@@ -342,7 +342,7 @@ export default function CalendarPage() {
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1">
         {days.map(day => {
           const dayEvents = getEventsForDay(day).sort((a, b) => 
             new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
@@ -353,46 +353,40 @@ export default function CalendarPage() {
             <div 
               key={day.toISOString()}
               onClick={() => hasEvents ? handleDateClick(day) : null}
-              className={`min-h-[400px] p-2 border rounded-lg overflow-hidden ${
+              className={`min-h-[200px] p-1 border rounded-lg ${
                 isToday(day) 
                   ? 'bg-primary/5 border-primary' 
                   : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
               } ${hasEvents ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20' : ''}`}
             >
-              <div className="space-y-2">
-                {dayEvents.map((event, index) => {
+              <div className="space-y-1">
+                {dayEvents.slice(0, 4).map((event, index) => {
                   const member = getMemberById(event.assignedTo);
                   return (
                     <div 
                       key={event.id} 
-                      className="text-xs p-2 rounded border-l-2 bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100 group relative break-words"
-                      style={{ 
-                        backgroundColor: member?.color ? `${member.color}15` : undefined,
-                        borderLeftColor: member?.color || '#3b82f6'
-                      }}
+                      className="text-xs p-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 group relative"
+                      style={{ backgroundColor: member?.color ? `${member.color}20` : undefined }}
                     >
-                      <div className="space-y-1">
-                        <div className="font-semibold text-xs leading-tight">
-                          {formatTimeInUserTimezone(event.startTime)}
-                        </div>
-                        <div className="text-xs leading-tight break-words pr-1">
-                          {event.title}
-                        </div>
-                        {event.location && (
-                          <div className="text-gray-600 dark:text-gray-400 text-xs leading-tight break-words">
-                            📍 {event.location}
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-xs truncate">
+                            {formatTimeInUserTimezone(event.startTime)}
                           </div>
-                        )}
+                          <div className="text-xs truncate">
+                            {event.title}
+                          </div>
+                        </div>
                         <EventEditModal 
                           event={event}
                           trigger={
                             <Button 
                               variant="ghost" 
                               size="sm" 
-                              className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity absolute top-1 right-1"
+                              className="h-3 w-3 p-0 opacity-0 group-hover:opacity-100 transition-opacity ml-1 flex-shrink-0"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <Edit size={8} />
+                              <Edit size={6} />
                             </Button>
                           }
                         />
@@ -400,6 +394,11 @@ export default function CalendarPage() {
                     </div>
                   );
                 })}
+                {dayEvents.length > 4 && (
+                  <div className="text-xs text-gray-500 text-center py-1">
+                    +{dayEvents.length - 4} more
+                  </div>
+                )}
                 {dayEvents.length === 0 && (
                   <div 
                     className="text-xs text-gray-400 text-center py-4 cursor-pointer hover:text-gray-600 transition-colors"
