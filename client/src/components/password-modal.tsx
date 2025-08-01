@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,34 +63,46 @@ export function PasswordModal({ trigger }: PasswordModalProps) {
     },
   });
 
-  const createPasswordMutation = useMutation({
-    mutationFn: async (data: PasswordFormData) => {
-      const response = await apiRequest("POST", "/api/passwords", data);
-      return response.json();
-    },
-    onSuccess: () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit = async (data: PasswordFormData) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/passwords', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...data,
+          sharedWith: JSON.stringify(selectedMembers)
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save password');
+      }
+
       toast({
         title: "Password Added",
         description: "The password has been securely saved to your vault.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/passwords"] });
+
+      // Force refresh all password queries
+      await queryClient.invalidateQueries({ queryKey: ["/api/passwords"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/passwords"] });
+      
       form.reset();
       setIsOpen(false);
-    },
-    onError: (error: any) => {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to save password",
         variant: "destructive",
       });
-    },
-  });
-
-  const onSubmit = (data: PasswordFormData) => {
-    createPasswordMutation.mutate({
-      ...data,
-      sharedWith: JSON.stringify(selectedMembers)
-    });
+    }
+    setIsSubmitting(false);
   };
 
   const handleMemberToggle = (memberId: number) => {
@@ -328,10 +340,10 @@ export function PasswordModal({ trigger }: PasswordModalProps) {
               </Button>
               <Button
                 type="submit"
-                disabled={createPasswordMutation.isPending}
+                disabled={isSubmitting}
                 className="bg-blue-600 hover:bg-blue-700"
               >
-                {createPasswordMutation.isPending ? "Saving..." : "Save Password"}
+                {isSubmitting ? "Saving..." : "Save Password"}
               </Button>
             </div>
           </form>
