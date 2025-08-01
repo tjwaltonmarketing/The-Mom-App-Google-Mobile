@@ -44,72 +44,9 @@ export function PasswordVault() {
   const { toast } = useToast();
   const [editingPassword, setEditingPassword] = useState<Password | null>(null);
   
-  const { data: passwords = [] } = useQuery<Password[]>({
+  const { data: passwords = [], isLoading, error } = useQuery<Password[]>({
     queryKey: ["/api/passwords"],
   });
-  
-  const [staticPasswords] = useState<PasswordEntry[]>([
-    {
-      id: 1,
-      title: "Netflix",
-      category: "streaming",
-      website: "netflix.com",
-      username: "familyaccount@gmail.com",
-      email: "familyaccount@gmail.com",
-      password: "SecurePass123!",
-      notes: "Family plan - 4 screens",
-      isFavorite: true,
-      lastUpdated: "2 days ago"
-    },
-    {
-      id: 2,
-      title: "School Portal",
-      category: "school",
-      website: "portal.elementary.edu",
-      username: "parent.smith",
-      email: "mom@family.com",
-      password: "School2024!",
-      notes: "Emma & Sam's grades, lunch payments",
-      isFavorite: true,
-      lastUpdated: "1 week ago"
-    },
-    {
-      id: 3,
-      title: "Bank of America",
-      category: "banking",
-      website: "bankofamerica.com",
-      username: "johnsmith123",
-      email: "dad@family.com",
-      password: "BankSecure456#",
-      notes: "Joint checking account",
-      isFavorite: false,
-      lastUpdated: "3 days ago"
-    },
-    {
-      id: 4,
-      title: "Amazon Prime",
-      category: "shopping",
-      website: "amazon.com",
-      username: "familyshop@gmail.com",
-      email: "familyshop@gmail.com",
-      password: "Amazon789$",
-      notes: "Free shipping, video streaming",
-      isFavorite: true,
-      lastUpdated: "5 days ago"
-    },
-    {
-      id: 5,
-      title: "Electric Company",
-      category: "utilities",
-      website: "powergrid.com",
-      username: "account78542",
-      email: "mom@family.com",
-      password: "Electric2024*",
-      notes: "Auto-pay enabled",
-      isFavorite: false,
-      lastUpdated: "2 weeks ago"
-    }
-  ]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -127,8 +64,8 @@ export function PasswordVault() {
 
   const filteredPasswords = passwords.filter(password => {
     const matchesSearch = password.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         password.website?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         password.username?.toLowerCase().includes(searchTerm.toLowerCase());
+                         (password.website || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (password.username || '').toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesCategory = selectedCategory === "all" || 
                            (selectedCategory === "favorites" && password.isFavorite) ||
@@ -136,6 +73,44 @@ export function PasswordVault() {
     
     return matchesSearch && matchesCategory;
   });
+
+  if (isLoading) {
+    return (
+      <Card className="bg-white dark:bg-gray-800 blue-light-filter:bg-amber-50">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Shield className="text-blue-600 dark:text-blue-400 blue-light-filter:text-amber-600" size={20} />
+            <CardTitle className="text-lg">Password Vault</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <Lock size={32} className="mx-auto mb-3 opacity-50" />
+            <p>Loading passwords...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-white dark:bg-gray-800 blue-light-filter:bg-amber-50">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Shield className="text-blue-600 dark:text-blue-400 blue-light-filter:text-amber-600" size={20} />
+            <CardTitle className="text-lg">Password Vault</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-red-500">
+            <Lock size={32} className="mx-auto mb-3 opacity-50" />
+            <p>Failed to load passwords</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const togglePasswordVisibility = (id: number) => {
     const newVisible = new Set(visiblePasswords);
