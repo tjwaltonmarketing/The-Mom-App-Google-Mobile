@@ -540,9 +540,16 @@ export class DatabaseStorage implements IStorage {
     
     const memberIds = familyMemberIds.map(fm => fm.id);
     
-    // Get events created by any family member
+    // Get events created by any family member or assigned to any family member
+    // Also include events where createdBy is null (legacy events)
     return await db.select().from(events)
-      .where(inArray(events.createdBy, memberIds));
+      .where(
+        or(
+          inArray(events.createdBy, memberIds),
+          inArray(events.assignedTo, memberIds),
+          isNull(events.createdBy)
+        )
+      );
   }
 
   async getTodayEventsByFamily(familyId: number): Promise<Event[]> {
