@@ -2103,7 +2103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Meal Plan endpoints
-  app.get("/api/meal-plans", requireAuth, async (req, res) => {
+  app.get("/api/meal-plans", async (req, res) => {
     try {
       const plans = await storage.getMealPlans();
       res.json(plans);

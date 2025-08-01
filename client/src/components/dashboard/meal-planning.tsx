@@ -49,14 +49,23 @@ export function MealPlanning() {
   const { data: mealPlans = [], refetch: refetchMeals, isLoading: mealsLoading, error: mealsError } = useQuery<MealPlan[]>({
     queryKey: ["/api/meal-plans"],
     staleTime: 0, // Always refetch to ensure fresh data
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   console.log("🍽️ Meal plans query state:", { 
     count: mealPlans.length, 
     firstMeal: mealPlans[0],
+    allMeals: mealPlans,
     loading: mealsLoading, 
     error: mealsError 
   });
+
+  // Force refresh if no data and not loading
+  if (mealPlans.length === 0 && !mealsLoading && !mealsError) {
+    console.log("🔄 Force refreshing meal data...");
+    refetchMeals();
+  }
 
   // Fetch real grocery list data from API
   const { data: groceryList = [] } = useQuery<GroceryItem[]>({
