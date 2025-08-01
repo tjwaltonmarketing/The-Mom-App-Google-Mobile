@@ -2103,7 +2103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Meal Plan endpoints
-  app.get("/api/meal-plans", async (req, res) => {
+  app.get("/api/meal-plans", requireAuth, async (req, res) => {
     try {
       const plans = await storage.getMealPlans();
       res.json(plans);
@@ -2112,7 +2112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/meal-plans", async (req, res) => {
+  app.post("/api/meal-plans", requireAuth, async (req, res) => {
     try {
       const plan = await storage.createMealPlan(req.body);
       res.status(201).json(plan);
@@ -2121,7 +2121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/meal-plans/:id", async (req, res) => {
+  app.delete("/api/meal-plans/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteMealPlan(id);

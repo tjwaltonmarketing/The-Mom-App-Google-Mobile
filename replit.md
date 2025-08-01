@@ -1,152 +1,48 @@
-# replit.md - The Mom App
+# The Mom App
 
 ## Overview
+The Mom App is a comprehensive family coordination platform designed to reduce mental load for busy parents. It is a full-stack web application with mobile support, featuring AI-powered assistance, smart calendar management with granular privacy controls, advanced task organization, and secure family data management. The project's vision is to streamline family logistics, enhance communication, and foster collaboration among family members, ultimately improving daily life for busy households.
 
-The Mom App is a comprehensive family coordination platform designed to reduce mental load for busy parents. It's a full-stack web application with mobile support via Capacitor, featuring AI-powered assistance, calendar management with privacy controls, task organization, and secure family data management.
+## User Preferences
+Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Technology Stack
-- **Frontend**: React with TypeScript, Vite build system
-- **UI Framework**: Shadcn/UI components with Tailwind CSS
-- **Backend**: Express.js with TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Express-session with bcrypt password hashing
-- **Mobile**: Capacitor for Android/iOS builds
-- **AI Integration**: OpenAI API for voice transcription and smart assistance
-- **Hosting**: Replit (development), prepared for production deployment
+### UI/UX Decisions
+- Frontend: React with TypeScript, Vite build system
+- UI Framework: Shadcn/UI components with Tailwind CSS for a modern and responsive design.
+- Multi-user dashboard with real-time updates.
+- Role-based permissions (mom, dad, child, etc.).
+- Family member management with color coding and avatars.
+- Centralized communication and information sharing.
+- Smart Calendar: Features shared, busy, and private event types with selective sharing.
+- Teen Interface: Dedicated dashboard with tab navigation (Home, Calendar, Passwords), accessibility features (dark mode, blue light filter), and read-only access for certain features.
 
-### Database Schema
-The application uses a multi-tenant architecture with the following core entities:
-- Users with family-based organization
-- Family members with role-based access
-- Events with three-tier privacy controls (shared/busy/private)
-- Tasks with assignment and tracking capabilities
-- Voice notes with AI transcription
-- Secure password vault for family credentials
-- Meal planning and grocery management
+### Technical Implementations
+- Backend: Express.js with TypeScript.
+- Database: PostgreSQL with Drizzle ORM.
+- Authentication: Express-session with bcrypt for password hashing and secure cookies. JWT token generation for API access.
+- Mobile: Capacitor for Android/iOS builds, ensuring cross-platform compatibility.
+- AI Integration: OpenAI API for voice transcription, natural language processing for task creation, and context-aware smart assistance.
+- Voice Processing Pipeline: Browser speech recognition captures audio, real-time transcription to text, AI processing for action extraction, smart suggestions for tasks/events/reminders, and one-click creation.
+- Data Flow: Session-based authentication, family membership validation for data access, multi-tenancy architecture ensuring data isolation per family.
+- Secure Data Management: Family password vault with encrypted storage, import/export functionality, and role-based access controls.
 
-## Key Components
-
-### Family Coordination Hub
-- Multi-user dashboard with real-time updates
-- Role-based permissions (mom, dad, child, etc.)
-- Family member management with color coding and avatars
-- Centralized communication and information sharing
-
-### Smart Calendar with Privacy Controls
-- **Shared Events**: Full details visible to all family members
-- **Busy Events**: Time blocked without revealing details
-- **Private Events**: Completely hidden from other members
-- **Selective Sharing**: Override privacy for specific family members
-- Google Calendar sync integration (configured but requires API keys)
-
-### AI-Powered Task Management
-- Voice-to-task conversion using OpenAI transcription
-- Smart task assignment based on family roles
-- Priority tracking and due date management
-- Natural language processing for task creation
-
-### Voice Assistant Features
-- Real-time speech recognition (browser-based)
-- AI transcription with smart action suggestions
-- Voice notes with searchable text conversion
-- Context-aware family assistance
-
-### Secure Data Management
-- Family password vault with encrypted storage
-- Import/export functionality for data migration
-- Role-based access controls
-- Session management with secure cookies
-
-## Data Flow
-
-### Authentication Flow
-1. User registration creates user account and default family
-2. Session-based authentication with secure cookies
-3. JWT token generation for API access
-4. Family membership validation for data access
-
-### Voice Processing Pipeline
-1. Browser speech recognition captures audio
-2. Real-time transcription to text
-3. AI processing for action extraction
-4. Smart suggestions for tasks/events/reminders
-5. One-click creation of suggested items
-
-### Mobile App Integration
-- Capacitor builds for Android/iOS platforms
-- CORS-enabled API endpoints for mobile access
-- Session persistence across web/mobile platforms
-- Development server connectivity for testing
+### Feature Specifications
+- **Smart Calendar with Privacy Controls**: Supports shared events (full details), busy events (time blocked), and private events (hidden). Includes selective sharing and Google Calendar sync integration.
+- **AI-Powered Task Management**: Voice-to-task conversion, smart task assignment based on family roles, priority tracking, and due date management. Includes parent-to-teen task assignment with points and gamification.
+- **Voice Assistant Features**: Real-time speech recognition, AI transcription with smart action suggestions, searchable voice notes.
+- **Secure Data Management**: Encrypted family password vault, import/export, role-based access.
+- **Family Coordination Hub**: Multi-user dashboard, role-based permissions, family member management, centralized communication.
+- **Teen System**: Comprehensive invite workflow (SMS/email), teen dashboard with gamification (points, streaks, achievements), smart notification engine with progressive reminders and quiet hours, parent oversight without nagging, permission-based access controls, and shared meal planning display.
 
 ## External Dependencies
 
-### Required Services
-- **Database**: PostgreSQL (Neon serverless recommended)
-- **AI Services**: OpenAI API key for transcription and assistance
-- **Session Storage**: In-memory store (MemoryStore for development)
-
-### Optional Integrations
-- **Google Calendar API**: For calendar synchronization
-- **SMS/Email Services**: For family notifications
-- **Maps API**: For location autocomplete in events
-
-### Mobile Build Dependencies
-- **Android SDK**: API Level 35+ for Google Play compliance
-- **Capacitor**: Version 6.1.2 for Android/iOS builds
-- **GitHub Actions**: Automated Android APK/AAB building
-
-## Deployment Strategy
-
-### Development Environment
-- Replit development server with hot reloading
-- SQLite fallback for development database
-- Mock AI responses when OpenAI key unavailable
-- CORS configuration for mobile app testing
-
-### Production Deployment
-- Environment variable configuration for database and API keys
-- Session store upgrade to Redis or database-backed storage
-- Static asset optimization and CDN integration
-- Mobile app deployment to Google Play Store
-
-### Mobile App Deployment
-- GitHub Actions workflow builds signed APK/AAB files
-- Google Play Console integration with proper API targeting
-- Version management with semantic versioning
-- Certificate signing for production releases
-
-## Changelog
-- July 28, 2025. Fixed family members loading issue: Resolved critical bug where family members weren't displaying in Settings > Family tab despite data existing in database. Issue was caused by React Query configuration conflicts with the default query function. Implemented custom query function with proper cookie authentication handling. Family members now load correctly and display Emily Walton and TJ Walton. Also fixed logout redirect to prevent 404 errors.
-- July 25, 2025. Removed login success popup notification: Eliminated the "Login Successful" toast notification that appeared after user login for cleaner user experience. Users now login and navigate to dashboard without popup interruption.
-- July 25, 2025. Teen invite system database fix: Fixed critical database persistence issues where invite codes weren't being stored. Added missing columns (invite_code, invite_status, invite_expires_at) to family_members table. Corrected email service interface calls in teen invite endpoint. Teen invitations now properly persist invite codes with 7-day expiration and send notifications via SMS/email.
-- July 25, 2025. Fixed critical family merge security issue: Removed auto-approval family merge endpoint that was bypassing confirmation requirements. Family merges now properly require approval from the target account through notification-based system. Fixed stale teen data issue where demo profiles were showing for accounts without teen family members. Teen Reward Management section now only appears when actual teen family members exist. All family merge requests now go through proper approval workflow with billing decision dialogs.
-- July 25, 2025. Enhanced family member invitation system with three distinct workflows: Redesigned the Family Settings interface to clearly distinguish between three different types of family member additions: 1) Add Child/Teen Profile (coordination-only profiles for children who don't need app access), 2) Invite New Parent (email invitation for parents without accounts), and 3) Connect Existing Parent Account (family merge for parents who already have accounts). Each option now has clear descriptions explaining the purpose and requirements. Updated Add Family Member modal with clearer title "Create Family Profile" and explanation that phone/email are for notifications only, not identity verification. This resolves user confusion about when contact information is required and clarifies the distinction between coordination profiles versus actual user accounts.
-- July 24, 2025. Task data consistency resolved: Fixed data inconsistency issue where UI components were showing different task counts. Root cause was legacy tasks with null created_by fields that were partially filtered by different endpoints. Updated all legacy tasks to have proper family member ownership (created_by = 22). Now all components consistently show family-scoped data: Dashboard "Tasks Due" shows today's tasks (1), Quick Tasks shows all pending tasks (6), and Advanced Task Management shows all family tasks (6). Task counting now works correctly across all interface sections.
-- July 20, 2025. Production-ready app with Google Calendar OAuth integration: Completed removal of all mock/demo features and implemented real Google Calendar OAuth authentication. Weather widget now uses live Open-Meteo API with geolocation. All database operations use proper timestamp-based IDs. Google Calendar sync component added to calendar page with full OAuth flow working. App ready for real-world testing with credentials: Client ID (814173562340-v67996dc44fhcgp44fd382vfl43tnvau.apps.googleusercontent.com) and authorized redirect URI (https://workspace.tjwaltonmarketi.repl.co/auth/google/callback) configured. All features either work with live data or provide clear setup guidance.
-- July 18, 2025. SMS system fully operational with A2P compliance for version 55: Fixed SMS delivery issues by associating Twilio phone number (+1 925 475 8476) with approved A2P 10DLC campaign. SMS delivery confirmed working with status "delivered" for valid mobile numbers. Teen invite system fully operational with message format: "Hi [Teen Name]! You've been invited to join your family's Mom App. Use code [CODE] or visit: [URL]". Updated tutorials to reflect A2P compliance and working SMS functionality. Version 55 ready for deployment with all recent improvements.
-- July 17, 2025. UI improvements and version 55 deployment: Removed large action buttons from desktop "What's Happening Today" section for cleaner layout. Made header action buttons circular on both desktop and mobile for design consistency. Mobile greeting now moves higher when trial banner is dismissed. Updated mobile app to version 55 for next deployment cycle.
-- July 16, 2025. Critical multi-tenancy fix completed: Fixed major security issue where all families were accessing shared data instead of their own family data. Updated all API endpoints (/api/family-members, /api/events, /api/tasks) with requireAuth middleware and family-scoped filtering. Added family-specific storage methods (getEventsByFamily, getTasksByFamily, etc.) to ensure proper data isolation. Each family now sees only their own members, events, and tasks. Updated mobile app to version 54 to resolve deployment conflicts.
-- July 14, 2025. Teen points system database persistence fixed: Resolved critical Drizzle ORM schema mismatch where database used camelCase columns (userId, favoriteColor) but schema defined snake_case (user_id, favorite_color). Updated shared/schema.ts to match actual database structure. Teen points, streaks, and achievements now persist correctly across app restarts. Database storage fully operational with proper error handling. All tutorials and FAQ updated with recent billing features, family merge process, and teen system improvements.
-- July 14, 2025. Enhanced family merge system with billing management: Added comprehensive billing decision dialog when two parent accounts merge. Users can choose to keep their billing, keep partner's billing, or upgrade to family plan ($19.99/month). System calculates trial status for both accounts and makes intelligent billing recommendations. Enhanced API endpoints with billing transition logic and implemented trial-based billing priority system. Billing information is tracked through the merge process with clear user feedback about billing responsibility.
-- July 13, 2025. Production deployment configuration complete: App deployed to production server with mobile authentication fixes. Updated mobile app configuration (version 42) to connect to stable production URL, resolving Google Play Console login issues. Teen dashboard has read-only access with specialized modals - tasks open TeenTaskDetailModal for viewing details and marking complete, events open TeenEventDetailModal for viewing only. Parent dashboard retains full editing capabilities. Teen notification system fully operational with SMS via Twilio. Production-ready authentication with HTTPS and proper cookie handling.
-- July 12, 2025. Comprehensive tutorials and FAQs updated: Enhanced tutorials with detailed parent account management, teen account setup with multi-channel invites, parent-to-teen task assignment workflows, and complete gamification system explanations. Added FAQ entries covering parent co-equal access, teen dashboard features, multi-channel communication (Twilio/SendGrid), and progressive notification systems. Documentation now covers full parent partnership model and anti-nagging teen coordination.
-- July 12, 2025. Complete parent-to-teen task assignment system: Built full workflow allowing parents to assign tasks directly to teens through intuitive modal interface. Enhanced task schema with teen-specific fields (points, category, estimated time). Added API endpoints for task assignment and teen availability. Tasks flow from parent assignment to teen completion with real-time updates. Includes demo teen profiles for testing (Alex, Jordan, Sam)
-- July 12, 2025. Fixed family member deletion: Added missing DELETE endpoint for family members. Users can now successfully remove family members from Settings > Family tab. Backend properly handles deletion with database removal confirmation
-- July 12, 2025. Weekly dinner plan sharing on teen dashboard: Added comprehensive meal planning display showing parent-set dinners for each day of the week. Teens can see what's for dinner Monday through Sunday with descriptions, highlighted today's meal, and clear indication that plans are parent-controlled. API endpoints support meal plan CRUD operations with automatic sample data generation for demo purposes
-- July 12, 2025. Tab navigation system for teen interface: Built comprehensive navigation component with Home, Calendar, and Passwords tabs at the top of teen interface. Unified header includes teen profile, dark mode/blue light filter toggles, notifications, tutorial access, and settings. All teen pages now use consistent tab-based navigation with active highlighting. Secure password sharing system allows parents to selectively share specific family accounts (Disney Plus, Netflix, educational) with teens through dedicated Passwords tab
-- July 12, 2025. Enhanced teen interface with accessibility features: Added dark mode and blue light filter toggles directly to teen dashboard header for quick access. Implemented proper notifications panel with empty state messaging. Avatar upload system complete with profile customization options including theme colors and display preferences
-- July 12, 2025. Teen invite integrated into Family Settings: Moved teen invite functionality from test page to proper location in Settings > Family tab. Now accessible alongside "Add Family Member" with consistent UX. Fixed database constraints and authentication issues. Complete SMS + email invite system operational
-- July 12, 2025. Multi-channel teen invite system complete: Built comprehensive SMS + email invite system with Twilio (operational) and SendGrid (pending activation). Teen invite modal allows choosing contact method with automatic failover. Professional HTML email templates ready. SendGrid API keys experiencing activation delays - will retest shortly
-- July 12, 2025. SMS system updated based on vendor feedback: LeadConnector/High Level confirmed their service cannot be used for this application. SMS system now uses Twilio as primary provider with AWS SNS as backup. Teen invite system fully operational with reliable SMS delivery
-- July 10, 2025. Multi-provider SMS system implementation: Complete SMS provider architecture with automatic failover between LeadConnector, Twilio, and AWS SNS. Twilio fully functional for teen invites, LeadConnector configured but API endpoints need verification
-- July 09, 2025. Comprehensive teen account system implementation: Complete invite workflow with SMS integration, teen dashboard with gamification (points/streaks), smart notification engine with progressive reminders and quiet hours, parent oversight without nagging, permission-based access controls
-- July 09, 2025. Updated tutorials and FAQs: Added comprehensive documentation for teen account setup, gamification system, SMS messaging, and anti-nagging benefits
-- July 09, 2025. Enhanced voice-to-calendar with smart date/time parsing: AI now correctly handles relative dates ("tomorrow", "Friday") and natural time expressions ("2:00 PM"), automatically pre-populating date and time fields in 12-hour AM/PM format
-- July 09, 2025. Fixed calendar event creation: Voice assistant now properly detects calendar requests and provides date/time selection interface for scheduling events
-- July 05, 2025. Initial setup
-
-## User Preferences
-
-Preferred communication style: Simple, everyday language.
+- **Database**: PostgreSQL (Neon serverless recommended).
+- **AI Services**: OpenAI API for transcription and assistance.
+- **Mobile Builds**: Capacitor for Android/iOS.
+- **SMS Services**: Twilio (primary), AWS SNS (backup) for notifications.
+- **Email Services**: SendGrid.
+- **Calendar Integration**: Google Calendar API for synchronization.
+- **Weather Data**: Open-Meteo API.
+```

@@ -46,8 +46,16 @@ export function MealPlanning() {
   const { toast } = useToast();
 
   // Fetch real meal plans data from API
-  const { data: mealPlans = [] } = useQuery<MealPlan[]>({
+  const { data: mealPlans = [], refetch: refetchMeals, isLoading: mealsLoading, error: mealsError } = useQuery<MealPlan[]>({
     queryKey: ["/api/meal-plans"],
+    staleTime: 0, // Always refetch to ensure fresh data
+  });
+
+  console.log("🍽️ Meal plans query state:", { 
+    count: mealPlans.length, 
+    firstMeal: mealPlans[0],
+    loading: mealsLoading, 
+    error: mealsError 
   });
 
   // Fetch real grocery list data from API
@@ -68,8 +76,9 @@ export function MealPlanning() {
       });
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+      await refetchMeals(); // Force immediate refetch
       toast({
         title: "Meal added",
         description: "Meal has been added to your plan",
@@ -223,6 +232,7 @@ export function MealPlanning() {
   const categories = ['produce', 'meat', 'dairy', 'pantry', 'frozen', 'other'];
 
   const getMealsForDay = (day: string) => {
+    console.log(`Getting meals for ${day}:`, mealPlans.filter(meal => meal.day === day));
     return mealPlans.filter(meal => meal.day === day);
   };
 
