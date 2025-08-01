@@ -139,7 +139,12 @@ export interface IStorage {
   deleteTask(id: number): Promise<boolean>;
   deleteAllTasks(): Promise<boolean>;
   getTasksForTeen(teenId: number): Promise<Task[]>;
-  assignTaskToTeen(taskId: number, teenId: number): Promise<Task | undefined>;
+  assignTaskToTeen(taskId: number, teenId: number): Promise<Task>;
+  
+  // Family Invites
+  createFamilyInvite(invite: InsertFamilyInvite): Promise<FamilyInvite>;
+  getFamilyInvite(inviteCode: string): Promise<FamilyInvite | undefined>;
+  updateFamilyInvite(inviteCode: string, updates: Partial<FamilyInvite>): Promise<FamilyInvite | undefined>;
   
   // Voice Notes
   getVoiceNotes(): Promise<VoiceNote[]>;
@@ -637,9 +642,20 @@ export class DatabaseStorage implements IStorage {
     const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
     
+    // Get all family members for this family first
+    const familyMemberIds = await db.select({ id: familyMembers.id })
+      .from(familyMembers)
+      .where(eq(familyMembers.familyId, familyId));
+    
+    if (familyMemberIds.length === 0) {
+      return [];
+    }
+    
+    const memberIds = familyMemberIds.map(fm => fm.id);
+    
     return await db.select().from(tasks)
       .where(and(
-        eq(tasks.familyId, familyId),
+        inArray(tasks.createdBy, memberIds),
         gte(tasks.dueDate, todayStart),
         lt(tasks.dueDate, todayEnd)
       ));
@@ -1087,9 +1103,40 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Teen task methods
+  async getTasksForTeen(teenProfileId: number): Promise<Task[]> {
+    const teenTasks = await db.select().from(tasks).where(eq(tasks.teenId, teenProfileId));
+    return teenTasks;
+  }
+
+  async assignTaskToTeen(taskId: number, teenProfileId: number): Promise<Task> {
+    const [updatedTask] = await db.update(tasks)
+      .set({ teenId: teenProfileId, assignedTo: teenProfileId })
+      .where(eq(tasks.id, taskId))
+      .returning();
+    return updatedTask;
+  }
+
+  async createFamilyInvite(invite: InsertFamilyInvite): Promise<FamilyInvite> {
+    const [newInvite] = await db.insert(familyInvites).values(invite).returning();
+    return newInvite;
+  }
+
+  async getFamilyInvite(inviteCode: string): Promise<FamilyInvite | undefined> {
+    const [invite] = await db.select().from(familyInvites).where(eq(familyInvites.inviteCode, inviteCode));
+    return invite || undefined;
+  }
+
+  async updateFamilyInvite(inviteCode: string, updates: Partial<FamilyInvite>): Promise<FamilyInvite | undefined> {
+    const [updatedInvite] = await db.update(familyInvites)
+      .set(updates)
+      .where(eq(familyInvites.inviteCode, inviteCode))
+      .returning();
+    return updatedInvite || undefined;
+  }
+
   async getTeenTasks(teenProfileId: number): Promise<Task[]> {
-    const tasks = await db.select().from(tasks).where(eq(tasks.teenId, teenProfileId));
-    return tasks;
+    const teenTasks = await db.select().from(tasks).where(eq(tasks.teenId, teenProfileId));
+    return teenTasks;
   }
 
   async getTeenStats(teenProfileId: number): Promise<{ weeklyPoints: number; streak: number; completedToday: number }> {
@@ -1165,10 +1212,7 @@ export class DatabaseStorage implements IStorage {
     return notificationLog;
   }
 
-  async getTask(id: number): Promise<Task | undefined> {
-    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
-    return task || undefined;
-  }
+
 
   // Teen invite methods
   async createTeenInvite(inviteData: InsertFamilyInvite): Promise<FamilyInvite> {

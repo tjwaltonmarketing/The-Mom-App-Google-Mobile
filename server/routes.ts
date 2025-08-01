@@ -205,18 +205,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate secure invite token
       const inviteCode = `TEEN-${Date.now().toString(36).toUpperCase()}`;
       
+      // Get user's family membership to get familyId
+      const familyMembership = await storage.getUserFamilyMembership(user.id);
+      if (!familyMembership) {
+        return res.status(400).json({ error: "User not part of any family" });
+      }
+
       // Create teen member with generated avatar
       const avatar = name.charAt(0).toUpperCase(); // Generate avatar from first letter of name
       const teen = await storage.createFamilyMember({
-        familyId: user.familyId,
+        familyId: familyMembership.familyId,
         name,
         role: 'teen',
         color: '#10B981', // Default teen color
         avatar,
         phone: phone || null,
-        email: email || null,
-        inviteCode,
-        inviteStatus: 'pending'
+        email: email || null
       });
 
       // Prepare invite message
@@ -243,16 +247,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           `
         );
         if (emailResult.success) {
-          inviteResult = { success: true, method: 'email', messageId: emailResult.messageId };
+          inviteResult = { success: true, method: 'email', error: '' };
         } else {
-          inviteResult = { success: false, method: 'email', error: emailResult.error };
+          inviteResult = { success: false, method: 'email', error: emailResult.error || 'Email failed' };
         }
       } else if (preferredContact === 'sms' && phone) {
         const smsResult = await smsService.sendSMS(phone, message);
         if (smsResult.success) {
-          inviteResult = { success: true, method: 'sms', messageId: smsResult.messageId };
+          inviteResult = { success: true, method: 'sms', error: '' };
         } else {
-          inviteResult = { success: false, method: 'sms', error: smsResult.error };
+          inviteResult = { success: false, method: 'sms', error: smsResult.error || 'SMS failed' };
         }
       }
 
@@ -1942,7 +1946,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 await storage.createTask({
                   title: action.data.title,
                   description: action.data.description || "",
-                  assignedTo: action.data.assignedTo || 1,
+                  createdBy: action.data.assignedTo || 1,
                   dueDate: action.data.dueDate ? new Date(action.data.dueDate) : undefined,
                   priority: action.data.priority || "medium",
                   isCompleted: false
@@ -1954,7 +1958,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   description: action.data.description || "",
                   startTime: new Date(action.data.startTime),
                   endTime: action.data.endTime ? new Date(action.data.endTime) : new Date(new Date(action.data.startTime).getTime() + 60 * 60 * 1000),
-                  assignedTo: action.data.assignedTo || 1,
+                  createdBy: action.data.assignedTo || 1,
                   location: action.data.location || ""
                 });
                 break;
@@ -1963,7 +1967,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   title: action.data.title,
                   description: action.data.description || "",
                   dueDate: new Date(action.data.dueDate),
-                  assignedTo: action.data.assignedTo || 1,
+                  relatedTo: action.data.assignedTo || 1,
                   priority: action.data.priority || "medium"
                 });
                 break;
@@ -2151,7 +2155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         invitedRole: req.body.role,
         teenName: req.body.teenName,
         status: "pending",
-        expiresAt: expiresAt.toISOString()
+        expiresAt: expiresAt
       });
       
       console.log("Teen invite created successfully:", invite);
