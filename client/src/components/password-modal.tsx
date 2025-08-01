@@ -33,9 +33,10 @@ const passwordCategories = [
 
 interface PasswordModalProps {
   trigger?: React.ReactNode;
+  onPasswordAdded?: () => void;
 }
 
-export function PasswordModal({ trigger }: PasswordModalProps) {
+export function PasswordModal({ trigger, onPasswordAdded }: PasswordModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState<number[]>([1]); // Default to mom
@@ -92,6 +93,11 @@ export function PasswordModal({ trigger }: PasswordModalProps) {
       // Force refresh all password queries
       await queryClient.invalidateQueries({ queryKey: ["/api/passwords"] });
       await queryClient.refetchQueries({ queryKey: ["/api/passwords"] });
+      
+      // Call the callback to refresh parent component
+      if (onPasswordAdded) {
+        onPasswordAdded();
+      }
       
       form.reset();
       setIsOpen(false);

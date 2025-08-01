@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,10 +43,39 @@ interface PasswordEntry {
 export function PasswordVault() {
   const { toast } = useToast();
   const [editingPassword, setEditingPassword] = useState<Password | null>(null);
-  
-  const { data: passwords = [], isLoading, error } = useQuery<Password[]>({
-    queryKey: ["/api/passwords"],
-  });
+  const [passwords, setPasswords] = useState<Password[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchPasswords = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await fetch('/api/passwords', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch passwords: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setPasswords(data);
+    } catch (err: any) {
+      console.error('Password fetch error:', err);
+      setError(err.message || 'Failed to load passwords');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPasswords();
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -156,7 +185,7 @@ export function PasswordVault() {
             <Shield className="text-blue-600 dark:text-blue-400 blue-light-filter:text-amber-600" size={20} />
             <CardTitle className="text-lg">Password Vault</CardTitle>
           </div>
-          <PasswordModal />
+          <PasswordModal onPasswordAdded={fetchPasswords} />
         </div>
         
         <div className="flex gap-2 mt-4">
