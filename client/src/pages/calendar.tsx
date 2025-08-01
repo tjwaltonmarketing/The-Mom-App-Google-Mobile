@@ -137,9 +137,14 @@ export default function CalendarPage() {
                           )}
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        <Edit size={16} />
-                      </Button>
+                      <EventEditModal 
+                        event={event}
+                        trigger={
+                          <Button variant="ghost" size="sm">
+                            <Edit size={16} />
+                          </Button>
+                        }
+                      />
                     </div>
                   );
                 })}
