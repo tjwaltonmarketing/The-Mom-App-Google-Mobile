@@ -507,28 +507,31 @@ export function MealPlanning() {
           </TabsContent>
           
           <TabsContent value="grocery" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">Grocery List</h3>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={generateGroceryFromMeals} className="gap-2">
-                  <Calendar className="h-4 w-4" />
-                  From Meals
-                </Button>
-                <Button variant="outline" onClick={() => setIsShareModalOpen(true)} className="gap-2">
-                  <Share2 className="h-4 w-4" />
-                  Share
-                </Button>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Grocery List</h3>
                 {groceryList.length > 0 && (
                   <Button 
                     variant="destructive" 
+                    size="sm"
                     onClick={() => deleteAllGroceryMutation.mutate()} 
                     disabled={deleteAllGroceryMutation.isPending}
-                    className="gap-2"
+                    className="gap-1 text-xs"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3 w-3" />
                     Clear All
                   </Button>
                 )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={generateGroceryFromMeals} className="gap-1 text-xs">
+                  <Calendar className="h-3 w-3" />
+                  From Meals
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setIsShareModalOpen(true)} className="gap-1 text-xs">
+                  <Share2 className="h-3 w-3" />
+                  Share
+                </Button>
               </div>
             </div>
 
