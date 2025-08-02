@@ -106,7 +106,7 @@ function Router() {
           <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">Loading...</div>
           </div>
-        ) : teenData ? (
+        ) : isTeenUser ? (
           <TeenDashboard />
         ) : (
           <Login />
@@ -115,13 +115,13 @@ function Router() {
       
       {/* Teen-specific routes */}
       <Route path="/teen-tasks">
-        {teenData ? <TeenTasks /> : <Login />}
+        {isTeenUser ? <TeenTasks /> : <Login />}
       </Route>
       <Route path="/teen-calendar">
-        {teenData ? <TeenCalendar /> : <Login />}
+        {isTeenUser ? <TeenCalendar /> : <Login />}
       </Route>
       <Route path="/teen-passwords">
-        {teenData ? <TeenPasswords /> : <Login />}
+        {isTeenUser ? <TeenPasswords /> : <Login />}
       </Route>
       
       {/* Other routes based on authentication */}
