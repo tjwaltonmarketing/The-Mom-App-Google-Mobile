@@ -120,24 +120,24 @@ function Router() {
         ) : teenData ? (
           <TeenDashboard />
         ) : (
-          <Login />
+          <TeenLogin />
         )}
       </Route>
       
       {/* Teen-specific routes */}
       <Route path="/teen-tasks">
-        {teenData ? <TeenTasks /> : <Login />}
+        {teenData ? <TeenTasks /> : <TeenLogin />}
       </Route>
       <Route path="/teen-calendar">
-        {teenData ? <TeenCalendar /> : <Login />}
+        {teenData ? <TeenCalendar /> : <TeenLogin />}
       </Route>
       <Route path="/teen-passwords">
-        {teenData ? <TeenPasswords /> : <Login />}
+        {teenData ? <TeenPasswords /> : <TeenLogin />}
       </Route>
 
       {/* Teen Profile Route */}
       <Route path="/teen-profile">
-        {teenData ? <TeenProfile /> : <Login />}
+        {teenData ? <TeenProfile /> : <TeenLogin />}
       </Route>
       
       {/* Other routes based on authentication */}
