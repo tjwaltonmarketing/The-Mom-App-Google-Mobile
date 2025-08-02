@@ -52,12 +52,12 @@ function Router() {
       return response.json();
     },
     retry: false,
-    enabled: !isAuthenticated, // Only check for teen auth if not already authenticated as regular user
+    enabled: true, // Always check for teen auth
     staleTime: 0, // Always refetch to ensure we get fresh session data
     cacheTime: 0, // Don't cache teen auth data
   });
   
-  const isTeenUser = !!teenData && !isAuthenticated;
+  const isTeenUser = !!teenData;
 
   // Debug authentication state
   console.log("Auth state:", { 
@@ -68,7 +68,7 @@ function Router() {
     teenData: !!teenData, 
     teenLoading,
     teenError: teenError?.message,
-    enabled: !isAuthenticated
+    enabled: true
   });
 
   // Show splash screen on initial load for a minimum duration
