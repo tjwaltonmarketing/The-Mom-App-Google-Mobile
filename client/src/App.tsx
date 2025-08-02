@@ -110,7 +110,21 @@ function Router() {
         ) : (teenData && !teenError) ? (
           <TeenDashboard />
         ) : (
-          <Login />
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center space-y-4">
+              <h2 className="text-xl">Debug Info</h2>
+              <div className="text-sm text-left bg-gray-100 p-4 rounded">
+                <pre>{JSON.stringify({
+                  teenData: !!teenData,
+                  teenError: teenError?.message,
+                  teenLoading,
+                  condition: (teenData && !teenError),
+                  rawData: teenData
+                }, null, 2)}</pre>
+              </div>
+              <Login />
+            </div>
+          </div>
         )}
       </Route>
       
