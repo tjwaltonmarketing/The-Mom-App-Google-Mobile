@@ -6,22 +6,13 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Clock, User } from "lucide-react";
-
-interface HouseholdSettings {
-  id: number;
-  familyId: number;
-  dishwasherIsClean: boolean;
-  dishwasherLastUpdated: string;
-  dishwasherLastUpdatedBy?: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { HouseholdSettings } from "@shared/schema";
 
 export function HouseholdStatus() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: settings, isLoading, error } = useQuery({
+  const { data: settings, isLoading, error } = useQuery<HouseholdSettings>({
     queryKey: ["/api/household-settings"],
     retry: 1
   });
@@ -30,11 +21,11 @@ export function HouseholdStatus() {
     mutationFn: async (isClean: boolean) => {
       return await apiRequest("PUT", "/api/household-settings/dishwasher", { isClean });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/household-settings"] });
       toast({
         title: "Status Updated",
-        description: data.message,
+        description: data?.message || "Dishwasher status updated successfully",
       });
     },
     onError: (error: Error) => {
