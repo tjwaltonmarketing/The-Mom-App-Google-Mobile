@@ -72,7 +72,9 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/teen/login" component={TeenLogin} />
+      <Route path="/teen-login" component={TeenLogin} />
       <Route path="/teen/join" component={TeenOnboarding} />
+      <Route path="/teen-join" component={TeenOnboarding} />
 
       {/* Teen routes - for teen users */}
       {isTeenUser ? (
