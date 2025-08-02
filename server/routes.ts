@@ -2549,13 +2549,24 @@ themomapp.us@gmail.com`;
       
       // Set session
       req.session!.teenId = teenProfile.id;
+      console.log("Teen login successful - Setting session ID:", req.session?.id, "Teen ID:", teenProfile.id);
       
-      res.json({
-        success: true,
-        teenProfile: {
-          id: teenProfile.id,
-          firstName: teenProfile.firstName,
-          username: teenProfile.username
+      // Save session explicitly to ensure persistence
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ error: "Session save failed" });
+        } else {
+          console.log("Teen session saved successfully - Session ID:", req.session?.id, "Teen ID:", req.session?.teenId);
+          
+          res.json({
+            success: true,
+            teenProfile: {
+              id: teenProfile.id,
+              firstName: teenProfile.firstName,
+              username: teenProfile.username
+            }
+          });
         }
       });
     } catch (error: any) {

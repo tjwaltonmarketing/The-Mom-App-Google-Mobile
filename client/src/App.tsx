@@ -46,18 +46,28 @@ function Router() {
   const { data: teenData, isLoading: teenLoading, error: teenError } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     queryFn: async () => {
+      console.log("Fetching teen auth data...");
       const response = await fetch("/api/teen/auth/user", {
         credentials: "include",
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+      console.log("Teen auth response status:", response.status, response.statusText);
       if (!response.ok) {
+        const errorText = await response.text();
+        console.log("Teen auth error response:", errorText);
         throw new Error("Not authenticated");
       }
-      return response.json();
+      const data = await response.json();
+      console.log("Teen auth success data:", data);
+      return data;
     },
     retry: false,
     enabled: true, // Always check for teen auth
     staleTime: 0, // Always refetch to ensure we get fresh session data
-    cacheTime: 0, // Don't cache teen auth data
+    gcTime: 0, // Don't cache teen auth data (v5 uses gcTime instead of cacheTime)
   });
   
   const isTeenUser = !!teenData && !teenError;
