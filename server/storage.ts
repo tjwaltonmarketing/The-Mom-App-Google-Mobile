@@ -190,6 +190,7 @@ export interface IStorage {
   
   createTeenProfile(profile: InsertTeenProfile): Promise<TeenProfile>;
   getTeenProfile(userId: number): Promise<TeenProfile | undefined>;
+  getTeenProfileByUsername(username: string): Promise<TeenProfile | undefined>;
   updateTeenPoints(teenProfileId: number, points: number): Promise<void>;
   updateTeenStreak(teenProfileId: number, streak: number): Promise<void>;
   
@@ -1146,6 +1147,13 @@ export class DatabaseStorage implements IStorage {
 
   async getTeenProfile(userId: number): Promise<TeenProfile | undefined> {
     const [profile] = await db.select().from(teenProfiles).where(eq(teenProfiles.userId, userId));
+    return profile || undefined;
+  }
+
+  async getTeenProfileByUsername(username: string): Promise<TeenProfile | undefined> {
+    const [profile] = await db.select()
+      .from(teenProfiles)
+      .where(eq(teenProfiles.username, username));
     return profile || undefined;
   }
 

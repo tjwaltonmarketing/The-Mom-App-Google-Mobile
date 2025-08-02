@@ -2526,35 +2526,36 @@ themomapp.us@gmail.com`;
         return res.status(400).json({ error: "Username and password are required" });
       }
       
-      // Mock teen authentication - in real app, check against database
-      const mockTeens = [
-        { id: 123, username: "adri_w", password: "password123", firstName: "Adri" },
-        { id: 124, username: "teen_demo", password: "demo123", firstName: "Demo" },
-        { id: 125, username: "AdriWalton1", password: "Welcome1!", firstName: "Adri" }
-      ];
+      // Look up teen profile in database
+      const teenProfile = await storage.getTeenProfileByUsername(username);
       
-      const teen = mockTeens.find(t => t.username === username);
-      
-      if (!teen) {
+      if (!teenProfile) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
       
-      // In real app, use bcrypt to compare hashed passwords
-      const isValidPassword = teen.password === password;
+      // Get the user account linked to this teen profile
+      const user = await storage.getUserById(teenProfile.userId);
+      
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+      
+      // Use bcrypt to compare hashed passwords
+      const isValidPassword = await verifyPassword(password, user.passwordHash);
       
       if (!isValidPassword) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
       
       // Set session
-      req.session!.teenId = teen.id;
+      req.session!.teenId = teenProfile.id;
       
       res.json({
         success: true,
         teenProfile: {
-          id: teen.id,
-          firstName: teen.firstName,
-          username: teen.username
+          id: teenProfile.id,
+          firstName: teenProfile.firstName,
+          username: teenProfile.username
         }
       });
     } catch (error: any) {

@@ -20,8 +20,8 @@ Preferred communication style: Simple, everyday language.
 
 ### Technical Implementations
 - Backend: Express.js with TypeScript.
-- Database: PostgreSQL with Drizzle ORM.
-- Authentication: Express-session with bcrypt for password hashing and secure cookies. JWT token generation for API access.
+- Database: PostgreSQL with Drizzle ORM. Teen authentication system now uses real database storage instead of mock data.
+- Authentication: Express-session with bcrypt for password hashing and secure cookies. JWT token generation for API access. Teen profiles stored in database with proper foreign key relationships to users and family members.
 - Mobile: Capacitor for Android/iOS builds, ensuring cross-platform compatibility.
 - AI Integration: OpenAI API for voice transcription, natural language processing for task creation, and context-aware smart assistance.
 - Voice Processing Pipeline: Browser speech recognition captures audio, real-time transcription to text, AI processing for action extraction, smart suggestions for tasks/events/reminders, and one-click creation.
