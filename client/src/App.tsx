@@ -19,6 +19,9 @@ import Tasks from "@/pages/tasks";
 import TeenLogin from "@/pages/teen-login";
 import TeenOnboarding from "@/pages/teen-onboarding";
 import TeenDashboard from "@/pages/teen-dashboard";
+import TeenTasks from "@/pages/teen-tasks";
+import TeenCalendar from "@/pages/teen-calendar";
+import TeenPasswords from "@/pages/teen-passwords";
 import TeenProfile from "@/pages/teen-profile";
 import MealPlan from "@/pages/meal-plan";
 
@@ -108,6 +111,17 @@ function Router() {
         ) : (
           <Login />
         )}
+      </Route>
+      
+      {/* Teen-specific routes */}
+      <Route path="/teen-tasks">
+        {teenData ? <TeenTasks /> : <Login />}
+      </Route>
+      <Route path="/teen-calendar">
+        {teenData ? <TeenCalendar /> : <Login />}
+      </Route>
+      <Route path="/teen-passwords">
+        {teenData ? <TeenPasswords /> : <Login />}
       </Route>
       
       {/* Other routes based on authentication */}
