@@ -169,8 +169,9 @@ export function MealPlanning() {
       const response = await apiRequest("DELETE", `/api/meal-plans/${id}`);
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+      await refetchMeals();
       toast({
         title: "Meal deleted",
         description: "Meal has been removed from your plan",
