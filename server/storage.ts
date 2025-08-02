@@ -923,6 +923,37 @@ export class DatabaseStorage implements IStorage {
     return item;
   }
 
+  async updateGroceryItem(id: number, updates: Partial<InsertGroceryItem>): Promise<GroceryItem | undefined> {
+    const [item] = await db
+      .update(groceryItems)
+      .set(updates)
+      .where(eq(groceryItems.id, id))
+      .returning();
+    return item;
+  }
+
+  async deleteGroceryItem(id: number): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(groceryItems)
+        .where(eq(groceryItems.id, id));
+      return result.rowCount !== null && result.rowCount > 0;
+    } catch (error) {
+      console.error(`Failed to delete grocery item ${id}:`, error);
+      return false;
+    }
+  }
+
+  async deleteAllGroceryItems(): Promise<boolean> {
+    try {
+      const result = await db.delete(groceryItems);
+      return true;
+    } catch (error) {
+      console.error('Failed to delete all grocery items:', error);
+      return false;
+    }
+  }
+
   async updateGroceryItem(id: number, updates: Partial<GroceryItem>): Promise<GroceryItem | undefined> {
     const [item] = await db
       .update(groceryItems)

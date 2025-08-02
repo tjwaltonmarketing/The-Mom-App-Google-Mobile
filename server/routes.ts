@@ -2190,6 +2190,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/grocery-items/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteGroceryItem(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Grocery item not found" });
+      }
+      res.json({ message: "Grocery item deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/grocery-items", async (req, res) => {
+    try {
+      await storage.deleteAllGroceryItems();
+      res.json({ message: "All grocery items deleted successfully" });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Meal Plan endpoints
   app.get("/api/meal-plans", async (req, res) => {
     try {

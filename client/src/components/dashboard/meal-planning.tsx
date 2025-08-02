@@ -179,6 +179,36 @@ export function MealPlanning() {
     },
   });
 
+  const deleteGroceryMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/grocery-items/${id}`);
+      return response.json();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+      await refetchGrocery();
+      toast({
+        title: "Item deleted",
+        description: "Grocery item has been removed",
+      });
+    },
+  });
+
+  const deleteAllGroceryMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", "/api/grocery-items");
+      return response.json();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+      await refetchGrocery();
+      toast({
+        title: "All items deleted",
+        description: "Grocery list has been cleared",
+      });
+    },
+  });
+
   const handleAddMeal = () => {
     if (!newMeal.day || !newMeal.mealType || !newMeal.meal) {
       toast({
@@ -488,6 +518,17 @@ export function MealPlanning() {
                   <Share2 className="h-4 w-4" />
                   Share
                 </Button>
+                {groceryList.length > 0 && (
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => deleteAllGroceryMutation.mutate()} 
+                    disabled={deleteAllGroceryMutation.isPending}
+                    className="gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Clear All
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -543,6 +584,15 @@ export function MealPlanning() {
                       <Badge variant="outline" className="text-xs">
                         {item.category}
                       </Badge>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteGroceryMutation.mutate(item.id)}
+                        disabled={deleteGroceryMutation.isPending}
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
                   ))}
                   {getPendingGroceries().length === 0 && (
@@ -571,6 +621,15 @@ export function MealPlanning() {
                         <Badge variant="outline" className="text-xs">
                           {item.category}
                         </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteGroceryMutation.mutate(item.id)}
+                          disabled={deleteGroceryMutation.isPending}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
                     ))}
                   </div>
