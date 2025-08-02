@@ -41,50 +41,11 @@ export default function TeenDashboard() {
     retry: false,
   });
 
-  const todayTasks = [
-    {
-      id: 1,
-      title: "Take out trash",
-      description: "Take the trash bins to the curb for pickup",
-      dueTime: "6:00 PM",
-      dueDate: new Date().toISOString(),
-      priority: "medium" as const,
-      points: 15,
-      isCompleted: false,
-      assignedTo: 123,
-      completedBy: null,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 2,
-      title: "Feed the dog",
-      description: "Give Max his evening meal",
-      dueTime: "7:30 AM",
-      dueDate: new Date().toISOString(),
-      priority: "high" as const,
-      points: 10,
-      isCompleted: true,
-      assignedTo: 123,
-      completedBy: 123,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    },
-    {
-      id: 3,
-      title: "Clean bedroom",
-      description: "Make bed, organize desk, and pick up clothes",
-      dueTime: "8:00 PM",
-      dueDate: new Date().toISOString(),
-      priority: "medium" as const,
-      points: 25,
-      isCompleted: false,
-      assignedTo: 123,
-      completedBy: null,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
-  ];
+  // Fetch teen's tasks from API
+  const { data: todayTasks = [], isLoading: tasksLoading } = useQuery({
+    queryKey: ["/api/teen/tasks/today"],  
+    retry: false,
+  });
 
   const upcomingEvents = [
     {
@@ -194,47 +155,62 @@ export default function TeenDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {todayTasks.map((task) => (
-                  <div 
-                    key={task.id} 
-                    className={`p-3 rounded-lg border flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors ${
-                      task.isCompleted 
-                        ? 'bg-green-50 border-green-200' 
-                        : 'bg-white border-gray-200'
-                    }`}
-                    onClick={() => setEditingTask(task)}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+              {tasksLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" />
+                  <span className="ml-2 text-sm text-gray-600">Loading tasks...</span>
+                </div>
+              ) : todayTasks.length === 0 ? (
+                <div className="text-center py-8">
+                  <CheckCircle2 className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                  <p className="text-sm text-gray-500 mb-2">No tasks assigned today</p>
+                  <p className="text-xs text-gray-400">Check back later or ask your parents about new tasks!</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {todayTasks.map((task) => (
+                    <div 
+                      key={task.id} 
+                      className={`p-3 rounded-lg border flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors ${
                         task.isCompleted 
-                          ? 'bg-green-500 border-green-500' 
-                          : 'border-gray-300'
-                      }`}>
-                        {task.isCompleted && <CheckCircle2 className="h-3 w-3 text-white" />}
+                          ? 'bg-green-50 border-green-200' 
+                          : 'bg-white border-gray-200'
+                      }`}
+                      onClick={() => setEditingTask(task)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          task.isCompleted 
+                            ? 'bg-green-500 border-green-500' 
+                            : 'border-gray-300'
+                        }`}>
+                          {task.isCompleted && <CheckCircle2 className="h-3 w-3 text-white" />}
+                        </div>
+                        <div>
+                          <p className={`font-medium ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
+                            {task.title}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Clock className="h-3 w-3 text-gray-400" />
+                            <span className="text-xs text-gray-600">
+                              {task.dueDate ? new Date(task.dueDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'No deadline'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p className={`font-medium ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
-                          {task.title}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Clock className="h-3 w-3 text-gray-400" />
-                          <span className="text-xs text-gray-600">{task.dueTime}</span>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
+                          {task.priority}
+                        </Badge>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-3 w-3 text-yellow-500" />
+                          <span className="text-sm font-medium">{task.points || 10}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
-                        {task.priority}
-                      </Badge>
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 text-yellow-500" />
-                        <span className="text-sm font-medium">{task.points}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
