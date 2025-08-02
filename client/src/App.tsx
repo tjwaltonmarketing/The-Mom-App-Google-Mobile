@@ -40,22 +40,22 @@ function Router() {
   const [initialLoad, setInitialLoad] = useState(true);
 
   // Always call useQuery hook - hooks must be called in the same order every render
-  const { data: teenData } = useQuery({
+  const { data: teenData, isLoading: teenLoading } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     retry: false,
     enabled: !isAuthenticated, // Only check for teen auth if not already authenticated as regular user
   });
   
-  const isTeenUser = !!teenData;
+  const isTeenUser = !!teenData && !isAuthenticated;
 
   // Debug authentication state
-  console.log("Auth state:", { isAuthenticated, isLoading, hasUser: !!user, isTeenUser });
+  console.log("Auth state:", { isAuthenticated, isLoading, hasUser: !!user, isTeenUser, teenData: !!teenData, teenLoading });
 
   // Show splash screen on initial load for a minimum duration
   if (!splashCompleted && initialLoad) {
     return (
       <SplashScreen 
-        isLoading={isLoading} 
+        isLoading={isLoading || teenLoading} 
         onComplete={() => {
           setSplashCompleted(true);
           setInitialLoad(false);
