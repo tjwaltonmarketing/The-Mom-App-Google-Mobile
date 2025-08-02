@@ -30,9 +30,17 @@ export default function TeenLogin() {
     },
     onSuccess: (data) => {
       if (data.needsSetup) {
-        setLocation("/teen-onboarding");
+        if (typeof window !== 'undefined') {
+          window.location.href = '/teen-onboarding';
+        } else {
+          setLocation("/teen-onboarding");
+        }
       } else {
-        setLocation("/teen-dashboard");
+        if (typeof window !== 'undefined') {
+          window.location.href = '/teen-dashboard';
+        } else {
+          setLocation("/teen-dashboard");
+        }
       }
       toast({
         title: "Welcome back!",
@@ -63,12 +71,16 @@ export default function TeenLogin() {
       await queryClient.refetchQueries({ queryKey: ["/api/teen/auth/user"] });
       
       // Wait for auth state to settle
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       console.log("Auth state refreshed, navigating to dashboard...");
       
-      // Navigate to dashboard
-      setLocation("/teen-dashboard");
+      // Use window.location for more reliable navigation in mobile
+      if (typeof window !== 'undefined') {
+        window.location.href = '/teen-dashboard';
+      } else {
+        setLocation("/teen-dashboard");
+      }
       
       toast({
         title: "Welcome back!",
