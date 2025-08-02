@@ -20,6 +20,7 @@ import TeenLogin from "@/pages/teen-login";
 import TeenOnboarding from "@/pages/teen-onboarding";
 import TeenDashboard from "@/pages/teen-dashboard";
 import TeenProfile from "@/pages/teen-profile";
+import MealPlan from "@/pages/meal-plan";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -85,6 +86,7 @@ function Router() {
               <Route path="/settings" component={Settings} />
               <Route path="/calendar" component={Calendar} />
               <Route path="/tasks" component={Tasks} />
+              <Route path="/meal-plan" component={MealPlan} />
             </>
           )}
           <Route component={NotFound} />
