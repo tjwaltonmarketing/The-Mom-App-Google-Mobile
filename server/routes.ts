@@ -2529,7 +2529,8 @@ themomapp.us@gmail.com`;
       // Mock teen authentication - in real app, check against database
       const mockTeens = [
         { id: 123, username: "adri_w", password: "password123", firstName: "Adri" },
-        { id: 124, username: "teen_demo", password: "demo123", firstName: "Demo" }
+        { id: 124, username: "teen_demo", password: "demo123", firstName: "Demo" },
+        { id: 125, username: "AdriWalton1", password: "Welcome1!", firstName: "Adri" }
       ];
       
       const teen = mockTeens.find(t => t.username === username);
