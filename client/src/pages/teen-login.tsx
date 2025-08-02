@@ -54,17 +54,15 @@ export default function TeenLogin() {
       });
       return response.json();
     },
-    onSuccess: () => {
-      // Invalidate teen auth query to trigger re-fetch
-      queryClient.invalidateQueries({ queryKey: ["/api/teen/auth/user"] });
-      // Small delay to ensure query invalidation processes
-      setTimeout(() => {
-        setLocation("/teen-dashboard");
-        toast({
-          title: "Welcome back!",
-          description: "Successfully logged in",
-        });
-      }, 100);
+    onSuccess: async () => {
+      // Force refetch teen auth data
+      await queryClient.refetchQueries({ queryKey: ["/api/teen/auth/user"] });
+      // Navigate to dashboard
+      setLocation("/teen-dashboard");
+      toast({
+        title: "Welcome back!",
+        description: "Successfully logged in",
+      });
     },
     onError: () => {
       toast({

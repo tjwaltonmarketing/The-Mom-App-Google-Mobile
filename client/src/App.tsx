@@ -96,11 +96,15 @@ function Router() {
       <Route path="/teen/join" component={TeenOnboarding} />
       <Route path="/teen-join" component={TeenOnboarding} />
 
-      {/* Teen routes - for teen users */}
+      {/* Teen routes - always check for teen dashboard route */}
+      <Route path="/teen-dashboard">
+        {isTeenUser ? <TeenDashboard /> : <Login />}
+      </Route>
+      
+      {/* Other routes based on authentication */}
       {isTeenUser ? (
         <>
           <Route path="/" component={TeenDashboard} />
-          <Route path="/teen-dashboard" component={TeenDashboard} />
           <Route path="/profile" component={TeenProfile} />
           <Route component={NotFound} />
         </>
