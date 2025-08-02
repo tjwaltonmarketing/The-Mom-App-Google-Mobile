@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Switch, Route } from "wouter";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/useAuth";
 import { SplashScreen } from "@/components/splash-screen";
@@ -39,8 +39,17 @@ function Router() {
   const [splashCompleted, setSplashCompleted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
 
+  // Always call useQuery hook - hooks must be called in the same order every render
+  const { data: teenData } = useQuery({
+    queryKey: ["/api/teen/auth/user"],
+    retry: false,
+    enabled: !isAuthenticated, // Only check for teen auth if not already authenticated as regular user
+  });
+  
+  const isTeenUser = !!teenData;
+
   // Debug authentication state
-  console.log("Auth state:", { isAuthenticated, isLoading, hasUser: !!user });
+  console.log("Auth state:", { isAuthenticated, isLoading, hasUser: !!user, isTeenUser });
 
   // Show splash screen on initial load for a minimum duration
   if (!splashCompleted && initialLoad) {
@@ -54,9 +63,6 @@ function Router() {
       />
     );
   }
-
-  // Check if user is a teen based on session or user data
-  const isTeenUser = (user as any)?.role === 'teen' || (typeof window !== 'undefined' && window.sessionStorage?.getItem('teenId'));
 
   return (
     <Switch>
@@ -72,6 +78,7 @@ function Router() {
       {isTeenUser ? (
         <>
           <Route path="/" component={TeenDashboard} />
+          <Route path="/teen-dashboard" component={TeenDashboard} />
           <Route path="/profile" component={TeenProfile} />
           <Route component={NotFound} />
         </>
