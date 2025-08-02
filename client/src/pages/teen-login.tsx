@@ -19,20 +19,7 @@ export default function TeenLogin() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // Check if user is already authenticated
-  const { data: teenData, isLoading: teenLoading } = useQuery({
-    queryKey: ["/api/teen/auth/user"],
-    retry: false,
-    staleTime: 0,
-  });
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (teenData && !teenLoading) {
-      console.log("Teen already authenticated, redirecting to dashboard...");
-      setLocation("/teen-dashboard");
-    }
-  }, [teenData, teenLoading, setLocation]);
 
   const inviteLoginMutation = useMutation({
     mutationFn: async () => {
