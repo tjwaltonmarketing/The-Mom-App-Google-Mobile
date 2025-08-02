@@ -56,13 +56,18 @@ export default function TeenLogin() {
     },
     onSuccess: async () => {
       console.log("Login successful, refreshing auth state...");
-      // Small delay to ensure session is saved on backend
-      await new Promise(resolve => setTimeout(resolve, 100));
-      // Force refetch teen auth data
+      
+      // Force refetch teen auth data first
       await queryClient.refetchQueries({ queryKey: ["/api/teen/auth/user"] });
+      
+      // Wait for auth state to settle
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
       console.log("Auth state refreshed, navigating to dashboard...");
+      
       // Navigate to dashboard
       setLocation("/teen-dashboard");
+      
       toast({
         title: "Welcome back!",
         description: "Successfully logged in",

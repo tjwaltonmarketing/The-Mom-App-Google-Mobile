@@ -117,7 +117,7 @@ function Router() {
           <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">Loading teen data...</div>
           </div>
-        ) : teenData ? (
+        ) : teenData && !teenError ? (
           <TeenDashboard />
         ) : (
           <TeenLogin />
