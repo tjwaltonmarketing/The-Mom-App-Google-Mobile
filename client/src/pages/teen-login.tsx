@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Users, ArrowLeft, Smartphone, Eye, EyeOff } from "lucide-react";
 
 export default function TeenLogin() {
@@ -55,11 +55,16 @@ export default function TeenLogin() {
       return response.json();
     },
     onSuccess: () => {
-      setLocation("/teen-dashboard");
-      toast({
-        title: "Welcome back!",
-        description: "Successfully logged in",
-      });
+      // Invalidate teen auth query to trigger re-fetch
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/auth/user"] });
+      // Small delay to ensure query invalidation processes
+      setTimeout(() => {
+        setLocation("/teen-dashboard");
+        toast({
+          title: "Welcome back!",
+          description: "Successfully logged in",
+        });
+      }, 100);
     },
     onError: () => {
       toast({
