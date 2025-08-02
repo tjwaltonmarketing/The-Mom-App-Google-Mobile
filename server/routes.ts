@@ -2587,21 +2587,11 @@ themomapp.us@gmail.com`;
         return res.status(401).json({ error: "Not authenticated" });
       }
       
-      // Get stored profile from database or create default
+      // Get stored profile from database
       let teenProfile = await storage.getTeenProfile(teenId);
       if (!teenProfile) {
-        teenProfile = await storage.createTeenProfile({
-          userId: teenId,
-          familyMemberId: 1,
-          firstName: "Adri",
-          lastName: "Walton",
-          username: "adri_w",
-          age: 16,
-          favoriteColor: "purple",
-          points: 285,
-          streak: 12,
-          lastActivityDate: new Date()
-        });
+        console.log("Teen profile not found for ID:", teenId);
+        return res.status(404).json({ error: "Teen profile not found" });
       }
       
       console.log("Fetching teen profile for ID:", teenId, "Has avatar:", !!teenProfile.avatar);
