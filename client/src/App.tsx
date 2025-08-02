@@ -57,7 +57,7 @@ function Router() {
     cacheTime: 0, // Don't cache teen auth data
   });
   
-  const isTeenUser = !!teenData;
+  const isTeenUser = !!teenData && !teenError;
 
   // Debug authentication state
   console.log("Auth state:", { 
@@ -68,7 +68,8 @@ function Router() {
     teenData: !!teenData, 
     teenLoading,
     teenError: teenError?.message,
-    enabled: true
+    enabled: true,
+    rawTeenData: teenData
   });
 
   // Show splash screen on initial load for a minimum duration
@@ -96,9 +97,17 @@ function Router() {
       <Route path="/teen/join" component={TeenOnboarding} />
       <Route path="/teen-join" component={TeenOnboarding} />
 
-      {/* Teen routes - always check for teen dashboard route */}
+      {/* Teen dashboard route - always render if teen session exists */}
       <Route path="/teen-dashboard">
-        {isTeenUser ? <TeenDashboard /> : <Login />}
+        {teenLoading ? (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">Loading...</div>
+          </div>
+        ) : teenData ? (
+          <TeenDashboard />
+        ) : (
+          <Login />
+        )}
       </Route>
       
       {/* Other routes based on authentication */}
