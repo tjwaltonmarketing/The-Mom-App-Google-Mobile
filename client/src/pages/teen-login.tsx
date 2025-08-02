@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Users, ArrowLeft, Smartphone, Eye, EyeOff } from "lucide-react";
 
@@ -18,6 +18,21 @@ export default function TeenLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  // Check if user is already authenticated
+  const { data: teenData, isLoading: teenLoading } = useQuery({
+    queryKey: ["/api/teen/auth/user"],
+    retry: false,
+    staleTime: 0,
+  });
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (teenData && !teenLoading) {
+      console.log("Teen already authenticated, redirecting to dashboard...");
+      setLocation("/teen-dashboard");
+    }
+  }, [teenData, teenLoading, setLocation]);
 
   const inviteLoginMutation = useMutation({
     mutationFn: async () => {
