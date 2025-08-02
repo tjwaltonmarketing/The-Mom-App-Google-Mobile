@@ -72,7 +72,8 @@ function Router() {
     teenLoading,
     teenError: teenError?.message,
     enabled: true,
-    rawTeenData: teenData
+    rawTeenData: teenData,
+    routeCondition: teenData && !teenError
   });
 
   // Show splash screen on initial load for a minimum duration
@@ -104,9 +105,9 @@ function Router() {
       <Route path="/teen-dashboard">
         {teenLoading ? (
           <div className="min-h-screen flex items-center justify-center">
-            <div className="text-center">Loading...</div>
+            <div className="text-center">Loading teen data...</div>
           </div>
-        ) : isTeenUser ? (
+        ) : (teenData && !teenError) ? (
           <TeenDashboard />
         ) : (
           <Login />
@@ -115,13 +116,13 @@ function Router() {
       
       {/* Teen-specific routes */}
       <Route path="/teen-tasks">
-        {isTeenUser ? <TeenTasks /> : <Login />}
+        {(teenData && !teenError) ? <TeenTasks /> : <Login />}
       </Route>
       <Route path="/teen-calendar">
-        {isTeenUser ? <TeenCalendar /> : <Login />}
+        {(teenData && !teenError) ? <TeenCalendar /> : <Login />}
       </Route>
       <Route path="/teen-passwords">
-        {isTeenUser ? <TeenPasswords /> : <Login />}
+        {(teenData && !teenError) ? <TeenPasswords /> : <Login />}
       </Route>
       
       {/* Other routes based on authentication */}
