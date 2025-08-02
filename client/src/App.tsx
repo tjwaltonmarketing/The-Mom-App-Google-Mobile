@@ -134,6 +134,11 @@ function Router() {
       <Route path="/teen-passwords">
         {teenData ? <TeenPasswords /> : <Login />}
       </Route>
+
+      {/* Teen Profile Route */}
+      <Route path="/teen-profile">
+        {teenData ? <TeenProfile /> : <Login />}
+      </Route>
       
       {/* Other routes based on authentication */}
       {isTeenUser ? (
