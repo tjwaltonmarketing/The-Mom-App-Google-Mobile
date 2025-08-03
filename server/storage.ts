@@ -110,6 +110,7 @@ export interface IStorage {
   getFamilyMemberByUserId(userId: number): Promise<FamilyMember | undefined>;
   getFamilyMembersByFamilyId(familyId: number): Promise<FamilyMember[]>;
   getFamilyMember(id: number): Promise<FamilyMember | undefined>;
+  getFamilyMemberById(id: number): Promise<FamilyMember | undefined>;
   createFamilyMember(member: InsertFamilyMember): Promise<FamilyMember>;
   updateFamilyMember(id: number, updates: Partial<InsertFamilyMember>): Promise<FamilyMember | undefined>;
   deleteFamilyMember(id: number): Promise<boolean>;
@@ -416,6 +417,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFamilyMember(id: number): Promise<FamilyMember | undefined> {
+    const [member] = await db.select().from(familyMembers).where(eq(familyMembers.id, id));
+    return member || undefined;
+  }
+
+  async getFamilyMemberById(id: number): Promise<FamilyMember | undefined> {
     const [member] = await db.select().from(familyMembers).where(eq(familyMembers.id, id));
     return member || undefined;
   }
