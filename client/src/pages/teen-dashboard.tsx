@@ -50,53 +50,11 @@ export default function TeenDashboard() {
     retry: false,
   });
 
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: "Soccer Practice",
-      description: "Weekly soccer practice at the local field",
-      location: "Community Sports Field",
-      startTime: new Date().toISOString(),
-      endTime: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-      isAllDay: false,
-      assignedTo: 123,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      time: "4:00 PM",
-      date: "Today",
-      type: "sport"
-    },
-    {
-      id: 2,
-      title: "Family Dinner",
-      description: "Weekly family dinner together",
-      location: "Home",
-      startTime: new Date().toISOString(),
-      endTime: new Date(Date.now() + 1.5 * 60 * 60 * 1000).toISOString(),
-      isAllDay: false,
-      assignedTo: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      time: "6:30 PM",
-      date: "Today",
-      type: "family"
-    },
-    {
-      id: 3,
-      title: "Math Test",
-      description: "Algebra II Chapter 5 test",
-      location: "Room 203",
-      startTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      endTime: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(),
-      isAllDay: false,
-      assignedTo: 123,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      time: "10:00 AM",
-      date: "Tomorrow",
-      type: "school"
-    }
-  ];
+  // Fetch teen's upcoming events from API
+  const { data: upcomingEvents = [], isLoading: eventsLoading } = useQuery({
+    queryKey: ["/api/teen/events"],
+    retry: false,
+  });
 
   const achievements = [
     { name: "Week Warrior", description: "7 days streak!", icon: "🔥" },

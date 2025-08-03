@@ -195,6 +195,9 @@ export interface IStorage {
   getTeenProfileByUsername(username: string): Promise<TeenProfile | undefined>;
   updateTeenPoints(teenProfileId: number, points: number): Promise<void>;
   updateTeenStreak(teenProfileId: number, streak: number): Promise<void>;
+  updateTeenProfile(teenId: number, updates: Partial<InsertTeenProfile>): Promise<TeenProfile | undefined>;
+  deleteTeenProfile(teenProfileId: number): Promise<boolean>;
+  deleteUserById(userId: number): Promise<boolean>;
   
   createTeenNotificationSettings(settings: InsertTeenNotificationSettings): Promise<TeenNotificationSettings>;
   getTeenNotificationSettings(teenProfileId: number): Promise<TeenNotificationSettings | undefined>;
@@ -209,6 +212,7 @@ export interface IStorage {
   
   // Additional methods for notifications
   getTask(id: number): Promise<Task | undefined>;
+  getTasksForTeen(teenProfileId: number): Promise<Task[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -966,6 +970,37 @@ export class DatabaseStorage implements IStorage {
       return false;
     }
   }
+
+  // Teen Profile Management
+  async deleteTeenProfile(teenProfileId: number): Promise<boolean> {
+    try {
+      // Delete notification settings first
+      await db.delete(teenNotificationSettings).where(eq(teenNotificationSettings.teenProfileId, teenProfileId));
+      
+      // Delete teen profile
+      const result = await db.delete(teenProfiles).where(eq(teenProfiles.id, teenProfileId));
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error('Failed to delete teen profile:', error);
+      return false;
+    }
+  }
+
+  async deleteUserById(userId: number): Promise<boolean> {
+    try {
+      // Delete related family member records first
+      await db.delete(familyMembers).where(eq(familyMembers.userId, userId));
+      
+      // Delete user
+      const result = await db.delete(users).where(eq(users.id, userId));
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      return false;
+    }
+  }
+
+
 
 
 

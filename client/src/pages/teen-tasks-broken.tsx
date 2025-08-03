@@ -1,31 +1,43 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Clock, Target, CheckSquare, Filter, Calendar } from "lucide-react";
-import TeenNavigation from "@/components/teen/teen-navigation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { 
+  CheckCircle2, 
+  Circle, 
+  Plus,
+  Calendar,
+  Clock,
+  Users,
+  Filter,
+  Star,
+  AlertCircle,
+  Trash2,
+  Edit3
+} from "lucide-react";
+import TeenNavigation from "@/components/teen/teen-navigation";
 
 interface Task {
   id: number;
   title: string;
   description?: string;
-  dueDate: Date | string;
+  dueDate?: Date;
   priority: "low" | "medium" | "high";
-  status: string;
-  points?: number;
-  category?: string;
-  estimatedTime?: number;
-  isCompleted?: boolean;
+  status: "pending" | "completed" | "overdue";
+  assignedBy?: string;
+  points: number;
+  isCompleted: boolean;
+  category: "chores" | "homework" | "personal" | "family";
+  estimatedTime?: number; // in minutes
 }
 
 const priorityColors = {
@@ -113,6 +125,9 @@ export default function TeenTasks() {
     },
   });
 
+  // Extract teen profile from auth response
+  const authProfile = (teenProfile as any)?.isAuthenticated ? (teenProfile as any).teenProfile : null;
+
   // Filter and process tasks based on current filters
   const filteredTasks = tasks.filter((task: any) => {
     const taskDate = new Date(task.dueDate);
@@ -120,7 +135,7 @@ export default function TeenTasks() {
     const isToday = taskDate.toDateString() === today.toDateString();
     const isCompleted = task.status === 'completed' || task.isCompleted;
     
-    // Apply date filter
+    // Apply status filter
     if (filter === 'today' && !isToday) return false;
     if (filter === 'completed' && !isCompleted) return false;
     if (filter === 'upcoming' && (isCompleted || taskDate <= today)) return false;
@@ -140,6 +155,12 @@ export default function TeenTasks() {
     return taskDate.toDateString() === today.toDateString();
   }).length;
   const pendingTasks = totalTasks - completedTasks;
+        return true;
+    }
+  }).filter((task: Task) => {
+    // Priority filter
+    return priorityFilter === "all" || task.priority === priorityFilter;
+  });
 
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,7 +180,7 @@ export default function TeenTasks() {
     toggleTaskMutation.mutate({ taskId, completed: !currentStatus });
   };
 
-  const formatDate = (date: Date | string | undefined) => {
+  const formatDate = (date: Date | undefined) => {
     if (!date) return "No due date";
     const today = new Date();
     const taskDate = new Date(date);
@@ -169,9 +190,23 @@ export default function TeenTasks() {
     } else if (taskDate.toDateString() === new Date(today.getTime() + 86400000).toDateString()) {
       return "Tomorrow";
     } else {
-      return taskDate.toLocalDateString('en-US', { month: 'short', day: 'numeric' });
+      return taskDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
   };
+
+  const getTaskStats = () => {
+    const total = allTasks.length;
+    const completed = allTasks.filter((t: Task) => t.isCompleted).length;
+    const today = allTasks.filter((t: Task) => {
+      const taskDate = new Date(t.dueDate || new Date());
+      const todayDate = new Date();
+      return taskDate.toDateString() === todayDate.toDateString();
+    }).length;
+    
+    return { total, completed, today, pending: total - completed };
+  };
+
+  const stats = getTaskStats();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -228,7 +263,7 @@ export default function TeenTasks() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="estimatedTime">Time (mins)</Label>
+                    <Label htmlFor="estimatedTime">Time (minutes)</Label>
                     <Input
                       id="estimatedTime"
                       type="number"
@@ -241,12 +276,7 @@ export default function TeenTasks() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Priority</Label>
-                    <Select
-                      value={newTask.priority}
-                      onValueChange={(value: "low" | "medium" | "high") => 
-                        setNewTask({ ...newTask, priority: value })
-                      }
-                    >
+                    <Select value={newTask.priority} onValueChange={(value: any) => setNewTask({ ...newTask, priority: value })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -259,30 +289,25 @@ export default function TeenTasks() {
                   </div>
                   <div>
                     <Label>Category</Label>
-                    <Select
-                      value={newTask.category}
-                      onValueChange={(value: "chores" | "homework" | "personal" | "family") => 
-                        setNewTask({ ...newTask, category: value })
-                      }
-                    >
+                    <Select value={newTask.category} onValueChange={(value: any) => setNewTask({ ...newTask, category: value })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="personal">Personal</SelectItem>
                         <SelectItem value="chores">Chores</SelectItem>
                         <SelectItem value="homework">Homework</SelectItem>
-                        <SelectItem value="personal">Personal</SelectItem>
                         <SelectItem value="family">Family</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
-                <div className="flex gap-2 pt-4">
-                  <Button type="submit" disabled={createTaskMutation.isPending}>
-                    {createTaskMutation.isPending ? "Creating..." : "Create Task"}
-                  </Button>
+                <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => setIsAddTaskOpen(false)}>
                     Cancel
+                  </Button>
+                  <Button type="submit" disabled={createTaskMutation.isPending}>
+                    {createTaskMutation.isPending ? "Creating..." : "Create Task"}
                   </Button>
                 </div>
               </form>
@@ -293,155 +318,163 @@ export default function TeenTasks() {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card>
-            <CardContent className="flex items-center p-4">
-              <div className="flex items-center">
-                <CheckSquare className="h-8 w-8 text-blue-600 mr-3" />
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">{totalTasks}</p>
+                  <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
                   <p className="text-sm text-gray-600">Total Tasks</p>
                 </div>
+                <CheckCircle2 className="h-8 w-8 text-blue-500" />
               </div>
             </CardContent>
           </Card>
           <Card>
-            <CardContent className="flex items-center p-4">
-              <div className="flex items-center">
-                <Calendar className="h-8 w-8 text-green-600 mr-3" />
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold">{todayTasks}</p>
-                  <p className="text-sm text-gray-600">Due Today</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center p-4">
-              <div className="flex items-center">
-                <Target className="h-8 w-8 text-orange-600 mr-3" />
-                <div>
-                  <p className="text-2xl font-bold">{pendingTasks}</p>
-                  <p className="text-sm text-gray-600">Pending</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center p-4">
-              <div className="flex items-center">
-                <CheckSquare className="h-8 w-8 text-purple-600 mr-3" />
-                <div>
-                  <p className="text-2xl font-bold">{completedTasks}</p>
+                  <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
                   <p className="text-sm text-gray-600">Completed</p>
                 </div>
+                <CheckCircle2 className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold text-orange-600">{stats.today}</p>
+                  <p className="text-sm text-gray-600">Due Today</p>
+                </div>
+                <Calendar className="h-8 w-8 text-orange-500" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold text-purple-600">{stats.pending}</p>
+                  <p className="text-sm text-gray-600">Pending</p>
+                </div>
+                <Clock className="h-8 w-8 text-purple-500" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            <span className="text-sm font-medium">Filter:</span>
-            <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Tasks</SelectItem>
-                <SelectItem value="today">Due Today</SelectItem>
-                <SelectItem value="upcoming">Upcoming</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={priorityFilter} onValueChange={(value: any) => setPriorityFilter(value)}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priority</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <Card className="mb-6">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                <span className="text-sm font-medium">Filter:</span>
+              </div>
+              <div className="flex gap-2">
+                {["all", "today", "upcoming", "completed"].map((filterOption) => (
+                  <Button
+                    key={filterOption}
+                    variant={filter === filterOption ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setFilter(filterOption as any)}
+                  >
+                    {filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+                  </Button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Priority:</span>
+                <Select value={priorityFilter} onValueChange={(value: any) => setPriorityFilter(value)}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Tasks List */}
-        <div className="grid gap-4">
+        <div className="space-y-4">
           {isLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading tasks...</p>
-            </div>
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-gray-500">Loading tasks...</p>
+              </CardContent>
+            </Card>
           ) : filteredTasks.length === 0 ? (
             <Card>
-              <CardContent className="text-center py-8">
-                <CheckSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks found</h3>
-                <p className="text-gray-600 mb-4">
-                  {filter === "all" 
-                    ? "You don't have any tasks yet. Create your first task to get started!"
-                    : `No tasks match your current filter: ${filter}`
-                  }
-                </p>
-                {filter !== "all" && (
-                  <Button variant="outline" onClick={() => setFilter("all")}>
-                    Show All Tasks
-                  </Button>
-                )}
+              <CardContent className="p-8 text-center">
+                <p className="text-gray-500">No tasks found for the selected filter.</p>
               </CardContent>
             </Card>
           ) : (
-            filteredTasks.map((task: any) => (
-              <Card key={task.id} className={`hover:shadow-md transition-shadow ${
-                task.status === 'completed' || task.isCompleted ? 'opacity-60' : ''
+            filteredTasks.map((task: Task) => (
+              <Card key={task.id} className={`border-l-4 ${task.isCompleted ? 'opacity-75' : ''} ${
+                task.priority === 'high' ? 'border-l-red-500' : 
+                task.priority === 'medium' ? 'border-l-yellow-500' : 'border-l-green-500'
               }`}>
-                <CardContent className="p-6">
+                <CardContent className="p-4">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4 flex-1">
-                      <Checkbox
-                        checked={task.status === 'completed' || task.isCompleted}
-                        onCheckedChange={(checked) => handleToggleTask(task.id, task.isCompleted)}
-                        className="mt-1"
-                      />
+                    <div className="flex items-start gap-3 flex-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleToggleTask(task.id, task.isCompleted)}
+                        className="mt-1 p-0 h-auto"
+                      >
+                        {task.isCompleted ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <Circle className="h-5 w-5 text-gray-400" />
+                        )}
+                      </Button>
+                      
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <h3 className={`font-semibold ${
-                            task.status === 'completed' || task.isCompleted ? 'line-through text-gray-500' : ''
-                          }`}>
+                          <h3 className={`font-semibold ${task.isCompleted ? 'line-through text-gray-500' : ''}`}>
                             {task.title}
                           </h3>
-                          <Badge variant="outline" className={priorityColors[task.priority as keyof typeof priorityColors]}>
+                          <Badge variant="outline" className={priorityColors[task.priority]}>
                             {task.priority}
                           </Badge>
-                          {task.category && (
-                            <Badge variant="outline" className={categoryColors[task.category as keyof typeof categoryColors]}>
-                              {task.category}
-                            </Badge>
-                          )}
+                          <Badge variant="outline" className={categoryColors[task.category]}>
+                            {task.category}
+                          </Badge>
                         </div>
+                        
                         {task.description && (
-                          <p className="text-gray-600 mb-2">{task.description}</p>
+                          <p className="text-sm text-gray-600 mb-2">{task.description}</p>
                         )}
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
                           <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            {formatDate(task.dueDate)}
+                            <Calendar className="h-3 w-3" />
+                            <span>{formatDate(task.dueDate)}</span>
                           </div>
                           {task.estimatedTime && (
                             <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {task.estimatedTime} mins
+                              <Clock className="h-3 w-3" />
+                              <span>{task.estimatedTime}min</span>
                             </div>
                           )}
-                          {task.points && (
+                          {task.assignedBy && (
                             <div className="flex items-center gap-1">
-                              <Target className="h-4 w-4" />
-                              {task.points} points
+                              <Users className="h-3 w-3" />
+                              <span>by {task.assignedBy}</span>
                             </div>
                           )}
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3 w-3" />
+                            <span>{task.points} pts</span>
+                          </div>
                         </div>
                       </div>
                     </div>
