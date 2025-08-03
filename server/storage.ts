@@ -1167,6 +1167,15 @@ export class DatabaseStorage implements IStorage {
     return profile || undefined;
   }
 
+  async updateTeenProfile(teenId: number, updates: Partial<InsertTeenProfile>): Promise<TeenProfile | undefined> {
+    const [profile] = await db
+      .update(teenProfiles)
+      .set(updates)
+      .where(eq(teenProfiles.id, teenId))
+      .returning();
+    return profile;
+  }
+
   async updateTeenPoints(teenProfileId: number, points: number): Promise<void> {
     await db.update(teenProfiles)
       .set({ points, updatedAt: new Date() })

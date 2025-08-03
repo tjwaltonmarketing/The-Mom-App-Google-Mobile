@@ -254,6 +254,30 @@ export async function registerRoutes(app: Express) {
     });
   });
 
+  app.put("/api/teen/profile", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { avatar, favoriteColor } = req.body;
+      
+      // Update teen profile
+      const updatedProfile = await storage.updateTeenProfile(req.session.teenId, {
+        avatar,
+        favoriteColor
+      });
+
+      res.json({
+        success: true,
+        teenProfile: updatedProfile
+      });
+    } catch (error) {
+      console.error("Teen profile update error:", error);
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+
   // Test endpoint to create sample teen data
   app.post("/api/setup-test-teen", async (req, res) => {
     console.log("Setting up test teen data...");

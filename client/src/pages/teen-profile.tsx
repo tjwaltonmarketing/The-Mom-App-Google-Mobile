@@ -31,15 +31,18 @@ export default function TeenProfile() {
   const queryClient = useQueryClient();
 
   // Get teen profile data
-  const { data: teenProfile, isLoading, error } = useQuery({
+  const { data: authData, isLoading, error } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     retry: false,
   });
 
+  // Extract teen profile from auth response
+  const teenProfile = (authData as any)?.isAuthenticated ? (authData as any).teenProfile : null;
+
   // Debug authentication state
   useEffect(() => {
-    console.log("Teen auth state:", { teenProfile, isLoading, error });
-  }, [teenProfile, isLoading, error]);
+    console.log("Teen auth state:", { authData, teenProfile, isLoading, error });
+  }, [authData, teenProfile, isLoading, error]);
 
   // Quick login for testing (temporary)
   const loginForTesting = async () => {
