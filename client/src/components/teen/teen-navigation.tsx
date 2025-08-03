@@ -16,6 +16,9 @@ import {
   CheckSquare
 } from "lucide-react";
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import TeenNotifications from "./teen-notifications";
 
 interface TeenNavigationProps {
@@ -25,8 +28,34 @@ interface TeenNavigationProps {
 
 export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigationProps) {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [darkMode, setDarkMode] = useState(false);
   const [blueLight, setBlueLight] = useState(false);
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/teen/logout", {});
+      return response;
+    },
+    onSuccess: () => {
+      // Clear all cached data
+      queryClient.clear();
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out",
+      });
+      // Navigate back to login
+      setLocation("/teen-login");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Sign Out Failed", 
+        description: error.message || "Failed to sign out",
+        variant: "destructive",
+      });
+    },
+  });
 
   const navItems = [
     {
@@ -142,6 +171,8 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
             <Button 
               variant="ghost" 
               size="sm"
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
               title="Logout"
               className="hidden md:flex h-8 w-8 p-0"
             >

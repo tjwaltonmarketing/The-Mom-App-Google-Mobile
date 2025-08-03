@@ -16,7 +16,8 @@ import {
   Moon,
   Sun,
   Eye,
-  BookOpen
+  BookOpen,
+  LogOut
 } from "lucide-react";
 
 export default function TeenProfile() {
@@ -74,6 +75,30 @@ export default function TeenProfile() {
       toast({
         title: "Update Failed",
         description: error.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/teen/logout", {});
+      return response;
+    },
+    onSuccess: () => {
+      // Clear all cached data
+      queryClient.clear();
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out",
+      });
+      // Navigate back to login
+      setLocation("/teen-login");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Sign Out Failed",
+        description: error.message || "Failed to sign out",
         variant: "destructive",
       });
     },
@@ -490,6 +515,36 @@ export default function TeenProfile() {
                   <p className="text-sm text-purple-700">
                     <strong>Quick Tour:</strong> Learn how to use dark mode, 
                     notifications, calendar, points system, and more in just a few minutes!
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Account Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Account</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Need to sign out? You can always sign back in with your username and password.
+                </p>
+                
+                <Button 
+                  onClick={() => logoutMutation.mutate()}
+                  disabled={logoutMutation.isPending}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  {logoutMutation.isPending ? "Signing Out..." : "Sign Out"}
+                </Button>
+                
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <p className="text-sm text-blue-700">
+                    <strong>Tip:</strong> Your data is always safe! Signing out just removes your session from this device.
                   </p>
                 </div>
               </div>
