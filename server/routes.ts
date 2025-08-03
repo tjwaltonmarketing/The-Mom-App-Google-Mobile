@@ -295,6 +295,71 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Teen task creation endpoint
+  app.post("/api/teen/tasks", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { title, description, dueDate, priority, category, estimatedTime } = req.body;
+
+      // Get the teen's profile and family info
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Create the task
+      const newTask = await storage.createTask({
+        title,
+        description: description || "",
+        dueDate: new Date(dueDate),
+        priority: priority || "medium",
+        assignedTo: familyMember.id,
+        teenId: teenProfile.id,
+        points: priority === "high" ? 15 : priority === "medium" ? 10 : 5,
+        category: category || "personal",
+        estimatedTime: estimatedTime ? parseInt(estimatedTime) : 30,
+        createdBy: teenProfile.userId,
+        isCompleted: false
+      });
+
+      res.json(newTask);
+    } catch (error) {
+      console.error("Teen task creation error:", error);
+      res.status(500).json({ error: "Failed to create task" });
+    }
+  });
+
+  // Teen task update endpoint (for completion toggle)
+  app.put("/api/teen/tasks/:taskId", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const taskId = parseInt(req.params.taskId);
+      const { completed } = req.body;
+
+      const updatedTask = await storage.updateTask(taskId, { 
+        isCompleted: completed,
+        completedAt: completed ? new Date() : null,
+        completedBy: completed ? req.session.teenId : null
+      });
+
+      res.json(updatedTask);
+    } catch (error) {
+      console.error("Teen task update error:", error);
+      res.status(500).json({ error: "Failed to update task" });
+    }
+  });
+
   // Teen events endpoint  
   app.get("/api/teen/events", async (req, res) => {
     try {
@@ -477,14 +542,13 @@ export async function registerRoutes(app: Express) {
         description: "Organize desk, make bed, and put clothes away",
         dueDate: today,
         priority: "medium",
-        status: "pending",
         assignedTo: familyMember.id,
         teenId: teenProfile.id,
         points: 10,
         category: "chores",
         estimatedTime: 30,
-        familyId: family.id,
-        createdBy: 1 // Created by mom
+        createdBy: 1, // Created by mom
+        isCompleted: false
       });
 
       await storage.createTask({
@@ -492,14 +556,13 @@ export async function registerRoutes(app: Express) {
         description: "Complete algebra problems 1-20",
         dueDate: tomorrow,
         priority: "high",
-        status: "pending",
         assignedTo: familyMember.id,
         teenId: teenProfile.id,
         points: 15,
         category: "homework",
         estimatedTime: 45,
-        familyId: family.id,
-        createdBy: 1
+        createdBy: 1,
+        isCompleted: false
       });
 
       // Create some sample events
@@ -514,7 +577,6 @@ export async function registerRoutes(app: Express) {
         endTime: new Date(eventStartTime.getTime() + 2 * 60 * 60 * 1000), // 2 hours later
         isAllDay: false,
         assignedTo: familyMember.id,
-        familyId: family.id,
         createdBy: 1
       });
 
@@ -529,7 +591,6 @@ export async function registerRoutes(app: Express) {
         endTime: new Date(dinnerTime.getTime() + 1.5 * 60 * 60 * 1000), // 1.5 hours later
         isAllDay: false,
         assignedTo: null, // Family-wide event
-        familyId: family.id,
         createdBy: 1
       });
       

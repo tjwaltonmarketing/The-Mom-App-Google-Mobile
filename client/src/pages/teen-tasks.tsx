@@ -50,21 +50,24 @@ export default function TeenTasks() {
     title: "",
     description: "",
     dueDate: "",
-    priority: "medium" as const,
-    category: "personal" as const,
+    priority: "medium" as "low" | "medium" | "high",
+    category: "personal" as "personal" | "chores" | "homework" | "family",
     estimatedTime: ""
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // Get teen profile data with avatar
-  const { data: teenProfile } = useQuery({
+  const { data: authData, isLoading: profileLoading } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     retry: false,
   });
 
+  // Extract teen profile from auth response
+  const teenProfile = (authData as any)?.isAuthenticated ? (authData as any).teenProfile : null;
+
   // Fetch tasks from database
-  const { data: tasks = [], isLoading } = useQuery({
+  const { data: tasks = [], isLoading } = useQuery<Task[]>({
     queryKey: ["/api/teen/tasks"],
     retry: false,
   });
@@ -114,11 +117,11 @@ export default function TeenTasks() {
   });
 
   // Filter and process tasks based on current filters
-  const filteredTasks = tasks.filter((task: any) => {
+  const filteredTasks = tasks.filter((task: Task) => {
     const taskDate = new Date(task.dueDate);
     const today = new Date();
     const isToday = taskDate.toDateString() === today.toDateString();
-    const isCompleted = task.status === 'completed' || task.isCompleted;
+    const isCompleted = task.isCompleted;
     
     // Apply date filter
     if (filter === 'today' && !isToday) return false;
@@ -169,7 +172,7 @@ export default function TeenTasks() {
     } else if (taskDate.toDateString() === new Date(today.getTime() + 86400000).toDateString()) {
       return "Tomorrow";
     } else {
-      return taskDate.toLocalDateString('en-US', { month: 'short', day: 'numeric' });
+      return taskDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
   };
 
