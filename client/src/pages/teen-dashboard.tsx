@@ -43,7 +43,7 @@ export default function TeenDashboard() {
 
   // Fetch teen's real tasks from API
   const { data: todayTasks = [], isLoading: tasksLoading } = useQuery({
-    queryKey: ["/api/teen/tasks/today"],  
+    queryKey: ["/api/teen/tasks"],  
     retry: false,
   });
 

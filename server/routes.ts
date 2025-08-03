@@ -2907,135 +2907,64 @@ themomapp.us@gmail.com`;
     }
   });
 
-  // Teen dashboard data - fetch real tasks assigned to teen
+  // Teen dashboard data - fetch real tasks assigned to teen (NO MOCK DATA)
   app.get("/api/teen/tasks", async (req, res) => {
     try {
-      const sessionTeenId = (req.session as any)?.teenId;
+      const sessionTeenId = req.session.teenId;
+      console.log(`Teen tasks request - Session Teen ID: ${sessionTeenId}`);
       
       if (!sessionTeenId) {
-        // Return mock data for unauthenticated access (demo purposes)
-        const mockTasks = [
-          {
-            id: 1,
-            title: "Clean your room",
-            description: "Make bed, organize desk, vacuum floor",
-            dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-            priority: "high",
-            assignedBy: "Mom",
-            points: 25,
-            isCompleted: false,
-            reminderCount: 1,
-            category: "chores",
-            estimatedTime: 30,
-            status: "pending"
-          },
-          {
-            id: 2,
-            title: "Math homework - Chapter 5",
-            description: "Complete exercises 1-20 on page 85",
-            dueDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-            priority: "high",
-            assignedBy: "Teacher",
-            points: 25,
-            isCompleted: false,
-            reminderCount: 0,
-            category: "homework",
-            estimatedTime: 60,
-            status: "pending"
-          },
-          {
-            id: 3,
-            title: "Take out trash",
-            description: "Garbage and recycling to curb",
-            dueDate: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
-            priority: "medium",
-            assignedBy: "Dad",
-            points: 15,
-            isCompleted: false,
-            reminderCount: 0,
-            category: "chores",
-            estimatedTime: 15,
-            status: "pending"
-          },
-          {
-            id: 4,
-            title: "Practice guitar",
-            description: "Work on new song for 30 minutes",
-            dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-            priority: "medium",
-            assignedBy: "Self",
-            points: 20,
-            isCompleted: false,
-            reminderCount: 0,
-            category: "personal",
-            estimatedTime: 30,
-            status: "pending"
-          },
-          {
-            id: 5,
-            title: "Walk the dog",
-            description: "30 minute walk around the neighborhood",
-            dueDate: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // Overdue
-            priority: "high",
-            assignedBy: "Mom",
-            points: 20,
-            isCompleted: false,
-            reminderCount: 3,
-            category: "chores",
-            estimatedTime: 30,
-            status: "overdue"
-          },
-          {
-            id: 6,
-            title: "Family game night prep",
-            description: "Set up board games and snacks in living room",
-            dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-            priority: "low",
-            assignedBy: "Mom",
-            points: 12,
-            isCompleted: true,
-            reminderCount: 0,
-            category: "family",
-            estimatedTime: 20,
-            status: "completed"
-          }
-        ];
-        return res.json(mockTasks);
+        return res.status(401).json({ message: "Teen not authenticated" });
       }
 
-      // For authenticated teens, try to get real family tasks
-      try {
-        const teenProfile = teenProfiles.get(sessionTeenId);
-        if (!teenProfile) {
-          return res.status(404).json({ message: "Teen profile not found" });
-        }
+      // Get teen profile from database
+      const teenProfile = await storage.getTeenProfile(sessionTeenId);
+      if (!teenProfile) {
+        console.log(`Teen profile not found for ID: ${sessionTeenId}`);
+        return res.status(404).json({ message: "Teen profile not found" });
+      }
 
-        // Get tasks assigned to this teen from the family's task system
-        const familyTasks = await storage.getTasksForTeen(sessionTeenId);
+      console.log(`Found teen profile: ${teenProfile.firstName} ${teenProfile.lastName}, Family Member ID: ${teenProfile.familyMemberId}`);
 
-        // Transform family tasks to teen task format
-        const formattedTasks = familyTasks.map(task => ({
-          id: task.id,
-          title: task.title,
-          description: task.description || "",
-          dueDate: task.dueDate ? task.dueDate.toISOString() : null,
-          priority: task.priority || "medium",
-          assignedBy: "Parent", // Could be enhanced to show actual assigner name
-          points: task.points || 15, // Default point value for tasks
-          isCompleted: task.isCompleted,
-          reminderCount: 0,
-          category: task.category || "chores",
-          estimatedTime: task.estimatedTime || null,
-          status: task.isCompleted ? "completed" : "pending"
-        }));
-
-        res.json(formattedTasks);
-      } catch (error) {
-        console.error("Error fetching family tasks for teen:", error);
-        // Fallback to mock data if family task fetch fails
+      // Get family ID from family member
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        console.log(`Family member not found for ID: ${teenProfile.familyMemberId}`);
         return res.json([]);
       }
+      
+      console.log(`Family member found: ${familyMember.name}, Family ID: ${familyMember.familyId}`);
+
+      // Get all tasks for the family
+      const allTasks = await storage.getTasksByFamily(familyMember.familyId);
+      console.log(`Found ${allTasks.length} total family tasks`);
+      
+      // Filter for tasks assigned to this specific teen/family member
+      const teenTasks = allTasks.filter(task => 
+        task.assignedTo === teenProfile.familyMemberId
+      );
+      
+      console.log(`Found ${teenTasks.length} tasks assigned to teen`);
+      console.log(`Tasks:`, teenTasks.map(t => ({ id: t.id, title: t.title, assignedTo: t.assignedTo })));
+
+      // Format tasks for teen dashboard
+      const formattedTasks = teenTasks.map(task => ({
+        id: task.id,
+        title: task.title,
+        description: task.description || "",
+        dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+        priority: task.priority || "medium",
+        points: task.points || 10,
+        isCompleted: task.isCompleted || false,
+        category: task.category || "chores",
+        estimatedTime: task.estimatedTime || null,
+      }));
+
+      console.log(`Returning ${formattedTasks.length} formatted tasks for teen dashboard`);
+      res.json(formattedTasks);
+        
     } catch (error: any) {
+      console.error("Teen tasks error:", error);
       res.status(500).json({ message: "Failed to fetch teen tasks: " + error.message });
     }
   });
