@@ -36,10 +36,13 @@ export default function TeenDashboard() {
   });
 
   // Get teen profile data with avatar
-  const { data: teenProfile, isLoading: profileLoading } = useQuery({
+  const { data: authData, isLoading: profileLoading } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     retry: false,
   });
+
+  // Extract teen profile from auth response
+  const teenProfile = (authData as any)?.isAuthenticated ? (authData as any).teenProfile : null;
 
   // Fetch teen's real tasks from API
   const { data: todayTasks = [], isLoading: tasksLoading } = useQuery({
@@ -101,9 +104,9 @@ export default function TeenDashboard() {
     { name: "Early Bird", description: "5 morning tasks", icon: "🌅" }
   ];
 
-  const completedTasks = todayTasks.filter(task => task.isCompleted);
-  const pendingTasks = todayTasks.filter(task => !task.isCompleted);
-  const taskProgress = (completedTasks.length / todayTasks.length) * 100;
+  const completedTasks = (todayTasks as any[]).filter((task: any) => task.isCompleted);
+  const pendingTasks = (todayTasks as any[]).filter((task: any) => !task.isCompleted);
+  const taskProgress = todayTasks.length > 0 ? (completedTasks.length / (todayTasks as any[]).length) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
