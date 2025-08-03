@@ -10,6 +10,7 @@ declare module "express-session" {
   interface SessionData {
     userId?: number;
     teenId?: number;
+    inviteCode?: string;
   }
 }
 

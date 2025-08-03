@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { setupSession } from "./auth";
 
 // Set LeadConnector environment variables for testing
 if (!process.env.LEADCONNECTOR_API_KEY) {
@@ -10,6 +11,9 @@ if (!process.env.LEADCONNECTOR_API_KEY) {
 }
 
 const app = express();
+
+// Setup session middleware first
+setupSession(app);
 
 // CORS middleware for mobile app compatibility
 app.use((req, res, next) => {
