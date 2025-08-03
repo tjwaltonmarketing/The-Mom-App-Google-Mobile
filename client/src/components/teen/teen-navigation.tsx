@@ -81,109 +81,149 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
   ];
 
   return (
-    <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto">
-        {/* Top Header with Profile & Controls */}
-        <div className="flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4 border-b border-gray-100">
-          {/* App Branding + Profile Section */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-            {/* The Mom App Logo */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Logo className="h-7 w-7 sm:h-8 sm:w-8" />
-              <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white font-logo uppercase">THE MOM APP</h1>
-            </div>
-            
-            {/* Profile Section - Avatar only, no greeting */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {teenProfile?.avatar ? (
-                <img 
-                  src={teenProfile.avatar} 
-                  alt="Profile"
-                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
-                />
-              ) : (
-                <div 
-                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold border-2 border-gray-200 flex-shrink-0"
-                  style={{ backgroundColor: teenProfile?.favoriteColor || "#a855f7" }}
-                >
-                  {teenProfile?.firstName?.charAt(0) || "A"}
+    <>
+      {/* Top Header - Simplified */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4">
+            {/* App Branding + Profile Section */}
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+              {/* The Mom App Logo */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Logo className="h-7 w-7 sm:h-8 sm:w-8" />
+                <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white font-logo uppercase">THE MOM APP</h1>
+              </div>
+              
+              {/* Profile Section - Avatar + Greeting */}
+              <div className="flex items-center gap-2 sm:gap-3">
+                {teenProfile?.avatar ? (
+                  <img 
+                    src={teenProfile.avatar} 
+                    alt="Profile"
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+                  />
+                ) : (
+                  <div 
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold border-2 border-gray-200 flex-shrink-0"
+                    style={{ backgroundColor: teenProfile?.favoriteColor || "#a855f7" }}
+                  >
+                    {teenProfile?.firstName?.charAt(0) || "A"}
+                  </div>
+                )}
+                <div className="text-sm font-medium text-gray-700 hidden sm:block">
+                  Hey, {teenProfile?.firstName || "Adri"}!
                 </div>
-              )}
+              </div>
             </div>
-          </div>
 
-          {/* Quick Controls */}
-          <div className="flex items-center gap-1 sm:gap-2">
-            {/* Dark Mode Toggle - Hidden on mobile, visible on tablet+ */}
-            <Button 
-              variant={darkMode ? "default" : "ghost"} 
-              size="sm"
-              onClick={() => {
-                setDarkMode(!darkMode);
-                document.documentElement.classList.toggle('dark', !darkMode);
-              }}
-              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              className="hidden sm:flex h-8 w-8 p-0"
-            >
-              {darkMode ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-            </Button>
-            
-            {/* Blue Light Filter Toggle - Hidden on mobile, visible on tablet+ */}
-            <Button 
-              variant={blueLight ? "default" : "ghost"} 
-              size="sm"
-              onClick={() => {
-                setBlueLight(!blueLight);
-                const filter = blueLight ? 'none' : 'sepia(10%) saturate(120%) hue-rotate(15deg)';
-                document.documentElement.style.filter = filter;
-              }}
-              title={blueLight ? "Turn Off Blue Light Filter" : "Turn On Blue Light Filter"}
-              className="hidden sm:flex h-8 w-8 p-0"
-            >
-              <Eye className="h-3.5 w-3.5" />
-            </Button>
-            
-            <TeenNotifications />
-            
-            {/* Tutorial Button - Hidden on mobile, shown on tablet+ */}
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setLocation("/teen-tutorial")}
-              title="View Tutorial"
-              className="hidden sm:flex h-8 w-8 p-0"
-            >
-              <BookOpen className="h-3.5 w-3.5" />
-            </Button>
-            
-            {/* Settings Button - Always visible but smaller */}
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setLocation("/teen-profile")}
-              title="Settings"
-              className="h-8 w-8 p-0"
-            >
-              <Settings className="h-3.5 w-3.5" />
-            </Button>
-            
-            {/* Logout Button - Hidden on mobile, shown on tablet+ */}
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => logoutMutation.mutate()}
-              disabled={logoutMutation.isPending}
-              title="Logout"
-              className="hidden md:flex h-8 w-8 p-0"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-            </Button>
+            {/* Desktop Controls - Hidden on mobile */}
+            <div className="hidden md:flex items-center gap-2">
+              <Button 
+                variant={darkMode ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => {
+                  setDarkMode(!darkMode);
+                  document.documentElement.classList.toggle('dark', !darkMode);
+                }}
+                title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                className="h-8 w-8 p-0"
+              >
+                {darkMode ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+              </Button>
+              
+              <Button 
+                variant={blueLight ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => {
+                  setBlueLight(!blueLight);
+                  const filter = blueLight ? 'none' : 'sepia(10%) saturate(120%) hue-rotate(15deg)';
+                  document.documentElement.style.filter = filter;
+                }}
+                title={blueLight ? "Turn Off Blue Light Filter" : "Turn On Blue Light Filter"}
+                className="h-8 w-8 p-0"
+              >
+                <Eye className="h-3.5 w-3.5" />
+              </Button>
+              
+              <TeenNotifications />
+              
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setLocation("/teen-tutorial")}
+                title="View Tutorial"
+                className="h-8 w-8 p-0"
+              >
+                <BookOpen className="h-3.5 w-3.5" />
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setLocation("/teen-profile")}
+                title="Settings"
+                className="h-8 w-8 p-0"
+              >
+                <Settings className="h-3.5 w-3.5" />
+              </Button>
+              
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => logoutMutation.mutate()}
+                disabled={logoutMutation.isPending}
+                title="Logout"
+                className="h-8 w-8 p-0"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+
+            {/* Mobile Settings Button */}
+            <div className="md:hidden">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setLocation("/teen-profile")}
+                title="Settings"
+                className="h-8 w-8 p-0"
+              >
+                <Settings className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex items-center justify-between px-3 sm:px-4">
-          <div className="flex items-center gap-1 sm:gap-2">
+      {/* Bottom Navigation - Mobile/Tablet */}
+      <nav className="md:hidden bg-white border-t border-gray-200 fixed bottom-0 left-0 right-0 z-50">
+        <div className="flex justify-around py-2 px-2">
+          {navItems.map((item) => {
+            const isActive = currentPath === item.path;
+            return (
+              <button
+                key={item.path}
+                onClick={() => setLocation(item.path)}
+                className={`flex flex-col items-center py-2 px-2 flex-1 ${
+                  isActive ? "text-primary" : "text-gray-600"
+                }`}
+              >
+                <span className="text-lg mb-1">
+                  {item.icon}
+                </span>
+                <span className="text-xs">
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Desktop Navigation Tabs - Hidden on mobile */}
+      <div className="hidden md:block bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center px-4">
             {navItems.map((item) => {
               const isActive = currentPath === item.path;
               return (
@@ -191,29 +231,20 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
                   key={item.path}
                   variant={isActive ? "default" : "ghost"}
                   onClick={() => setLocation(item.path)}
-                  className={`flex items-center gap-1.5 sm:gap-2 rounded-none border-b-2 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base ${
+                  className={`flex items-center gap-2 rounded-none border-b-2 px-4 py-3 ${
                     isActive 
                       ? "border-primary bg-primary text-primary-foreground" 
                       : "border-transparent hover:border-gray-300"
                   }`}
                 >
-                  <span className="h-3.5 w-3.5 sm:h-4 sm:w-4">
-                    {item.icon}
-                  </span>
-                  <span className="hidden xs:inline sm:inline">
-                    {item.label}
-                  </span>
+                  {item.icon}
+                  <span>{item.label}</span>
                 </Button>
               );
             })}
           </div>
-          
-          {/* Greeting moved to tab line - far right */}
-          <div className="text-sm font-medium text-gray-700 hidden sm:block">
-            Hey, {teenProfile?.firstName || "Adri"}!
-          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

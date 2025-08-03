@@ -113,7 +113,7 @@ export default function TeenDashboard() {
       {/* Navigation Header */}
       <TeenNavigation currentPath="/teen-dashboard" teenProfile={teenProfile} />
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           
           {/* Points & Streak Card */}
