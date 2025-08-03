@@ -422,11 +422,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFamilyMemberById(id: number): Promise<FamilyMember | undefined> {
-    const [member] = await db.select().from(familyMembers).where(eq(familyMembers.id, id));
-    return member || undefined;
-  }
-
-  async getFamilyMemberById(id: number): Promise<FamilyMember | undefined> {
     return this.getFamilyMember(id);
   }
 
@@ -715,7 +710,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {
-    const [task] = await db.insert(tasks).values(insertTask).returning();
+    // Convert string dueDate to Date if needed
+    const processedTask = {
+      ...insertTask,
+      dueDate: insertTask.dueDate
+        ? typeof insertTask.dueDate === 'string'
+          ? new Date(insertTask.dueDate)
+          : insertTask.dueDate
+        : null
+    };
+    
+    const [task] = await db.insert(tasks).values(processedTask).returning();
     return task;
   }
 
@@ -962,14 +967,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async updateGroceryItem(id: number, updates: Partial<GroceryItem>): Promise<GroceryItem | undefined> {
-    const [item] = await db
-      .update(groceryItems)
-      .set(updates)
-      .where(eq(groceryItems.id, id))
-      .returning();
-    return item;
-  }
+
 
   async getMealPlans(): Promise<MealPlan[]> {
     return await db.select().from(mealPlans).orderBy(desc(mealPlans.createdAt));
@@ -1265,7 +1263,7 @@ export class DatabaseStorage implements IStorage {
     
     return {
       weeklyPoints,
-      streak: profile.streak,
+      streak: profile.streak || 0,
       completedToday: todayTasks.length
     };
   }
@@ -1276,15 +1274,15 @@ export class DatabaseStorage implements IStorage {
     
     const pointsEarned = task[0].points || 5; // Default 5 points
     
-    // Update task as completed
+    // Update task as completed - completedBy expects familyMemberId, not teenProfileId
+    const teenProfile = await this.getTeenProfile(teenProfileId);
     await db.update(tasks)
-      .set({ isCompleted: true, completedBy: teenProfileId, completedAt: new Date() })
+      .set({ isCompleted: true, completedBy: teenProfile?.familyMemberId || null, completedAt: new Date() })
       .where(eq(tasks.id, taskId));
     
     // Update teen points
-    const profile = await this.getTeenProfile(teenProfileId);
-    if (profile) {
-      await this.updateTeenPoints(profile.id, (profile.points || 0) + pointsEarned);
+    if (teenProfile) {
+      await this.updateTeenPoints(teenProfile.id, (teenProfile.points || 0) + pointsEarned);
     }
     
     // Log task completion
@@ -1292,7 +1290,7 @@ export class DatabaseStorage implements IStorage {
       teenProfileId,
       taskId,
       pointsEarned,
-      streakDay: profile?.streak || 0
+      streakDay: teenProfile?.streak || 0
     });
     
     return { task: task[0], pointsEarned };
@@ -1314,6 +1312,25 @@ export class DatabaseStorage implements IStorage {
   async createTeenInvite(inviteData: InsertFamilyInvite): Promise<FamilyInvite> {
     const [invite] = await db.insert(familyInvites).values(inviteData).returning();
     return invite;
+  }
+
+  async acceptFamilyInvite(inviteCode: string, acceptedBy: number): Promise<FamilyInvite | undefined> {
+    const [invite] = await db
+      .update(familyInvites)
+      .set({ 
+        status: 'accepted',
+        acceptedAt: new Date(),
+        acceptedBy 
+      })
+      .where(eq(familyInvites.inviteCode, inviteCode))
+      .returning();
+    return invite;
+  }
+
+  async getFamilyInvites(familyId: number): Promise<FamilyInvite[]> {
+    return await db.select()
+      .from(familyInvites)
+      .where(eq(familyInvites.familyId, familyId));
   }
 
   async createTeenAccount(accountData: InsertTeenProfile): Promise<TeenProfile> {
