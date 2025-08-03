@@ -3066,6 +3066,68 @@ themomapp.us@gmail.com`;
     }
   });
 
+  // Real database tasks endpoint for teens
+  app.get("/api/teen/tasks/real", async (req, res) => {
+    try {
+      const sessionTeenId = req.session.teenId;
+      console.log(`Teen real tasks request - Session Teen ID: ${sessionTeenId}`);
+      
+      if (!sessionTeenId) {
+        return res.status(401).json({ message: "Teen not authenticated" });
+      }
+
+      // Get teen profile from database
+      const teenProfile = await storage.getTeenProfile(sessionTeenId);
+      if (!teenProfile) {
+        console.log(`Teen profile not found for ID: ${sessionTeenId}`);
+        return res.status(404).json({ message: "Teen profile not found" });
+      }
+
+      console.log(`Found teen profile: ${teenProfile.firstName} ${teenProfile.lastName}, Family Member ID: ${teenProfile.familyMemberId}, Family ID: ${teenProfile.familyId}`);
+
+      // Get family ID from family member
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        console.log(`Family member not found for ID: ${teenProfile.familyMemberId}`);
+        return res.json([]);
+      }
+      
+      console.log(`Family member found: ${familyMember.name}, Family ID: ${familyMember.familyId}`);
+
+      // Get all tasks for the family
+      const allTasks = await storage.getTasksByFamily(familyMember.familyId);
+      console.log(`Found ${allTasks.length} total family tasks`);
+      
+      // Filter for tasks assigned to this specific teen/family member
+      const teenTasks = allTasks.filter(task => 
+        task.assignedTo === teenProfile.familyMemberId
+      );
+      
+      console.log(`Found ${teenTasks.length} tasks assigned to teen`);
+      console.log(`Tasks:`, teenTasks.map(t => ({ id: t.id, title: t.title, assignedTo: t.assignedTo })));
+
+      // Format tasks for teen dashboard
+      const formattedTasks = teenTasks.map(task => ({
+        id: task.id,
+        title: task.title,
+        description: task.description || "",
+        dueDate: task.dueDate ? task.dueDate.toISOString() : null,
+        priority: task.priority || "medium",
+        points: task.points || 10,
+        isCompleted: task.isCompleted || false,
+        category: task.category || "chores",
+        estimatedTime: task.estimatedTime || null,
+      }));
+
+      console.log(`Returning ${formattedTasks.length} formatted tasks for teen dashboard`);
+      res.json(formattedTasks);
+        
+    } catch (error: any) {
+      console.error("Teen real tasks error:", error);
+      res.status(500).json({ message: "Failed to fetch teen tasks: " + error.message });
+    }
+  });
+
   app.get("/api/teen/stats", async (req, res) => {
     try {
       // Mock teen stats
