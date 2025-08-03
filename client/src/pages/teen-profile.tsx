@@ -142,6 +142,17 @@ export default function TeenProfile() {
   const handleAvatarUpload = async () => {
     if (!avatarPreview) return;
     
+    // Check authentication before upload
+    if (!authData || !(authData as any)?.isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to update your profile picture.",
+        variant: "destructive",
+      });
+      setLocation("/teen-login");
+      return;
+    }
+    
     setIsUploading(true);
     try {
       // In a real app, you'd upload to a file storage service
@@ -162,11 +173,17 @@ export default function TeenProfile() {
       });
     } catch (error) {
       console.error("Avatar upload error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to update profile picture. Please try again.";
       toast({
         title: "Upload Failed", 
-        description: "Failed to update profile picture. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
+      
+      // If authentication error, redirect to login
+      if (errorMessage.includes("Not authenticated") || errorMessage.includes("401")) {
+        setLocation("/teen-login");
+      }
     } finally {
       setIsUploading(false);
     }
@@ -194,8 +211,8 @@ export default function TeenProfile() {
     }
   };
 
-  // Show login button if not authenticated
-  if (error && !isLoading) {
+  // Show login button if not authenticated or no teen profile
+  if (!isLoading && (!authData || !(authData as any)?.isAuthenticated || !teenProfile)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Card className="w-full max-w-md">
