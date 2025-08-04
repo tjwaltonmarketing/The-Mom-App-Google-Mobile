@@ -67,9 +67,11 @@ export default function TeenTasks() {
   const teenProfile = (authData as any)?.isAuthenticated ? (authData as any).teenProfile : null;
 
   // Fetch tasks from database
-  const { data: tasks = [], isLoading } = useQuery<Task[]>({
+  const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
     queryKey: ["/api/teen/tasks"],
     retry: false,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0, // Don't cache the data
   });
 
   // Create task mutation
@@ -79,8 +81,12 @@ export default function TeenTasks() {
     },
     onSuccess: () => {
       // Force refetch of tasks data
-      queryClient.invalidateQueries({ queryKey: ["/api/teen/tasks"] });
-      queryClient.refetchQueries({ queryKey: ["/api/teen/tasks"] });
+      console.log("Task created successfully, refetching tasks...");
+      refetch().then(() => {
+        console.log("Tasks refetched successfully");
+      }).catch((error) => {
+        console.error("Error refetching tasks:", error);
+      });
       setIsAddTaskOpen(false);
       setNewTask({ title: "", description: "", dueDate: "", priority: "medium", category: "personal", estimatedTime: "" });
       toast({
@@ -119,6 +125,10 @@ export default function TeenTasks() {
       });
     },
   });
+
+  // Debug logging for tasks
+  console.log("Current tasks:", tasks);
+  console.log("Tasks loading state:", isLoading);
 
   // Filter and process tasks based on current filters
   const filteredTasks = tasks.filter((task: Task) => {
