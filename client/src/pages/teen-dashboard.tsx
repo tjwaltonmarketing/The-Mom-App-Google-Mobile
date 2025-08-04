@@ -48,12 +48,18 @@ export default function TeenDashboard() {
   const { data: todayTasks = [], isLoading: tasksLoading } = useQuery({
     queryKey: ["/api/teen/tasks"],  
     retry: false,
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache the data (v5 uses gcTime instead of cacheTime)
+    enabled: !!teenProfile, // Only run query if teen is authenticated
   });
 
   // Fetch teen's upcoming events from API
   const { data: upcomingEvents = [], isLoading: eventsLoading } = useQuery({
     queryKey: ["/api/teen/events"],
     retry: false,
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache the data
+    enabled: !!teenProfile, // Only run query if teen is authenticated
   });
 
   const achievements = [

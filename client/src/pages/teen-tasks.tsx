@@ -77,7 +77,7 @@ export default function TeenTasks() {
     },
     retry: false,
     staleTime: 0, // Always fetch fresh data
-    cacheTime: 0, // Don't cache the data
+    gcTime: 0, // Don't cache the data (v5 uses gcTime instead of cacheTime)
     enabled: !!teenProfile, // Only run query if teen is authenticated
   });
 
