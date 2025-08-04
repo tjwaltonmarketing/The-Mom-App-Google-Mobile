@@ -98,7 +98,6 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    console.log("🌐 Making API request to:", queryKey[0]);
     const headers: Record<string, string> = {};
     
     // Add auth token to headers for mobile compatibility
@@ -109,33 +108,18 @@ export const getQueryFn: <T>(options: {
     
     // Use absolute URL for mobile apps
     const fullUrl = getApiUrl(queryKey[0] as string);
-    console.log("🔗 Full URL:", fullUrl);
     
     const res = await fetch(fullUrl, {
       headers,
       credentials: "include",
     });
 
-    console.log("📡 Response status:", res.status);
-    console.log("📡 Response headers:", Object.fromEntries(res.headers.entries()));
-
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
     }
 
     await throwIfResNotOk(res);
-    const responseText = await res.text();
-    console.log("📦 Raw response text:", responseText);
-    
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      console.error("❌ Failed to parse JSON:", e);
-      throw new Error("Invalid JSON response");
-    }
-    
-    console.log("📦 Parsed response data:", data);
+    const data = await res.json();
     return data;
   };
 
