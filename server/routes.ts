@@ -310,13 +310,17 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Teen profile not found" });
       }
 
+      console.log("Teen profile:", { id: teenProfile.id, familyMemberId: teenProfile.familyMemberId });
+
       const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
       if (!familyMember) {
         return res.status(404).json({ error: "Family member not found" });
       }
 
+      console.log("Family member:", { id: familyMember.id, familyId: familyMember.familyId });
+
       // Create the task
-      const newTask = await storage.createTask({
+      const taskData = {
         title,
         description: description || "",
         dueDate: new Date(dueDate),
@@ -326,9 +330,12 @@ export async function registerRoutes(app: Express) {
         points: priority === "high" ? 15 : priority === "medium" ? 10 : 5,
         category: category || "personal",
         estimatedTime: estimatedTime ? parseInt(estimatedTime) : 30,
-        createdBy: teenProfile.userId,
+        createdBy: familyMember.id, // Use family member ID instead of user ID
         isCompleted: false
-      });
+      };
+
+      console.log("About to create task with data:", taskData);
+      const newTask = await storage.createTask(taskData);
 
       res.json(newTask);
     } catch (error) {
