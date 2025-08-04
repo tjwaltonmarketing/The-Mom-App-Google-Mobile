@@ -70,7 +70,7 @@ function Router() {
     gcTime: 0, // Don't cache teen auth data (v5 uses gcTime instead of cacheTime)
   });
   
-  const isTeenUser = !!teenData && !teenError;
+  const isTeenUser = teenData?.isAuthenticated === true;
 
   // Debug authentication state
   console.log("Auth state:", { 
@@ -111,13 +111,13 @@ function Router() {
       <Route path="/teen/join" component={TeenOnboarding} />
       <Route path="/teen-join" component={TeenOnboarding} />
 
-      {/* Teen dashboard route - always render if teen session exists */}
+      {/* Teen dashboard route - only render if teen is authenticated */}
       <Route path="/teen-dashboard">
         {teenLoading ? (
           <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">Loading teen data...</div>
           </div>
-        ) : teenData ? (
+        ) : teenData?.isAuthenticated ? (
           <TeenDashboard />
         ) : (
           <TeenLogin />
@@ -126,18 +126,18 @@ function Router() {
       
       {/* Teen-specific routes */}
       <Route path="/teen-tasks">
-        {teenData ? <TeenTasks /> : <TeenLogin />}
+        {teenData?.isAuthenticated ? <TeenTasks /> : <TeenLogin />}
       </Route>
       <Route path="/teen-calendar">
-        {teenData ? <TeenCalendar /> : <TeenLogin />}
+        {teenData?.isAuthenticated ? <TeenCalendar /> : <TeenLogin />}
       </Route>
       <Route path="/teen-passwords">
-        {teenData ? <TeenPasswords /> : <TeenLogin />}
+        {teenData?.isAuthenticated ? <TeenPasswords /> : <TeenLogin />}
       </Route>
 
       {/* Teen Profile Route */}
       <Route path="/teen-profile">
-        {teenData ? <TeenProfile /> : <TeenLogin />}
+        {teenData?.isAuthenticated ? <TeenProfile /> : <TeenLogin />}
       </Route>
       
       {/* Other routes based on authentication */}

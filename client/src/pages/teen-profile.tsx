@@ -44,23 +44,7 @@ export default function TeenProfile() {
     console.log("Teen auth state:", { authData, teenProfile, isLoading, error });
   }, [authData, teenProfile, isLoading, error]);
 
-  // Quick login for testing (temporary)
-  const loginForTesting = async () => {
-    try {
-      const response = await apiRequest("POST", "/api/teen/login", {
-        username: "adri_w",
-        password: "password123"
-      });
-      console.log("Login response:", response);
-      queryClient.invalidateQueries({ queryKey: ["/api/teen/auth/user"] });
-      toast({
-        title: "Logged in!",
-        description: "Test login successful",
-      });
-    } catch (error) {
-      console.error("Login error:", error);
-    }
-  };
+
 
   const updateProfileMutation = useMutation({
     mutationFn: async (profileData: any) => {
@@ -223,14 +207,9 @@ export default function TeenProfile() {
             <p className="text-sm text-gray-600">
               You need to be logged in to access your profile.
             </p>
-            <div className="flex gap-2">
-              <Button onClick={loginForTesting}>
-                Test Login (Adri)
-              </Button>
-              <Button variant="outline" onClick={() => setLocation("/teen-login")}>
-                Go to Login
-              </Button>
-            </div>
+            <Button variant="default" onClick={() => setLocation("/teen-login")}>
+              Go to Login
+            </Button>
           </CardContent>
         </Card>
       </div>
