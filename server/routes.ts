@@ -37,7 +37,8 @@ export async function registerRoutes(app: Express) {
               avatar: teenProfile.avatar,
               points: teenProfile.points,
               streak: teenProfile.streak,
-              favoriteColor: teenProfile.favoriteColor
+              favoriteColor: teenProfile.favoriteColor,
+              familyMemberId: teenProfile.familyMemberId
             }
           });
         }
@@ -95,7 +96,8 @@ export async function registerRoutes(app: Express) {
           avatar: teenProfile.avatar,
           points: teenProfile.points,
           streak: teenProfile.streak,
-          favoriteColor: teenProfile.favoriteColor
+          favoriteColor: teenProfile.favoriteColor,
+          familyMemberId: teenProfile.familyMemberId
         }
       });
     } catch (error) {
@@ -142,7 +144,8 @@ export async function registerRoutes(app: Express) {
             avatar: existingTeen.avatar,
             points: existingTeen.points,
             streak: existingTeen.streak,
-            favoriteColor: existingTeen.favoriteColor
+            favoriteColor: existingTeen.favoriteColor,
+            familyMemberId: existingTeen.familyMemberId
           }
         });
       }
