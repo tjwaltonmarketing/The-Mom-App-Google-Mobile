@@ -310,14 +310,10 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Teen profile not found" });
       }
 
-      console.log("Teen profile:", { id: teenProfile.id, familyMemberId: teenProfile.familyMemberId });
-
       const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
       if (!familyMember) {
         return res.status(404).json({ error: "Family member not found" });
       }
-
-      console.log("Family member:", { id: familyMember.id, familyId: familyMember.familyId });
 
       // Create the task
       const taskData = {
@@ -334,7 +330,6 @@ export async function registerRoutes(app: Express) {
         isCompleted: false
       };
 
-      console.log("About to create task with data:", taskData);
       const newTask = await storage.createTask(taskData);
 
       res.json(newTask);

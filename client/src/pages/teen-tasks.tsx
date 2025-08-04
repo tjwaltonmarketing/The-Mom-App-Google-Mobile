@@ -78,7 +78,9 @@ export default function TeenTasks() {
       return await apiRequest("POST", "/api/teen/tasks", taskData);
     },
     onSuccess: () => {
+      // Force refetch of tasks data
       queryClient.invalidateQueries({ queryKey: ["/api/teen/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/teen/tasks"] });
       setIsAddTaskOpen(false);
       setNewTask({ title: "", description: "", dueDate: "", priority: "medium", category: "personal", estimatedTime: "" });
       toast({
@@ -101,7 +103,9 @@ export default function TeenTasks() {
       return await apiRequest("PUT", `/api/teen/tasks/${taskId}`, { completed });
     },
     onSuccess: () => {
+      // Force refetch of tasks data
       queryClient.invalidateQueries({ queryKey: ["/api/teen/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/teen/tasks"] });
       toast({
         title: "Task Updated",
         description: "Task status has been updated",
