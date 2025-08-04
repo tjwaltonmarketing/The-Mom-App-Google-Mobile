@@ -117,14 +117,25 @@ export const getQueryFn: <T>(options: {
     });
 
     console.log("📡 Response status:", res.status);
+    console.log("📡 Response headers:", Object.fromEntries(res.headers.entries()));
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
     }
 
     await throwIfResNotOk(res);
-    const data = await res.json();
-    console.log("📦 Response data:", data);
+    const responseText = await res.text();
+    console.log("📦 Raw response text:", responseText);
+    
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      console.error("❌ Failed to parse JSON:", e);
+      throw new Error("Invalid JSON response");
+    }
+    
+    console.log("📦 Parsed response data:", data);
     return data;
   };
 
