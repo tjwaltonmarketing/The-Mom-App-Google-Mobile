@@ -64,15 +64,40 @@ export default function TeenTasks() {
   });
 
   // Extract teen profile from auth response
-  const teenProfile = (authData as any)?.isAuthenticated ? (authData as any).teenProfile : null;
+  console.log("Raw auth data:", authData);
+  const isAuthenticated = (authData as any)?.isAuthenticated;
+  const teenProfile = isAuthenticated ? (authData as any).teenProfile : null;
+  console.log("Is authenticated:", isAuthenticated);
+  console.log("Extracted teen profile:", teenProfile);
 
-  // Fetch tasks from database
-  const { data: tasks = [], isLoading, refetch } = useQuery<Task[]>({
+  // Fetch tasks from database - bypassing default query function
+  const { data: tasks = [], isLoading, refetch, error } = useQuery<Task[]>({
     queryKey: ["/api/teen/tasks"],
+    queryFn: async () => {
+      console.log("🔥 Custom query function executing...");
+      try {
+        const response = await apiRequest("GET", "/api/teen/tasks");
+        const data = await response.json();
+        console.log("🔥 Custom query function result:", data);
+        return data;
+      } catch (error) {
+        console.error("🔥 Custom query function error:", error);
+        throw error;
+      }
+    },
     retry: false,
     staleTime: 0, // Always fetch fresh data
     cacheTime: 0, // Don't cache the data
+    enabled: !!teenProfile, // Only run query if teen is authenticated
+    onSuccess: (data) => {
+      console.log("Tasks query onSuccess:", data);
+    },
+    onError: (error) => {
+      console.error("Tasks query onError:", error);
+    },
   });
+
+  console.log("Query error:", error);
 
   // Create task mutation
   const createTaskMutation = useMutation({
@@ -129,6 +154,8 @@ export default function TeenTasks() {
   // Debug logging for tasks
   console.log("Current tasks:", tasks);
   console.log("Tasks loading state:", isLoading);
+  console.log("Teen profile for query:", teenProfile);
+  console.log("Query enabled state:", !!teenProfile);
 
   // Filter and process tasks based on current filters
   const filteredTasks = tasks.filter((task: Task) => {
