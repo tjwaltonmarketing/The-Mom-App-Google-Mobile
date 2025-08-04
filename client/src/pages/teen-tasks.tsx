@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Clock, Target, CheckSquare, Filter, Calendar } from "lucide-react";
+import { Plus, Clock, Target, CheckSquare, Filter, Calendar, Trash2 } from "lucide-react";
 import TeenNavigation from "@/components/teen/teen-navigation";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -87,12 +87,7 @@ export default function TeenTasks() {
     },
     onSuccess: () => {
       // Force refetch of tasks data
-      console.log("Task created successfully, refetching tasks...");
-      refetch().then(() => {
-        console.log("Tasks refetched successfully");
-      }).catch((error) => {
-        console.error("Error refetching tasks:", error);
-      });
+      refetch();
       setIsAddTaskOpen(false);
       setNewTask({ title: "", description: "", dueDate: "", priority: "medium", category: "personal", estimatedTime: "" });
       toast({
@@ -127,6 +122,28 @@ export default function TeenTasks() {
       toast({
         title: "Error Updating Task",
         description: error.message || "Failed to update task",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete task mutation (only for tasks created by teen)
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (taskId: number) => {
+      return await apiRequest("DELETE", `/api/teen/tasks/${taskId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/teen/tasks"] });
+      toast({
+        title: "Task Deleted",
+        description: "Task has been deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Deleting Task",
+        description: error.message || "Failed to delete task",
         variant: "destructive",
       });
     },
@@ -466,6 +483,18 @@ export default function TeenTasks() {
                         </div>
                       </div>
                     </div>
+                    {/* Delete button for tasks created by the teen */}
+                    {task.createdBy === teenProfile?.familyMemberId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteTaskMutation.mutate(task.id)}
+                        disabled={deleteTaskMutation.isPending}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

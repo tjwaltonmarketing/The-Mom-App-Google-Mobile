@@ -349,16 +349,58 @@ export async function registerRoutes(app: Express) {
       const taskId = parseInt(req.params.taskId);
       const { completed } = req.body;
 
+      // Get the teen's profile and family member info to use the correct family member ID
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
       const updatedTask = await storage.updateTask(taskId, { 
         isCompleted: completed,
         completedAt: completed ? new Date() : null,
-        completedBy: completed ? req.session.teenId : null
+        completedBy: completed ? teenProfile.familyMemberId : null // Use family member ID, not teen ID
       });
 
       res.json(updatedTask);
     } catch (error) {
       console.error("Teen task update error:", error);
       res.status(500).json({ error: "Failed to update task" });
+    }
+  });
+
+  // Teen task delete endpoint (only for tasks they created)
+  app.delete("/api/teen/tasks/:taskId", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const taskId = parseInt(req.params.taskId);
+
+      // Get the teen's profile and family member info
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      // Get the task to check if the teen created it
+      const task = await storage.getTask(taskId);
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      // Only allow deletion if the teen created the task (createdBy matches their family member ID)
+      if (task.createdBy !== teenProfile.familyMemberId) {
+        return res.status(403).json({ error: "You can only delete tasks you created" });
+      }
+
+      // Delete the task
+      await storage.deleteTask(taskId);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Teen task delete error:", error);
+      res.status(500).json({ error: "Failed to delete task" });
     }
   });
 
