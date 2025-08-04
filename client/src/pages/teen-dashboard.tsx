@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,24 +43,42 @@ export default function TeenDashboard() {
   });
 
   // Extract teen profile from auth response
-  const teenProfile = (authData as any)?.isAuthenticated ? (authData as any).teenProfile : null;
+  const isAuthenticated = (authData as any)?.isAuthenticated;
+  const teenProfile = isAuthenticated ? (authData as any).teenProfile : null;
+  
+  // Debug logging
+  console.log("Dashboard auth state:", { isAuthenticated, teenProfile: !!teenProfile, authData });
 
-  // Fetch teen's real tasks from API
-  const { data: todayTasks = [], isLoading: tasksLoading } = useQuery({
+  // Fetch teen's real tasks from API with custom query function like the tasks page
+  const { data: todayTasks = [], isLoading: tasksLoading, error: tasksError } = useQuery({
     queryKey: ["/api/teen/tasks"],  
+    queryFn: async () => {
+      console.log("Dashboard: Fetching tasks...");
+      const response = await apiRequest("GET", "/api/teen/tasks");
+      const data = await response.json();
+      console.log("Dashboard: Tasks data:", data);
+      return data;
+    },
     retry: false,
     staleTime: 0, // Always fetch fresh data
     gcTime: 0, // Don't cache the data (v5 uses gcTime instead of cacheTime)
-    enabled: !!teenProfile, // Only run query if teen is authenticated
+    enabled: isAuthenticated && !!teenProfile, // Only run query if teen is authenticated
   });
 
-  // Fetch teen's upcoming events from API
-  const { data: upcomingEvents = [], isLoading: eventsLoading } = useQuery({
+  // Fetch teen's upcoming events from API with custom query function
+  const { data: upcomingEvents = [], isLoading: eventsLoading, error: eventsError } = useQuery({
     queryKey: ["/api/teen/events"],
+    queryFn: async () => {
+      console.log("Dashboard: Fetching events...");
+      const response = await apiRequest("GET", "/api/teen/events");
+      const data = await response.json();
+      console.log("Dashboard: Events data:", data);
+      return data;
+    },
     retry: false,
     staleTime: 0, // Always fetch fresh data
     gcTime: 0, // Don't cache the data
-    enabled: !!teenProfile, // Only run query if teen is authenticated
+    enabled: isAuthenticated && !!teenProfile, // Only run query if teen is authenticated
   });
 
   const achievements = [
