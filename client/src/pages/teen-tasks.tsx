@@ -26,6 +26,7 @@ interface Task {
   category?: string;
   estimatedTime?: number;
   isCompleted?: boolean;
+  createdBy?: number;
 }
 
 const priorityColors = {
@@ -495,6 +496,7 @@ export default function TeenTasks() {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
+
                   </div>
                 </CardContent>
               </Card>
@@ -502,6 +504,9 @@ export default function TeenTasks() {
           )}
         </div>
       </div>
+      
+      {/* Bottom padding to prevent navigation overlap */}
+      <div className="h-20"></div>
     </div>
   );
 }
