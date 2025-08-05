@@ -92,15 +92,26 @@ export default function TeenCalendar() {
     
     // Determine relative date label
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
+    const eventDate = new Date(startTime);
+    eventDate.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+    
     let dateLabel = "This Week";
-    if (startTime.toDateString() === today.toDateString()) {
+    if (eventDate.getTime() === today.getTime()) {
       dateLabel = "Today";
-    } else if (startTime.toDateString() === tomorrow.toDateString()) {
+    } else if (eventDate.getTime() === tomorrow.getTime()) {
       dateLabel = "Tomorrow";
     }
+    
+    // Format the full date display
+    const fullDateStr = startTime.toLocaleDateString('en-US', { 
+      weekday: 'short',
+      month: 'short', 
+      day: 'numeric' 
+    });
 
     // Format time display
     const timeStr = startTime.toLocaleTimeString('en-US', { 
@@ -133,6 +144,7 @@ export default function TeenCalendar() {
       time: timeDisplay,
       date: dateLabel,
       fullDate: startTime,
+      fullDateStr: fullDateStr, // Add formatted date string
       type: "personal", // Could be determined from event categories
       assignedTo: "Family Member", // Would come from relation
       location: event.location || "",
@@ -271,6 +283,10 @@ export default function TeenCalendar() {
               )}
             </div>
             <div className="space-y-1 text-xs text-gray-600">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                <span>{event.fullDateStr}</span>
+              </div>
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 <span>{event.time}</span>

@@ -209,25 +209,50 @@ export default function TeenDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {upcomingEvents.map((event) => (
-                  <div 
-                    key={event.id} 
-                    className="p-3 bg-blue-50 rounded-lg border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
-                    onClick={() => setEditingEvent(event)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-medium text-sm">{event.title}</p>
-                        <p className="text-xs text-gray-600 mt-1">{event.date} at {event.time}</p>
+              {eventsLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" />
+                  <span className="ml-2 text-sm text-gray-600">Loading events...</span>
+                </div>
+              ) : upcomingEvents.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">No upcoming events</p>
+              ) : (
+                <div className="space-y-3">
+                  {upcomingEvents.map((event) => {
+                    const startTime = new Date(event.startTime);
+                    const dateStr = startTime.toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                    });
+                    const timeStr = startTime.toLocaleTimeString('en-US', { 
+                      hour: 'numeric', 
+                      minute: '2-digit', 
+                      hour12: true 
+                    });
+                    
+                    return (
+                      <div 
+                        key={event.id} 
+                        className="p-3 bg-blue-50 rounded-lg border border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors"
+                        onClick={() => setEditingEvent(event)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-medium text-sm">{event.title}</p>
+                            <p className="text-xs text-gray-600 mt-1">{dateStr} at {timeStr}</p>
+                            {event.location && (
+                              <p className="text-xs text-gray-500 mt-1">📍 {event.location}</p>
+                            )}
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {event.visibilityType || 'shared'}
+                          </Badge>
+                        </div>
                       </div>
-                      <Badge variant="outline" className="text-xs">
-                        {event.type}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
 
