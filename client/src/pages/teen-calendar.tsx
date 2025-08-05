@@ -45,16 +45,20 @@ export default function TeenCalendar() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch real events from database
-  const { data: events = [], isLoading } = useQuery({
-    queryKey: ["/api/events"],
+  // Get teen profile data first
+  const { data: authData } = useQuery({
+    queryKey: ["/api/teen/auth/user"],
     retry: false,
   });
 
-  // Get teen profile data with avatar
-  const { data: teenProfile } = useQuery({
-    queryKey: ["/api/teen/auth/user"],
+  const isAuthenticated = (authData as any)?.isAuthenticated;
+  const teenProfile = isAuthenticated ? (authData as any).teenProfile : null;
+
+  // Fetch real events from database using teen events endpoint
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ["/api/teen/events"],
     retry: false,
+    enabled: !!teenProfile,
   });
 
   // Create event mutation
@@ -63,7 +67,8 @@ export default function TeenCalendar() {
       return await apiRequest("POST", "/api/events", eventData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/events"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] }); // Also invalidate main events for dashboard
       setIsAddEventOpen(false);
       setNewEvent({ title: "", date: "", time: "", endTime: "", location: "", description: "", type: "personal" });
       toast({
@@ -505,7 +510,7 @@ export default function TeenCalendar() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-6">
       {/* Navigation */}
       <TeenNavigation currentPath="/teen-calendar" teenProfile={teenProfile} />
       
