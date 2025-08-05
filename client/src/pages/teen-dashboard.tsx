@@ -179,7 +179,7 @@ export default function TeenDashboard() {
                           <div className="flex items-center gap-2 mt-1">
                             <Clock className="h-3 w-3 text-gray-400" />
                             <span className="text-xs text-gray-600">
-                              {task.dueDate ? new Date(task.dueDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'No deadline'}
+                              {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No deadline'}
                             </span>
                           </div>
                         </div>
@@ -219,7 +219,15 @@ export default function TeenDashboard() {
               ) : (
                 <div className="space-y-3">
                   {upcomingEvents.map((event) => {
-                    const startTime = new Date(event.startTime);
+                    // Helper function to convert UTC to MST for display
+                    const convertToMST = (utcDate: Date) => {
+                      const mstOffset = -7 * 60; // MST offset in minutes
+                      const utc = utcDate.getTime() + (utcDate.getTimezoneOffset() * 60000);
+                      return new Date(utc + (mstOffset * 60000));
+                    };
+                    
+                    const startTimeUTC = new Date(event.startTime);
+                    const startTime = convertToMST(startTimeUTC);
                     const dateStr = startTime.toLocaleDateString('en-US', { 
                       month: 'short', 
                       day: 'numeric' 
