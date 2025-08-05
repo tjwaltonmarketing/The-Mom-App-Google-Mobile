@@ -169,18 +169,15 @@ export default function TeenCalendar() {
       return;
     }
 
-    // Convert date and time to proper datetime
-    const startDateTime = new Date(`${newEvent.date}T${newEvent.time}`);
-    const endDateTime = newEvent.endTime ? new Date(`${newEvent.date}T${newEvent.endTime}`) : null;
-
+    // Send the data in the format the backend expects
     const eventData = {
       title: newEvent.title,
-      description: newEvent.description,
-      startTime: startDateTime.toISOString(),
-      endTime: endDateTime?.toISOString(),
-      location: newEvent.location,
-      visibilityType: "shared", // Default for teen events
-      assignedTo: 1, // Teen's ID
+      date: newEvent.date,
+      time: newEvent.time,
+      endTime: newEvent.endTime || "",
+      location: newEvent.location || "",
+      description: newEvent.description || "",
+      type: newEvent.type || "personal"
     };
 
     createEventMutation.mutate(eventData);
