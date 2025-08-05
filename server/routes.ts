@@ -428,9 +428,10 @@ export async function registerRoutes(app: Express) {
       // Get events for the family
       const events = await storage.getEventsByFamily(familyMember.familyId);
       
-      // Filter to show only events that are relevant to this teen (assigned to them or family-wide)
+      // Show all family events to teens (they should see family schedule)
+      // Only filter out truly private events if needed
       const relevantEvents = events.filter((event: any) => 
-        !event.assignedTo || event.assignedTo === teenProfile.familyMemberId
+        event.visibilityType !== 'private' // Show shared and busy events
       );
       
       res.json(relevantEvents);

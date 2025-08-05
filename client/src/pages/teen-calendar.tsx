@@ -67,7 +67,8 @@ export default function TeenCalendar() {
       return await apiRequest("POST", "/api/teen/events", eventData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/teen/events"] });
+      // Force refetch instead of just invalidating
+      queryClient.refetchQueries({ queryKey: ["/api/teen/events"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events"] }); // Also invalidate main events for dashboard
       setIsAddEventOpen(false);
       setNewEvent({ title: "", date: "", time: "", endTime: "", location: "", description: "", type: "personal" });
