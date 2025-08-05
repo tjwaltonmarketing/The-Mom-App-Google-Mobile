@@ -440,6 +440,59 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Teen create event endpoint
+  app.post("/api/teen/events", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      const { title, date, time, endTime, location, description, type } = req.body;
+
+      if (!title || !date || !time) {
+        return res.status(400).json({ error: "Title, date, and time are required" });
+      }
+
+      // Parse the date and time
+      const startDateTime = new Date(`${date}T${time}`);
+      const endDateTime = endTime ? new Date(`${date}T${endTime}`) : new Date(startDateTime.getTime() + 60 * 60 * 1000); // Default 1 hour duration
+
+      // Create the event
+      const eventData = {
+        title,
+        description: description || "",
+        startTime: startDateTime,
+        endTime: endDateTime,
+        location: location || "",
+        familyId: familyMember.familyId,
+        assignedTo: teenProfile.familyMemberId, // Assign to the teen
+        isAllDay: false,
+        isPrivate: false,
+        visibilityType: "shared", // Teen events are shared by default
+        sharedWith: [],
+        createdBy: teenProfile.familyMemberId
+      };
+
+      const newEvent = await storage.createEvent(eventData);
+      
+      res.json(newEvent);
+    } catch (error) {
+      console.error("Teen event creation error:", error);
+      res.status(500).json({ error: "Failed to create event" });
+    }
+  });
+
   // Test endpoint to delete existing teen data
   app.delete("/api/teen/delete-test-data", async (req, res) => {
     try {

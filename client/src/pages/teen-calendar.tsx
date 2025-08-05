@@ -64,7 +64,7 @@ export default function TeenCalendar() {
   // Create event mutation
   const createEventMutation = useMutation({
     mutationFn: async (eventData: any) => {
-      return await apiRequest("POST", "/api/events", eventData);
+      return await apiRequest("POST", "/api/teen/events", eventData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/teen/events"] });
