@@ -219,15 +219,8 @@ export default function TeenDashboard() {
               ) : (
                 <div className="space-y-3">
                   {upcomingEvents.map((event) => {
-                    // Helper function to convert UTC to MST for display
-                    const convertToMST = (utcDate: Date) => {
-                      const mstOffset = -7 * 60; // MST offset in minutes
-                      const utc = utcDate.getTime() + (utcDate.getTimezoneOffset() * 60000);
-                      return new Date(utc + (mstOffset * 60000));
-                    };
-                    
-                    const startTimeUTC = new Date(event.startTime);
-                    const startTime = convertToMST(startTimeUTC);
+                    // Display time as entered (local time)
+                    const startTime = new Date(event.startTime);
                     const dateStr = startTime.toLocaleDateString('en-US', { 
                       month: 'short', 
                       day: 'numeric' 
