@@ -86,10 +86,10 @@ export default function TeenCalendar() {
     },
   });
 
-  // Helper function to display time as it was entered (treating stored time as local time)
-  const displayLocalTime = (dateTime: Date) => {
-    // Just return the date as-is since we want to display the time as it was entered
-    return dateTime;
+  // Helper function to convert UTC back to MST for display
+  const convertUTCtoMST = (utcDate: Date) => {
+    // Subtract 7 hours from UTC to get MST time for display
+    return new Date(utcDate.getTime() - (7 * 60 * 60 * 1000));
   };
 
   // Transform database events for display
@@ -97,9 +97,9 @@ export default function TeenCalendar() {
     const startTimeUTC = new Date(event.startTime);
     const endTimeUTC = event.endTime ? new Date(event.endTime) : null;
     
-    // Display time as entered (local time)
-    const startTime = displayLocalTime(startTimeUTC);
-    const endTime = endTimeUTC ? displayLocalTime(endTimeUTC) : null;
+    // Convert UTC back to MST for display
+    const startTime = convertUTCtoMST(startTimeUTC);
+    const endTime = endTimeUTC ? convertUTCtoMST(endTimeUTC) : null;
     
     // Determine relative date label
     const today = new Date();

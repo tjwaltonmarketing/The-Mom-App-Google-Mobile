@@ -219,8 +219,9 @@ export default function TeenDashboard() {
               ) : (
                 <div className="space-y-3">
                   {upcomingEvents.map((event) => {
-                    // Display time as entered (local time)
-                    const startTime = new Date(event.startTime);
+                    // Convert UTC back to MST for display
+                    const startTimeUTC = new Date(event.startTime);
+                    const startTime = new Date(startTimeUTC.getTime() - (7 * 60 * 60 * 1000));
                     const dateStr = startTime.toLocaleDateString('en-US', { 
                       month: 'short', 
                       day: 'numeric' 

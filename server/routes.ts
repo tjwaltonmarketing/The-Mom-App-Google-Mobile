@@ -465,10 +465,12 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Title, date, and time are required" });
       }
 
-      // Parse the date and time correctly for MST timezone
-      // Add MST offset (+07:00) to convert user input to UTC properly
-      const startDateTime = new Date(`${date}T${time}+07:00`);
-      const endDateTime = endTime ? new Date(`${date}T${endTime}+07:00`) : new Date(startDateTime.getTime() + 60 * 60 * 1000); // Default 1 hour duration
+      // Parse the date and time for MST timezone
+      // Since user input is in MST (UTC-7), we need to add 7 hours to get UTC for storage
+      const mstTime = new Date(`${date}T${time}`);
+      const startDateTime = new Date(mstTime.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for MST->UTC
+      const mstEndTime = endTime ? new Date(`${date}T${endTime}`) : new Date(mstTime.getTime() + 60 * 60 * 1000);
+      const endDateTime = endTime ? new Date(mstEndTime.getTime() + (7 * 60 * 60 * 1000)) : new Date(startDateTime.getTime() + 60 * 60 * 1000);
 
       // Create the event
       const eventData = {
