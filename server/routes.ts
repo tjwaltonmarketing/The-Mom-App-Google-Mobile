@@ -466,11 +466,12 @@ export async function registerRoutes(app: Express) {
       }
 
       // Parse the date and time for MST timezone correctly
-      // For 9:01 PM MST on Aug 6, we need to store it as Aug 6 03:01 UTC (next day + 6 hours)
+      // For 9:01 PM MST on Aug 6, we need to store it as Aug 7 03:01 UTC (next day + 6 hours)
       const mstDateTime = new Date(`${date}T${time}`);
-      const startDateTime = new Date(mstDateTime.getTime() + (6 * 60 * 60 * 1000)); // Add 6 hours for MST->UTC
+      // Add 1 day (24 hours) + 3 hours = 27 hours total to get correct UTC storage
+      const startDateTime = new Date(mstDateTime.getTime() + (27 * 60 * 60 * 1000)); 
       const mstEndDateTime = endTime ? new Date(`${date}T${endTime}`) : new Date(mstDateTime.getTime() + 60 * 60 * 1000);
-      const endDateTime = endTime ? new Date(mstEndDateTime.getTime() + (6 * 60 * 60 * 1000)) : new Date(startDateTime.getTime() + 60 * 60 * 1000);
+      const endDateTime = endTime ? new Date(mstEndDateTime.getTime() + (27 * 60 * 60 * 1000)) : new Date(startDateTime.getTime() + 60 * 60 * 1000);
 
       // Create the event
       const eventData = {
