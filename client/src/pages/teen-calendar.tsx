@@ -124,18 +124,16 @@ export default function TeenCalendar() {
       day: 'numeric' 
     });
 
-    // Format time display using explicit timezone to show MST times correctly
+    // Format time display - the UTC time from DB should display correctly as local time
     const timeStr = startTime.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit', 
-      hour12: true,
-      timeZone: 'America/Denver' // MST timezone
+      hour12: true
     });
     const endTimeStr = endTime ? endTime.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
       minute: '2-digit', 
-      hour12: true,
-      timeZone: 'America/Denver' // MST timezone
+      hour12: true
     }) : null;
     const timeDisplay = endTimeStr ? `${timeStr} - ${endTimeStr}` : timeStr;
 
