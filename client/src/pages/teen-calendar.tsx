@@ -70,15 +70,38 @@ export default function TeenCalendar() {
       const response = await apiRequest("DELETE", `/api/teen/events/${eventId}`);
       return response.json();
     },
+    onMutate: async (eventId: number) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["/api/teen/events"] });
+      
+      // Snapshot the previous value
+      const previousEvents = queryClient.getQueryData(["/api/teen/events"]);
+      
+      // Optimistically update to the new value
+      queryClient.setQueryData(["/api/teen/events"], (old: any) => {
+        if (!old) return old;
+        return old.filter((event: any) => event.id !== eventId);
+      });
+      
+      // Return a context object with the snapshotted value
+      return { previousEvents };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/teen/events"] });
+      // Force complete cache refresh
+      queryClient.removeQueries({ queryKey: ["/api/teen/events"] });
+      queryClient.refetchQueries({ queryKey: ["/api/teen/events"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] }); // Also invalidate main events for dashboard
       toast({
         title: "Event Deleted",
         description: "Your event has been removed from the calendar",
       });
       setDeletingEventId(null);
     },
-    onError: (error: any) => {
+    onError: (error: any, eventId: number, context: any) => {
+      // Rollback on error
+      if (context?.previousEvents) {
+        queryClient.setQueryData(["/api/teen/events"], context.previousEvents);
+      }
       toast({
         title: "Error Deleting Event",
         description: error.message || "Failed to delete event",
