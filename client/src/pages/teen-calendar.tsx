@@ -21,7 +21,8 @@ import {
   MapPin,
   ChevronLeft,
   ChevronRight,
-  Grid3X3
+  Grid3X3,
+  Trash2
 } from "lucide-react";
 import TeenNavigation from "@/components/teen/teen-navigation";
 
@@ -42,6 +43,8 @@ export default function TeenCalendar() {
     description: "",
     type: "personal"
   });
+  const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [deletingEventId, setDeletingEventId] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -59,6 +62,30 @@ export default function TeenCalendar() {
     queryKey: ["/api/teen/events"],
     retry: false,
     enabled: !!teenProfile,
+  });
+
+  // Delete event mutation
+  const deleteEventMutation = useMutation({
+    mutationFn: async (eventId: number) => {
+      const response = await apiRequest("DELETE", `/api/teen/events/${eventId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/events"] });
+      toast({
+        title: "Event Deleted",
+        description: "Your event has been removed from the calendar",
+      });
+      setDeletingEventId(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Deleting Event",
+        description: error.message || "Failed to delete event",
+        variant: "destructive",
+      });
+      setDeletingEventId(null);
+    },
   });
 
   // Create event mutation
@@ -141,8 +168,8 @@ export default function TeenCalendar() {
     }) : null;
     const timeDisplay = endTimeStr ? `${timeStr} - ${endTimeStr}` : timeStr;
 
-    // Determine if this is the teen's own event (currently simulated)
-    const isOwnEvent = event.createdBy === 1; // Assume teen is family member ID 1 for demo
+    // Determine if this is the teen's own event using the family member ID
+    const isOwnEvent = event.createdBy === 25; // Teen Adri's family member ID is 25
     
     // Color coding based on privacy and ownership
     let color = "#6b7280"; // Default gray
@@ -318,12 +345,28 @@ export default function TeenCalendar() {
               </div>
             </div>
           </div>
-          <Badge 
-            variant={event.type === 'sport' ? 'default' : 'secondary'}
-            className="text-xs"
-          >
-            {event.type}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge 
+              variant={event.type === 'sport' ? 'default' : 'secondary'}
+              className="text-xs"
+            >
+              {event.type}
+            </Badge>
+            {event.isOwnEvent && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeletingEventId(event.id);
+                }}
+                title="Delete event"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -746,6 +789,32 @@ export default function TeenCalendar() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deletingEventId} onOpenChange={() => setDeletingEventId(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Event</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-600">
+              Are you sure you want to delete this event? This action cannot be undone.
+            </p>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setDeletingEventId(null)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => deletingEventId && deleteEventMutation.mutate(deletingEventId)}
+              disabled={deleteEventMutation.isPending}
+            >
+              {deleteEventMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

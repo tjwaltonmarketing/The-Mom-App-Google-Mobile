@@ -466,11 +466,12 @@ export async function registerRoutes(app: Express) {
       }
 
       // Parse the date and time for MST timezone correctly
-      // MST is UTC-7, so we add 7 hours to convert MST input to UTC
+      // In summer (DST), Mountain Time is UTC-6, in winter it's UTC-7
+      // August is DST, so we add 6 hours to convert MDT input to UTC
       const mstDateTime = new Date(`${date}T${time}`);
-      const startDateTime = new Date(mstDateTime.getTime() + (7 * 60 * 60 * 1000)); // Add 7 hours for MST->UTC
+      const startDateTime = new Date(mstDateTime.getTime() + (6 * 60 * 60 * 1000)); // Add 6 hours for MDT->UTC
       const mstEndDateTime = endTime ? new Date(`${date}T${endTime}`) : new Date(mstDateTime.getTime() + 60 * 60 * 1000);
-      const endDateTime = endTime ? new Date(mstEndDateTime.getTime() + (7 * 60 * 60 * 1000)) : new Date(startDateTime.getTime() + 60 * 60 * 1000);
+      const endDateTime = endTime ? new Date(mstEndDateTime.getTime() + (6 * 60 * 60 * 1000)) : new Date(startDateTime.getTime() + 60 * 60 * 1000);
 
       // Create the event
       const eventData = {
@@ -494,6 +495,39 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Teen event creation error:", error);
       res.status(500).json({ error: "Failed to create event" });
+    }
+  });
+
+  // Teen delete event endpoint - allows teens to delete their own events
+  app.delete("/api/teen/events/:eventId", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const eventId = parseInt(req.params.eventId);
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      // Get the event to check ownership
+      const event = await storage.getEventById(eventId);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+
+      // Only allow deletion if the teen created the event
+      if (event.createdBy !== teenProfile.familyMemberId) {
+        return res.status(403).json({ error: "You can only delete events you created" });
+      }
+
+      // Delete the event
+      await storage.deleteEvent(eventId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Teen event delete error:", error);
+      res.status(500).json({ error: "Failed to delete event" });
     }
   });
 
