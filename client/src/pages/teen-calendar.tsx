@@ -11,6 +11,25 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import type { Event } from "@shared/schema";
+
+// Define transformed event type for display
+interface DisplayEvent {
+  id: number;
+  title: string;
+  description: string | null;
+  time: string;
+  date: string;
+  fullDate: Date;
+  fullDateStr: string;
+  type: string;
+  assignedTo: string;
+  location: string;
+  privacy: string;
+  color: string;
+  source: string;
+  isOwnEvent: boolean;
+}
 import { 
   Calendar, 
   Clock, 
@@ -33,7 +52,7 @@ export default function TeenCalendar() {
   const [viewMode, setViewMode] = useState<"calendar" | "list">("list");
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [isDayEventsOpen, setIsDayEventsOpen] = useState(false);
-  const [selectedDayEvents, setSelectedDayEvents] = useState<any[]>([]);
+  const [selectedDayEvents, setSelectedDayEvents] = useState<DisplayEvent[]>([]);
   const [newEvent, setNewEvent] = useState({
     title: "",
     date: "",
@@ -43,7 +62,7 @@ export default function TeenCalendar() {
     description: "",
     type: "personal"
   });
-  const [editingEvent, setEditingEvent] = useState<any>(null);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [deletingEventId, setDeletingEventId] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -58,7 +77,7 @@ export default function TeenCalendar() {
   const teenProfile = isAuthenticated ? (authData as any).teenProfile : null;
 
   // Fetch real events from database using teen events endpoint
-  const { data: events = [], isLoading } = useQuery({
+  const { data: events = [], isLoading } = useQuery<Event[]>({
     queryKey: ["/api/teen/events"],
     retry: false,
     enabled: !!teenProfile,
@@ -143,7 +162,7 @@ export default function TeenCalendar() {
   };
 
   // Transform database events for display
-  const allEvents = events.map((event: any) => {
+  const allEvents: DisplayEvent[] = events.map((event: Event) => {
     const startTimeUTC = new Date(event.startTime);
     const endTimeUTC = event.endTime ? new Date(event.endTime) : null;
     
@@ -293,7 +312,7 @@ export default function TeenCalendar() {
 
 
 
-  const renderEvent = (event: any) => {
+  const renderEvent = (event: DisplayEvent) => {
     if (event.privacy === "private") {
       return (
         <div key={event.id} className="p-3 bg-gray-100 border border-gray-200 rounded-lg">

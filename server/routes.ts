@@ -571,13 +571,11 @@ export async function registerRoutes(app: Express) {
               description: "Organize desk, make bed, and put clothes away",
               dueDate: today,
               priority: "medium",
-              status: "pending",
               assignedTo: familyMember.id,
               teenId: existingTeen.id,
               points: 10,
               category: "chores",
               estimatedTime: 30,
-              familyId: familyMember.familyId,
               createdBy: 1
             });
 
@@ -586,13 +584,11 @@ export async function registerRoutes(app: Express) {
               description: "Complete algebra problems 1-20",
               dueDate: tomorrow,
               priority: "high",
-              status: "pending",
               assignedTo: familyMember.id,
               teenId: existingTeen.id,
               points: 15,
               category: "homework",
               estimatedTime: 45,
-              familyId: familyMember.familyId,
               createdBy: 1
             });
           }
