@@ -222,10 +222,12 @@ export default function TeenDashboard() {
                     // Display stored UTC time as local MST time
                     const startTime = new Date(event.startTime);
                     const dateStr = startTime.toLocaleDateString('en-US', { 
+                      timeZone: 'America/Denver', // Force MST timezone
                       month: 'short', 
                       day: 'numeric' 
                     });
                     const timeStr = startTime.toLocaleTimeString('en-US', { 
+                      timeZone: 'America/Denver', // Force MST timezone
                       hour: 'numeric', 
                       minute: '2-digit', 
                       hour12: true

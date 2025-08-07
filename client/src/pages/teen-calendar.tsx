@@ -101,36 +101,40 @@ export default function TeenCalendar() {
     const startTime = displayAsLocalMST(startTimeUTC);
     const endTime = endTimeUTC ? displayAsLocalMST(endTimeUTC) : null;
     
-    // Determine relative date label
+    // Determine relative date label using MST timezone
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
-    const tomorrow = new Date(today);
+    const todayMST = new Date(today.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+    todayMST.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+    const tomorrow = new Date(todayMST);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
-    const eventDate = new Date(startTime);
-    eventDate.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
+    const eventDateMST = new Date(startTime.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+    eventDateMST.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
     
     let dateLabel = "This Week";
-    if (eventDate.getTime() === today.getTime()) {
+    if (eventDateMST.getTime() === todayMST.getTime()) {
       dateLabel = "Today";
-    } else if (eventDate.getTime() === tomorrow.getTime()) {
+    } else if (eventDateMST.getTime() === tomorrow.getTime()) {
       dateLabel = "Tomorrow";
     }
     
-    // Format the full date display
+    // Format the full date display in MST timezone
     const fullDateStr = startTime.toLocaleDateString('en-US', { 
+      timeZone: 'America/Denver', // Force MST timezone
       weekday: 'short',
       month: 'short', 
       day: 'numeric' 
     });
 
-    // Format time display - the UTC time from DB should display correctly as local time
+    // Format time display - convert UTC back to MST for display
     const timeStr = startTime.toLocaleTimeString('en-US', { 
+      timeZone: 'America/Denver', // Force MST timezone
       hour: 'numeric', 
       minute: '2-digit', 
       hour12: true
     });
     const endTimeStr = endTime ? endTime.toLocaleTimeString('en-US', { 
+      timeZone: 'America/Denver', // Force MST timezone
       hour: 'numeric', 
       minute: '2-digit', 
       hour12: true
