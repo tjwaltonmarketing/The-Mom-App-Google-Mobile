@@ -62,10 +62,16 @@ export default function TeenPasswords() {
   });
 
   // Get teen profile data with avatar
-  const { data: teenProfile } = useQuery({
+  const { data: authData } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     retry: false,
   });
+
+  console.log("Auth data for passwords:", authData);
+
+  // Extract teen profile from auth response
+  const isAuthenticated = (authData as any)?.isAuthenticated;
+  const teenProfile = isAuthenticated ? (authData as any).teenProfile : null;
 
   const togglePasswordVisibility = (id: number) => {
     setShowPasswords(prev => ({
