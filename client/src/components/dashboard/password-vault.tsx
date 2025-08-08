@@ -371,7 +371,7 @@ export function PasswordVault() {
 
                     <div className="flex justify-between items-center pt-2">
                       <span className="text-xs text-gray-400">
-                        Updated {password.lastUpdated}
+                        Updated {password.lastUpdated ? new Date(password.lastUpdated).toLocaleDateString() : 'Never'}
                       </span>
                       <Button
                         variant="ghost"

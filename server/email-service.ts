@@ -121,3 +121,9 @@ export class EmailService {
 }
 
 export const emailService = new EmailService();
+
+// Export a simple sendEmail function for compatibility
+export async function sendEmail(to: string, subject: string, content: string): Promise<boolean> {
+  const result = await emailService.sendEmail(to, subject, content);
+  return result.success;
+}

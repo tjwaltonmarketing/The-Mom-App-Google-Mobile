@@ -103,8 +103,8 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
       if (data.success) {
         toast({
           title: "Invitation Sent!",
-          description: inviteMethod === "phone" 
-            ? `SMS sent to ${contact} with invite code and app download instructions` 
+          description: inviteMethod === "sms" 
+            ? `SMS sent to ${generatedInvite?.invitedContact} with invite code and app download instructions` 
             : "Invitation sent successfully",
         });
       } else {
@@ -312,7 +312,7 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
             <div className="space-y-3">
               <Button onClick={handleSendInvite} className="w-full" disabled={sendInviteMutation.isPending}>
                 <Send className="h-4 w-4 mr-2" />
-                {sendInviteMutation.isPending ? "Sending..." : `Send via ${inviteMethod === "phone" ? "Text" : "Email"}`}
+                {sendInviteMutation.isPending ? "Sending..." : `Send via ${inviteMethod === "sms" ? "Text" : "Email"}`}
               </Button>
               
               <div className="text-center text-sm text-gray-600">

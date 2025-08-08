@@ -26,8 +26,15 @@ export function PasswordEditModal({ password, isOpen, onClose }: PasswordEditMod
 
   // Initialize selected members based on password's shared_with array
   useEffect(() => {
-    if (password && password.shared_with) {
-      setSelectedMembers(new Set(password.shared_with));
+    if (password && password.sharedWith) {
+      try {
+        const parsed = typeof password.sharedWith === 'string' 
+          ? JSON.parse(password.sharedWith) 
+          : password.sharedWith;
+        setSelectedMembers(new Set(parsed.map((id: any) => Number(id))));
+      } catch {
+        setSelectedMembers(new Set());
+      }
     }
   }, [password]);
 

@@ -22,8 +22,8 @@ export class NotificationService {
     const teenProfile = await storage.getTeenProfile(teenId);
     const notificationSettings = await storage.getTeenNotificationSettings(teenProfile?.id || 0);
     
-    if (!notificationSettings?.enabled) {
-      return; // Teen has disabled notifications
+    if (!notificationSettings?.taskReminders) {
+      return; // Teen has disabled task notifications
     }
     
     const now = new Date();
@@ -125,7 +125,7 @@ export class NotificationService {
     const teenProfile = await storage.getTeenProfile(teenId);
     const notificationSettings = await storage.getTeenNotificationSettings(teenProfile?.id || 0);
     
-    if (!notificationSettings?.enabled) return;
+    if (!notificationSettings?.taskReminders) return;
     
     // Create notification record
     const notificationRecord: InsertNotification = {
@@ -133,29 +133,27 @@ export class NotificationService {
       message,
       recipientId: teenId,
       relatedTaskId: taskId,
-      deliveryMethod: notificationSettings.smsEnabled ? "sms" : "email",
+      deliveryMethod: "in_app",
       scheduledFor: new Date(),
-      priority: type === "task_past_due" ? "high" : "medium"
+      status: type === "task_past_due" ? "urgent" : "pending"
     };
     
     await storage.createNotification(notificationRecord);
     
     // Send via preferred method
     try {
-      if (notificationSettings.smsEnabled && teenProfile?.phoneNumber) {
-        await sendSMS(teenProfile.phoneNumber, message);
-      } else if (notificationSettings.emailEnabled && teenProfile?.email) {
-        await sendEmail(teenProfile.email, "Task Notification", message);
-      }
+      // For now, just log the notification since SMS/email may not be configured
+      console.log(`📧 Teen notification: ${message}`);
+      // TODO: Add actual SMS/email sending when teen contact info is available
       
-      // Log the notification
+      // Log the notification (using available schema fields)
       await storage.logTeenNotification({
         teenProfileId: teenProfile?.id || 0,
         notificationType: type,
-        deliveryMethod: notificationSettings.smsEnabled ? "sms" : "email",
-        wasDelivered: true,
-        wasOpened: false,
-        createdAt: new Date()
+        message: message,
+        title: `Task ${type}`,
+        scheduledFor: new Date(),
+        templateId: type
       });
     } catch (error) {
       console.error("Failed to send notification:", error);
