@@ -228,6 +228,7 @@ export default function TeenPasswords() {
       password: "",
       notes: ""
     });
+    // Reset complete
   };
 
   const handleCreatePassword = () => {

@@ -552,8 +552,10 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family member not found" });
       }
 
-      // Get passwords created by this teen
-      const passwords = await storage.getPasswordsByCreator(familyMember.id);
+      // Get passwords created by this teen (using their family member ID)
+      console.log("Looking for passwords created by familyMemberId:", teenProfile.familyMemberId);
+      const passwords = await storage.getPasswordsByCreator(teenProfile.familyMemberId);
+      console.log("Found passwords for teen:", passwords);
       
       res.json(passwords);
     } catch (error) {
