@@ -534,6 +534,9 @@ export async function registerRoutes(app: Express) {
   // Teen passwords endpoints - Get teen's own passwords
   app.get("/api/teen/passwords", async (req, res) => {
     try {
+      console.log("Teen passwords request - session:", req.session);
+      console.log("Teen passwords request - teenId:", req.session.teenId);
+      
       if (!req.session.teenId) {
         return res.status(401).json({ error: "Not authenticated" });
       }

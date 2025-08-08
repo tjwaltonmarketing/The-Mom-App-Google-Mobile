@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,34 +93,34 @@ export default function TeenPasswords() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Stable input handlers to prevent cursor jumping
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Stable input handlers to prevent cursor jumping - using useCallback
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, title: e.target.value }));
-  };
+  }, []);
   
-  const handleWebsiteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleWebsiteChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, website: e.target.value }));
-  };
+  }, []);
   
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, username: e.target.value }));
-  };
+  }, []);
   
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, email: e.target.value }));
-  };
+  }, []);
   
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({ ...prev, password: e.target.value }));
-  };
+  }, []);
   
-  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setFormData(prev => ({ ...prev, notes: e.target.value }));
-  };
+  }, []);
   
-  const handleCategoryChange = (value: string) => {
+  const handleCategoryChange = useCallback((value: string) => {
     setFormData(prev => ({ ...prev, category: value }));
-  };
+  }, []);
 
   // Get teen profile data with avatar
   const { data: authData } = useQuery({
@@ -144,8 +144,10 @@ export default function TeenPasswords() {
     staleTime: 0, // Always refetch to get latest data
   });
 
-  // Debug log to see password data
+  // Debug log to see password data and teen auth
   console.log("Personal passwords:", personalPasswords);
+  console.log("Teen profile for passwords:", teenProfile);
+  console.log("Auth data for passwords:", authData);
 
   // Mutations for password management
   const createPasswordMutation = useMutation({
