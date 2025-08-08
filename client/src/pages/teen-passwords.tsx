@@ -93,34 +93,7 @@ export default function TeenPasswords() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Stable input handlers to prevent cursor jumping - using useCallback
-  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, title: e.target.value }));
-  }, []);
-  
-  const handleWebsiteChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, website: e.target.value }));
-  }, []);
-  
-  const handleUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, username: e.target.value }));
-  }, []);
-  
-  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, email: e.target.value }));
-  }, []);
-  
-  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, password: e.target.value }));
-  }, []);
-  
-  const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFormData(prev => ({ ...prev, notes: e.target.value }));
-  }, []);
-  
-  const handleCategoryChange = useCallback((value: string) => {
-    setFormData(prev => ({ ...prev, category: value }));
-  }, []);
+  // Stable form update to prevent re-renders
 
   // Get teen profile data with avatar
   const { data: authData } = useQuery({
@@ -317,7 +290,7 @@ export default function TeenPasswords() {
     });
   };
 
-  const PasswordForm = () => (
+  const PasswordForm = useCallback(() => (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -326,12 +299,15 @@ export default function TeenPasswords() {
             id="form-title"
             placeholder="Netflix, Instagram, etc."
             value={formData.title}
-            onChange={handleTitleChange}
+            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="form-category">Category</Label>
-          <Select value={formData.category} onValueChange={handleCategoryChange}>
+          <Select 
+            value={formData.category} 
+            onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
@@ -353,7 +329,7 @@ export default function TeenPasswords() {
           id="form-website"
           placeholder="netflix.com"
           value={formData.website}
-          onChange={handleWebsiteChange}
+          onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
         />
       </div>
       
@@ -364,7 +340,7 @@ export default function TeenPasswords() {
             id="form-username"
             placeholder="username"
             value={formData.username}
-            onChange={handleUsernameChange}
+            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
           />
         </div>
         <div className="space-y-2">
@@ -374,7 +350,7 @@ export default function TeenPasswords() {
             type="email"
             placeholder="your@email.com"
             value={formData.email}
-            onChange={handleEmailChange}
+            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
           />
         </div>
       </div>
@@ -386,7 +362,7 @@ export default function TeenPasswords() {
           type="password"
           placeholder="Your password"
           value={formData.password}
-          onChange={handlePasswordChange}
+          onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
         />
       </div>
       
@@ -396,11 +372,11 @@ export default function TeenPasswords() {
           id="form-notes"
           placeholder="Security questions, special instructions, etc."
           value={formData.notes}
-          onChange={handleNotesChange}
+          onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
         />
       </div>
     </div>
-  );
+  ), [formData]);
 
   return (
     <div className="min-h-screen bg-gray-50">
