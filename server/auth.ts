@@ -23,7 +23,7 @@ export function setupSession(app: Express) {
     store: new MemoryStoreSession({
       checkPeriod: 86400000 // prune expired entries every 24h
     }),
-    resave: false,
+    resave: true, // Force session save on every request to ensure persistence
     saveUninitialized: true, // Create session for mobile apps
     cookie: {
       secure: isProduction, // HTTPS only in production
@@ -31,7 +31,7 @@ export function setupSession(app: Express) {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       sameSite: isProduction ? 'none' : 'lax', // Cross-origin for mobile in production
     },
-    name: 'momapp.sid', // Custom session name
+    name: 'connect.sid', // Standard session name for compatibility
   }));
 }
 

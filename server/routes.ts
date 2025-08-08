@@ -82,9 +82,22 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      // Set teen session
+      // Set teen session and save synchronously
       req.session.teenId = teenProfile.id;
       req.session.userId = user.id;
+      
+      // Save session synchronously before responding
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            reject(err);
+          } else {
+            console.log("Session saved successfully with teenId:", teenProfile.id);
+            resolve();
+          }
+        });
+      });
 
       res.json({
         success: true,
@@ -528,6 +541,165 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Teen event delete error:", error);
       res.status(500).json({ error: "Failed to delete event" });
+    }
+  });
+
+  // Teen passwords endpoints - Get teen's own passwords
+  app.get("/api/teen/passwords", async (req, res) => {
+    try {
+      console.log("Teen passwords request - session:", req.session);
+      console.log("Teen passwords request - teenId:", req.session.teenId);
+      
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get passwords created by this teen (using their family member ID)
+      console.log("Looking for passwords created by familyMemberId:", teenProfile.familyMemberId);
+      const passwords = await storage.getPasswordsByCreator(teenProfile.familyMemberId);
+      console.log("Found passwords for teen:", passwords);
+      
+      res.json(passwords);
+    } catch (error) {
+      console.error("Teen passwords fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch passwords" });
+    }
+  });
+
+  // Teen create password endpoint
+  app.post("/api/teen/passwords", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      const { title, category, website, username, email, password, notes } = req.body;
+
+      if (!title || !password) {
+        return res.status(400).json({ error: "Title and password are required" });
+      }
+
+      // Create the password entry
+      const passwordData = {
+        title,
+        category: category || "other",
+        website: website || "",
+        username: username || "",
+        email: email || "",
+        password, // In a real app, this should be encrypted
+        notes: notes || "",
+        createdBy: familyMember.id,
+        sharedWith: "[]", // Teen passwords are private by default
+        isFavorite: false
+      };
+
+      const newPassword = await storage.createPassword(passwordData);
+      
+      res.json(newPassword);
+    } catch (error) {
+      console.error("Teen password creation error:", error);
+      res.status(500).json({ error: "Failed to create password" });
+    }
+  });
+
+  // Teen update password endpoint
+  app.put("/api/teen/passwords/:id", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const passwordId = parseInt(req.params.id);
+      const { title, category, website, username, email, password, notes } = req.body;
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Verify the password belongs to this teen
+      const existingPassword = await storage.getPasswordById(passwordId);
+      if (!existingPassword || existingPassword.createdBy !== familyMember.id) {
+        return res.status(403).json({ error: "You can only edit passwords you created" });
+      }
+
+      const updateData = {
+        title,
+        category: category || "other",
+        website: website || "",
+        username: username || "",
+        email: email || "",
+        password, // Should be encrypted in real app
+        notes: notes || ""
+      };
+
+      const updatedPassword = await storage.updatePassword(passwordId, updateData);
+      res.json(updatedPassword);
+    } catch (error) {
+      console.error("Teen password update error:", error);
+      res.status(500).json({ error: "Failed to update password" });
+    }
+  });
+
+  // Teen delete password endpoint
+  app.delete("/api/teen/passwords/:id", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const passwordId = parseInt(req.params.id);
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Verify the password belongs to this teen
+      const existingPassword = await storage.getPasswordById(passwordId);
+      if (!existingPassword || existingPassword.createdBy !== familyMember.id) {
+        return res.status(403).json({ error: "You can only delete passwords you created" });
+      }
+
+      await storage.deletePassword(passwordId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Teen password delete error:", error);
+      res.status(500).json({ error: "Failed to delete password" });
     }
   });
 
