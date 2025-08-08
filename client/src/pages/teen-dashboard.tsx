@@ -81,10 +81,14 @@ export default function TeenDashboard() {
     enabled: isAuthenticated && !!teenProfile, // Only run query if teen is authenticated
   });
 
-  const achievements = [
-    { name: "Week Warrior", description: "7 days streak!", icon: "🔥" },
-    { name: "Task Master", description: "100 tasks completed", icon: "⭐" },
-    { name: "Early Bird", description: "5 morning tasks", icon: "🌅" }
+  // Achievement examples - what teens can earn
+  const achievementExamples = [
+    { name: "Week Warrior", description: "Complete tasks for 7 days straight", icon: "🔥" },
+    { name: "Task Master", description: "Complete 100 tasks total", icon: "⭐" },
+    { name: "Early Bird", description: "Complete 5 morning tasks", icon: "🌅" },
+    { name: "Team Player", description: "Help with 10 family events", icon: "🤝" },
+    { name: "Organized", description: "Keep calendar updated for a month", icon: "📅" },
+    { name: "Helper", description: "Complete 25 chores", icon: "💪" }
   ];
 
   const completedTasks = (todayTasks as any[]).filter((task: any) => task.isCompleted);
@@ -294,21 +298,22 @@ export default function TeenDashboard() {
             </CardContent>
           </Card>
 
-          {/* Recent Achievements */}
+          {/* Achievement Examples */}
           <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-yellow-500" />
-                Recent Achievements
+                Achievement Goals
               </CardTitle>
+              <p className="text-sm text-gray-600 mt-1">Complete tasks and activities to unlock these achievements!</p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {achievements.map((achievement, index) => (
-                  <div key={index} className="p-3 bg-yellow-50 rounded-lg border border-yellow-200 text-center">
-                    <div className="text-2xl mb-2">{achievement.icon}</div>
-                    <p className="font-medium text-sm">{achievement.name}</p>
-                    <p className="text-xs text-gray-600">{achievement.description}</p>
+                {achievementExamples.slice(0, 6).map((achievement, index) => (
+                  <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center opacity-75">
+                    <div className="text-2xl mb-2 grayscale">{achievement.icon}</div>
+                    <p className="font-medium text-sm text-gray-700">{achievement.name}</p>
+                    <p className="text-xs text-gray-500">{achievement.description}</p>
                   </div>
                 ))}
               </div>
