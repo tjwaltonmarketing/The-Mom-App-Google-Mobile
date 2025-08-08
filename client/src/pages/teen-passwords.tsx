@@ -290,7 +290,36 @@ export default function TeenPasswords() {
     });
   };
 
-  const PasswordForm = useCallback(() => (
+  // Stable handlers to prevent cursor jumping
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, title: e.target.value }));
+  }, []);
+  
+  const handleWebsiteChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, website: e.target.value }));
+  }, []);
+  
+  const handleUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, username: e.target.value }));
+  }, []);
+  
+  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, email: e.target.value }));
+  }, []);
+  
+  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, password: e.target.value }));
+  }, []);
+  
+  const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, notes: e.target.value }));
+  }, []);
+  
+  const handleCategoryChange = useCallback((value: string) => {
+    setFormData(prev => ({ ...prev, category: value }));
+  }, []);
+
+  const PasswordFormComponent = () => (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -299,15 +328,12 @@ export default function TeenPasswords() {
             id="form-title"
             placeholder="Netflix, Instagram, etc."
             value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            onChange={handleTitleChange}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="form-category">Category</Label>
-          <Select 
-            value={formData.category} 
-            onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-          >
+          <Select value={formData.category} onValueChange={handleCategoryChange}>
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
@@ -329,7 +355,7 @@ export default function TeenPasswords() {
           id="form-website"
           placeholder="netflix.com"
           value={formData.website}
-          onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+          onChange={handleWebsiteChange}
         />
       </div>
       
@@ -340,7 +366,7 @@ export default function TeenPasswords() {
             id="form-username"
             placeholder="username"
             value={formData.username}
-            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+            onChange={handleUsernameChange}
           />
         </div>
         <div className="space-y-2">
@@ -350,7 +376,7 @@ export default function TeenPasswords() {
             type="email"
             placeholder="your@email.com"
             value={formData.email}
-            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+            onChange={handleEmailChange}
           />
         </div>
       </div>
@@ -362,7 +388,7 @@ export default function TeenPasswords() {
           type="password"
           placeholder="Your password"
           value={formData.password}
-          onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+          onChange={handlePasswordChange}
         />
       </div>
       
@@ -372,11 +398,11 @@ export default function TeenPasswords() {
           id="form-notes"
           placeholder="Security questions, special instructions, etc."
           value={formData.notes}
-          onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+          onChange={handleNotesChange}
         />
       </div>
     </div>
-  ), [formData]);
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -422,7 +448,7 @@ export default function TeenPasswords() {
                 <DialogHeader>
                   <DialogTitle>Add New Password</DialogTitle>
                 </DialogHeader>
-                <PasswordForm />
+                <PasswordFormComponent />
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                     Cancel
@@ -755,7 +781,7 @@ export default function TeenPasswords() {
             <DialogHeader>
               <DialogTitle>Edit Password</DialogTitle>
             </DialogHeader>
-            <PasswordForm />
+            <PasswordFormComponent />
             <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setEditingPassword(null)}>
                 Cancel
