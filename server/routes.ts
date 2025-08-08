@@ -85,6 +85,13 @@ export async function registerRoutes(app: Express) {
       // Set teen session
       req.session.teenId = teenProfile.id;
       req.session.userId = user.id;
+      
+      // Save session before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+        }
+      });
 
       res.json({
         success: true,
