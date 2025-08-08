@@ -93,17 +93,34 @@ export default function TeenPasswords() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch shared passwords for teen
-  const { data: sharedPasswords = [], isLoading: isLoadingShared } = useQuery({
-    queryKey: ["/api/teen/shared-passwords"],
-    retry: false,
-  });
-
-  // Fetch teen's personal passwords
-  const { data: personalPasswords = [], isLoading: isLoadingPersonal } = useQuery({
-    queryKey: ["/api/teen/passwords"],
-    retry: false,
-  });
+  // Stable input handlers to prevent cursor jumping
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, title: e.target.value }));
+  };
+  
+  const handleWebsiteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, website: e.target.value }));
+  };
+  
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, username: e.target.value }));
+  };
+  
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, email: e.target.value }));
+  };
+  
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, password: e.target.value }));
+  };
+  
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData(prev => ({ ...prev, notes: e.target.value }));
+  };
+  
+  const handleCategoryChange = (value: string) => {
+    setFormData(prev => ({ ...prev, category: value }));
+  };
 
   // Get teen profile data with avatar
   const { data: authData } = useQuery({
@@ -113,6 +130,23 @@ export default function TeenPasswords() {
   
   const teenProfile = (authData as any)?.teenProfile;
 
+  // Fetch shared passwords for teen
+  const { data: sharedPasswords = [], isLoading: isLoadingShared } = useQuery({
+    queryKey: ["/api/teen/shared-passwords"],
+    retry: false,
+  });
+
+  // Fetch teen's personal passwords
+  const { data: personalPasswords = [], isLoading: isLoadingPersonal, refetch: refetchPasswords } = useQuery({
+    queryKey: ["/api/teen/passwords"],
+    retry: false,
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always refetch to get latest data
+  });
+
+  // Debug log to see password data
+  console.log("Personal passwords:", personalPasswords);
+
   // Mutations for password management
   const createPasswordMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -120,9 +154,8 @@ export default function TeenPasswords() {
       return response.json();
     },
     onSuccess: () => {
-      // Invalidate both the password list and auth queries to refresh data
-      queryClient.invalidateQueries({ queryKey: ["/api/teen/passwords"] });
-      queryClient.refetchQueries({ queryKey: ["/api/teen/passwords"] });
+      // Force refresh the password list
+      refetchPasswords();
       setIsCreateDialogOpen(false);
       resetForm();
       toast({
@@ -288,15 +321,14 @@ export default function TeenPasswords() {
           <Label htmlFor="form-title">Title *</Label>
           <Input
             id="form-title"
-            key="title-input"
             placeholder="Netflix, Instagram, etc."
             value={formData.title}
-            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            onChange={handleTitleChange}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="form-category">Category</Label>
-          <Select key="category-select" value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+          <Select value={formData.category} onValueChange={handleCategoryChange}>
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
@@ -316,10 +348,9 @@ export default function TeenPasswords() {
         <Label htmlFor="form-website">Website</Label>
         <Input
           id="form-website"
-          key="website-input"
           placeholder="netflix.com"
           value={formData.website}
-          onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
+          onChange={handleWebsiteChange}
         />
       </div>
       
@@ -328,21 +359,19 @@ export default function TeenPasswords() {
           <Label htmlFor="form-username">Username</Label>
           <Input
             id="form-username"
-            key="username-input"
             placeholder="username"
             value={formData.username}
-            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+            onChange={handleUsernameChange}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="form-email">Email</Label>
           <Input
             id="form-email"
-            key="email-input"
             type="email"
             placeholder="your@email.com"
             value={formData.email}
-            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+            onChange={handleEmailChange}
           />
         </div>
       </div>
@@ -351,11 +380,10 @@ export default function TeenPasswords() {
         <Label htmlFor="form-password">Password *</Label>
         <Input
           id="form-password"
-          key="password-input"
           type="password"
           placeholder="Your password"
           value={formData.password}
-          onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+          onChange={handlePasswordChange}
         />
       </div>
       
@@ -363,10 +391,9 @@ export default function TeenPasswords() {
         <Label htmlFor="form-notes">Notes</Label>
         <Textarea
           id="form-notes"
-          key="notes-textarea"
           placeholder="Security questions, special instructions, etc."
           value={formData.notes}
-          onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+          onChange={handleNotesChange}
         />
       </div>
     </div>
