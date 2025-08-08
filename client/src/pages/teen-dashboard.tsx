@@ -91,6 +91,13 @@ export default function TeenDashboard() {
   const pendingTasks = (todayTasks as any[]).filter((task: any) => !task.isCompleted);
   const taskProgress = todayTasks.length > 0 ? (completedTasks.length / (todayTasks as any[]).length) * 100 : 0;
 
+  // Filter upcoming events to only show future events (not past ones)
+  const futureEvents = (upcomingEvents as any[]).filter((event: any) => {
+    const eventStartTime = new Date(event.startTime);
+    const nowMST = new Date(); // Current time in user's timezone
+    return eventStartTime > nowMST;
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Header */}
@@ -214,11 +221,11 @@ export default function TeenDashboard() {
                   <div className="animate-spin w-5 h-5 border-2 border-primary border-t-transparent rounded-full" />
                   <span className="ml-2 text-sm text-gray-600">Loading events...</span>
                 </div>
-              ) : upcomingEvents.length === 0 ? (
+              ) : futureEvents.length === 0 ? (
                 <p className="text-sm text-gray-500 text-center py-4">No upcoming events</p>
               ) : (
                 <div className="space-y-3">
-                  {upcomingEvents.map((event) => {
+                  {futureEvents.map((event) => {
                     // Display stored UTC time as local MST time
                     const startTime = new Date(event.startTime);
                     const dateStr = startTime.toLocaleDateString('en-US', { 
