@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,12 +93,21 @@ export default function TeenPasswords() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Clear all caches on mount to force fresh data
+  useEffect(() => {
+    queryClient.clear();
+    console.log("Cleared all React Query cache on teen passwords page load");
+  }, [queryClient]);
+
   // Stable form update to prevent re-renders
 
-  // Get teen profile data with avatar
+  // Get teen profile data with avatar - always fresh
   const { data: authData } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: true,
   });
   
   const teenProfile = (authData as any)?.teenProfile;
@@ -109,12 +118,14 @@ export default function TeenPasswords() {
     retry: false,
   });
 
-  // Fetch teen's personal passwords
+  // Fetch teen's personal passwords with aggressive cache clearing
   const { data: personalPasswords = [], isLoading: isLoadingPersonal, refetch: refetchPasswords } = useQuery({
     queryKey: ["/api/teen/passwords"],
     retry: false,
     refetchOnWindowFocus: true,
-    staleTime: 0, // Always refetch to get latest data
+    refetchOnMount: true,
+    staleTime: 0, // Never cache
+    gcTime: 0, // Immediate garbage collection of old data
   });
 
   // Debug log to see password data and teen auth
@@ -290,33 +301,9 @@ export default function TeenPasswords() {
     });
   };
 
-  // Stable handlers to prevent cursor jumping
-  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, title: e.target.value }));
-  }, []);
-  
-  const handleWebsiteChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, website: e.target.value }));
-  }, []);
-  
-  const handleUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, username: e.target.value }));
-  }, []);
-  
-  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, email: e.target.value }));
-  }, []);
-  
-  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, password: e.target.value }));
-  }, []);
-  
-  const handleNotesChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFormData(prev => ({ ...prev, notes: e.target.value }));
-  }, []);
-  
-  const handleCategoryChange = useCallback((value: string) => {
-    setFormData(prev => ({ ...prev, category: value }));
+  // Single stable update function to prevent cursor jumping
+  const updateFormField = useCallback((field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
   const PasswordFormComponent = () => (
@@ -328,12 +315,12 @@ export default function TeenPasswords() {
             id="form-title"
             placeholder="Netflix, Instagram, etc."
             value={formData.title}
-            onChange={handleTitleChange}
+            onChange={(e) => updateFormField('title', e.target.value)}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="form-category">Category</Label>
-          <Select value={formData.category} onValueChange={handleCategoryChange}>
+          <Select value={formData.category} onValueChange={(value) => updateFormField('category', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
@@ -355,7 +342,7 @@ export default function TeenPasswords() {
           id="form-website"
           placeholder="netflix.com"
           value={formData.website}
-          onChange={handleWebsiteChange}
+          onChange={(e) => updateFormField('website', e.target.value)}
         />
       </div>
       
@@ -366,7 +353,7 @@ export default function TeenPasswords() {
             id="form-username"
             placeholder="username"
             value={formData.username}
-            onChange={handleUsernameChange}
+            onChange={(e) => updateFormField('username', e.target.value)}
           />
         </div>
         <div className="space-y-2">
@@ -376,7 +363,7 @@ export default function TeenPasswords() {
             type="email"
             placeholder="your@email.com"
             value={formData.email}
-            onChange={handleEmailChange}
+            onChange={(e) => updateFormField('email', e.target.value)}
           />
         </div>
       </div>
@@ -388,7 +375,7 @@ export default function TeenPasswords() {
           type="password"
           placeholder="Your password"
           value={formData.password}
-          onChange={handlePasswordChange}
+          onChange={(e) => updateFormField('password', e.target.value)}
         />
       </div>
       
@@ -398,7 +385,7 @@ export default function TeenPasswords() {
           id="form-notes"
           placeholder="Security questions, special instructions, etc."
           value={formData.notes}
-          onChange={handleNotesChange}
+          onChange={(e) => updateFormField('notes', e.target.value)}
         />
       </div>
     </div>
