@@ -120,7 +120,9 @@ export default function TeenPasswords() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate both the password list and auth queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["/api/teen/passwords"] });
+      queryClient.refetchQueries({ queryKey: ["/api/teen/passwords"] });
       setIsCreateDialogOpen(false);
       resetForm();
       toast({
@@ -279,10 +281,6 @@ export default function TeenPasswords() {
     });
   };
 
-  const handleFormChange = (field: keyof typeof formData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
   const PasswordForm = () => (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -290,14 +288,15 @@ export default function TeenPasswords() {
           <Label htmlFor="form-title">Title *</Label>
           <Input
             id="form-title"
+            key="title-input"
             placeholder="Netflix, Instagram, etc."
             value={formData.title}
-            onChange={(e) => handleFormChange('title', e.target.value)}
+            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="form-category">Category</Label>
-          <Select value={formData.category} onValueChange={(value) => handleFormChange('category', value)}>
+          <Select key="category-select" value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
@@ -317,9 +316,10 @@ export default function TeenPasswords() {
         <Label htmlFor="form-website">Website</Label>
         <Input
           id="form-website"
+          key="website-input"
           placeholder="netflix.com"
           value={formData.website}
-          onChange={(e) => handleFormChange('website', e.target.value)}
+          onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
         />
       </div>
       
@@ -328,19 +328,21 @@ export default function TeenPasswords() {
           <Label htmlFor="form-username">Username</Label>
           <Input
             id="form-username"
+            key="username-input"
             placeholder="username"
             value={formData.username}
-            onChange={(e) => handleFormChange('username', e.target.value)}
+            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="form-email">Email</Label>
           <Input
             id="form-email"
+            key="email-input"
             type="email"
             placeholder="your@email.com"
             value={formData.email}
-            onChange={(e) => handleFormChange('email', e.target.value)}
+            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
           />
         </div>
       </div>
@@ -349,10 +351,11 @@ export default function TeenPasswords() {
         <Label htmlFor="form-password">Password *</Label>
         <Input
           id="form-password"
+          key="password-input"
           type="password"
           placeholder="Your password"
           value={formData.password}
-          onChange={(e) => handleFormChange('password', e.target.value)}
+          onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
         />
       </div>
       
@@ -360,9 +363,10 @@ export default function TeenPasswords() {
         <Label htmlFor="form-notes">Notes</Label>
         <Textarea
           id="form-notes"
+          key="notes-textarea"
           placeholder="Security questions, special instructions, etc."
           value={formData.notes}
-          onChange={(e) => handleFormChange('notes', e.target.value)}
+          onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
         />
       </div>
     </div>
