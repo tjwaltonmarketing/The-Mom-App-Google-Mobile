@@ -135,10 +135,17 @@ export default function TeenCalendar() {
     mutationFn: async (eventData: any) => {
       return await apiRequest("POST", "/api/teen/events", eventData);
     },
-    onSuccess: () => {
-      // Force refetch instead of just invalidating
-      queryClient.refetchQueries({ queryKey: ["/api/teen/events"] });
+    onSuccess: async () => {
+      // Force complete cache refresh - remove and refetch
+      queryClient.removeQueries({ queryKey: ["/api/teen/events"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/events"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events"] }); // Also invalidate main events for dashboard
+      
+      // Manually refetch after a short delay to ensure data is fresh
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["/api/teen/events"] });
+      }, 100);
+      
       setIsAddEventOpen(false);
       setNewEvent({ title: "", date: "", time: "", endTime: "", location: "", description: "", type: "personal" });
       toast({
