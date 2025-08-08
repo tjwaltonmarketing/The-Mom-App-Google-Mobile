@@ -77,7 +77,7 @@ const categoryColors = {
 
 export default function TeenPasswords() {
   const [, setLocation] = useLocation();
-  const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>({});
+  const [showPasswords, setShowPasswords] = useState<Record<string | number, boolean>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingPassword, setEditingPassword] = useState<PersonalPassword | null>(null);
@@ -106,14 +106,19 @@ export default function TeenPasswords() {
   });
 
   // Get teen profile data with avatar
-  const { data: teenProfile } = useQuery({
+  const { data: authData } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     retry: false,
   });
+  
+  const teenProfile = (authData as any)?.teenProfile;
 
   // Mutations for password management
   const createPasswordMutation = useMutation({
-    mutationFn: (data: typeof formData) => apiRequest("/api/teen/passwords", "POST", data),
+    mutationFn: async (data: typeof formData) => {
+      const response = await apiRequest("POST", "/api/teen/passwords", data);
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/teen/passwords"] });
       setIsCreateDialogOpen(false);
@@ -133,8 +138,10 @@ export default function TeenPasswords() {
   });
 
   const updatePasswordMutation = useMutation({
-    mutationFn: ({ id, ...data }: { id: number } & typeof formData) => 
-      apiRequest(`/api/teen/passwords/${id}`, "PUT", data),
+    mutationFn: async ({ id, ...data }: { id: number } & typeof formData) => {
+      const response = await apiRequest("PUT", `/api/teen/passwords/${id}`, data);
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/teen/passwords"] });
       setEditingPassword(null);
@@ -154,7 +161,10 @@ export default function TeenPasswords() {
   });
 
   const deletePasswordMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/teen/passwords/${id}`, "DELETE"),
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/teen/passwords/${id}`);
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/teen/passwords"] });
       toast({
@@ -226,7 +236,7 @@ export default function TeenPasswords() {
     }
   };
 
-  const togglePasswordVisibility = (id: number) => {
+  const togglePasswordVisibility = (id: number | string) => {
     setShowPasswords(prev => ({
       ...prev,
       [id]: !prev[id]
@@ -250,12 +260,12 @@ export default function TeenPasswords() {
     }
   };
 
-  const filteredSharedPasswords = sharedPasswords.filter((password: SharedPassword) =>
+  const filteredSharedPasswords = (sharedPasswords as SharedPassword[]).filter((password: SharedPassword) =>
     password.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
     password.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredPersonalPasswords = personalPasswords.filter((password: PersonalPassword) =>
+  const filteredPersonalPasswords = (personalPasswords as PersonalPassword[]).filter((password: PersonalPassword) =>
     password.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     password.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -269,21 +279,25 @@ export default function TeenPasswords() {
     });
   };
 
+  const handleFormChange = (field: keyof typeof formData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const PasswordForm = () => (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="title">Title *</Label>
+          <Label htmlFor="form-title">Title *</Label>
           <Input
-            id="title"
+            id="form-title"
             placeholder="Netflix, Instagram, etc."
             value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            onChange={(e) => handleFormChange('title', e.target.value)}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="category">Category</Label>
-          <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+          <Label htmlFor="form-category">Category</Label>
+          <Select value={formData.category} onValueChange={(value) => handleFormChange('category', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
@@ -300,55 +314,55 @@ export default function TeenPasswords() {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="website">Website</Label>
+        <Label htmlFor="form-website">Website</Label>
         <Input
-          id="website"
+          id="form-website"
           placeholder="netflix.com"
           value={formData.website}
-          onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+          onChange={(e) => handleFormChange('website', e.target.value)}
         />
       </div>
       
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
+          <Label htmlFor="form-username">Username</Label>
           <Input
-            id="username"
+            id="form-username"
             placeholder="username"
             value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            onChange={(e) => handleFormChange('username', e.target.value)}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="form-email">Email</Label>
           <Input
-            id="email"
+            id="form-email"
             type="email"
             placeholder="your@email.com"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) => handleFormChange('email', e.target.value)}
           />
         </div>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="password">Password *</Label>
+        <Label htmlFor="form-password">Password *</Label>
         <Input
-          id="password"
+          id="form-password"
           type="password"
           placeholder="Your password"
           value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          onChange={(e) => handleFormChange('password', e.target.value)}
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="notes">Notes</Label>
+        <Label htmlFor="form-notes">Notes</Label>
         <Textarea
-          id="notes"
+          id="form-notes"
           placeholder="Security questions, special instructions, etc."
           value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+          onChange={(e) => handleFormChange('notes', e.target.value)}
         />
       </div>
     </div>
@@ -378,11 +392,11 @@ export default function TeenPasswords() {
             <TabsList className="grid w-auto grid-cols-2">
               <TabsTrigger value="personal" className="flex items-center gap-2">
                 <Lock className="h-4 w-4" />
-                My Passwords ({personalPasswords.length})
+                My Passwords ({(personalPasswords as PersonalPassword[]).length})
               </TabsTrigger>
               <TabsTrigger value="shared" className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
-                Shared ({sharedPasswords.length})
+                Shared ({(sharedPasswords as SharedPassword[]).length})
               </TabsTrigger>
             </TabsList>
             
@@ -391,7 +405,7 @@ export default function TeenPasswords() {
               <DialogTrigger asChild>
                 <Button onClick={() => { resetForm(); setEditingPassword(null); }}>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Password
+                  Add
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
@@ -455,7 +469,7 @@ export default function TeenPasswords() {
                   {!searchTerm && (
                     <Button onClick={() => { resetForm(); setIsCreateDialogOpen(true); }}>
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Your First Password
+                      Add Password
                     </Button>
                   )}
                 </CardContent>
