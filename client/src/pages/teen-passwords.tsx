@@ -93,21 +93,19 @@ export default function TeenPasswords() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Clear all caches on mount to force fresh data
+  // Invalidate only password-related caches on mount to force fresh data
   useEffect(() => {
-    queryClient.clear();
-    console.log("Cleared all React Query cache on teen passwords page load");
+    queryClient.invalidateQueries({ queryKey: ["/api/teen/passwords"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/teen/shared-passwords"] });
+    console.log("Invalidated password caches on teen passwords page load");
   }, [queryClient]);
 
   // Stable form update to prevent re-renders
 
-  // Get teen profile data with avatar - always fresh
+  // Get teen profile data
   const { data: authData } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     retry: false,
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: true,
   });
   
   const teenProfile = (authData as any)?.teenProfile;
@@ -118,14 +116,10 @@ export default function TeenPasswords() {
     retry: false,
   });
 
-  // Fetch teen's personal passwords with aggressive cache clearing
+  // Fetch teen's personal passwords
   const { data: personalPasswords = [], isLoading: isLoadingPersonal, refetch: refetchPasswords } = useQuery({
     queryKey: ["/api/teen/passwords"],
     retry: false,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    staleTime: 0, // Never cache
-    gcTime: 0, // Immediate garbage collection of old data
   });
 
   // Debug log to see password data and teen auth
