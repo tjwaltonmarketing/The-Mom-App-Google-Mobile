@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -181,7 +181,7 @@ export default function TeenCalendar() {
   };
 
   // Transform database events for display and sort chronologically
-  const allEvents: DisplayEvent[] = events
+  const allEvents: DisplayEvent[] = useMemo(() => events
     .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()) // Sort by start time
     .map((event: Event) => {
     const startTimeUTC = new Date(event.startTime);
@@ -258,7 +258,7 @@ export default function TeenCalendar() {
       source: isOwnEvent ? "teen" : "family",
       isOwnEvent
     };
-  });
+  }), [events]);
 
   console.log(`Processed allEvents: ${allEvents.length} total events for calendar display`);
 
