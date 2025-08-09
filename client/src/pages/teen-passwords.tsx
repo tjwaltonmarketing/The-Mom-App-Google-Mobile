@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, memo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -300,7 +300,11 @@ export default function TeenPasswords() {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const PasswordFormComponent = () => (
+  // Memoized form component to prevent unnecessary re-renders
+  const PasswordFormComponent = memo(({ formData, updateFormField }: { 
+    formData: typeof formData, 
+    updateFormField: (field: keyof typeof formData, value: string) => void 
+  }) => (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -383,7 +387,7 @@ export default function TeenPasswords() {
         />
       </div>
     </div>
-  );
+  ));
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -429,7 +433,7 @@ export default function TeenPasswords() {
                 <DialogHeader>
                   <DialogTitle>Add New Password</DialogTitle>
                 </DialogHeader>
-                <PasswordFormComponent />
+                <PasswordFormComponent formData={formData} updateFormField={updateFormField} />
                 <div className="flex justify-end gap-2 pt-4 border-t">
                   <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                     Cancel
@@ -762,7 +766,7 @@ export default function TeenPasswords() {
             <DialogHeader>
               <DialogTitle>Edit Password</DialogTitle>
             </DialogHeader>
-            <PasswordFormComponent />
+            <PasswordFormComponent formData={formData} updateFormField={updateFormField} />
             <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setEditingPassword(null)}>
                 Cancel
