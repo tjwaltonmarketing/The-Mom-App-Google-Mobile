@@ -261,6 +261,7 @@ export default function TeenCalendar() {
   }), [events]);
 
   console.log(`Processed allEvents: ${allEvents.length} total events for calendar display`);
+  console.log("Today's events specifically:", allEvents.filter(e => e.date === "Today"));
 
   const getEventsByDate = (dateLabel: string) => {
     return allEvents.filter(event => event.date === dateLabel);
@@ -601,7 +602,7 @@ export default function TeenCalendar() {
           </div>
           
           {/* Calendar grid */}
-          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+          <div key={`calendar-${allEvents.length}-${events.length}`} className="grid grid-cols-7 gap-1 sm:gap-2">
             {calendarDays.map((date, index) => {
               if (!date) {
                 return <div key={index} className="aspect-square p-1"></div>;
@@ -632,7 +633,7 @@ export default function TeenCalendar() {
                     
                     return eventDateMST.getTime() === calendarDateMST.getTime();
                   });
-                  console.log(`Calendar grid day ${date.getDate()}: found ${matchingEvents.length} events, allEvents count: ${allEvents.length}`);
+                  console.log(`Calendar grid day ${date.getDate()}: found ${matchingEvents.length} events, allEvents count: ${allEvents.length}, time: ${new Date().toLocaleTimeString()}`);
                 }
                 
                 return matches;
