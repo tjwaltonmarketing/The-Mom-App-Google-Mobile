@@ -141,13 +141,21 @@ export default function TeenCalendar() {
     onSuccess: async (newEvent) => {
       console.log("Event created successfully:", newEvent);
       
-      // Manually refetch to ensure fresh data
-      await refetch();
+      // Add the new event optimistically first
+      queryClient.setQueryData(["/api/teen/events"], (oldEvents: Event[] | undefined) => {
+        if (!oldEvents) return [newEvent];
+        // Check if event already exists to avoid duplicates
+        const eventExists = oldEvents.some(e => e.id === newEvent.id);
+        if (eventExists) return oldEvents;
+        return [...oldEvents, newEvent].sort((a, b) => 
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+        );
+      });
       
       // Also invalidate dashboard events
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
       
-      console.log("Events refetched after creation");
+      console.log("Event added optimistically to cache");
       
       setIsAddEventOpen(false);
       setNewEvent({ title: "", date: "", time: "", endTime: "", location: "", description: "", type: "personal" });
@@ -611,9 +619,19 @@ export default function TeenCalendar() {
                 
                 const matches = eventDateMST.getTime() === calendarDateMST.getTime();
                 
-                // Debug for today's date
+                // Debug for today's date (remove the premature dayEvents reference)
                 if (date.getDate() === 9 && date.getMonth() === 7) { // August 9th
-                  console.log(`Calendar grid day ${date.getDate()}: found ${dayEvents.length} events, allEvents count: ${allEvents.length}`);
+                  const matchingEvents = allEvents.filter(event => {
+                    const eventDate = new Date(event.fullDate);
+                    const eventDateMST = new Date(eventDate.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+                    const calendarDateMST = new Date(date.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+                    
+                    eventDateMST.setHours(0, 0, 0, 0);
+                    calendarDateMST.setHours(0, 0, 0, 0);
+                    
+                    return eventDateMST.getTime() === calendarDateMST.getTime();
+                  });
+                  console.log(`Calendar grid day ${date.getDate()}: found ${matchingEvents.length} events, allEvents count: ${allEvents.length}`);
                 }
                 
                 return matches;
