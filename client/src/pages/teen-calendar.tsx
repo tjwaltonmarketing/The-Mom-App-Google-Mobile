@@ -168,6 +168,8 @@ export default function TeenCalendar() {
     return utcDate;
   };
 
+  console.log("Raw events from API:", events);
+  
   // Transform database events for display
   const allEvents: DisplayEvent[] = events.map((event: Event) => {
     const startTimeUTC = new Date(event.startTime);
@@ -247,6 +249,8 @@ export default function TeenCalendar() {
       isOwnEvent
     };
   });
+  
+  console.log("Processed allEvents for calendar:", allEvents);
 
   const getEventsByDate = (dateLabel: string) => {
     return allEvents.filter(event => event.date === dateLabel);
@@ -855,7 +859,12 @@ export default function TeenCalendar() {
         ) : (
           <div className="space-y-6">
             {viewMode === "list" && renderListView()}
-            {viewMode === "calendar" && renderCalendarView()}
+            {viewMode === "calendar" && (
+              <>
+                <p className="text-sm text-gray-500 mb-2">Debug: Found {allEvents.length} events total</p>
+                {renderCalendarView()}
+              </>
+            )}
           </div>
         )}
       </div>
