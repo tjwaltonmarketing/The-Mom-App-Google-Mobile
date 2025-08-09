@@ -77,16 +77,14 @@ export default function TeenCalendar() {
   const teenProfile = isAuthenticated ? (authData as any).teenProfile : null;
 
   // Fetch real events from database using teen events endpoint
-  const { data: events = [], isLoading, dataUpdatedAt } = useQuery<Event[]>({
+  const { data: events = [], isLoading, dataUpdatedAt, refetch } = useQuery<Event[]>({
     queryKey: ["/api/teen/events"],
     retry: false,
     enabled: !!teenProfile,
+    staleTime: 0, // Always refetch to ensure fresh data
   });
   
-  // Only log when data actually changes to reduce noise
-  if (events.length > 0) {
-    console.log(`Teen events query: ${events.length} events, last updated: ${new Date(dataUpdatedAt)}`);
-  }
+  console.log(`Teen events query: ${events.length} events, isLoading: ${isLoading}`);
 
   // Delete event mutation
   const deleteEventMutation = useMutation({
@@ -143,18 +141,13 @@ export default function TeenCalendar() {
     onSuccess: async (newEvent) => {
       console.log("Event created successfully:", newEvent);
       
-      // Optimistically add the new event to the cache
-      queryClient.setQueryData(["/api/teen/events"], (oldEvents: Event[] | undefined) => {
-        if (!oldEvents) return [newEvent];
-        return [...oldEvents, newEvent].sort((a, b) => 
-          new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-        );
-      });
+      // Manually refetch to ensure fresh data
+      await refetch();
       
       // Also invalidate dashboard events
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
       
-      console.log("Event added to cache optimistically");
+      console.log("Events refetched after creation");
       
       setIsAddEventOpen(false);
       setNewEvent({ title: "", date: "", time: "", endTime: "", location: "", description: "", type: "personal" });
@@ -257,6 +250,8 @@ export default function TeenCalendar() {
       isOwnEvent
     };
   });
+
+  console.log(`Processed allEvents: ${allEvents.length} total events for calendar display`);
 
   const getEventsByDate = (dateLabel: string) => {
     return allEvents.filter(event => event.date === dateLabel);
@@ -614,7 +609,14 @@ export default function TeenCalendar() {
                 eventDateMST.setHours(0, 0, 0, 0);
                 calendarDateMST.setHours(0, 0, 0, 0);
                 
-                return eventDateMST.getTime() === calendarDateMST.getTime();
+                const matches = eventDateMST.getTime() === calendarDateMST.getTime();
+                
+                // Debug for today's date
+                if (date.getDate() === 9 && date.getMonth() === 7) { // August 9th
+                  console.log(`Calendar grid day ${date.getDate()}: found ${dayEvents.length} events, allEvents count: ${allEvents.length}`);
+                }
+                
+                return matches;
               });
               
               return (
