@@ -228,6 +228,8 @@ export default function TeenCalendar() {
       color = "#f59e0b"; // Yellow for busy
     }
 
+    console.log(`Processing event: ${event.title}, startTime: ${event.startTime}, converted: ${startTime}, fullDate will be: ${startTime}`);
+    
     return {
       id: event.id,
       title: event.title,
@@ -294,10 +296,17 @@ export default function TeenCalendar() {
   // Handle day click
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
-    // Get events for this day
+    // Get events for this day with proper timezone handling
     const dayEvents = allEvents.filter(event => {
       const eventDate = new Date(event.fullDate);
-      return eventDate.toDateString() === date.toDateString();
+      const eventDateMST = new Date(eventDate.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+      const clickedDateMST = new Date(date.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+      
+      // Compare just the date parts (ignore time)
+      eventDateMST.setHours(0, 0, 0, 0);
+      clickedDateMST.setHours(0, 0, 0, 0);
+      
+      return eventDateMST.getTime() === clickedDateMST.getTime();
     });
     setSelectedDayEvents(dayEvents);
     
@@ -586,8 +595,21 @@ export default function TeenCalendar() {
               
               const isToday = date.toDateString() === today.toDateString();
               const dayEvents = allEvents.filter(event => {
+                // Convert both event date and calendar date to MST timezone for accurate comparison
                 const eventDate = new Date(event.fullDate);
-                return eventDate.toDateString() === date.toDateString();
+                const eventDateMST = new Date(eventDate.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+                const calendarDateMST = new Date(date.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+                
+                // Compare just the date parts (ignore time)
+                eventDateMST.setHours(0, 0, 0, 0);
+                calendarDateMST.setHours(0, 0, 0, 0);
+                
+                const matches = eventDateMST.getTime() === calendarDateMST.getTime();
+                if (event.title && date.getDate() === 9) { // Debug for today (Aug 9)
+                  console.log(`Calendar grid: Comparing event "${event.title}" (${eventDateMST}) with calendar date ${date.getDate()} (${calendarDateMST}), matches: ${matches}`);
+                }
+                
+                return matches;
               });
               
               return (
