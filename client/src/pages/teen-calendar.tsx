@@ -228,16 +228,13 @@ export default function TeenCalendar() {
       color = "#f59e0b"; // Yellow for busy
     }
 
-    // Convert UTC time to local date for proper calendar grid matching
-    const localEventDate = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate());
-    
     return {
       id: event.id,
       title: event.title,
       description: event.description,
       time: timeDisplay,
       date: dateLabel,
-      fullDate: localEventDate, // Use local date for calendar matching
+      fullDate: startTime, // Use original converted startTime
       fullDateStr: fullDateStr, // Add formatted date string
       type: "personal", // Could be determined from event categories
       assignedTo: "Family Member", // Would come from relation

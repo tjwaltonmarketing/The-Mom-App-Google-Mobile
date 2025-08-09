@@ -421,32 +421,7 @@ export default function TeenPasswords() {
               </TabsTrigger>
             </TabsList>
             
-            {/* Add Password Button */}
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={() => { resetForm(); setEditingPassword(null); }}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px]">
-                <DialogHeader>
-                  <DialogTitle>Add New Password</DialogTitle>
-                </DialogHeader>
-                <PasswordFormComponent formData={formData} updateFormField={updateFormField} />
-                <div className="flex justify-end gap-2 pt-4 border-t">
-                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleCreatePassword}
-                    disabled={createPasswordMutation.isPending}
-                  >
-                    {createPasswordMutation.isPending ? "Creating..." : "Create Password"}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            {/* Add Password Button - Hidden for teens */}
           </div>
 
           {/* Search */}
@@ -484,15 +459,10 @@ export default function TeenPasswords() {
                   <p className="text-gray-500 max-w-sm mx-auto mb-4">
                     {searchTerm 
                       ? "Try searching for a different title or category"
-                      : "Create your first password to get started with secure password management."
+                      : "Your parents can add personal passwords for you from the main dashboard."
                     }
                   </p>
-                  {!searchTerm && (
-                    <Button onClick={() => { resetForm(); setIsCreateDialogOpen(true); }}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Password
-                    </Button>
-                  )}
+                  {/* Add Password button removed for teens */}
                 </CardContent>
               </Card>
             ) : (
@@ -510,21 +480,7 @@ export default function TeenPasswords() {
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">Personal</Badge>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleEditPassword(password)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleDeletePassword(password.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {/* Edit and delete buttons removed for teens */}
                         </div>
                       </div>
                     </CardHeader>
@@ -760,26 +716,7 @@ export default function TeenPasswords() {
           </TabsContent>
         </Tabs>
 
-        {/* Edit Dialog */}
-        <Dialog open={editingPassword !== null} onOpenChange={(open) => !open && setEditingPassword(null)}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Edit Password</DialogTitle>
-            </DialogHeader>
-            <PasswordFormComponent formData={formData} updateFormField={updateFormField} />
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setEditingPassword(null)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleUpdatePassword}
-                disabled={updatePasswordMutation.isPending}
-              >
-                {updatePasswordMutation.isPending ? "Updating..." : "Update Password"}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        {/* Edit Dialog - Removed for teens */}
       </div>
     </div>
   );
