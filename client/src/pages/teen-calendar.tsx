@@ -77,11 +77,13 @@ export default function TeenCalendar() {
   const teenProfile = isAuthenticated ? (authData as any).teenProfile : null;
 
   // Fetch real events from database using teen events endpoint
-  const { data: events = [], isLoading } = useQuery<Event[]>({
+  const { data: events = [], isLoading, dataUpdatedAt } = useQuery<Event[]>({
     queryKey: ["/api/teen/events"],
     retry: false,
     enabled: !!teenProfile,
   });
+  
+  console.log(`Teen events query: ${events.length} events, last updated: ${new Date(dataUpdatedAt)}`);
 
   // Delete event mutation
   const deleteEventMutation = useMutation({
@@ -134,10 +136,15 @@ export default function TeenCalendar() {
     mutationFn: async (eventData: any) => {
       return await apiRequest("POST", "/api/teen/events", eventData);
     },
-    onSuccess: async () => {
+    onSuccess: async (newEvent) => {
+      console.log("Event created successfully:", newEvent);
+      
       // Just invalidate queries to trigger background refetch without clearing cache
       queryClient.invalidateQueries({ queryKey: ["/api/teen/events"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events"] }); // Also invalidate main events for dashboard
+      
+      // Force an immediate refetch to ensure new data is loaded
+      await queryClient.refetchQueries({ queryKey: ["/api/teen/events"] });
       
       setIsAddEventOpen(false);
       setNewEvent({ title: "", date: "", time: "", endTime: "", location: "", description: "", type: "personal" });
