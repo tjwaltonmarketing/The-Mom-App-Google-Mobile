@@ -84,6 +84,7 @@ export default function TeenCalendar() {
   });
   
   console.log(`Teen events query: ${events.length} events, last updated: ${new Date(dataUpdatedAt)}`);
+  console.log("Raw event titles:", events.map(e => e.title));
 
   // Delete event mutation
   const deleteEventMutation = useMutation({
@@ -143,8 +144,11 @@ export default function TeenCalendar() {
       queryClient.invalidateQueries({ queryKey: ["/api/teen/events"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events"] }); // Also invalidate main events for dashboard
       
-      // Force an immediate refetch to ensure new data is loaded
+      // Force an immediate refetch with fresh data
+      queryClient.resetQueries({ queryKey: ["/api/teen/events"] });
       await queryClient.refetchQueries({ queryKey: ["/api/teen/events"] });
+      
+      console.log("Post-creation query refresh complete");
       
       setIsAddEventOpen(false);
       setNewEvent({ title: "", date: "", time: "", endTime: "", location: "", description: "", type: "personal" });
@@ -168,8 +172,10 @@ export default function TeenCalendar() {
     return utcDate;
   };
 
-  // Transform database events for display
-  const allEvents: DisplayEvent[] = events.map((event: Event) => {
+  // Transform database events for display and sort chronologically
+  const allEvents: DisplayEvent[] = events
+    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()) // Sort by start time
+    .map((event: Event) => {
     const startTimeUTC = new Date(event.startTime);
     const endTimeUTC = event.endTime ? new Date(event.endTime) : null;
     
