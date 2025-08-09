@@ -423,23 +423,28 @@ export async function registerRoutes(app: Express) {
   // Teen events endpoint  
   app.get("/api/teen/events", async (req, res) => {
     try {
+      console.log("Teen events API called, session teenId:", req.session.teenId);
+      
       if (!req.session.teenId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
       // Get the teen's family member record to find familyId
       const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      console.log("Teen profile:", teenProfile ? `Found ID ${teenProfile.id}` : "Not found");
       if (!teenProfile) {
         return res.status(404).json({ error: "Teen profile not found" });
       }
 
       const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      console.log("Family member:", familyMember ? `Found ID ${familyMember.id}, familyId ${familyMember.familyId}` : "Not found");
       if (!familyMember) {
         return res.status(404).json({ error: "Family member not found" });
       }
 
       // Get events for the family
       const events = await storage.getEventsByFamily(familyMember.familyId);
+      console.log(`Raw events from DB: ${events.length} events for family ${familyMember.familyId}`);
       
       // Show all family events to teens (they should see family schedule)
       // Only filter out truly private events if needed
@@ -447,6 +452,7 @@ export async function registerRoutes(app: Express) {
         event.visibilityType !== 'private' // Show shared and busy events
       );
       
+      console.log(`Filtered events: ${relevantEvents.length} non-private events`);
       res.json(relevantEvents);
     } catch (error) {
       console.error("Teen events fetch error:", error);

@@ -77,14 +77,15 @@ export default function TeenCalendar() {
   const teenProfile = isAuthenticated ? (authData as any).teenProfile : null;
 
   // Fetch real events from database using teen events endpoint
-  const { data: events = [], isLoading, dataUpdatedAt, refetch } = useQuery<Event[]>({
+  const { data: events = [], isLoading, dataUpdatedAt, refetch, error } = useQuery<Event[]>({
     queryKey: ["/api/teen/events"],
     retry: false,
     enabled: !!teenProfile,
     staleTime: 0, // Always refetch to ensure fresh data
   });
   
-  console.log(`Teen events query: ${events.length} events, isLoading: ${isLoading}`);
+  console.log(`Teen events query: ${events.length} events, isLoading: ${isLoading}, error:`, error);
+  console.log("Teen profile enabled:", !!teenProfile, "teenProfile:", teenProfile);
 
   // Delete event mutation
   const deleteEventMutation = useMutation({
