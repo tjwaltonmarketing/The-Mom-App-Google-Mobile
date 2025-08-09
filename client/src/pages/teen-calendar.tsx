@@ -169,6 +169,7 @@ export default function TeenCalendar() {
   };
 
   // Transform database events for display
+  console.log("Teen Calendar: Processing events", events);
   const allEvents: DisplayEvent[] = events.map((event: Event) => {
     const startTimeUTC = new Date(event.startTime);
     const endTimeUTC = event.endTime ? new Date(event.endTime) : null;
@@ -228,13 +229,18 @@ export default function TeenCalendar() {
       color = "#f59e0b"; // Yellow for busy
     }
 
+    // Convert UTC time to local date for proper calendar grid matching
+    const localEventDate = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate());
+    
+    console.log(`Event ${event.title}: startTime=${event.startTime}, localEventDate=${localEventDate.toDateString()}, dateLabel=${dateLabel}`);
+    
     return {
       id: event.id,
       title: event.title,
       description: event.description,
       time: timeDisplay,
       date: dateLabel,
-      fullDate: startTime,
+      fullDate: localEventDate, // Use local date for calendar matching
       fullDateStr: fullDateStr, // Add formatted date string
       type: "personal", // Could be determined from event categories
       assignedTo: "Family Member", // Would come from relation
@@ -297,9 +303,12 @@ export default function TeenCalendar() {
     // Get events for this day
     const dayEvents = allEvents.filter(event => {
       const eventDate = new Date(event.fullDate);
-      return eventDate.toDateString() === date.toDateString();
+      const matches = eventDate.toDateString() === date.toDateString();
+      console.log(`Day click: checking ${event.title} for ${date.toDateString()}: eventDate=${eventDate.toDateString()}, matches=${matches}`);
+      return matches;
     });
     
+    console.log(`Day click for ${date.toDateString()}: found ${dayEvents.length} events`, dayEvents);
     setSelectedDayEvents(dayEvents);
     
     if (dayEvents.length > 0) {
@@ -588,7 +597,12 @@ export default function TeenCalendar() {
               const isToday = date.toDateString() === today.toDateString();
               const dayEvents = allEvents.filter(event => {
                 const eventDate = new Date(event.fullDate);
-                return eventDate.toDateString() === date.toDateString();
+                const matches = eventDate.toDateString() === date.toDateString();
+                // Debug logging for the selected date
+                if (date.getDate() === 8 || date.getDate() === 9) {
+                  console.log(`Calendar grid: checking ${event.title} on ${date.toDateString()}: eventDate=${eventDate.toDateString()}, matches=${matches}`);
+                }
+                return matches;
               });
               
               return (
