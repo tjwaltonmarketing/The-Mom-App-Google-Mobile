@@ -106,9 +106,8 @@ export default function TeenCalendar() {
       return { previousEvents };
     },
     onSuccess: () => {
-      // Force complete cache refresh
-      queryClient.removeQueries({ queryKey: ["/api/teen/events"] });
-      queryClient.refetchQueries({ queryKey: ["/api/teen/events"] });
+      // Invalidate queries to trigger background refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/events"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events"] }); // Also invalidate main events for dashboard
       toast({
         title: "Event Deleted",
@@ -136,15 +135,9 @@ export default function TeenCalendar() {
       return await apiRequest("POST", "/api/teen/events", eventData);
     },
     onSuccess: async () => {
-      // Force complete cache refresh - remove and refetch
-      queryClient.removeQueries({ queryKey: ["/api/teen/events"] });
+      // Just invalidate queries to trigger background refetch without clearing cache
       queryClient.invalidateQueries({ queryKey: ["/api/teen/events"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events"] }); // Also invalidate main events for dashboard
-      
-      // Manually refetch after a short delay to ensure data is fresh
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ["/api/teen/events"] });
-      }, 100);
       
       setIsAddEventOpen(false);
       setNewEvent({ title: "", date: "", time: "", endTime: "", location: "", description: "", type: "personal" });
