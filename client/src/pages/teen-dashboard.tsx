@@ -95,12 +95,18 @@ export default function TeenDashboard() {
   const pendingTasks = (todayTasks as any[]).filter((task: any) => !task.isCompleted);
   const taskProgress = todayTasks.length > 0 ? (completedTasks.length / (todayTasks as any[]).length) * 100 : 0;
 
-  // Filter upcoming events to only show future events (not past ones)
+  // Filter upcoming events to show events from today and future
   const futureEvents = (upcomingEvents as any[]).filter((event: any) => {
     const eventStartTime = new Date(event.startTime);
-    const nowMST = new Date(); // Current time in user's timezone
-    return eventStartTime > nowMST;
+    const now = new Date();
+    // Show events from today onwards (not just future hours)
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const isVisible = eventStartTime >= today;
+    console.log(`Event "${event.title}" at ${event.startTime}: visible=${isVisible}, eventTime=${eventStartTime}, today=${today}`);
+    return isVisible;
   });
+  
+  console.log(`Dashboard: Filtered ${futureEvents.length} future events from ${(upcomingEvents as any[]).length} total events`);
 
   return (
     <div className="min-h-screen bg-gray-50">
