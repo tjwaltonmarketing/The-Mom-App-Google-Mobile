@@ -9,7 +9,9 @@ The Mom App is a comprehensive family coordination platform designed to reduce m
 - **Fixed Password Form Cursor Issue**: Resolved cursor jumping problem in password text inputs by memoizing form component and optimizing re-render behavior
 - **Enhanced Calendar Event Filtering**: Events now display correctly in both dashboard list view and calendar grid view with proper timezone awareness
 - **Cleaned Up Debugging Code**: Removed temporary console.log statements from calendar components
-- **Removed Teen Passwords Tab**: Temporarily removed the "My Passwords" tab from teen navigation as requested by user
+- **Fixed Teen Password Management**: Restored passwords tab in teen navigation but removed "My Passwords" personal management tab, keeping only shared family passwords accessible to teens
+- **Enhanced Teen Passwords Page**: Rebuilt teen passwords page to show only family shared passwords with proper search and copy functionality
+- **Confirmed Calendar Cache Invalidation**: Verified teen calendar has comprehensive cache invalidation for event creation including removal, invalidation, and refetch of both teen and main event queries
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

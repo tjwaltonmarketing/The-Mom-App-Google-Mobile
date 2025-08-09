@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/logo";
 import { 
   Calendar,
+  Lock,
   Home,
   Settings,
   BookOpen,
@@ -71,6 +72,11 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
       path: "/teen-calendar", 
       label: "Calendar",
       icon: <Calendar className="h-4 w-4" />
+    },
+    {
+      path: "/teen-passwords",
+      label: "Passwords", 
+      icon: <Lock className="h-4 w-4" />
     }
   ];
 
