@@ -83,8 +83,10 @@ export default function TeenCalendar() {
     enabled: !!teenProfile,
   });
   
-  console.log(`Teen events query: ${events.length} events, last updated: ${new Date(dataUpdatedAt)}`);
-  console.log("Raw event titles:", events.map(e => e.title));
+  // Only log when data actually changes to reduce noise
+  if (events.length > 0) {
+    console.log(`Teen events query: ${events.length} events, last updated: ${new Date(dataUpdatedAt)}`);
+  }
 
   // Delete event mutation
   const deleteEventMutation = useMutation({
@@ -135,20 +137,24 @@ export default function TeenCalendar() {
   // Create event mutation
   const createEventMutation = useMutation({
     mutationFn: async (eventData: any) => {
-      return await apiRequest("POST", "/api/teen/events", eventData);
+      const response = await apiRequest("POST", "/api/teen/events", eventData);
+      return response.json();
     },
     onSuccess: async (newEvent) => {
       console.log("Event created successfully:", newEvent);
       
-      // Just invalidate queries to trigger background refetch without clearing cache
-      queryClient.invalidateQueries({ queryKey: ["/api/teen/events"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/events"] }); // Also invalidate main events for dashboard
+      // Optimistically add the new event to the cache
+      queryClient.setQueryData(["/api/teen/events"], (oldEvents: Event[] | undefined) => {
+        if (!oldEvents) return [newEvent];
+        return [...oldEvents, newEvent].sort((a, b) => 
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+        );
+      });
       
-      // Force an immediate refetch with fresh data
-      queryClient.resetQueries({ queryKey: ["/api/teen/events"] });
-      await queryClient.refetchQueries({ queryKey: ["/api/teen/events"] });
+      // Also invalidate dashboard events
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
       
-      console.log("Post-creation query refresh complete");
+      console.log("Event added to cache optimistically");
       
       setIsAddEventOpen(false);
       setNewEvent({ title: "", date: "", time: "", endTime: "", location: "", description: "", type: "personal" });
