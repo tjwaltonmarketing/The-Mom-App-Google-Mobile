@@ -99,9 +99,11 @@ export default function TeenDashboard() {
   const futureEvents = (upcomingEvents as any[]).filter((event: any) => {
     const eventStartTime = new Date(event.startTime);
     const now = new Date();
-    // Show events from today onwards (not just future hours)
+    // Create today's date at midnight in local timezone
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const isVisible = eventStartTime >= today;
+    // Get event date in local timezone 
+    const eventDate = new Date(eventStartTime.getFullYear(), eventStartTime.getMonth(), eventStartTime.getDate());
+    const isVisible = eventDate >= today;
     console.log(`Event "${event.title}" at ${event.startTime}: visible=${isVisible}, eventTime=${eventStartTime}, today=${today}`);
     return isVisible;
   });
