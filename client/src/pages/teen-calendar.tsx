@@ -79,13 +79,46 @@ export default function TeenCalendar() {
   // Fetch real events from database using teen events endpoint
   const { data: events = [], isLoading, dataUpdatedAt, refetch, error } = useQuery<Event[]>({
     queryKey: ["/api/teen/events"],
+    queryFn: async () => {
+      console.log("Custom queryFn executing...");
+      const response = await fetch("/api/teen/events");
+      if (!response.ok) {
+        throw new Error('Failed to fetch events');
+      }
+      const data = await response.json();
+      console.log("Custom queryFn result:", data);
+      return data;
+    },
     retry: false,
     enabled: !!teenProfile,
     staleTime: 0, // Always refetch to ensure fresh data
+    gcTime: 0, // Disable caching completely (React Query v5 syntax)
+    refetchOnMount: true, // Always refetch when component mounts
+    refetchOnWindowFocus: true // Refetch when window gains focus
   });
   
   console.log(`Teen events query: ${events.length} events, isLoading: ${isLoading}, error:`, error);
   console.log("Teen profile enabled:", !!teenProfile, "teenProfile:", teenProfile);
+  console.log("Raw events data from query:", events);
+  console.log("Query enabled:", !!teenProfile, "dataUpdatedAt:", dataUpdatedAt);
+  
+  // Manual test fetch for debugging
+  const testFetch = async () => {
+    try {
+      console.log("Testing manual fetch...");
+      const response = await fetch('/api/teen/events');
+      const data = await response.json();
+      console.log("Manual fetch result:", data);
+    } catch (err) {
+      console.log("Manual fetch error:", err);
+    }
+  };
+  
+  // Run test fetch if teen profile exists but no events
+  if (teenProfile && events.length === 0 && !isLoading) {
+    console.log("Running manual test fetch...");
+    testFetch();
+  }
 
   // Delete event mutation
   const deleteEventMutation = useMutation({
