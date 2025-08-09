@@ -168,8 +168,6 @@ export default function TeenCalendar() {
     return utcDate;
   };
 
-  console.log("Raw events from API:", events);
-  
   // Transform database events for display
   const allEvents: DisplayEvent[] = events.map((event: Event) => {
     const startTimeUTC = new Date(event.startTime);
@@ -230,8 +228,6 @@ export default function TeenCalendar() {
       color = "#f59e0b"; // Yellow for busy
     }
 
-    console.log(`Processing event: ${event.title}, startTime: ${event.startTime}, converted: ${startTime}, fullDate will be: ${startTime}`);
-    
     return {
       id: event.id,
       title: event.title,
@@ -249,8 +245,6 @@ export default function TeenCalendar() {
       isOwnEvent
     };
   });
-  
-  console.log("Processed allEvents for calendar:", allEvents);
 
   const getEventsByDate = (dateLabel: string) => {
     return allEvents.filter(event => event.date === dateLabel);
@@ -608,12 +602,7 @@ export default function TeenCalendar() {
                 eventDateMST.setHours(0, 0, 0, 0);
                 calendarDateMST.setHours(0, 0, 0, 0);
                 
-                const matches = eventDateMST.getTime() === calendarDateMST.getTime();
-                if (event.title && date.getDate() === 9) { // Debug for today (Aug 9)
-                  console.log(`Calendar grid: Comparing event "${event.title}" (${eventDateMST}) with calendar date ${date.getDate()} (${calendarDateMST}), matches: ${matches}`);
-                }
-                
-                return matches;
+                return eventDateMST.getTime() === calendarDateMST.getTime();
               });
               
               return (
@@ -859,12 +848,7 @@ export default function TeenCalendar() {
         ) : (
           <div className="space-y-6">
             {viewMode === "list" && renderListView()}
-            {viewMode === "calendar" && (
-              <>
-                <p className="text-sm text-gray-500 mb-2">Debug: Found {allEvents.length} events total</p>
-                {renderCalendarView()}
-              </>
-            )}
+            {viewMode === "calendar" && renderCalendarView()}
           </div>
         )}
       </div>

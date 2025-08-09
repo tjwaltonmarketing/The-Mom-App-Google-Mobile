@@ -427,34 +427,25 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      console.log(`Teen events request for teenId: ${req.session.teenId}`);
-
       // Get the teen's family member record to find familyId
       const teenProfile = await storage.getTeenProfile(req.session.teenId);
       if (!teenProfile) {
         return res.status(404).json({ error: "Teen profile not found" });
       }
 
-      console.log(`Teen profile found:`, teenProfile);
-
       const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
       if (!familyMember) {
         return res.status(404).json({ error: "Family member not found" });
       }
 
-      console.log(`Family member found:`, familyMember);
-
       // Get events for the family
       const events = await storage.getEventsByFamily(familyMember.familyId);
-      console.log(`Found ${events.length} events for familyId ${familyMember.familyId}:`, events);
       
       // Show all family events to teens (they should see family schedule)
       // Only filter out truly private events if needed
       const relevantEvents = events.filter((event: any) => 
         event.visibilityType !== 'private' // Show shared and busy events
       );
-      
-      console.log(`Filtered to ${relevantEvents.length} relevant events for teen`);
       
       res.json(relevantEvents);
     } catch (error) {
