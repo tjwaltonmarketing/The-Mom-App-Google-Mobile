@@ -21,7 +21,7 @@ import TeenOnboarding from "@/pages/teen-onboarding";
 import TeenDashboard from "@/pages/teen-dashboard";
 import TeenTasks from "@/pages/teen-tasks";
 import TeenCalendar from "@/pages/teen-calendar";
-import TeenPasswords from "@/pages/teen-passwords";
+
 import TeenProfile from "@/pages/teen-profile";
 import MealPlan from "@/pages/meal-plan";
 
@@ -131,9 +131,7 @@ function Router() {
       <Route path="/teen-calendar">
         {teenData?.isAuthenticated ? <TeenCalendar /> : <TeenLogin />}
       </Route>
-      <Route path="/teen-passwords">
-        {teenData?.isAuthenticated ? <TeenPasswords /> : <TeenLogin />}
-      </Route>
+
 
       {/* Teen Profile Route */}
       <Route path="/teen-profile">

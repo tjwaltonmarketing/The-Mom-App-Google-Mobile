@@ -9,6 +9,7 @@ The Mom App is a comprehensive family coordination platform designed to reduce m
 - **Fixed Password Form Cursor Issue**: Resolved cursor jumping problem in password text inputs by memoizing form component and optimizing re-render behavior
 - **Enhanced Calendar Event Filtering**: Events now display correctly in both dashboard list view and calendar grid view with proper timezone awareness
 - **Cleaned Up Debugging Code**: Removed temporary console.log statements from calendar components
+- **Removed Teen Passwords Tab**: Temporarily removed the "My Passwords" tab from teen navigation as requested by user
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -23,7 +24,7 @@ Preferred communication style: Simple, everyday language.
 - Family member management with color coding and avatars.
 - Centralized communication and information sharing.
 - Smart Calendar: Features shared, busy, and private event types with selective sharing.
-- Teen Interface: Dedicated dashboard with tab navigation (Home, Calendar, Passwords), accessibility features (dark mode, blue light filter), and read-only access for certain features.
+- Teen Interface: Dedicated dashboard with tab navigation (Home, Tasks, Calendar), accessibility features (dark mode, blue light filter), and read-only access for certain features.
 
 ### Technical Implementations
 - Backend: Express.js with TypeScript.
