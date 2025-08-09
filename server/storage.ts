@@ -167,10 +167,6 @@ export interface IStorage {
   getPasswords(): Promise<Password[]>;
   createPassword(password: InsertPassword): Promise<Password>;
   updatePasswordSharing(id: number, sharedWith: number[]): Promise<Password | undefined>;
-  getPasswordsByCreator(creatorId: number): Promise<Password[]>;
-  getPasswordById(id: number): Promise<Password | undefined>;
-  updatePassword(id: number, updates: Partial<InsertPassword>): Promise<Password | undefined>;
-  deletePassword(id: number): Promise<boolean>;
   
   // Grocery Lists
   getGroceryItems(): Promise<GroceryItem[]>;
@@ -930,46 +926,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(passwords.id, id))
       .returning();
     return password;
-  }
-
-  async getPasswordsByCreator(creatorId: number): Promise<Password[]> {
-    return await db
-      .select()
-      .from(passwords)
-      .where(eq(passwords.createdBy, creatorId))
-      .orderBy(desc(passwords.createdAt));
-  }
-
-  async getPasswordById(id: number): Promise<Password | undefined> {
-    const [password] = await db
-      .select()
-      .from(passwords)
-      .where(eq(passwords.id, id));
-    return password;
-  }
-
-  async updatePassword(id: number, updates: Partial<InsertPassword>): Promise<Password | undefined> {
-    const [password] = await db
-      .update(passwords)
-      .set({ 
-        ...updates,
-        lastUpdated: new Date()
-      })
-      .where(eq(passwords.id, id))
-      .returning();
-    return password;
-  }
-
-  async deletePassword(id: number): Promise<boolean> {
-    try {
-      const result = await db
-        .delete(passwords)
-        .where(eq(passwords.id, id));
-      return result.rowCount !== null && result.rowCount > 0;
-    } catch (error) {
-      console.error(`Failed to delete password ${id}:`, error);
-      return false;
-    }
   }
 
   async getGroceryItems(): Promise<GroceryItem[]> {
