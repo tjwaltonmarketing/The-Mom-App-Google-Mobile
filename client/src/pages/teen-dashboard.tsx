@@ -182,10 +182,10 @@ export default function TeenDashboard() {
                   {todayTasks.map((task) => (
                     <div 
                       key={task.id} 
-                      className={`p-3 rounded-lg border flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors ${
+                      className={`p-3 rounded-lg border flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
                         task.isCompleted 
-                          ? 'bg-green-50 border-green-200' 
-                          : 'bg-white border-gray-200'
+                          ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                       }`}
                       onClick={() => setEditingTask(task)}
                     >
@@ -324,10 +324,10 @@ export default function TeenDashboard() {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {achievementExamples.slice(0, 6).map((achievement, index) => (
-                  <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center opacity-75">
+                  <div key={index} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 text-center opacity-75">
                     <div className="text-2xl mb-2 grayscale">{achievement.icon}</div>
-                    <p className="font-medium text-sm text-gray-700">{achievement.name}</p>
-                    <p className="text-xs text-gray-500">{achievement.description}</p>
+                    <p className="font-medium text-sm text-gray-700 dark:text-gray-300">{achievement.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{achievement.description}</p>
                   </div>
                 ))}
               </div>
@@ -362,12 +362,12 @@ export default function TeenDashboard() {
                         key={day} 
                         className={`p-3 rounded-lg border ${
                           isToday 
-                            ? 'bg-green-50 border-green-200 ring-2 ring-green-100' 
-                            : 'bg-gray-50 border-gray-200'
+                            ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 ring-2 ring-green-100 dark:ring-green-800/50' 
+                            : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <p className={`text-xs font-medium ${isToday ? 'text-green-700' : 'text-gray-600'}`}>
+                          <p className={`text-xs font-medium ${isToday ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`}>
                             {day}
                           </p>
                           {isToday && (
@@ -378,17 +378,17 @@ export default function TeenDashboard() {
                         </div>
                         {dayMeal ? (
                           <div>
-                            <p className="font-medium text-sm text-gray-900 mb-1">
+                            <p className="font-medium text-sm text-gray-900 dark:text-white mb-1">
                               {dayMeal.meal}
                             </p>
                             {dayMeal.notes && (
-                              <p className="text-xs text-gray-600 line-clamp-2">
+                              <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
                                 {dayMeal.notes}
                               </p>
                             )}
                           </div>
                         ) : (
-                          <p className="text-xs text-gray-400 italic">
+                          <p className="text-xs text-gray-400 dark:text-gray-500 italic">
                             No dinner planned
                           </p>
                         )}

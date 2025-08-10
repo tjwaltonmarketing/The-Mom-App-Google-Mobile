@@ -378,11 +378,11 @@ export default function TeenCalendar() {
   const renderEvent = (event: DisplayEvent) => {
     if (event.privacy === "private") {
       return (
-        <div key={event.id} className="p-3 bg-gray-100 border border-gray-200 rounded-lg">
+        <div key={event.id} className="p-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <EyeOff className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-500 italic">Private Event</span>
+              <span className="text-gray-500 dark:text-gray-400 italic">Private Event</span>
             </div>
             <Badge variant="secondary" className="text-xs">
               {event.time.split(' - ')[0]}
@@ -394,11 +394,11 @@ export default function TeenCalendar() {
 
     if (event.privacy === "busy") {
       return (
-        <div key={event.id} className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div key={event.id} className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Eye className="h-4 w-4 text-yellow-600" />
-              <span className="text-yellow-700">Busy - {event.assignedTo}</span>
+              <span className="text-yellow-700 dark:text-yellow-400">Busy - {event.assignedTo}</span>
             </div>
             <Badge variant="secondary" className="text-xs">
               {event.time.split(' - ')[0]}
@@ -410,7 +410,7 @@ export default function TeenCalendar() {
 
     return (
       <div key={event.id} className={`p-3 border rounded-lg hover:shadow-sm transition-shadow ${
-        event.isOwnEvent ? 'bg-purple-50 border-purple-200' : 'bg-white border-gray-200'
+        event.isOwnEvent ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
       }`}>
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -419,14 +419,14 @@ export default function TeenCalendar() {
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: event.color }}
               />
-              <h4 className="font-medium text-sm">{event.title}</h4>
+              <h4 className="font-medium text-sm text-gray-900 dark:text-white">{event.title}</h4>
               {event.isOwnEvent && (
                 <Badge variant="outline" className="text-xs text-purple-600 border-purple-300">
                   Mine
                 </Badge>
               )}
             </div>
-            <div className="space-y-1 text-xs text-gray-600">
+            <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 <span>{event.fullDateStr}</span>
@@ -675,7 +675,7 @@ export default function TeenCalendar() {
               return (
                 <div 
                   key={index} 
-                  className={`aspect-square p-1 sm:p-2 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${
+                  className={`aspect-square p-1 sm:p-2 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
                     isToday ? 'bg-primary/10 border-primary' : 'border-gray-200'
                   } ${
                     selectedDate?.toDateString() === date.toDateString() ? 'ring-2 ring-primary' : ''
