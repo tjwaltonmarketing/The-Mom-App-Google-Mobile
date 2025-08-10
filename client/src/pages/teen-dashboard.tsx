@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TeenTaskDetailModal } from "@/components/teen-task-detail-modal";
 import { TeenEventDetailModal } from "@/components/teen-event-detail-modal";
+import { TeenDishwasherStatus } from "@/components/teen-dishwasher-status";
 import { 
   Calendar, 
   CheckCircle2, 
@@ -122,6 +123,11 @@ export default function TeenDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          
+          {/* Dishwasher Status Card */}
+          <div className="md:col-span-1">
+            <TeenDishwasherStatus />
+          </div>
           
           {/* Points & Streak Card */}
           <Card className="md:col-span-1">

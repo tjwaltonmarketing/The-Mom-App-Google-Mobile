@@ -918,5 +918,65 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Teen Household Settings - Shared family status like dishwasher
+  app.get("/api/teen/household-settings", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      const settings = await storage.getHouseholdSettings(familyMember.familyId);
+      res.json(settings);
+    } catch (error) {
+      console.error("Teen household settings error:", error);
+      res.status(500).json({ error: "Failed to get household settings" });
+    }
+  });
+
+  app.put("/api/teen/household-settings/dishwasher", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      const { isClean } = req.body;
+      const updatedSettings = await storage.updateDishwasherStatus(
+        familyMember.familyId, 
+        isClean, 
+        familyMember.id
+      );
+      
+      res.json({ 
+        ...updatedSettings,
+        message: `Dishwasher marked as ${isClean ? 'clean' : 'dirty'}` 
+      });
+    } catch (error) {
+      console.error("Teen dishwasher update error:", error);
+      res.status(500).json({ error: "Failed to update dishwasher status" });
+    }
+  });
+
   return server;
 }
