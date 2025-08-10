@@ -227,7 +227,7 @@ export default function TeenProfile() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <Button 
@@ -239,8 +239,8 @@ export default function TeenProfile() {
               Back
             </Button>
             <div>
-              <h1 className="text-xl font-semibold">Profile Settings</h1>
-              <p className="text-sm text-gray-600">Customize your profile and preferences</p>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Profile Settings</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Customize your profile and preferences</p>
             </div>
           </div>
         </div>
@@ -267,17 +267,17 @@ export default function TeenProfile() {
                       <img 
                         src={avatarPreview} 
                         alt="Avatar preview"
-                        className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
                       />
                     ) : teenProfile?.avatar ? (
                       <img 
                         src={teenProfile.avatar} 
                         alt="Current avatar"
-                        className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-gray-200 dark:border-gray-600"
                       />
                     ) : (
                       <div 
-                        className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold border-4 border-gray-200"
+                        className="w-24 h-24 rounded-full flex items-center justify-center text-white text-2xl font-semibold border-4 border-gray-200 dark:border-gray-600"
                         style={{ backgroundColor: teenProfile?.favoriteColor || "#a855f7" }}
                       >
                         {teenProfile?.firstName?.charAt(0) || "A"}
@@ -296,7 +296,7 @@ export default function TeenProfile() {
                   
                   <div className="text-center">
                     <p className="text-sm font-medium">{teenProfile?.firstName} {teenProfile?.lastName}</p>
-                    <p className="text-xs text-gray-500">@{teenProfile?.username}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">@{teenProfile?.username}</p>
                   </div>
                 </div>
 
