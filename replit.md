@@ -3,7 +3,13 @@
 ## Overview
 The Mom App is a comprehensive family coordination platform designed to reduce mental load for busy parents. It is a full-stack web application with mobile support, featuring AI-powered assistance, smart calendar management with granular privacy controls, advanced task organization, and secure family data management. The project's vision is to streamline family logistics, enhance communication, and foster collaboration among family members, ultimately improving daily life for busy households.
 
-## Recent Changes (August 9, 2025)
+## Recent Changes (August 10, 2025)
+- **Fixed Critical Parent Login Issue**: Added missing `/api/login` endpoint that was causing "Unexpected token" JSON parsing errors during parent authentication
+- **Added Parent Authentication System**: Implemented complete parent login flow with `/api/login`, `/api/auth/user`, and `/api/logout` endpoints using bcrypt password verification and session management
+- **Fixed Database Connection Issues**: Resolved Neon PostgreSQL WebSocket connection problems by optimizing connection pool settings and timeout configurations
+- **Restored Application Functionality**: Successfully debugged and fixed app startup failures, ensuring stable database connectivity and proper API endpoint registration
+
+## Previous Changes (August 9, 2025)
 - **Fixed Teen Calendar Display Issue**: Resolved timezone conversion problems that prevented events from showing in calendar grid view
 - **Improved Calendar Timezone Handling**: Fixed date comparison logic to properly convert UTC stored events to local timezone for accurate calendar display
 - **Fixed Password Form Cursor Issue**: Resolved cursor jumping problem in password text inputs by memoizing form component and optimizing re-render behavior

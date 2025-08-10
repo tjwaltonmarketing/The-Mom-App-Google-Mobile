@@ -19,6 +19,94 @@ export async function registerRoutes(app: Express) {
     res.json({ message: "API is working" });
   });
 
+  // Parent Authentication Endpoints
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required" });
+      }
+
+      // Find user by email
+      const user = await storage.getUserByEmail(email.toLowerCase());
+      if (!user) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      // Verify password
+      const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+      if (!passwordMatch) {
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      // Set user session
+      req.session.userId = user.id;
+      req.session.teenId = undefined; // Clear any teen session
+      
+      // Save session synchronously
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            reject(err);
+          } else {
+            console.log("Parent login session saved successfully for user:", user.id);
+            resolve();
+          }
+        });
+      });
+
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          isVerified: user.isVerified
+        }
+      });
+    } catch (error) {
+      console.error("Parent login error:", error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  app.get("/api/auth/user", async (req, res) => {
+    try {
+      // Check if user is authenticated via session
+      if (req.session.userId) {
+        const user = await storage.getUserById(req.session.userId);
+        if (user) {
+          return res.json({
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            isVerified: user.isVerified
+          });
+        }
+      }
+      
+      // Not authenticated
+      res.status(401).json({ error: "Not authenticated" });
+    } catch (error) {
+      console.error("Auth check error:", error);
+      res.status(500).json({ error: "Failed to check authentication" });
+    }
+  });
+
+  app.post("/api/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Logout error:", err);
+        return res.status(500).json({ error: "Logout failed" });
+      }
+      res.json({ success: true });
+    });
+  });
+
   // Teen Authentication Endpoints
   app.get("/api/teen/auth/user", async (req, res) => {
     try {
