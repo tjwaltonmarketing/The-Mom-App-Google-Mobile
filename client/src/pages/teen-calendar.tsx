@@ -676,14 +676,14 @@ export default function TeenCalendar() {
                 <div 
                   key={index} 
                   className={`aspect-square p-1 sm:p-2 border rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                    isToday ? 'bg-primary/10 border-primary' : 'border-gray-200'
+                    isToday ? 'bg-primary/10 border-primary' : 'border-gray-200 dark:border-gray-700'
                   } ${
                     selectedDate?.toDateString() === date.toDateString() ? 'ring-2 ring-primary' : ''
                   }`}
                   onClick={() => handleDayClick(date)}
                 >
                   <div className={`text-xs sm:text-sm font-medium mb-1 ${
-                    isToday ? 'text-primary' : 'text-gray-900'
+                    isToday ? 'text-primary' : 'text-gray-900 dark:text-gray-100'
                   }`}>
                     {date.getDate()}
                   </div>
@@ -691,14 +691,14 @@ export default function TeenCalendar() {
                     {dayEvents.slice(0, 1).map(event => (
                       <div 
                         key={event.id}
-                        className="text-xs p-0.5 sm:p-1 rounded truncate bg-blue-100 text-blue-800"
+                        className="text-xs p-0.5 sm:p-1 rounded truncate bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
                         title={event.title}
                       >
                         {event.title.length > 8 ? event.title.substring(0, 8) + '...' : event.title}
                       </div>
                     ))}
                     {dayEvents.length > 1 && (
-                      <div className="text-xs text-gray-500 text-center">+{dayEvents.length - 1}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 text-center">+{dayEvents.length - 1}</div>
                     )}
                   </div>
                 </div>

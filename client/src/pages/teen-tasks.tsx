@@ -30,16 +30,16 @@ interface Task {
 }
 
 const priorityColors = {
-  low: "bg-green-50 border-green-200 text-green-700",
-  medium: "bg-yellow-50 border-yellow-200 text-yellow-700", 
-  high: "bg-red-50 border-red-200 text-red-700"
+  low: "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-700 dark:text-green-300",
+  medium: "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300", 
+  high: "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700 text-red-700 dark:text-red-300"
 };
 
 const categoryColors = {
-  chores: "bg-blue-50 border-blue-200",
-  homework: "bg-purple-50 border-purple-200",
-  personal: "bg-pink-50 border-pink-200",
-  family: "bg-green-50 border-green-200"
+  chores: "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300",
+  homework: "bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300",
+  personal: "bg-pink-50 dark:bg-pink-900/20 border-pink-200 dark:border-pink-700 text-pink-700 dark:text-pink-300",
+  family: "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-700 dark:text-green-300"
 };
 
 export default function TeenTasks() {
