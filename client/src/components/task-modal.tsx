@@ -51,24 +51,46 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
     mutationFn: async (task: InsertTask) => {
       return apiRequest("POST", "/api/tasks", task);
     },
-    onSuccess: () => {
-      // Remove stale cache and force fresh data
-      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
-      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+    onMutate: async (newTask) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["/api/tasks"] });
       
-      // Invalidate and refetch queries immediately
+      // Snapshot the previous value
+      const previousTasks = queryClient.getQueryData<Task[]>(["/api/tasks"]);
+      
+      // Optimistically update with a temporary task (we don't know the real ID yet)
+      const optimisticTask = {
+        ...newTask,
+        id: Date.now(), // Temporary ID
+        isCompleted: false,
+        completedAt: null,
+        completedBy: null,
+        points: newTask.points || 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      
+      queryClient.setQueryData<Task[]>(["/api/tasks"], (old) => 
+        [...(old ?? []), optimisticTask]
+      );
+      
+      return { previousTasks };
+    },
+    onError: (err, newTask, context) => {
+      // Roll back on error
+      queryClient.setQueryData(["/api/tasks"], context?.previousTasks);
+      toast({
+        title: "Error",
+        description: "Failed to create task. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      // Force fresh data from server to get real IDs
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events/today"] });
-      
-      // Force refetch of tasks with delay to ensure fresh data
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-        queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
-        queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
-      }, 100);
       
       toast({
         title: "Task created",

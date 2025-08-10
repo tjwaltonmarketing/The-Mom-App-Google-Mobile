@@ -139,22 +139,35 @@ export function AdvancedTaskManagement() {
     mutationFn: async (taskId: number) => {
       return apiRequest("DELETE", `/api/tasks/${taskId}`);
     },
-    onSuccess: () => {
-      // More aggressive cache clearing
-      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
-      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
-      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+    onMutate: async (taskId) => {
+      // Cancel outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries({ queryKey: ["/api/tasks"] });
       
-      // Force immediate refetch
+      // Snapshot the previous value
+      const previousTasks = queryClient.getQueryData<Task[]>(["/api/tasks"]);
+      
+      // Optimistically update to remove the task
+      queryClient.setQueryData<Task[]>(["/api/tasks"], (old) => 
+        old?.filter(task => task.id !== taskId) ?? []
+      );
+      
+      // Return a context object with the snapshotted value
+      return { previousTasks };
+    },
+    onError: (err, taskId, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      queryClient.setQueryData(["/api/tasks"], context?.previousTasks);
+      toast({
+        title: "Error",
+        description: "Failed to delete the task. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      // Force fresh data from server
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
-      
-      // Double refetch to ensure data is fresh
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-        queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
-      }, 100);
       
       toast({
         title: "Task Deleted",
@@ -174,22 +187,32 @@ export function AdvancedTaskManagement() {
     mutationFn: async () => {
       return apiRequest("DELETE", "/api/tasks");
     },
-    onSuccess: () => {
-      // More aggressive cache clearing for bulk delete
-      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
-      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
-      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+    onMutate: async () => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["/api/tasks"] });
       
-      // Force immediate refetch
+      // Snapshot the previous value
+      const previousTasks = queryClient.getQueryData<Task[]>(["/api/tasks"]);
+      
+      // Optimistically update to clear all tasks
+      queryClient.setQueryData<Task[]>(["/api/tasks"], []);
+      
+      return { previousTasks };
+    },
+    onError: (err, variables, context) => {
+      // Roll back on error
+      queryClient.setQueryData(["/api/tasks"], context?.previousTasks);
+      toast({
+        title: "Error",
+        description: "Failed to delete all tasks. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      // Force fresh data from server
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
-      
-      // Double refetch to ensure data is fresh
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-        queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
-      }, 100);
       
       toast({
         title: "All Tasks Deleted",
