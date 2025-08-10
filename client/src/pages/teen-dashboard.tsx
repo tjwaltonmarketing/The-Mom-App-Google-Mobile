@@ -210,7 +210,7 @@ export default function TeenDashboard() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
+                        <Badge variant={task.priority === 'high' ? 'destructive' : 'outline'} className={task.priority !== 'high' ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600' : ''}>
                           {task.priority}
                         </Badge>
                         <div className="flex items-center gap-1">
@@ -340,7 +340,7 @@ export default function TeenDashboard() {
               <CardTitle className="flex items-center gap-2">
                 <Utensils className="h-5 w-5 text-green-500" />
                 This Week's Dinners
-                <Badge variant="secondary" className="text-xs ml-auto">
+                <Badge variant="outline" className="text-xs ml-auto bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600">
                   Set by parents
                 </Badge>
               </CardTitle>
@@ -371,7 +371,7 @@ export default function TeenDashboard() {
                             {day}
                           </p>
                           {isToday && (
-                            <Badge variant="outline" className="text-xs text-green-600 border-green-300">
+                            <Badge variant="outline" className="text-xs text-green-600 dark:text-green-400 border-green-300 dark:border-green-600 bg-white dark:bg-gray-800">
                               Today
                             </Badge>
                           )}

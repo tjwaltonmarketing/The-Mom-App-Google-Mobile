@@ -384,7 +384,7 @@ export default function TeenCalendar() {
               <EyeOff className="h-4 w-4 text-gray-400" />
               <span className="text-gray-500 dark:text-gray-400 italic">Private Event</span>
             </div>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="outline" className="text-xs bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600">
               {event.time.split(' - ')[0]}
             </Badge>
           </div>
@@ -400,7 +400,7 @@ export default function TeenCalendar() {
               <Eye className="h-4 w-4 text-yellow-600" />
               <span className="text-yellow-700 dark:text-yellow-400">Busy - {event.assignedTo}</span>
             </div>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="outline" className="text-xs bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600">
               {event.time.split(' - ')[0]}
             </Badge>
           </div>
@@ -864,13 +864,13 @@ export default function TeenCalendar() {
                           )}
                           <div className="flex items-center gap-2 mt-2">
                             <Badge 
-                              variant={event.type === 'sport' ? 'default' : 'secondary'}
-                              className="text-xs"
+                              variant={event.type === 'sport' ? 'default' : 'outline'}
+                              className={event.type !== 'sport' ? 'text-xs bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600' : 'text-xs'}
                             >
                               {event.type}
                             </Badge>
                             {event.source === "family" && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge variant="outline" className="text-xs bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600">
                                 Family Event
                               </Badge>
                             )}
