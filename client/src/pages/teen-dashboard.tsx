@@ -117,7 +117,7 @@ export default function TeenDashboard() {
   console.log(`Dashboard: Filtered ${futureEvents.length} future events from ${(upcomingEvents as any[]).length} total events`);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Navigation Header */}
       <TeenNavigation currentPath="/teen-dashboard" teenProfile={teenProfile} />
 
@@ -135,22 +135,22 @@ export default function TeenDashboard() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-purple-600">{teenProfile?.points || 0}</p>
-                  <p className="text-sm text-gray-600">Total Points</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{teenProfile?.points || 0}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Points</p>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center gap-1">
                     <Flame className="h-4 w-4 text-orange-500" />
                     <span className="text-lg font-semibold">{teenProfile?.streak || 0}</span>
                   </div>
-                  <p className="text-sm text-gray-600">Day Streak</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Day Streak</p>
                 </div>
               </div>
               
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">Today's Tasks</span>
-                  <span className="text-sm text-gray-600">{completedTasks.length}/{todayTasks.length}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">{completedTasks.length}/{todayTasks.length}</span>
                 </div>
                 <Progress value={taskProgress} className="h-2" />
               </div>
