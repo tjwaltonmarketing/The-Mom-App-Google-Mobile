@@ -1066,5 +1066,206 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Parent Dashboard and Task Management Endpoints
+  app.get("/api/dashboard/stats", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the user's family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get pending tasks for the family
+      const pendingTasks = await storage.getPendingTasksByFamily(familyMembership.familyId);
+      
+      // Get events for today
+      const todayEvents = await storage.getTodayEventsByFamily(familyMembership.familyId);
+
+      res.json({
+        pendingTasks: pendingTasks.length,
+        todayEvents: todayEvents.length,
+        familyMembers: await storage.getFamilyMembersByFamily(familyMembership.familyId)
+      });
+    } catch (error) {
+      console.error("Dashboard stats error:", error);
+      res.status(500).json({ error: "Failed to get dashboard stats" });
+    }
+  });
+
+  app.get("/api/tasks/pending", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const pendingTasks = await storage.getPendingTasksByFamily(familyMembership.familyId);
+      res.json(pendingTasks);
+    } catch (error) {
+      console.error("Pending tasks error:", error);
+      res.status(500).json({ error: "Failed to get pending tasks" });
+    }
+  });
+
+  app.get("/api/events/today", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const events = await storage.getTodayEventsByFamily(familyMembership.familyId);
+      res.json(events);
+    } catch (error) {
+      console.error("Today events error:", error);
+      res.status(500).json({ error: "Failed to get today's events" });
+    }
+  });
+
+  app.get("/api/tasks", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const tasks = await storage.getTasksByFamily(familyMembership.familyId);
+      res.json(tasks);
+    } catch (error) {
+      console.error("Tasks error:", error);
+      res.status(500).json({ error: "Failed to get tasks" });
+    }
+  });
+
+  app.post("/api/tasks", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get the user's family member record to use as createdBy
+      const userFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!userFamilyMember) {
+        return res.status(404).json({ error: "Family member record not found" });
+      }
+
+      const { title, description, dueDate, priority, assignedTo, category, points, estimatedTime } = req.body;
+
+      const task = await storage.createTask({
+        title,
+        description,
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+        priority: priority || "medium",
+        assignedTo: assignedTo || null,
+        createdBy: userFamilyMember.id,
+        category: category || "general",
+        points: points || 0,
+        estimatedTime: estimatedTime || 0
+      });
+
+      res.json(task);
+    } catch (error) {
+      console.error("Create task error:", error);
+      res.status(500).json({ error: "Failed to create task" });
+    }
+  });
+
+  app.get("/api/family-members", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const familyMembers = await storage.getFamilyMembersByFamily(familyMembership.familyId);
+      res.json(familyMembers);
+    } catch (error) {
+      console.error("Family members error:", error);
+      res.status(500).json({ error: "Failed to get family members" });
+    }
+  });
+
+  app.get("/api/meal-plans", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const mealPlans = await storage.getMealPlans();
+      res.json(mealPlans);
+    } catch (error) {
+      console.error("Meal plans error:", error);
+      res.status(500).json({ error: "Failed to get meal plans" });
+    }
+  });
+
+  app.get("/api/grocery-items", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const groceryItems = await storage.getGroceryItems();
+      res.json(groceryItems);
+    } catch (error) {
+      console.error("Grocery items error:", error);
+      res.status(500).json({ error: "Failed to get grocery items" });
+    }
+  });
+
+  app.get("/api/passwords", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const passwords = await storage.getPasswords();
+      res.json(passwords);
+    } catch (error) {
+      console.error("Passwords error:", error);
+      res.status(500).json({ error: "Failed to get passwords" });
+    }
+  });
+
   return server;
 }
