@@ -129,6 +129,7 @@ export interface IStorage {
   
   // Tasks
   getTasks(): Promise<Task[]>;
+  getTaskById(id: number): Promise<Task | undefined>;
   getTasksByFamily(familyId: number): Promise<Task[]>;
   getTasksForToday(): Promise<Task[]>;
   getTasksForTodayByFamily(familyId: number): Promise<Task[]>;
@@ -638,6 +639,11 @@ export class DatabaseStorage implements IStorage {
 
   async getTasks(): Promise<Task[]> {
     return await db.select().from(tasks);
+  }
+
+  async getTaskById(id: number): Promise<Task | undefined> {
+    const [task] = await db.select().from(tasks).where(eq(tasks.id, id));
+    return task || undefined;
   }
 
   async getTasksForToday(): Promise<Task[]> {

@@ -1191,6 +1191,64 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Parent task deletion endpoints
+  app.delete("/api/tasks/:taskId", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const taskId = parseInt(req.params.taskId);
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get the user's family member record
+      const userFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!userFamilyMember) {
+        return res.status(404).json({ error: "Family member record not found" });
+      }
+
+      // Get the task to check permissions
+      const task = await storage.getTaskById(taskId);
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      // Allow parents to delete any task in their family
+      const success = await storage.deleteTask(taskId);
+      if (!success) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete task error:", error);
+      res.status(500).json({ error: "Failed to delete task" });
+    }
+  });
+
+  app.delete("/api/tasks", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Allow parents to delete all tasks in their family
+      await storage.deleteAllTasks();
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete all tasks error:", error);
+      res.status(500).json({ error: "Failed to delete all tasks" });
+    }
+  });
+
   app.get("/api/family-members", async (req, res) => {
     try {
       if (!req.session.userId) {
