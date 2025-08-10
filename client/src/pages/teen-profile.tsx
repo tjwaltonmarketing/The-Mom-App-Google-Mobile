@@ -427,14 +427,14 @@ export default function TeenProfile() {
                 </div>
 
                 {/* Dark Mode */}
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gray-100 rounded-lg">
+                    <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                       {darkMode ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
                     </div>
                     <div>
-                      <Label className="text-base font-medium">Dark Mode</Label>
-                      <p className="text-sm text-gray-600">
+                      <Label className="text-base font-medium text-gray-900 dark:text-white">Dark Mode</Label>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         Easy on the eyes, especially at night
                       </p>
                     </div>
@@ -453,14 +453,14 @@ export default function TeenProfile() {
                 </div>
 
                 {/* Blue Light Filter */}
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-800/50 rounded-lg">
                       <Eye className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
-                      <Label className="text-base font-medium">Blue Light Filter</Label>
-                      <p className="text-sm text-gray-600">
+                      <Label className="text-base font-medium text-gray-900 dark:text-white">Blue Light Filter</Label>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         Reduces blue light for better sleep
                       </p>
                     </div>

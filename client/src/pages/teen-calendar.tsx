@@ -452,8 +452,8 @@ export default function TeenCalendar() {
           </div>
           <div className="flex items-center gap-2">
             <Badge 
-              variant={event.type === 'sport' ? 'default' : 'secondary'}
-              className="text-xs"
+              variant={event.type === 'sport' ? 'default' : 'outline'}
+              className={event.type !== 'sport' ? 'text-xs bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600' : 'text-xs'}
             >
               {event.type}
             </Badge>
