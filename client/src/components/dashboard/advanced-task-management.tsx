@@ -140,9 +140,22 @@ export function AdvancedTaskManagement() {
       return apiRequest("DELETE", `/api/tasks/${taskId}`);
     },
     onSuccess: () => {
+      // More aggressive cache clearing
+      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+      
+      // Force immediate refetch
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+      
+      // Double refetch to ensure data is fresh
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+        queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      }, 100);
+      
       toast({
         title: "Task Deleted",
         description: "The task has been successfully deleted.",
@@ -162,9 +175,22 @@ export function AdvancedTaskManagement() {
       return apiRequest("DELETE", "/api/tasks");
     },
     onSuccess: () => {
+      // More aggressive cache clearing for bulk delete
+      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+      
+      // Force immediate refetch
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+      
+      // Double refetch to ensure data is fresh
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+        queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      }, 100);
+      
       toast({
         title: "All Tasks Deleted",
         description: "All tasks have been successfully deleted. You now have a fresh start!",

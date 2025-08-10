@@ -52,16 +52,23 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       return apiRequest("POST", "/api/tasks", task);
     },
     onSuccess: () => {
+      // Remove stale cache and force fresh data
+      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
+      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      
       // Invalidate and refetch queries immediately
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events/today"] });
       
-      // Force refetch of tasks
-      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      // Force refetch of tasks with delay to ensure fresh data
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+        queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+        queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      }, 100);
       
       toast({
         title: "Task created",
