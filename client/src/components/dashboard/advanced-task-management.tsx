@@ -131,6 +131,7 @@ export function AdvancedTaskManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
     },
   });
 
@@ -141,6 +142,7 @@ export function AdvancedTaskManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
       toast({
         title: "Task Deleted",
         description: "The task has been successfully deleted.",
@@ -162,6 +164,7 @@ export function AdvancedTaskManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
       toast({
         title: "All Tasks Deleted",
         description: "All tasks have been successfully deleted. You now have a fresh start!",
