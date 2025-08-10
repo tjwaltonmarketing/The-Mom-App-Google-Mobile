@@ -96,17 +96,22 @@ export default function TeenDashboard() {
   const taskProgress = todayTasks.length > 0 ? (completedTasks.length / (todayTasks as any[]).length) * 100 : 0;
 
   // Filter upcoming events to show events from today and future
-  const futureEvents = (upcomingEvents as any[]).filter((event: any) => {
-    const eventStartTime = new Date(event.startTime);
-    const now = new Date();
-    // Create today's date at midnight in local timezone
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    // Get event date in local timezone 
-    const eventDate = new Date(eventStartTime.getFullYear(), eventStartTime.getMonth(), eventStartTime.getDate());
-    const isVisible = eventDate >= today;
-    console.log(`Event "${event.title}" at ${event.startTime}: visible=${isVisible}, eventTime=${eventStartTime}, today=${today}`);
-    return isVisible;
-  });
+  const futureEvents = (upcomingEvents as any[])
+    .filter((event: any) => {
+      const eventStartTime = new Date(event.startTime);
+      const now = new Date();
+      // Create today's date at midnight in local timezone
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      // Get event date in local timezone 
+      const eventDate = new Date(eventStartTime.getFullYear(), eventStartTime.getMonth(), eventStartTime.getDate());
+      const isVisible = eventDate >= today;
+      console.log(`Event "${event.title}" at ${event.startTime}: visible=${isVisible}, eventTime=${eventStartTime}, today=${today}`);
+      return isVisible;
+    })
+    .sort((a: any, b: any) => {
+      // Sort by start time chronologically (earliest first)
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+    });
   
   console.log(`Dashboard: Filtered ${futureEvents.length} future events from ${(upcomingEvents as any[]).length} total events`);
 
