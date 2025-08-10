@@ -19,6 +19,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTheme } from "@/components/theme-provider";
 import TeenNotifications from "./teen-notifications";
 
 interface TeenNavigationProps {
@@ -30,8 +31,7 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [darkMode, setDarkMode] = useState(false);
-  const [blueLight, setBlueLight] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -83,7 +83,7 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
   return (
     <>
       {/* Top Header - Simplified */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4">
             {/* App Branding + Profile Section */}
@@ -100,17 +100,17 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
                   <img 
                     src={teenProfile.avatar} 
                     alt="Profile"
-                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-gray-200 flex-shrink-0"
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 flex-shrink-0"
                   />
                 ) : (
                   <div 
-                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold border-2 border-gray-200 flex-shrink-0"
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold border-2 border-gray-200 dark:border-gray-600 flex-shrink-0"
                     style={{ backgroundColor: teenProfile?.favoriteColor || "#a855f7" }}
                   >
                     {teenProfile?.firstName?.charAt(0) || "A"}
                   </div>
                 )}
-                <div className="text-sm font-medium text-gray-700 hidden sm:block">
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">
                   Hey, {teenProfile?.firstName || "Adri"}!
                 </div>
               </div>
@@ -119,27 +119,20 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
             {/* Desktop Controls - Hidden on mobile */}
             <div className="hidden md:flex items-center gap-2">
               <Button 
-                variant={darkMode ? "default" : "ghost"} 
+                variant={theme === "dark" ? "default" : "ghost"} 
                 size="sm"
-                onClick={() => {
-                  setDarkMode(!darkMode);
-                  document.documentElement.classList.toggle('dark', !darkMode);
-                }}
-                title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
                 className="h-8 w-8 p-0"
               >
-                {darkMode ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+                {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
               </Button>
               
               <Button 
-                variant={blueLight ? "default" : "ghost"} 
+                variant={theme === "blue-light-filter" ? "default" : "ghost"} 
                 size="sm"
-                onClick={() => {
-                  setBlueLight(!blueLight);
-                  const filter = blueLight ? 'none' : 'sepia(10%) saturate(120%) hue-rotate(15deg)';
-                  document.documentElement.style.filter = filter;
-                }}
-                title={blueLight ? "Turn Off Blue Light Filter" : "Turn On Blue Light Filter"}
+                onClick={() => setTheme(theme === "blue-light-filter" ? "light" : "blue-light-filter")}
+                title={theme === "blue-light-filter" ? "Turn Off Blue Light Filter" : "Turn On Blue Light Filter"}
                 className="h-8 w-8 p-0"
               >
                 <Eye className="h-3.5 w-3.5" />
@@ -196,7 +189,7 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
       </div>
 
       {/* Bottom Navigation - Mobile/Tablet */}
-      <nav className="md:hidden bg-white border-t border-gray-200 fixed bottom-0 left-0 right-0 z-50">
+      <nav className="md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 fixed bottom-0 left-0 right-0 z-50">
         <div className="flex justify-around py-2 px-2">
           {navItems.map((item) => {
             const isActive = currentPath === item.path;
@@ -205,7 +198,7 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
                 key={item.path}
                 onClick={() => setLocation(item.path)}
                 className={`flex flex-col items-center py-2 px-2 flex-1 ${
-                  isActive ? "text-primary" : "text-gray-600"
+                  isActive ? "text-primary" : "text-gray-600 dark:text-gray-400"
                 }`}
               >
                 <span className="text-lg mb-1">
@@ -221,7 +214,7 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
       </nav>
 
       {/* Desktop Navigation Tabs - Hidden on mobile */}
-      <div className="hidden md:block bg-white border-b border-gray-100">
+      <div className="hidden md:block bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center px-4">
             {navItems.map((item) => {
@@ -234,7 +227,7 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
                   className={`flex items-center gap-2 rounded-none border-b-2 px-4 py-3 ${
                     isActive 
                       ? "border-primary bg-primary text-primary-foreground" 
-                      : "border-transparent hover:border-gray-300"
+                      : "border-transparent hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
                   {item.icon}
