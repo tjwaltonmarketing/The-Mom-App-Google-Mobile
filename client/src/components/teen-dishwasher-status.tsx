@@ -14,7 +14,15 @@ export function TeenDishwasherStatus() {
 
   const { data: settings, isLoading, error } = useQuery<HouseholdSettings>({
     queryKey: ["/api/teen/household-settings"],
-    retry: 1
+    queryFn: async () => {
+      console.log("Fetching teen household settings...");
+      const response = await apiRequest("GET", "/api/teen/household-settings");
+      const data = await response.json();
+      console.log("Teen household settings response:", data);
+      return data;
+    },
+    retry: 1,
+    staleTime: 30000, // Cache for 30 seconds
   });
 
   const updateDishwasherMutation = useMutation({

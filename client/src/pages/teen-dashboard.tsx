@@ -124,11 +124,6 @@ export default function TeenDashboard() {
       <div className="max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           
-          {/* Dishwasher Status Card */}
-          <div className="md:col-span-1">
-            <TeenDishwasherStatus />
-          </div>
-          
           {/* Points & Streak Card */}
           <Card className="md:col-span-1">
             <CardHeader className="pb-3">
@@ -404,6 +399,11 @@ export default function TeenDashboard() {
               )}
             </CardContent>
           </Card>
+          
+          {/* Dishwasher Status Card - Full Width at Bottom */}
+          <div className="md:col-span-2 lg:col-span-3">
+            <TeenDishwasherStatus />
+          </div>
         </div>
       </div>
 
