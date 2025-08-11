@@ -10,7 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { FamilyMember, InsertTask } from "@shared/schema";
+import type { FamilyMember, InsertTask, Task } from "@shared/schema";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -51,55 +51,41 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
     mutationFn: async (task: InsertTask) => {
       return apiRequest("POST", "/api/tasks", task);
     },
-    onMutate: async (newTask) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ["/api/tasks"] });
-      
-      // Snapshot the previous value
-      const previousTasks = queryClient.getQueryData<Task[]>(["/api/tasks"]);
-      
-      // Optimistically update with a temporary task (we don't know the real ID yet)
-      const optimisticTask = {
-        ...newTask,
-        id: Date.now(), // Temporary ID
-        isCompleted: false,
-        completedAt: null,
-        completedBy: null,
-        points: newTask.points || 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      
-      queryClient.setQueryData<Task[]>(["/api/tasks"], (old) => 
-        [...(old ?? []), optimisticTask]
-      );
-      
-      return { previousTasks };
-    },
-    onError: (err, newTask, context) => {
-      // Roll back on error
-      queryClient.setQueryData(["/api/tasks"], context?.previousTasks);
-      toast({
-        title: "Error",
-        description: "Failed to create task. Please try again.",
-        variant: "destructive",
-      });
-    },
     onSuccess: (createdTask) => {
-      // Force fresh data from server to get real IDs and ensure UI consistency
+      // Clear all task-related cache and force fresh data
+      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
+      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      // Force immediate refetch with multiple attempts
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events/today"] });
       
-      // Force an immediate refetch to ensure new task appears
-      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      // Double refetch to ensure data consistency
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+        queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      }, 50);
+      
+      // Triple refetch for problematic cases
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      }, 200);
       
       toast({
         title: "Task created",
         description: "Your task has been created successfully",
       });
       handleClose();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error creating task",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
     },
   });
 
