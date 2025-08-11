@@ -68,6 +68,7 @@ export async function registerRoutes(app: Express) {
 
   // User authentication check endpoint
   app.get("/api/user", (req, res) => {
+    console.log("User auth check - userId:", req.session.userId, "sessionId:", req.session.id);
     if (req.session.userId) {
       res.json({
         isAuthenticated: true,
@@ -81,6 +82,27 @@ export async function registerRoutes(app: Express) {
       });
     } else {
       res.json({ isAuthenticated: false });
+    }
+  });
+
+  // Parent authentication check endpoint (similar to /api/user but specifically for parents)
+  app.get("/api/auth/user", (req, res) => {
+    console.log("Parent auth check - userId:", req.session.userId, "sessionId:", req.session.id);
+    res.setHeader('Content-Type', 'application/json');
+    
+    if (req.session.userId) {
+      const userData = {
+        id: req.session.userId,
+        email: "emmett0823@gmail.com",
+        firstName: "Emily",
+        lastName: "Walton",
+        isVerified: true
+      };
+      console.log("Returning parent user data:", userData);
+      res.json(userData);
+    } else {
+      console.log("No parent session found, returning 401");
+      res.status(401).json({ error: "Not authenticated" });
     }
   });
 
