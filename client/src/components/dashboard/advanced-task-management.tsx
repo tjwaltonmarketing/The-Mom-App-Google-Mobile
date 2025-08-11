@@ -250,59 +250,43 @@ export function AdvancedTaskManagement() {
   // Task item renderer
   const renderTaskItem = (task: Task, member: FamilyMember | undefined) => (
     <div 
-      className={`p-4 border rounded-lg transition-colors ${
+      className={`p-3 border rounded-lg transition-colors overflow-hidden ${
         task.isCompleted 
           ? 'bg-gray-50 opacity-75 border-gray-200' 
           : 'bg-white hover:bg-gray-50 border-gray-200'
       }`}
     >
-      <div className="flex items-start space-x-3">
+      <div className="flex items-start gap-3">
         <Checkbox
           checked={task.isCompleted || false}
           onCheckedChange={() => !task.isCompleted && handleCompleteTask(task.id)}
           disabled={task.isCompleted || completeTaskMutation.isPending}
-          className="mt-1"
+          className="mt-1 flex-shrink-0"
         />
         
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2 gap-3">
-            <h4 className={`font-medium flex-1 ${task.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+        <div className="flex-1 min-w-0 overflow-hidden">
+          {/* Title and main actions row */}
+          <div className="flex items-start gap-2 mb-2">
+            <h4 className={`font-medium text-sm flex-1 min-w-0 truncate ${task.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
               {task.title}
             </h4>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge className={`${getPriorityColor(task.priority)} text-xs whitespace-nowrap`}>
-                {task.priority} priority
-              </Badge>
-              {task.points && (
-                <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs whitespace-nowrap">
-                  {task.points} points
-                </Badge>
-              )}
-              {member && (
-                <div 
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0"
-                  style={{ backgroundColor: member.color }}
-                  title={member.name}
-                >
-                  {member.avatar}
-                </div>
-              )}
+            <div className="flex items-center gap-1 flex-shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-gray-400 hover:text-blue-600 flex-shrink-0"
+                className="h-7 w-7 p-0 text-gray-400 hover:text-blue-600"
                 onClick={() => setEditingTask(task)}
               >
-                <Edit className="h-4 w-4" />
+                <Edit className="h-3 w-3" />
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 flex-shrink-0"
+                    className="h-7 w-7 p-0 text-gray-400 hover:text-red-600"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3 w-3" />
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
@@ -327,16 +311,37 @@ export function AdvancedTaskManagement() {
             </div>
           </div>
           
+          {/* Badges row */}
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <Badge className={`${getPriorityColor(task.priority)} text-xs`}>
+              {task.priority} priority
+            </Badge>
+            {task.points && (
+              <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs">
+                {task.points} points
+              </Badge>
+            )}
+            {member && (
+              <div 
+                className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs"
+                style={{ backgroundColor: member.color }}
+                title={member.name}
+              >
+                {member.avatar}
+              </div>
+            )}
+          </div>
+          
           {task.description && (
-            <p className={`text-sm mb-2 ${task.isCompleted ? 'text-gray-400' : 'text-gray-600'}`}>
+            <p className={`text-xs mb-2 ${task.isCompleted ? 'text-gray-400' : 'text-gray-600'}`}>
               {task.description}
             </p>
           )}
           
           <div className="flex items-center justify-between text-xs text-gray-500">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4 flex-wrap">
               {task.dueDate && (
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   <span>
                     Due: {format(new Date(task.dueDate), 'MMM dd, yyyy')} at {format(new Date(task.dueDate), 'h:mm a')}
@@ -351,7 +356,7 @@ export function AdvancedTaskManagement() {
               </span>
             </div>
             
-            <span>
+            <span className="flex-shrink-0">
               Task #{task.id}
             </span>
           </div>
