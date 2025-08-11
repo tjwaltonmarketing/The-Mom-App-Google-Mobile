@@ -51,7 +51,11 @@ export function AdvancedTaskManagement() {
       }
       
       return response.json();
-    }
+    },
+    staleTime: 0, // Always consider data stale
+    gcTime: 0,    // Don't cache in garbage collection
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({

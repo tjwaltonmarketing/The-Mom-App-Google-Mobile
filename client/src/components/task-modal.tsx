@@ -52,27 +52,30 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       return apiRequest("POST", "/api/tasks", task);
     },
     onSuccess: (createdTask) => {
-      // Clear all task-related cache and force fresh data
-      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
-      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      // Force a hard reset of the task cache by setting fresh data directly
+      queryClient.resetQueries({ queryKey: ["/api/tasks"] });
+      queryClient.resetQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.resetQueries({ queryKey: ["/api/dashboard/stats"] });
       
-      // Force immediate refetch with multiple attempts
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/events/today"] });
+      // Multiple invalidation attempts with different strategies
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"], refetchType: 'active' });
       
-      // Double refetch to ensure data consistency
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-        queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
-      }, 50);
-      
-      // Triple refetch for problematic cases
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-      }, 200);
+      // Force immediate fresh fetch
+      queryClient.fetchQuery({
+        queryKey: ["/api/tasks"],
+        queryFn: async () => {
+          const response = await fetch('/api/tasks', {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          return response.json();
+        },
+        staleTime: 0,
+        gcTime: 0
+      });
       
       toast({
         title: "Task created",
