@@ -36,8 +36,11 @@ export function AdvancedTaskManagement() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const { toast } = useToast();
 
-  const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
-    queryKey: ["/api/tasks"],
+  // Add a key to force component re-render when needed
+  const [taskRefreshKey, setTaskRefreshKey] = useState(0);
+  
+  const { data: tasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useQuery<Task[]>({
+    queryKey: ["/api/tasks", taskRefreshKey],
     queryFn: async () => {
       const response = await fetch('/api/tasks', {
         credentials: 'include',
@@ -168,18 +171,15 @@ export function AdvancedTaskManagement() {
       });
     },
     onSuccess: () => {
-      // Force fresh data from server for all task-related queries
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-      
-      // Force immediate refetch for dashboard Quick Tasks
-      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
-      
       toast({
         title: "Task Deleted",
         description: "The task has been successfully deleted.",
       });
+      
+      // Force complete page refresh after a brief delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     },
   });
 
