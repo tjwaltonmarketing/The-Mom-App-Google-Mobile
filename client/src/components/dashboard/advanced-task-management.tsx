@@ -171,15 +171,15 @@ export function AdvancedTaskManagement() {
       });
     },
     onSuccess: () => {
+      // Invalidate and refetch all task-related queries
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      
       toast({
         title: "Task Deleted",
         description: "The task has been successfully deleted.",
       });
-      
-      // Force complete page refresh after a brief delay
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
     },
   });
 

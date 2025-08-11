@@ -52,16 +52,20 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       return apiRequest("POST", "/api/tasks", task);
     },
     onSuccess: (createdTask) => {
+      // Invalidate and refetch all task-related queries
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      // Force immediate refetch
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      
       toast({
         title: "Task created",
         description: "Your task has been created successfully",
       });
       handleClose();
-      
-      // Force complete cache reset and reload
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
     },
     onError: (error: any) => {
       toast({
