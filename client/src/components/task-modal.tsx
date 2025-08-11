@@ -52,14 +52,24 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       return apiRequest("POST", "/api/tasks", task);
     },
     onSuccess: (createdTask) => {
-      // Invalidate and refetch all task-related queries
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      // Clear the cache completely to force fresh fetch
+      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
+      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
       
-      // Force immediate refetch
-      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      // Set data manually to ensure immediate UI update
+      queryClient.setQueryData(["/api/tasks"], (oldData: any) => {
+        return oldData ? [...oldData, createdTask] : [createdTask];
+      });
+      
+      // Force refetch after a delay to get server state
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+        queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      }, 200);
       
       toast({
         title: "Task created",

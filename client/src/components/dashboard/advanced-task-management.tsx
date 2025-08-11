@@ -36,11 +36,8 @@ export function AdvancedTaskManagement() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const { toast } = useToast();
 
-  // Add a key to force component re-render when needed
-  const [taskRefreshKey, setTaskRefreshKey] = useState(0);
-  
   const { data: tasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useQuery<Task[]>({
-    queryKey: ["/api/tasks", taskRefreshKey],
+    queryKey: ["/api/tasks"],
     queryFn: async () => {
       const response = await fetch('/api/tasks', {
         credentials: 'include',
@@ -171,10 +168,14 @@ export function AdvancedTaskManagement() {
       });
     },
     onSuccess: () => {
-      // Invalidate and refetch all task-related queries
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      // Force refetch after a delay to get server state
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+        queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      }, 200);
       
       toast({
         title: "Task Deleted",
