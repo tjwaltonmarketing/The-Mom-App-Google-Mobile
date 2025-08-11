@@ -85,25 +85,21 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
         variant: "destructive",
       });
     },
-    onSuccess: () => {
-      // Force fresh data from server to get real IDs
+    onSuccess: (createdTask) => {
+      // Force fresh data from server to get real IDs and ensure UI consistency
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events/today"] });
+      
+      // Force an immediate refetch to ensure new task appears
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
       
       toast({
         title: "Task created",
         description: "Your task has been created successfully",
       });
       handleClose();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error creating task",
-        description: error.message || "Something went wrong",
-        variant: "destructive",
-      });
     },
   });
 

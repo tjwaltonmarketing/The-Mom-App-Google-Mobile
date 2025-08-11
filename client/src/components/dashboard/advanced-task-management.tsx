@@ -174,13 +174,6 @@ export function AdvancedTaskManagement() {
         description: "The task has been successfully deleted.",
       });
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to delete the task. Please try again.",
-        variant: "destructive",
-      });
-    },
   });
 
   const deleteAllTasksMutation = useMutation({
@@ -217,13 +210,6 @@ export function AdvancedTaskManagement() {
       toast({
         title: "All Tasks Deleted",
         description: "All tasks have been successfully deleted. You now have a fresh start!",
-      });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to delete all tasks. Please try again.",
-        variant: "destructive",
       });
     },
   });
