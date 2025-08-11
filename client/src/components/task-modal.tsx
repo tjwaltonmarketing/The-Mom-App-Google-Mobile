@@ -49,7 +49,8 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
 
   const createTaskMutation = useMutation({
     mutationFn: async (task: InsertTask) => {
-      return apiRequest("POST", "/api/tasks", task);
+      const response = await apiRequest("POST", "/api/tasks", task);
+      return response.json();
     },
     onSuccess: (createdTask) => {
       console.log("Task created successfully:", createdTask);

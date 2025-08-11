@@ -264,23 +264,23 @@ export function AdvancedTaskManagement() {
           className="mt-1"
         />
         
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className={`font-medium ${task.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between mb-2 gap-3">
+            <h4 className={`font-medium flex-1 ${task.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
               {task.title}
             </h4>
-            <div className="flex items-center space-x-2">
-              <Badge className={getPriorityColor(task.priority)}>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Badge className={`${getPriorityColor(task.priority)} text-xs whitespace-nowrap`}>
                 {task.priority} priority
               </Badge>
               {task.points && (
-                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs whitespace-nowrap">
                   {task.points} points
                 </Badge>
               )}
               {member && (
                 <div 
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs"
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0"
                   style={{ backgroundColor: member.color }}
                   title={member.name}
                 >
@@ -290,7 +290,7 @@ export function AdvancedTaskManagement() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-gray-400 hover:text-blue-600"
+                className="h-8 w-8 p-0 text-gray-400 hover:text-blue-600 flex-shrink-0"
                 onClick={() => setEditingTask(task)}
               >
                 <Edit className="h-4 w-4" />
@@ -300,7 +300,7 @@ export function AdvancedTaskManagement() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-gray-400 hover:text-red-600"
+                    className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 flex-shrink-0"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
