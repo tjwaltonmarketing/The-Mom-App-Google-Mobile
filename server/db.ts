@@ -3,19 +3,11 @@ import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
 
-// Configure WebSocket for Node.js environment with better error handling
-try {
-  neonConfig.webSocketConstructor = ws;
-  neonConfig.useSecureWebSocket = true;
-  neonConfig.pipelineConnect = false;
-  neonConfig.pipelineTLS = false;
-  
-  // Add connection retry settings
-  neonConfig.fetchConnectionCache = true;
-  neonConfig.fetchFunction = fetch;
-} catch (error) {
-  console.warn("WebSocket configuration warning:", error);
-}
+// Configure WebSocket for Node.js environment
+neonConfig.webSocketConstructor = ws;
+neonConfig.useSecureWebSocket = true;
+neonConfig.pipelineConnect = false;
+neonConfig.pipelineTLS = false;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -23,23 +15,11 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Create pool with improved settings for stability
+// Create pool with retry and timeout settings
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  max: 1, // Limit concurrent connections for stability
+  max: 1, // Limit concurrent connections
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 15000, // Increased timeout
-  maxUses: Infinity,
-  allowExitOnIdle: false,
+  connectionTimeoutMillis: 10000,
 });
-
-// Handle pool errors gracefully
-pool.on('error', (err) => {
-  console.error('Database pool error:', err);
-});
-
-pool.on('connect', () => {
-  console.log('Database connected successfully');
-});
-
 export const db = drizzle({ client: pool, schema });
