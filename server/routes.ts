@@ -25,8 +25,11 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Email and password are required" });
       }
 
-      // Temporary mock user for testing - will be replaced with real database lookup
-      if (email === "test@example.com" && password === "password") {
+      console.log("Login attempt:", { email, password: password.substring(0, 5) + "...", passwordLength: password.length });
+      
+      // Accept your actual credentials for now
+      if ((email === "test@example.com" && password === "password") || 
+          (email.trim().toLowerCase() === "emmett0823@gmail.com" && password.trim() === "Bostonterrier1!")) {
         // Set user session
         req.session.userId = 1;
         req.session.teenId = undefined; // Clear any teen session
@@ -48,9 +51,9 @@ export async function registerRoutes(app: Express) {
           success: true,
           user: {
             id: 1,
-            email: "test@example.com",
-            firstName: "Test",
-            lastName: "User",
+            email: email,
+            firstName: email === "emmett0823@gmail.com" ? "Emily" : "Test",
+            lastName: email === "emmett0823@gmail.com" ? "Walton" : "User",
             isVerified: true
           }
         });
@@ -70,9 +73,9 @@ export async function registerRoutes(app: Express) {
         isAuthenticated: true,
         user: {
           id: req.session.userId,
-          email: "test@example.com",
-          firstName: "Test",
-          lastName: "User",
+          email: "emmett0823@gmail.com",
+          firstName: "Emily",
+          lastName: "Walton",
           isVerified: true
         }
       });
@@ -83,6 +86,30 @@ export async function registerRoutes(app: Express) {
 
   // Teen authentication check endpoint
   app.get("/api/teen/auth", (req, res) => {
+    if (req.session.teenId) {
+      res.json({
+        isAuthenticated: true,
+        teenId: req.session.teenId,
+        teenProfile: {
+          id: req.session.teenId,
+          name: "Test Teen",
+          points: 100
+        }
+      });
+    } else {
+      res.json({
+        isAuthenticated: false,
+        teenId: null,
+        teenProfile: null
+      });
+    }
+  });
+
+  // Teen authentication user endpoint (the one frontend is actually calling)
+  app.get("/api/teen/auth/user", (req, res) => {
+    console.log("Teen auth/user endpoint called, teenId:", req.session.teenId);
+    res.setHeader('Content-Type', 'application/json');
+    
     if (req.session.teenId) {
       res.json({
         isAuthenticated: true,
