@@ -168,10 +168,13 @@ export function AdvancedTaskManagement() {
       });
     },
     onSuccess: () => {
-      // Force fresh data from server
+      // Force fresh data from server for all task-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      // Force immediate refetch for dashboard Quick Tasks
+      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
       
       toast({
         title: "Task Deleted",

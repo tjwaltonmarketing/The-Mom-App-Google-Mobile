@@ -52,7 +52,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       return apiRequest("POST", "/api/tasks", task);
     },
     onSuccess: (createdTask) => {
-      // Force a hard reset of the task cache by setting fresh data directly
+      // Force a hard reset of all task-related caches
       queryClient.resetQueries({ queryKey: ["/api/tasks"] });
       queryClient.resetQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.resetQueries({ queryKey: ["/api/dashboard/stats"] });
@@ -62,20 +62,35 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"], refetchType: 'active' });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"], refetchType: 'active' });
       
-      // Force immediate fresh fetch
-      queryClient.fetchQuery({
-        queryKey: ["/api/tasks"],
-        queryFn: async () => {
-          const response = await fetch('/api/tasks', {
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' }
-          });
-          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          return response.json();
-        },
-        staleTime: 0,
-        gcTime: 0
-      });
+      // Force immediate fresh fetch for both main tasks and pending tasks (for Quick Tasks dashboard)
+      Promise.all([
+        queryClient.fetchQuery({
+          queryKey: ["/api/tasks"],
+          queryFn: async () => {
+            const response = await fetch('/api/tasks', {
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+          },
+          staleTime: 0,
+          gcTime: 0
+        }),
+        queryClient.fetchQuery({
+          queryKey: ["/api/tasks/pending"],
+          queryFn: async () => {
+            const response = await fetch('/api/tasks/pending', {
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+          },
+          staleTime: 0,
+          gcTime: 0
+        })
+      ]);
       
       toast({
         title: "Task created",
