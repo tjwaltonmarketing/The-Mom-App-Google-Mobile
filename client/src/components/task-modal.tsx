@@ -52,24 +52,24 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       return apiRequest("POST", "/api/tasks", task);
     },
     onSuccess: (createdTask) => {
-      // Clear the cache completely to force fresh fetch
-      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
-      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      console.log("Task created successfully:", createdTask);
       
-      // Set data manually to ensure immediate UI update
-      queryClient.setQueryData(["/api/tasks"], (oldData: any) => {
-        return oldData ? [...oldData, createdTask] : [createdTask];
+      // Add the new task optimistically first (same pattern as teen events)
+      queryClient.setQueryData(["/api/tasks"], (oldTasks: any[] | undefined) => {
+        if (!oldTasks) return [createdTask];
+        // Check if task already exists to avoid duplicates
+        const taskExists = oldTasks.some(t => t.id === createdTask.id);
+        if (taskExists) return oldTasks;
+        return [...oldTasks, createdTask].sort((a, b) => 
+          new Date(a.createdAt || Date.now()).getTime() - new Date(b.createdAt || Date.now()).getTime()
+        );
       });
       
-      // Force refetch after a delay to get server state
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-        queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
-      }, 200);
+      // Also invalidate dashboard tasks and stats (same pattern as teen events)
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      console.log("Task added optimistically to cache");
       
       toast({
         title: "Task created",

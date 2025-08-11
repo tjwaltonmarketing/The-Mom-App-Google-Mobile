@@ -168,14 +168,10 @@ export function AdvancedTaskManagement() {
       });
     },
     onSuccess: () => {
-      // Force refetch after a delay to get server state
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-        queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
-      }, 200);
+      // Invalidate queries to trigger background refetch (same pattern as teen events)
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] }); // Also invalidate pending tasks for dashboard
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       
       toast({
         title: "Task Deleted",
