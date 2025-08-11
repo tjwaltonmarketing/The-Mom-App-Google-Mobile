@@ -1292,7 +1292,22 @@ export class DatabaseStorage implements IStorage {
 
   // Teen task methods
   async getTasksForTeen(teenProfileId: number): Promise<Task[]> {
-    const teenTasks = await db.select().from(tasks).where(eq(tasks.teenId, teenProfileId));
+    // Get the teen profile to find their family member ID
+    const teenProfile = await this.getTeenProfile(teenProfileId);
+    if (!teenProfile) {
+      return [];
+    }
+
+    // Get tasks that are either:
+    // 1. Directly assigned to the teen via teenId (for self-created tasks)
+    // 2. Assigned to the teen's family member ID via assignedTo (for parent-assigned tasks)
+    const teenTasks = await db.select().from(tasks).where(
+      or(
+        eq(tasks.teenId, teenProfileId),
+        eq(tasks.assignedTo, teenProfile.familyMemberId)
+      )
+    );
+    
     return teenTasks;
   }
 
