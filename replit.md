@@ -13,7 +13,7 @@ The Mom App is a comprehensive family coordination platform designed to reduce m
 - **Fixed Parent Task Deletion**: Added missing parent DELETE endpoints (/api/tasks/:taskId and /api/tasks) that were preventing task deletion from working in the parent interface
 - **Enhanced Task Cache Management**: Implemented optimistic updates for immediate UI response and aggressive cache clearing with multiple refetch strategies to ensure task creation/deletion reflects immediately in the interface
 - **Applied Teen Account Cache Pattern to Parent Tasks**: Implemented the exact same cache invalidation pattern that works for teen accounts (optimistic updates + comprehensive query invalidation) to fix parent task creation/deletion sync issues
-- **Fixed Task Layout Display Issues**: Resolved UI layout problems where task numbers, priority badges, and delete buttons were getting cut off in task containers by improving flex layout with proper spacing and responsive design
+- **Fixed Task Layout Display Issues**: Resolved UI layout problems where task numbers, priority badges, and delete buttons were getting cut off in task containers by completely restructuring the task card layout with badges on separate rows, proper overflow handling, and responsive design
 
 ## Previous Changes (August 9, 2025)
 - **Fixed Teen Calendar Display Issue**: Resolved timezone conversion problems that prevented events from showing in calendar grid view
