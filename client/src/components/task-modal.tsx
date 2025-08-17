@@ -55,7 +55,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
     onSuccess: (createdTask) => {
       console.log("Task created successfully:", createdTask);
       
-      // Add the new task optimistically first (same pattern as teen events)
+      // Immediately update all task-related caches optimistically
       queryClient.setQueryData(["/api/tasks"], (oldTasks: any[] | undefined) => {
         if (!oldTasks) return [createdTask];
         // Check if task already exists to avoid duplicates
@@ -65,6 +65,18 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
           new Date(a.createdAt || Date.now()).getTime() - new Date(b.createdAt || Date.now()).getTime()
         );
       });
+      
+      // Also update pending tasks cache if the task is not completed
+      if (!createdTask.isCompleted) {
+        queryClient.setQueryData(["/api/tasks/pending"], (oldPending: any[] | undefined) => {
+          if (!oldPending) return [createdTask];
+          const taskExists = oldPending.some(t => t.id === createdTask.id);
+          if (taskExists) return oldPending;
+          return [...oldPending, createdTask].sort((a, b) => 
+            new Date(a.createdAt || Date.now()).getTime() - new Date(b.createdAt || Date.now()).getTime()
+          );
+        });
+      }
       
       // Ultra-aggressive cache clearing for task creation
       console.log("Task created, forcing comprehensive cache sync");
@@ -76,13 +88,19 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       
-      // Force refetch with timeout to ensure execution  
+      // Force refetch with immediate and delayed execution
+      console.log("Forcing immediate refetch after task creation");
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      // Also force a delayed refetch to ensure consistency
       setTimeout(() => {
-        console.log("Forcing refetch after task creation");
+        console.log("Forcing delayed refetch after task creation");
         queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
         queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
         queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
-      }, 100);
+      }, 300);
       
       console.log("Task added optimistically to cache with enhanced sync");
       

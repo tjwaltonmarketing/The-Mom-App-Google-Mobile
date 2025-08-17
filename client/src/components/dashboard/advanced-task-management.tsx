@@ -190,13 +190,19 @@ export function AdvancedTaskManagement() {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       
-      // Step 3: Force immediate refetch with timeout to ensure execution
+      // Step 3: Force immediate refetch  
+      console.log("Forcing immediate refetch after task deletion");
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      // Also force delayed refetch for consistency
       setTimeout(() => {
-        console.log("Forcing refetch after task deletion");
+        console.log("Forcing delayed refetch after task deletion");
         queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
         queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
         queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
-      }, 100);
+      }, 300);
       
       toast({
         title: "Task Deleted",
