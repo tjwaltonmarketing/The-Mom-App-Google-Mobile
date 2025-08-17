@@ -109,6 +109,11 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
         description: "Your task has been created successfully",
       });
       handleClose();
+      
+      // Force page refresh to ensure new task appears immediately
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     },
     onError: (error: any) => {
       toast({
