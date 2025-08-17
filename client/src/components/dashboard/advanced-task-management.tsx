@@ -177,19 +177,26 @@ export function AdvancedTaskManagement() {
       });
     },
     onSuccess: () => {
-      // Enhanced cache invalidation with forced refetch for immediate sync
+      // Ultra-aggressive cache clearing and sync
+      console.log("Task deleted, clearing all caches and forcing refetch");
+      
+      // Step 1: Remove all cached data immediately
       queryClient.removeQueries({ queryKey: ["/api/tasks"] });
       queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
       
+      // Step 2: Invalidate everything related to tasks  
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       
-      // Force immediate refetch of critical queries
-      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      // Step 3: Force immediate refetch with timeout to ensure execution
+      setTimeout(() => {
+        console.log("Forcing refetch after task deletion");
+        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+        queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+        queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      }, 100);
       
       toast({
         title: "Task Deleted",

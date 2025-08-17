@@ -66,7 +66,9 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
         );
       });
       
-      // Enhanced cache invalidation with forced refetch for immediate sync
+      // Ultra-aggressive cache clearing for task creation
+      console.log("Task created, forcing comprehensive cache sync");
+      
       queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
       
@@ -74,10 +76,13 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       
-      // Force immediate refetch
-      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      // Force refetch with timeout to ensure execution  
+      setTimeout(() => {
+        console.log("Forcing refetch after task creation");
+        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+        queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+        queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      }, 100);
       
       console.log("Task added optimistically to cache with enhanced sync");
       

@@ -53,6 +53,7 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
   const { data: stats } = useQuery<DashboardStats>({
     queryKey: ["/api/dashboard/stats"],
     queryFn: async () => {
+      console.log("Fetching dashboard stats...");
       const response = await fetch('/api/dashboard/stats', {
         credentials: 'include',
         headers: {
@@ -64,8 +65,14 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      return response.json();
-    }
+      const data = await response.json();
+      console.log("Dashboard stats fetched:", data);
+      return data;
+    },
+    staleTime: 0, // Always consider data stale for immediate updates
+    gcTime: 0,    // Don't cache in garbage collection
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   const { data: user } = useQuery<User>({
