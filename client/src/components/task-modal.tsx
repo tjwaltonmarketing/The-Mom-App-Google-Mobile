@@ -66,11 +66,20 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
         );
       });
       
-      // Also invalidate dashboard tasks and stats (same pattern as teen events)
+      // Enhanced cache invalidation with forced refetch for immediate sync
+      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       
-      console.log("Task added optimistically to cache");
+      // Force immediate refetch
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      console.log("Task added optimistically to cache with enhanced sync");
       
       toast({
         title: "Task created",

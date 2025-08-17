@@ -133,9 +133,18 @@ export function AdvancedTaskManagement() {
       return apiRequest("PATCH", `/api/tasks/${taskId}/complete`, { completedBy });
     },
     onSuccess: () => {
+      // Enhanced cache invalidation for task completion
+      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
+      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+      
       queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
     },
   });
 
@@ -168,10 +177,19 @@ export function AdvancedTaskManagement() {
       });
     },
     onSuccess: () => {
-      // Invalidate queries to trigger background refetch (same pattern as teen events)
+      // Enhanced cache invalidation with forced refetch for immediate sync
+      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
+      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] }); // Also invalidate pending tasks for dashboard
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      // Force immediate refetch of critical queries
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
       
       toast({
         title: "Task Deleted",
@@ -206,10 +224,19 @@ export function AdvancedTaskManagement() {
       });
     },
     onSuccess: () => {
-      // Force fresh data from server
+      // Enhanced cache clearing for bulk deletion
+      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
+      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+      
+      // Force immediate refetch
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
       
       toast({
         title: "All Tasks Deleted",

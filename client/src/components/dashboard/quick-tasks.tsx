@@ -60,9 +60,19 @@ export function QuickTasks() {
       return apiRequest("PATCH", `/api/tasks/${taskId}/complete`, { completedBy });
     },
     onSuccess: () => {
+      // Enhanced cache invalidation with forced refetch for immediate sync
+      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
+      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
+      
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      // Force immediate refetch
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
     },
   });
 
