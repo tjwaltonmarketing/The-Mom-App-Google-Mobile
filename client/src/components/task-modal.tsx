@@ -112,19 +112,14 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       });
       handleClose();
       
-      // Navigate to dashboard if not already there, otherwise force refresh of task queries
-      if (location !== '/') {
-        setTimeout(() => {
-          setLocation('/');
-        }, 100);
-      } else {
-        // Force immediate refetch of all task queries if on dashboard
-        setTimeout(() => {
-          queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-          queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
-          queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
-        }, 100);
-      }
+      // Always force immediate refetch regardless of current location
+      setTimeout(() => {
+        console.log("Forcing task query refresh after creation");
+        queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+        queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+        queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+        queryClient.refetchQueries({ queryKey: ["/api/family-members"] });
+      }, 100);
     },
     onError: (error: any) => {
       toast({
