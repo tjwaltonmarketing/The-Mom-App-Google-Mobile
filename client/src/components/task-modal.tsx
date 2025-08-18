@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { CalendarDays, User, Flag } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const [dueTime, setDueTime] = useState<string>("");
   const [points, setPoints] = useState<string>("10");
   const { toast } = useToast();
+  const [location, setLocation] = useLocation();
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
@@ -110,11 +112,19 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       });
       handleClose();
       
-      // Force a complete page refresh to ensure task appears
-      setTimeout(() => {
-        // Use replace to avoid adding to browser history and ensure fresh page load
-        window.location.replace(window.location.href);
-      }, 500);
+      // Navigate to dashboard if not already there, otherwise force refresh of task queries
+      if (location !== '/') {
+        setTimeout(() => {
+          setLocation('/');
+        }, 100);
+      } else {
+        // Force immediate refetch of all task queries if on dashboard
+        setTimeout(() => {
+          queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+          queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+          queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+        }, 100);
+      }
     },
     onError: (error: any) => {
       toast({
