@@ -110,9 +110,10 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       });
       handleClose();
       
-      // Force page refresh to ensure new task appears immediately
+      // Force a complete page refresh to ensure task appears
       setTimeout(() => {
-        window.location.reload();
+        // Use replace to avoid adding to browser history and ensure fresh page load
+        window.location.replace(window.location.href);
       }, 500);
     },
     onError: (error: any) => {
