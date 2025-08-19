@@ -105,10 +105,16 @@ export default function CalendarPage() {
     const groupedEvents = sortedEvents.reduce((groups: Record<string, Event[]>, event) => {
       // Use the timezone utility to get proper local date
       const eventTime = new Date(event.startTime);
+      
+      // Debug: Log the event time and timezone conversion
+      console.log('Event:', event.title, 'UTC time:', eventTime.toISOString());
+      
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      console.log('User timezone:', userTimezone);
       
       // Format the date in user's timezone using formatInTimeZone
       const date = formatInTimeZone(eventTime, userTimezone, 'yyyy-MM-dd');
+      console.log('Formatted date:', date);
       
       if (!groups[date]) {
         groups[date] = [];
