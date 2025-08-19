@@ -55,6 +55,25 @@ export function QuickTasks() {
     }
   });
 
+  // Get current user to filter tasks
+  const { data: currentUser } = useQuery({
+    queryKey: ["/api/auth/user"],
+    queryFn: async () => {
+      const response = await fetch('/api/auth/user', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    }
+  });
+
   const completeTaskMutation = useMutation({
     mutationFn: async ({ taskId, completedBy }: { taskId: number; completedBy: number }) => {
       return apiRequest("PATCH", `/api/tasks/${taskId}/complete`, { completedBy });
@@ -94,12 +113,24 @@ export function QuickTasks() {
   };
 
   const handleCompleteTask = (taskId: number) => {
-    // Assuming Mom (id: 1) is completing the task for demo purposes
-    completeTaskMutation.mutate({ taskId, completedBy: 1 });
+    // Use current user's family member ID for completing tasks
+    if (currentUserMember?.id) {
+      completeTaskMutation.mutate({ taskId, completedBy: currentUserMember.id });
+    }
   };
 
-  // Show only first 5 pending tasks
-  const displayTasks = tasks.slice(0, 5);
+  // Find current user's family member ID
+  const currentUserMember = familyMembers.find(member => 
+    member.userId === currentUser?.id
+  );
+
+  // Filter tasks to show only those assigned to current user
+  const myTasks = tasks.filter(task => 
+    task.assignedTo === currentUserMember?.id
+  );
+
+  // Show only first 5 pending tasks assigned to current user
+  const displayTasks = myTasks.slice(0, 5);
 
   return (
     <Card>
@@ -126,7 +157,7 @@ export function QuickTasks() {
         ) : (
           <div className="space-y-3">
             {displayTasks.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No pending tasks</p>
+              <p className="text-gray-500 text-center py-4">No tasks assigned to you</p>
             ) : (
               displayTasks.map((task) => {
               const member = getMemberById(task.assignedTo);
