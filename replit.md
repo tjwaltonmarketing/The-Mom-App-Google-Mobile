@@ -3,7 +3,15 @@
 ## Overview
 The Mom App is a comprehensive family coordination platform designed to reduce mental load for busy parents. It is a full-stack web application with mobile support, featuring AI-powered assistance, smart calendar management with granular privacy controls, advanced task organization, and secure family data management. The project's vision is to streamline family logistics, enhance communication, and foster collaboration among family members, ultimately improving daily life for busy households.
 
-## Recent Changes (August 10, 2025)
+## Recent Changes (August 19, 2025)
+- **Fixed Critical Calendar Timezone Display Issue**: Resolved complex timezone conversion problem where events were displaying incorrect dates in calendar list view despite being stored correctly in database
+- **Enhanced Calendar Date Filtering**: Implemented proper future-only event filtering in calendar list view to show only upcoming events (today and forward), excluding past events
+- **Fixed Calendar Date Construction**: Resolved issue where `new Date("2025-08-20")` was being interpreted as UTC midnight, causing date labels to shift backward by one day in Mountain Time timezone
+- **Improved Timezone Handling**: Implemented proper timezone-aware date grouping using `formatInTimeZone` from date-fns-tz library with automatic browser timezone detection
+- **Cleaned Up Calendar Interface**: Removed confusing "Today" and "Tomorrow" labels from calendar list view since dedicated "Today's Events" section already exists below
+- **Enhanced Today's Events Filtering**: Fixed server-side `getTodayEventsByFamily` function to properly handle Mountain Time timezone offset for accurate "today" event detection
+
+## Previous Changes (August 10, 2025)
 - **Fixed Critical Parent Login Issue**: Added missing `/api/login` endpoint that was causing "Unexpected token" JSON parsing errors during parent authentication
 - **Added Parent Authentication System**: Implemented complete parent login flow with `/api/login`, `/api/auth/user`, and `/api/logout` endpoints using bcrypt password verification and session management
 - **Fixed Database Connection Issues**: Resolved Neon PostgreSQL WebSocket connection problems by optimizing connection pool settings and timeout configurations
