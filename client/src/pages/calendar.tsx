@@ -114,8 +114,15 @@ export default function CalendarPage() {
       <div className="space-y-6">
         {Object.entries(groupedEvents).map(([date, dayEvents]) => {
           const eventDate = new Date(date);
-          const isToday = format(eventDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-          const isTomorrow = format(eventDate, 'yyyy-MM-dd') === format(addDays(new Date(), 1), 'yyyy-MM-dd');
+          const now = new Date();
+          
+          // Create dates at start of day for accurate comparison
+          const todayStart = startOfDay(now);
+          const eventDateStart = startOfDay(eventDate);
+          const tomorrowStart = startOfDay(addDays(now, 1));
+          
+          const isToday = eventDateStart.getTime() === todayStart.getTime();
+          const isTomorrow = eventDateStart.getTime() === tomorrowStart.getTime();
           
           let dateLabel = format(eventDate, 'EEEE, MMMM d');
           if (isToday) dateLabel = 'Today';
