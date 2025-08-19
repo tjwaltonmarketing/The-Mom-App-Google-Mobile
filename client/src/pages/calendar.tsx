@@ -31,6 +31,7 @@ import {
   getMinutes
 } from "date-fns";
 import { formatTimeInUserTimezone } from "@/lib/timezone";
+import { formatInTimeZone } from 'date-fns-tz';
 
 type CalendarView = "month" | "week" | "day" | "list";
 
@@ -102,11 +103,13 @@ export default function CalendarPage() {
     );
 
     const groupedEvents = sortedEvents.reduce((groups: Record<string, Event[]>, event) => {
-      // Convert UTC time to local time for proper date grouping
+      // Use the timezone utility to get proper local date
       const eventTime = new Date(event.startTime);
-      // Subtract 6 hours for MDT (Mountain Daylight Time)
-      const localEventTime = new Date(eventTime.getTime() - (6 * 60 * 60 * 1000));
-      const date = format(localEventTime, 'yyyy-MM-dd');
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Format the date in user's timezone using formatInTimeZone
+      const date = formatInTimeZone(eventTime, userTimezone, 'yyyy-MM-dd');
+      
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -127,7 +130,9 @@ export default function CalendarPage() {
           const isToday = eventDateStart.getTime() === todayStart.getTime();
           
           // Always show the actual date instead of "Today" or "Tomorrow"
-          const dateLabel = format(eventDate, 'EEEE, MMMM d, yyyy');
+          // Use the same timezone conversion for consistent date display
+          const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const dateLabel = formatInTimeZone(eventDate, userTimezone, 'EEEE, MMMM d, yyyy');
 
           return (
             <div key={date} className={`rounded-lg border p-4 ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-white'}`}>
