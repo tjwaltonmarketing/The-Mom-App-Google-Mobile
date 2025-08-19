@@ -119,14 +119,11 @@ export default function CalendarPage() {
           // Create dates at start of day for accurate comparison
           const todayStart = startOfDay(now);
           const eventDateStart = startOfDay(eventDate);
-          const tomorrowStart = startOfDay(addDays(now, 1));
           
           const isToday = eventDateStart.getTime() === todayStart.getTime();
-          const isTomorrow = eventDateStart.getTime() === tomorrowStart.getTime();
           
-          let dateLabel = format(eventDate, 'EEEE, MMMM d');
-          if (isToday) dateLabel = 'Today';
-          else if (isTomorrow) dateLabel = 'Tomorrow';
+          // Always show the actual date instead of "Today" or "Tomorrow"
+          const dateLabel = format(eventDate, 'EEEE, MMMM d');
 
           return (
             <div key={date} className={`rounded-lg border p-4 ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-white'}`}>
