@@ -106,15 +106,10 @@ export default function CalendarPage() {
       // Use the timezone utility to get proper local date
       const eventTime = new Date(event.startTime);
       
-      // Debug: Log the event time and timezone conversion
-      console.log('Event:', event.title, 'UTC time:', eventTime.toISOString());
-      
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      console.log('User timezone:', userTimezone);
       
       // Format the date in user's timezone using formatInTimeZone
       const date = formatInTimeZone(eventTime, userTimezone, 'yyyy-MM-dd');
-      console.log('Formatted date:', date);
       
       if (!groups[date]) {
         groups[date] = [];
@@ -126,7 +121,9 @@ export default function CalendarPage() {
     return (
       <div className="space-y-6">
         {Object.entries(groupedEvents).map(([date, dayEvents]) => {
-          const eventDate = new Date(date);
+          // Create a proper date object from the date string, ensuring it's treated as local date
+          const [year, month, day] = date.split('-').map(Number);
+          const eventDate = new Date(year, month - 1, day); // month is 0-indexed
           const now = new Date();
           
           // Create dates at start of day for accurate comparison
@@ -135,10 +132,8 @@ export default function CalendarPage() {
           
           const isToday = eventDateStart.getTime() === todayStart.getTime();
           
-          // Always show the actual date instead of "Today" or "Tomorrow"
-          // Use the same timezone conversion for consistent date display
-          const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-          const dateLabel = formatInTimeZone(eventDate, userTimezone, 'EEEE, MMMM d, yyyy');
+          // Format the date label using the properly constructed date
+          const dateLabel = format(eventDate, 'EEEE, MMMM d, yyyy');
 
           return (
             <div key={date} className={`rounded-lg border p-4 ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-white'}`}>
