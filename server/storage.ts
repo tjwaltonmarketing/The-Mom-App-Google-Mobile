@@ -569,9 +569,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTodayEventsByFamily(familyId: number): Promise<Event[]> {
-    const today = new Date();
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    // Use Mountain Time (MDT/MST) - adjust for timezone
+    // In August, Mountain Time is UTC-6 (MDT)
+    const now = new Date();
+    const timezoneOffset = 6 * 60 * 60 * 1000; // 6 hours in milliseconds for MDT
+    
+    // Get current local time by subtracting timezone offset from UTC
+    const localNow = new Date(now.getTime() - timezoneOffset);
+    
+    // Create start and end of today in local time, then convert back to UTC for database query
+    const todayStart = new Date(localNow.getFullYear(), localNow.getMonth(), localNow.getDate());
     const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    // Convert back to UTC for database comparison
+    const todayStartUTC = new Date(todayStart.getTime() + timezoneOffset);
+    const todayEndUTC = new Date(todayEnd.getTime() + timezoneOffset);
     
     // Get all family members for this family
     const familyMemberIds = await db.select({ id: familyMembers.id })
@@ -588,8 +600,8 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(events)
       .where(and(
         inArray(events.createdBy, memberIds),
-        gte(events.startTime, todayStart),
-        lt(events.startTime, todayEnd)
+        gte(events.startTime, todayStartUTC),
+        lt(events.startTime, todayEndUTC)
       ));
   }
 

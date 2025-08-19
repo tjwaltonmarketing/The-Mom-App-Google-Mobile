@@ -88,7 +88,16 @@ export default function CalendarPage() {
 
   // List view rendering function - moved after data loading
   const renderListView = () => {
-    const sortedEvents = [...events].sort((a, b) => 
+    const now = new Date();
+    const today = startOfDay(now);
+    
+    // Filter to only show upcoming events (today and future)
+    const upcomingEvents = events.filter(event => {
+      const eventDate = startOfDay(new Date(event.startTime));
+      return eventDate >= today;
+    });
+
+    const sortedEvents = [...upcomingEvents].sort((a, b) => 
       new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
     );
 
