@@ -43,7 +43,7 @@ function Router() {
   const [splashCompleted, setSplashCompleted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
 
-  // Always call useQuery hook - hooks must be called in the same order every render
+  // Only check teen auth if parent auth is not authenticated or loading
   const { data: teenData, isLoading: teenLoading, error: teenError } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     queryFn: async () => {
@@ -66,7 +66,7 @@ function Router() {
       return data;
     },
     retry: false,
-    enabled: true, // Always check for teen auth
+    enabled: !isAuthenticated && !isLoading, // Only check teen auth if not already parent authenticated
     staleTime: 0, // Always refetch to ensure we get fresh session data
     gcTime: 0, // Don't cache teen auth data (v5 uses gcTime instead of cacheTime)
   });
@@ -82,7 +82,7 @@ function Router() {
     teenData: !!teenData, 
     teenLoading,
     teenError: teenError?.message,
-    enabled: true,
+    enabled: !isAuthenticated && !isLoading,
     rawTeenData: teenData,
     routeCondition: teenData && !teenError
   });
