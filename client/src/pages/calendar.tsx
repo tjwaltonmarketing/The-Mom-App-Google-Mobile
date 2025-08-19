@@ -102,7 +102,11 @@ export default function CalendarPage() {
     );
 
     const groupedEvents = sortedEvents.reduce((groups: Record<string, Event[]>, event) => {
-      const date = format(new Date(event.startTime), 'yyyy-MM-dd');
+      // Convert UTC time to local time for proper date grouping
+      const eventTime = new Date(event.startTime);
+      // Subtract 6 hours for MDT (Mountain Daylight Time)
+      const localEventTime = new Date(eventTime.getTime() - (6 * 60 * 60 * 1000));
+      const date = format(localEventTime, 'yyyy-MM-dd');
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -123,7 +127,7 @@ export default function CalendarPage() {
           const isToday = eventDateStart.getTime() === todayStart.getTime();
           
           // Always show the actual date instead of "Today" or "Tomorrow"
-          const dateLabel = format(eventDate, 'EEEE, MMMM d');
+          const dateLabel = format(eventDate, 'EEEE, MMMM d, yyyy');
 
           return (
             <div key={date} className={`rounded-lg border p-4 ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-white'}`}>
