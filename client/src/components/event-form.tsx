@@ -92,22 +92,21 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
         }
       }
 
-      // Set privacy fields based on visibility type
-      let privacyLevel: string;
-      let showAsBusy = false;
+      // Set privacy fields based on visibility type to match database schema
+      let isPrivate = false;
       let finalSharedWith: number[] = [];
 
       switch (visibilityType) {
         case "private":
-          privacyLevel = "private";
+          isPrivate = true;
           break;
         case "busy":
-          privacyLevel = "public";
-          showAsBusy = true;
+          isPrivate = false;
+          finalSharedWith = [];
           break;
         case "shared":
         default:
-          privacyLevel = "public";
+          isPrivate = false;
           finalSharedWith = sharedWith.length > 0 ? sharedWith : [];
           break;
       }
@@ -117,17 +116,22 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
         startTime: startDateTime,
         endTime: endDateTime,
         isAllDay,
-        privacyLevel,
+        isPrivate,
+        visibilityType,
         sharedWith: finalSharedWith,
-        showAsBusy,
       };
 
       return apiRequest("POST", "/api/events", eventPayload);
     },
     onSuccess: () => {
+      // Use the same simple pattern as teen tasks
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
       queryClient.invalidateQueries({ queryKey: ["/api/events/today"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      // Also refetch immediately for better UX
+      queryClient.refetchQueries({ queryKey: ["/api/events"] });
+      
       toast({
         title: "Event created",
         description: "Your event has been added to the calendar.",

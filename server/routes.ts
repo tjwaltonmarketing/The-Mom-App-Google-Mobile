@@ -1118,6 +1118,92 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Parent events endpoints
+  app.post("/api/events", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get the user's family member record
+      const userFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!userFamilyMember) {
+        return res.status(404).json({ error: "Family member record not found" });
+      }
+
+      const { title, description, startTime, endTime, location, isAllDay, isPrivate, visibilityType, sharedWith } = req.body;
+
+      if (!title || !startTime) {
+        return res.status(400).json({ error: "Title and start time are required" });
+      }
+
+      // Create the event data
+      const eventData = {
+        title,
+        description: description || "",
+        startTime: new Date(startTime),
+        endTime: endTime ? new Date(endTime) : null,
+        location: location || "",
+        familyId: familyMembership.familyId,
+        assignedTo: null, // No specific assignment for parent events
+        isAllDay: isAllDay || false,
+        isPrivate: isPrivate || false,
+        visibilityType: visibilityType || "shared",
+        sharedWith: sharedWith || [],
+        createdBy: userFamilyMember.id
+      };
+
+      const newEvent = await storage.createEvent(eventData);
+      res.json(newEvent);
+    } catch (error) {
+      console.error("Parent event creation error:", error);
+      res.status(500).json({ error: "Failed to create event" });
+    }
+  });
+
+  app.get("/api/events", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const events = await storage.getEventsByFamily(familyMembership.familyId);
+      res.json(events);
+    } catch (error) {
+      console.error("Parent events fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch events" });
+    }
+  });
+
+  app.get("/api/events/today", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const todayEvents = await storage.getTodayEventsByFamily(familyMembership.familyId);
+      res.json(todayEvents);
+    } catch (error) {
+      console.error("Today events error:", error);
+      res.status(500).json({ error: "Failed to get today's events" });
+    }
+  });
+
   app.get("/api/passwords", async (req, res) => {
     try {
       if (!req.session.userId) {

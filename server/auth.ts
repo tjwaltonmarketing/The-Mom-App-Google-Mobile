@@ -23,8 +23,9 @@ export function setupSession(app: Express) {
     store: new MemoryStoreSession({
       checkPeriod: 86400000 // prune expired entries every 24h
     }),
-    resave: true, // Force session save on every request to ensure persistence
-    saveUninitialized: true, // Create session for mobile apps
+    resave: false, // Only save if session modified
+    saveUninitialized: false, // Don't create session until something stored
+    rolling: true, // Reset maxAge on each request
     cookie: {
       secure: isProduction, // HTTPS only in production
       httpOnly: false, // Allow client access for mobile apps

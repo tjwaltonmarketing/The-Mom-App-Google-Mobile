@@ -61,7 +61,11 @@ export default function CalendarPage() {
       }
       
       return response.json();
-    }
+    },
+    staleTime: 0, // Always consider data stale for immediate updates
+    gcTime: 0,    // Don't cache in garbage collection
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
