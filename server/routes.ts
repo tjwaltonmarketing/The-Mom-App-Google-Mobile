@@ -878,6 +878,77 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Parent Household Settings Endpoints
+  app.get("/api/household-settings", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the user's family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      let settings = await storage.getHouseholdSettings(familyMembership.familyId);
+      
+      // If no settings exist, create default ones
+      if (!settings) {
+        const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+        if (!familyMember) {
+          return res.status(404).json({ error: "Family member not found" });
+        }
+        
+        settings = await storage.updateDishwasherStatus(
+          familyMembership.familyId, 
+          false, 
+          familyMember.id
+        );
+      }
+      
+      res.json(settings);
+    } catch (error) {
+      console.error("Household settings error:", error);
+      res.status(500).json({ error: "Failed to get household settings" });
+    }
+  });
+
+  app.put("/api/household-settings/dishwasher", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the user's family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get the family member record for the updatedBy field
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      const { isClean } = req.body;
+      const updatedSettings = await storage.updateDishwasherStatus(
+        familyMembership.familyId, 
+        isClean, 
+        familyMember.id
+      );
+      
+      res.json({ 
+        ...updatedSettings,
+        message: `Dishwasher marked as ${isClean ? 'clean' : 'dirty'}` 
+      });
+    } catch (error) {
+      console.error("Parent dishwasher update error:", error);
+      res.status(500).json({ error: "Failed to update dishwasher status" });
+    }
+  });
+
   // Parent Dashboard and Task Management Endpoints
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
