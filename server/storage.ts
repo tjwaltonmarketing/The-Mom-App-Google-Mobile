@@ -182,6 +182,8 @@ export interface IStorage {
   getMealPlans(): Promise<MealPlan[]>;
   getWeeklyMealPlans(): Promise<MealPlan[]>;
   createMealPlan(plan: InsertMealPlan): Promise<MealPlan>;
+  createMealPlanForFamily(plan: InsertMealPlan, familyId: number): Promise<MealPlan>;
+  getMealPlansByFamily(familyId: number): Promise<MealPlan[]>;
   deleteMealPlan(id: number): Promise<boolean>;
 
   // Household Settings
@@ -1070,11 +1072,45 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(mealPlans).orderBy(desc(mealPlans.createdAt));
   }
 
+  async getMealPlansByFamily(familyId: number): Promise<MealPlan[]> {
+    return await db
+      .select()
+      .from(mealPlans)
+      .innerJoin(familyMembers, eq(mealPlans.createdBy, familyMembers.id))
+      .where(eq(familyMembers.familyId, familyId))
+      .orderBy(desc(mealPlans.createdAt))
+      .then(results => results.map(result => result.meal_plans));
+  }
+
   async getWeeklyMealPlans(): Promise<MealPlan[]> {
     return await db.select().from(mealPlans).where(eq(mealPlans.mealType, "dinner"));
   }
 
   async createMealPlan(insertPlan: InsertMealPlan): Promise<MealPlan> {
+    const [plan] = await db
+      .insert(mealPlans)
+      .values(insertPlan)
+      .returning();
+    return plan;
+  }
+
+  async createMealPlanForFamily(insertPlan: InsertMealPlan, familyId: number): Promise<MealPlan> {
+    // Validate that createdBy is in the correct family
+    if (insertPlan.createdBy) {
+      const familyMember = await db
+        .select()
+        .from(familyMembers)
+        .where(and(
+          eq(familyMembers.id, insertPlan.createdBy),
+          eq(familyMembers.familyId, familyId)
+        ))
+        .limit(1);
+      
+      if (familyMember.length === 0) {
+        throw new Error("Cannot create meal plan: creator not in specified family");
+      }
+    }
+
     const [plan] = await db
       .insert(mealPlans)
       .values(insertPlan)

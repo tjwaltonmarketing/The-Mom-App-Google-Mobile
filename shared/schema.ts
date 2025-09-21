@@ -190,6 +190,7 @@ export const mealPlans = pgTable("meal_plans", {
   ingredients: text("ingredients").array(),
   notes: text("notes"),
   createdBy: integer("created_by").references(() => familyMembers.id),
+  familyId: integer("family_id").references(() => families.id), // Add family isolation - nullable first
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -398,30 +399,30 @@ export const sessions = pgTable("sessions", {
   expire: timestamp("expire").notNull(),
 });
 
-// Family merge requests table
-export const familyMergeRequests = pgTable("family_merge_requests", {
-  id: serial("id").primaryKey(),
-  requesterId: integer("requester_id").references(() => users.id).notNull(),
-  requesterFamilyId: integer("requester_family_id").references(() => families.id).notNull(),
-  partnerEmail: text("partner_email").notNull(),
-  partnerId: integer("partner_id").references(() => users.id), // Null until partner claims request
-  partnerFamilyId: integer("partner_family_id").references(() => families.id), // Null until partner claims request
-  status: text("status").notNull().default("pending"), // "pending", "approved", "rejected", "expired"
-  requestMessage: text("request_message"),
-  approvedAt: timestamp("approved_at"),
-  rejectedAt: timestamp("rejected_at"),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+// Family merge requests table - temporarily commented out for migration
+// export const familyMergeRequests = pgTable("family_merge_requests", {
+//   id: serial("id").primaryKey(),
+//   requesterId: integer("requester_id").references(() => users.id).notNull(),
+//   requesterFamilyId: integer("requester_family_id").references(() => families.id).notNull(),
+//   partnerEmail: text("partner_email").notNull(),
+//   partnerId: integer("partner_id").references(() => users.id), // Null until partner claims request
+//   partnerFamilyId: integer("partner_family_id").references(() => families.id), // Null until partner claims request
+//   status: text("status").notNull().default("pending"), // "pending", "approved", "rejected", "expired"
+//   requestMessage: text("request_message"),
+//   approvedAt: timestamp("approved_at"),
+//   rejectedAt: timestamp("rejected_at"),
+//   expiresAt: timestamp("expires_at").notNull(),
+//   createdAt: timestamp("created_at").defaultNow(),
+// });
 
-export const insertFamilyMergeRequestSchema = createInsertSchema(familyMergeRequests).omit({
-  id: true,
-  partnerId: true,
-  partnerFamilyId: true,
-  approvedAt: true,
-  rejectedAt: true,
-  createdAt: true,
-});
+// export const insertFamilyMergeRequestSchema = createInsertSchema(familyMergeRequests).omit({
+//   id: true,
+//   partnerId: true,
+//   partnerFamilyId: true,
+//   approvedAt: true,
+//   rejectedAt: true,
+//   createdAt: true,
+// });
 
 // Relations
 export const familyMembersRelations = relations(familyMembers, ({ many }) => ({
@@ -569,8 +570,8 @@ export type InsertTeenNotificationLog = z.infer<typeof insertTeenNotificationLog
 export type UserSubscription = typeof userSubscriptions.$inferSelect;
 export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
 
-export type FamilyMergeRequest = typeof familyMergeRequests.$inferSelect;
-export type InsertFamilyMergeRequest = z.infer<typeof insertFamilyMergeRequestSchema>;
+// export type FamilyMergeRequest = typeof familyMergeRequests.$inferSelect;
+// export type InsertFamilyMergeRequest = z.infer<typeof insertFamilyMergeRequestSchema>;
 
 export type HouseholdSettings = typeof householdSettings.$inferSelect;
 export type InsertHouseholdSettings = z.infer<typeof insertHouseholdSettingsSchema>;

@@ -52,36 +52,13 @@ export default function TeenDashboard() {
   const isAuthenticated = (authData as any)?.isAuthenticated;
   const teenProfile = isAuthenticated ? (authData as any).teenProfile : null;
 
-  // Fetch weekly meal plans for teen dashboard with aggressive debugging
-  const { data: weeklyMeals = [], isLoading: mealsLoading, error: mealsError } = useQuery<MealPlan[]>({
+  // Fetch weekly meal plans for teen dashboard
+  const { data: weeklyMeals = [], isLoading: mealsLoading } = useQuery<MealPlan[]>({
     queryKey: ["/api/teen/meal-plans/week"],
-    queryFn: async () => {
-      console.log("🍽️ MEAL PLAN QUERY STARTING!");
-      const response = await fetch("/api/teen/meal-plans/week", {
-        credentials: "include"
-      });
-      console.log("🍽️ Meal plan response status:", response.status);
-      const data = await response.json();
-      console.log("🍽️ Meal plan response data:", data);
-      return data;
-    },
     retry: false,
-    staleTime: 0, // Always fetch fresh
-    // Force query to run immediately
-  });
-
-  // Debug meal plan query state
-  console.log("🍽️ Meal plan query state:", { 
-    isAuthenticated, 
-    teenProfile: !!teenProfile, 
-    mealsLoading, 
-    mealsError,
-    weeklyMealsCount: weeklyMeals.length,
-    weeklyMeals: weeklyMeals
+    enabled: isAuthenticated && !!teenProfile, // Only run query if teen is authenticated
   });
   
-  // Debug logging
-  console.log("Dashboard auth state:", { isAuthenticated, teenProfile: !!teenProfile, authData });
 
   // Fetch teen's real tasks from API with custom query function like the tasks page
   const { data: todayTasks = [], isLoading: tasksLoading, error: tasksError } = useQuery({
@@ -388,15 +365,6 @@ export default function TeenDashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
                     const dayMeal = weeklyMeals.find((meal: MealPlan) => meal.day === day);
-                    // Debug specific day meal lookup
-                    if (day === 'Monday') {
-                      console.log("🍽️ Monday meal lookup:", { 
-                        day, 
-                        dayMeal, 
-                        allMeals: weeklyMeals, 
-                        mealFound: !!dayMeal 
-                      });
-                    }
                     const isToday = new Date().toLocaleDateString('en-US', { weekday: 'long' }) === day;
                     
                     return (

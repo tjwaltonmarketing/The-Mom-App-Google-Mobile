@@ -862,8 +862,8 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family member not found" });
       }
 
-      // Get all meal plans for the family
-      const mealPlans = await storage.getMealPlans();
+      // Get meal plans for the teen's family only
+      const mealPlans = await storage.getMealPlansByFamily(familyMember.familyId);
       res.json(mealPlans);
     } catch (error) {
       console.error("Teen meal plans error:", error);
@@ -874,29 +874,23 @@ export async function registerRoutes(app: Express) {
   // Teen Weekly Meal Plans - Specific endpoint for dashboard
   app.get("/api/teen/meal-plans/week", async (req, res) => {
     try {
-      console.log("🍽️ Teen meal plans endpoint called, session teenId:", req.session.teenId);
-      
       if (!req.session.teenId) {
-        console.log("🍽️ Not authenticated - no teenId in session");
         return res.status(401).json({ error: "Not authenticated" });
       }
 
       // Get the teen's family member record
       const teenProfile = await storage.getTeenProfile(req.session.teenId);
-      console.log("🍽️ Teen profile found:", !!teenProfile);
       if (!teenProfile) {
         return res.status(404).json({ error: "Teen profile not found" });
       }
 
       const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
-      console.log("🍽️ Family member found:", !!familyMember, "familyId:", familyMember?.familyId);
       if (!familyMember) {
         return res.status(404).json({ error: "Family member not found" });
       }
 
-      // Get all meal plans for the family (for now, return all - can add week filtering later)
-      const mealPlans = await storage.getMealPlans();
-      console.log("🍽️ Meal plans retrieved:", mealPlans.length, "plans:", mealPlans);
+      // Get meal plans for the teen's family only
+      const mealPlans = await storage.getMealPlansByFamily(familyMember.familyId);
       res.json(mealPlans);
     } catch (error) {
       console.error("Teen weekly meal plans error:", error);
@@ -1222,7 +1216,7 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family not found" });
       }
 
-      const mealPlans = await storage.getMealPlans();
+      const mealPlans = await storage.getMealPlansByFamily(familyMembership.familyId);
       res.json(mealPlans);
     } catch (error) {
       console.error("Meal plans error:", error);
