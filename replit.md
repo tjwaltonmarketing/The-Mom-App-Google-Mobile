@@ -3,7 +3,16 @@
 ## Overview
 The Mom App is a comprehensive family coordination platform designed to reduce mental load for busy parents. It is a full-stack web application with mobile support, featuring AI-powered assistance, smart calendar management with granular privacy controls, advanced task organization, and secure family data management. The project's vision is to streamline family logistics, enhance communication, and foster collaboration among family members, ultimately improving daily life for busy households.
 
-## Recent Changes (August 19, 2025)
+## Recent Changes (September 21, 2025)
+- **🎯 CRITICAL FIX - React Query Cache Invalidation Issue**: Resolved persistent task creation cache refresh problem where newly created tasks wouldn't appear in UI until navigation refresh
+- **Root Cause Identified**: Multiple QueryClient instances caused cache invalidations to target wrong client - components imported singleton queryClient while useQuery/useMutation used QueryClientProvider instance
+- **Expert Solution Implemented**: 
+  - **Fixed Client Instance**: Replaced singleton imports with `useQueryClient()` hook in all components (task-modal.tsx, advanced-task-management.tsx)
+  - **Added Explicit Refetch**: Used `refetchType: "all"` and `exact: true` in invalidateQueries calls to ensure reliable cache updates
+  - **Removed Problematic Settings**: Eliminated `gcTime: 0` that caused timing issues and query garbage collection problems
+- **⚠️ REMEMBER FOR FUTURE PROFILES**: If experiencing cache refresh issues where mutations don't update UI immediately, check for QueryClient instance mismatches and use the same solution pattern
+
+## Previous Changes (August 19, 2025)
 - **Fixed Critical Calendar Timezone Display Issue**: Resolved complex timezone conversion problem where events were displaying incorrect dates in calendar list view despite being stored correctly in database
 - **Enhanced Calendar Date Filtering**: Implemented proper future-only event filtering in calendar list view to show only upcoming events (today and forward), excluding past events
 - **Fixed Calendar Date Construction**: Resolved issue where `new Date("2025-08-20")` was being interpreted as UTC midnight, causing date labels to shift backward by one day in Mountain Time timezone
