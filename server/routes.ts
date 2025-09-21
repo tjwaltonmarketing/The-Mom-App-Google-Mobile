@@ -1136,9 +1136,7 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family not found" });
       }
 
-      console.log(`[DEBUG] Fetching tasks for family ${familyMembership.familyId}, user ${req.session.userId}`);
       const tasks = await storage.getTasksByFamily(familyMembership.familyId);
-      console.log(`[DEBUG] Retrieved ${tasks.length} tasks:`, tasks.map(t => ({ id: t.id, title: t.title, createdBy: t.createdBy })));
       res.json(tasks);
     } catch (error) {
       console.error("Tasks error:", error);
