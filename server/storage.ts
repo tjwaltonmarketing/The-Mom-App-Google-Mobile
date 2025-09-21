@@ -175,6 +175,7 @@ export interface IStorage {
   
   // Grocery Lists
   getGroceryItems(): Promise<GroceryItem[]>;
+  getGroceryItemsByFamily(familyId: number): Promise<GroceryItem[]>;
   createGroceryItem(item: InsertGroceryItem): Promise<GroceryItem>;
   updateGroceryItem(id: number, updates: Partial<GroceryItem>): Promise<GroceryItem | undefined>;
   
@@ -994,6 +995,16 @@ export class DatabaseStorage implements IStorage {
 
   async getGroceryItems(): Promise<GroceryItem[]> {
     return await db.select().from(groceryItems).orderBy(desc(groceryItems.createdAt));
+  }
+
+  async getGroceryItemsByFamily(familyId: number): Promise<GroceryItem[]> {
+    return await db
+      .select()
+      .from(groceryItems)
+      .leftJoin(familyMembers, eq(groceryItems.addedBy, familyMembers.id))
+      .where(eq(familyMembers.familyId, familyId))
+      .orderBy(desc(groceryItems.createdAt))
+      .then(rows => rows.map(row => row.grocery_items));
   }
 
   async createGroceryItem(insertItem: InsertGroceryItem): Promise<GroceryItem> {
