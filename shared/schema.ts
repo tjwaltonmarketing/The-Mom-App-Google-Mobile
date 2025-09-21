@@ -190,7 +190,6 @@ export const mealPlans = pgTable("meal_plans", {
   ingredients: text("ingredients").array(),
   notes: text("notes"),
   createdBy: integer("created_by").references(() => familyMembers.id),
-  familyId: integer("family_id").references(() => families.id), // Add family isolation - nullable first
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

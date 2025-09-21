@@ -1211,12 +1211,12 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
-      if (!familyMembership) {
+      const userFamilyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!userFamilyMembership) {
         return res.status(404).json({ error: "Family not found" });
       }
 
-      const mealPlans = await storage.getMealPlansByFamily(familyMembership.familyId);
+      const mealPlans = await storage.getMealPlansByFamily(userFamilyMembership.familyId);
       res.json(mealPlans);
     } catch (error) {
       console.error("Meal plans error:", error);
@@ -1241,13 +1241,22 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Missing required fields: day, mealType, meal" });
       }
 
+      // Find a family member ID to use as createdBy (preferably the user)
+      const familyMembers = await storage.getFamilyMembersByFamily(familyMembership.familyId);
+      const userFamilyMember = familyMembers.find(fm => fm.userId === req.session.userId);
+      const createdByMemberId = userFamilyMember?.id || familyMembers[0]?.id;
+
+      if (!createdByMemberId) {
+        return res.status(400).json({ error: "No family member found to create meal plan" });
+      }
+
       const mealPlan = await storage.createMealPlan({
         day,
         mealType,
         meal,
         ingredients,
         notes,
-        createdBy
+        createdBy: createdByMemberId
       });
 
       res.json(mealPlan);
