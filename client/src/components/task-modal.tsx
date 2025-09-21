@@ -54,25 +54,11 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       const response = await apiRequest("POST", "/api/tasks", task);
       return response.json();
     },
-    onSuccess: async (serverTask) => {
-      console.log("Task created successfully, invalidating cache...");
-      
-      try {
-        // Await cache invalidation to ensure it completes
-        await queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-        await queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
-        await queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
-        
-        console.log("Cache invalidated, forcing refetch...");
-        
-        // Force explicit refetch as backup
-        await queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-        
-        console.log("Refetch completed");
-        
-      } catch (error) {
-        console.error("Cache invalidation error:", error);
-      }
+    onSuccess: () => {
+      // Simple and reliable cache invalidation
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       
       toast({
         title: "Task Created",
