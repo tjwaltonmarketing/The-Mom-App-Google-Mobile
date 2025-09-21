@@ -54,8 +54,60 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       const response = await apiRequest("POST", "/api/tasks", task);
       return response.json();
     },
-    onSuccess: () => {
-      // Apply the exact same pattern that works for teen accounts
+    onMutate: async (newTask) => {
+      // Cancel any outgoing refetches to avoid race conditions
+      await queryClient.cancelQueries({ queryKey: ["/api/tasks"] });
+      await queryClient.cancelQueries({ queryKey: ["/api/tasks/pending"] });
+      
+      // Snapshot the previous value for potential rollback
+      const previousTasks = queryClient.getQueryData(["/api/tasks"]);
+      const previousPendingTasks = queryClient.getQueryData(["/api/tasks/pending"]);
+      
+      // Optimistically add the new task to the cache
+      const optimisticTask = {
+        id: Date.now(), // Temporary ID until server responds
+        ...newTask,
+        isCompleted: false,
+        createdAt: new Date().toISOString(),
+        completedBy: null,
+        completedAt: null,
+        category: newTask.category || "chores",
+        points: newTask.points || 10
+      };
+      
+      // Update the caches optimistically
+      queryClient.setQueryData(["/api/tasks"], (old: any) => {
+        return old ? [...old, optimisticTask] : [optimisticTask];
+      });
+      
+      queryClient.setQueryData(["/api/tasks/pending"], (old: any) => {
+        return old ? [...old, optimisticTask] : [optimisticTask];
+      });
+      
+      // Return a context object with the snapshotted value
+      return { previousTasks, previousPendingTasks };
+    },
+    onSuccess: (serverTask) => {
+      // Update with the real server data
+      queryClient.setQueryData(["/api/tasks"], (old: any) => {
+        if (!old) return [serverTask];
+        return old.map((task: any) => 
+          task.id === serverTask.id || task.id > 1000000000000 // Handle temp ID
+            ? serverTask 
+            : task
+        );
+      });
+      
+      queryClient.setQueryData(["/api/tasks/pending"], (old: any) => {
+        if (!old) return [serverTask];
+        return old.map((task: any) => 
+          task.id === serverTask.id || task.id > 1000000000000 // Handle temp ID
+            ? serverTask 
+            : task
+        );
+      });
+      
+      // Invalidate to ensure fresh data from server
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
@@ -66,13 +118,27 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       });
       handleClose();
     },
-    onError: (error: any) => {
+    onError: (error: any, newTask, context) => {
+      // Rollback optimistic updates on error
+      if (context?.previousTasks) {
+        queryClient.setQueryData(["/api/tasks"], context.previousTasks);
+      }
+      if (context?.previousPendingTasks) {
+        queryClient.setQueryData(["/api/tasks/pending"], context.previousPendingTasks);
+      }
+      
       toast({
         title: "Error creating task",
         description: error.message || "Something went wrong",
         variant: "destructive",
       });
     },
+    onSettled: () => {
+      // Always invalidate after mutation settles to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+    }
   });
 
   const handleSubmit = () => {
