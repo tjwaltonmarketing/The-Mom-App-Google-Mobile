@@ -248,7 +248,6 @@ export function MealPlanning() {
           item: ingredient,
           quantity: "1", // Default quantity
           category: "pantry", // Default category
-          addedBy: 1,
         })
       );
 
