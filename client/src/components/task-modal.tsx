@@ -107,10 +107,15 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
         );
       });
       
-      // Invalidate to ensure fresh data from server
+      // Invalidate and force immediate refetch to ensure fresh data from server
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      // Force immediate refetch to update UI
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
       
       toast({
         title: "Task Created",
@@ -134,10 +139,15 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       });
     },
     onSettled: () => {
-      // Always invalidate after mutation settles to ensure consistency
+      // Always invalidate and refetch after mutation settles to ensure consistency
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      // Force refetch to ensure UI updates
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
+      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
     }
   });
 
