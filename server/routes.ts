@@ -40,9 +40,9 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Invalid email or password" });
       }
 
-      // Set user session
+      // Set parent session ONLY and clear teen session
       req.session.userId = user.id;
-      req.session.teenId = undefined; // Clear any teen session
+      delete req.session.teenId; // Clear teen session
       
       // Save session synchronously
       await new Promise<void>((resolve, reject) => {
@@ -170,9 +170,9 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
-      // Set teen session and save synchronously
+      // Set teen session ONLY and clear any parent session
       req.session.teenId = teenProfile.id;
-      req.session.userId = user.id;
+      delete req.session.userId; // Clear parent session
       
       // Save session synchronously before responding
       await new Promise<void>((resolve, reject) => {
@@ -232,7 +232,7 @@ export async function registerRoutes(app: Express) {
       if (existingTeen) {
         // Teen already set up, just log them in
         req.session.teenId = existingTeen.id;
-        req.session.userId = existingTeen.userId;
+        delete req.session.userId; // Clear parent session
         
         return res.json({
           success: true,
@@ -324,9 +324,9 @@ export async function registerRoutes(app: Express) {
       // Accept the invite
       await storage.acceptFamilyInvite(inviteCode, user.id);
 
-      // Set session
+      // Set teen session ONLY and clear parent session
       req.session.teenId = teenProfile.id;
-      req.session.userId = user.id;
+      delete req.session.userId; // Clear parent session
       delete req.session.inviteCode;
 
       res.json({
