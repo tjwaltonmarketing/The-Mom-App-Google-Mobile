@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
+import { useQueryClient } from "@tanstack/react-query";
 import type { FamilyMember, InsertTask, Task } from "@shared/schema";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const [points, setPoints] = useState<string>("10");
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
+  const queryClient = useQueryClient();
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
@@ -55,10 +57,22 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       return response.json();
     },
     onSuccess: () => {
-      // Simple and reliable cache invalidation
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      // Explicit cache invalidation with refetch type for reliability
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/tasks"], 
+        exact: true, 
+        refetchType: "all" 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/tasks/pending"], 
+        exact: true, 
+        refetchType: "all" 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/dashboard/stats"], 
+        exact: true, 
+        refetchType: "all" 
+      });
       
       toast({
         title: "Task Created",

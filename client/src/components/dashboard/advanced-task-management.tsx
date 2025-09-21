@@ -20,7 +20,8 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from "@/components/ui/alert-dialog";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
+import { useQueryClient } from "@tanstack/react-query";
 import { TaskModal } from "@/components/task-modal";
 import { TaskEditModal } from "@/components/task-edit-modal";
 import { TeenTaskAssignmentModal } from "@/components/teen-task-assignment-modal";
@@ -35,6 +36,7 @@ export function AdvancedTaskManagement() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: tasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
@@ -53,7 +55,6 @@ export function AdvancedTaskManagement() {
       return response.json();
     },
     staleTime: 0, // Always consider data stale
-    gcTime: 0,    // Don't cache in garbage collection
     refetchOnMount: true,
     refetchOnWindowFocus: true
   });
