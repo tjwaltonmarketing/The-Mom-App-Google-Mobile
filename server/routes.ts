@@ -844,6 +844,60 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Teen Meal Plans - Shared family meal planning (read-only for teens)
+  app.get("/api/teen/meal-plans", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get all meal plans for the family
+      const mealPlans = await storage.getMealPlans();
+      res.json(mealPlans);
+    } catch (error) {
+      console.error("Teen meal plans error:", error);
+      res.status(500).json({ error: "Failed to get meal plans" });
+    }
+  });
+
+  // Teen Weekly Meal Plans - Specific endpoint for dashboard
+  app.get("/api/teen/meal-plans/week", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get all meal plans for the family (for now, return all - can add week filtering later)
+      const mealPlans = await storage.getMealPlans();
+      res.json(mealPlans);
+    } catch (error) {
+      console.error("Teen weekly meal plans error:", error);
+      res.status(500).json({ error: "Failed to get weekly meal plans" });
+    }
+  });
+
   app.put("/api/teen/household-settings/dishwasher", async (req, res) => {
     try {
       if (!req.session.teenId) {

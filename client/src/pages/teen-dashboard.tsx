@@ -25,17 +25,22 @@ import {
 import TeenNavigation from "@/components/teen/teen-navigation";
 import type { Task, Event } from "@shared/schema";
 
+interface MealPlan {
+  id: number;
+  day: string;
+  mealType: "breakfast" | "lunch" | "dinner" | "snack";
+  meal: string;
+  ingredients?: string[];
+  prepTime?: number;
+  notes?: string;
+  createdAt: string;
+}
+
 export default function TeenDashboard() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [, setLocation] = useLocation();
-
-  // Fetch weekly meal plans for teen dashboard
-  const { data: weeklyMeals = [], isLoading: mealsLoading } = useQuery({
-    queryKey: ["/api/meal-plans/week"],
-    retry: false,
-  });
 
   // Get teen profile data with avatar
   const { data: authData, isLoading: profileLoading } = useQuery({
@@ -46,6 +51,13 @@ export default function TeenDashboard() {
   // Extract teen profile from auth response
   const isAuthenticated = (authData as any)?.isAuthenticated;
   const teenProfile = isAuthenticated ? (authData as any).teenProfile : null;
+
+  // Fetch weekly meal plans for teen dashboard
+  const { data: weeklyMeals = [], isLoading: mealsLoading } = useQuery<MealPlan[]>({
+    queryKey: ["/api/teen/meal-plans/week"],
+    retry: false,
+    enabled: isAuthenticated && !!teenProfile, // Only run query if teen is authenticated
+  });
   
   // Debug logging
   console.log("Dashboard auth state:", { isAuthenticated, teenProfile: !!teenProfile, authData });
@@ -179,7 +191,7 @@ export default function TeenDashboard() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {todayTasks.map((task) => (
+                  {todayTasks.map((task: Task) => (
                     <div 
                       key={task.id} 
                       className={`p-3 rounded-lg border flex items-center justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
@@ -354,7 +366,7 @@ export default function TeenDashboard() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => {
-                    const dayMeal = weeklyMeals.find(meal => meal.day === day);
+                    const dayMeal = weeklyMeals.find((meal: MealPlan) => meal.day === day);
                     const isToday = new Date().toLocaleDateString('en-US', { weekday: 'long' }) === day;
                     
                     return (
