@@ -100,15 +100,14 @@ export function AdvancedTaskManagement() {
     member.userId === currentUser?.id
   );
 
-  // Separate tasks by owner/assignee
+  // Separate tasks by assignee only
   const myTasks = tasks.filter(task => 
-    task.assignedTo === currentUserMember?.id || 
-    task.createdBy === currentUserMember?.id
+    task.assignedTo === currentUserMember?.id
   );
 
   const familyTasks = tasks.filter(task => 
     task.assignedTo !== currentUserMember?.id && 
-    task.createdBy !== currentUserMember?.id
+    task.assignedTo !== null // Only show tasks assigned to someone
   );
 
   // Apply filters to both task lists
