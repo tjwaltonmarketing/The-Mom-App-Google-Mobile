@@ -55,15 +55,22 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       return response.json();
     },
     onSuccess: (serverTask) => {
-      // Clear cache and force immediate refetch - simple and reliable approach
-      queryClient.removeQueries({ queryKey: ["/api/tasks"] });
-      queryClient.removeQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.removeQueries({ queryKey: ["/api/dashboard/stats"] });
-      
-      // Force immediate refetch to get fresh data
-      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
-      queryClient.refetchQueries({ queryKey: ["/api/tasks/pending"] });
-      queryClient.refetchQueries({ queryKey: ["/api/dashboard/stats"] });
+      // Use invalidateQueries with explicit type and immediate refetch
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/tasks"], 
+        type: 'all',
+        refetchType: 'all'
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/tasks/pending"], 
+        type: 'all',
+        refetchType: 'all'
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/dashboard/stats"], 
+        type: 'all',
+        refetchType: 'all'
+      });
       
       toast({
         title: "Task Created",
