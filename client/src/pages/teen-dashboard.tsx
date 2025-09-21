@@ -45,6 +45,15 @@ export default function TeenDashboard() {
   // Get teen profile data with avatar
   const { data: authData, isLoading: profileLoading } = useQuery({
     queryKey: ["/api/teen/auth/user"],
+    queryFn: async () => {
+      const response = await fetch("/api/teen/auth/user", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return response.json();
+    },
     retry: false,
   });
 
@@ -52,11 +61,30 @@ export default function TeenDashboard() {
   const isAuthenticated = (authData as any)?.isAuthenticated;
   const teenProfile = isAuthenticated ? (authData as any).teenProfile : null;
 
+  console.log("Teen Dashboard - Auth state:", { 
+    isAuthenticated, 
+    teenProfile: !!teenProfile, 
+    authData: authData,
+    enabled: isAuthenticated && !!teenProfile 
+  });
+
   // Fetch weekly meal plans for teen dashboard
-  const { data: weeklyMeals = [], isLoading: mealsLoading } = useQuery<MealPlan[]>({
+  const { data: weeklyMeals = [], isLoading: mealsLoading, error: mealsError } = useQuery<MealPlan[]>({
     queryKey: ["/api/teen/meal-plans/week"],
+    queryFn: async () => {
+      console.log("Teen Dashboard: Fetching weekly meal plans...");
+      const response = await fetch("/api/teen/meal-plans/week", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Teen Dashboard: Weekly meals data:", data);
+      return data;
+    },
     retry: false,
-    enabled: isAuthenticated && !!teenProfile, // Only run query if teen is authenticated
+    enabled: authData !== undefined, // Run query once we have auth state
   });
   
 
@@ -73,7 +101,7 @@ export default function TeenDashboard() {
     retry: false,
     staleTime: 0, // Always fetch fresh data
     gcTime: 0, // Don't cache the data (v5 uses gcTime instead of cacheTime)
-    enabled: isAuthenticated && !!teenProfile, // Only run query if teen is authenticated
+    enabled: authData !== undefined, // Run query once we have auth state
   });
 
   // Fetch teen's upcoming events from API with custom query function
@@ -89,7 +117,7 @@ export default function TeenDashboard() {
     retry: false,
     staleTime: 0, // Always fetch fresh data
     gcTime: 0, // Don't cache the data
-    enabled: isAuthenticated && !!teenProfile, // Only run query if teen is authenticated
+    enabled: authData !== undefined, // Run query once we have auth state
   });
 
   // Achievement examples - what teens can earn

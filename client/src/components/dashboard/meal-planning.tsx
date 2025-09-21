@@ -50,6 +50,15 @@ export function MealPlanning() {
   // Detect if we're in teen context
   const { data: teenData } = useQuery<{ isAuthenticated: boolean; teenId: number | null; teenProfile: any | null }>({
     queryKey: ["/api/teen/auth/user"],
+    queryFn: async () => {
+      const response = await fetch("/api/teen/auth/user", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return response.json();
+    },
     retry: false,
     enabled: true,
   });
