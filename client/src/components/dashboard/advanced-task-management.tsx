@@ -37,7 +37,25 @@ export function AdvancedTaskManagement() {
   const { toast } = useToast();
 
   const { data: tasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useQuery<Task[]>({
-    queryKey: ["/api/tasks"]
+    queryKey: ["/api/tasks"],
+    queryFn: async () => {
+      const response = await fetch('/api/tasks', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    },
+    staleTime: 0, // Always consider data stale
+    gcTime: 0,    // Don't cache in garbage collection
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
