@@ -95,9 +95,13 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
             
             {/* User Name Display */}
             {user && (
-              <div className="hidden sm:flex items-center text-sm text-gray-700 dark:text-gray-300 blue-light-filter:text-gray-700">
+              <div className="flex items-center text-sm text-gray-700 dark:text-gray-300 blue-light-filter:text-gray-700">
                 <User className="h-4 w-4 mr-1" />
-                <span className="font-medium">{user.firstName} {user.lastName}</span>
+                {/* Mobile: Show only first name, Desktop: Show full name */}
+                <span className="font-medium">
+                  <span className="sm:hidden">{user.firstName}</span>
+                  <span className="hidden sm:inline">{user.firstName} {user.lastName}</span>
+                </span>
               </div>
             )}
             
