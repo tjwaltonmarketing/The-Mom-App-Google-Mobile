@@ -89,9 +89,17 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
             </Button>
           </div>
           
-          {/* Notification Bell and Settings */}
+          {/* User Name and Settings */}
           <div className="flex items-center space-x-3 ml-4">
             <NotificationBell />
+            
+            {/* User Name Display */}
+            {user && (
+              <div className="hidden sm:flex items-center text-sm text-gray-700 dark:text-gray-300 blue-light-filter:text-gray-700">
+                <User className="h-4 w-4 mr-1" />
+                <span className="font-medium">{user.firstName} {user.lastName}</span>
+              </div>
+            )}
             
             {/* Settings Menu */}
             <DropdownMenu>
