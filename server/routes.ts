@@ -1170,6 +1170,39 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/meal-plans", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const { day, mealType, meal, ingredients, notes, createdBy } = req.body;
+
+      if (!day || !mealType || !meal) {
+        return res.status(400).json({ error: "Missing required fields: day, mealType, meal" });
+      }
+
+      const mealPlan = await storage.createMealPlan({
+        day,
+        mealType,
+        meal,
+        ingredients,
+        notes,
+        createdBy
+      });
+
+      res.json(mealPlan);
+    } catch (error) {
+      console.error("Create meal plan error:", error);
+      res.status(500).json({ error: "Failed to create meal plan" });
+    }
+  });
+
   app.get("/api/grocery-items", async (req, res) => {
     try {
       if (!req.session.userId) {

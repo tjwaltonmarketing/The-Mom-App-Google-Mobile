@@ -51,55 +51,34 @@ export function MealPlanning() {
   const { data: mealPlans = [], refetch: refetchMeals, isLoading: mealsLoading, error: mealsError } = useQuery<MealPlan[]>({
     queryKey: ["/api/meal-plans"],
     queryFn: async () => {
-      console.log("🍽️ Direct fetch to /api/meal-plans");
       const response = await fetch("/api/meal-plans", {
         credentials: "include",
       });
-      console.log("🍽️ Response status:", response.status);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
       const data = await response.json();
-      console.log("🍽️ Fetched meal data:", data);
       return data;
     },
-    staleTime: 0, // Always refetch to ensure fresh data
+    staleTime: 5000, // Cache for 5 seconds to prevent excessive refetching
     refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false, // Disable to reduce unnecessary requests
   });
-
-  console.log("🍽️ Meal plans query state:", { 
-    count: mealPlans.length, 
-    firstMeal: mealPlans[0],
-    allMeals: mealPlans,
-    loading: mealsLoading, 
-    error: mealsError,
-    errorDetails: JSON.stringify(mealsError)
-  });
-
-  // Force refresh if no data and not loading
-  if (mealPlans.length === 0 && !mealsLoading && !mealsError) {
-    console.log("🔄 Force refreshing meal data...");
-    refetchMeals();
-  }
 
   // Fetch real grocery list data from API
   const { data: groceryList = [], refetch: refetchGrocery } = useQuery<GroceryItem[]>({
     queryKey: ["/api/grocery-items"],
     queryFn: async () => {
-      console.log("🛒 Direct fetch to /api/grocery-items");
       const response = await fetch("/api/grocery-items", {
         credentials: "include",
       });
-      console.log("🛒 Response status:", response.status);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
       const data = await response.json();
-      console.log("🛒 Fetched grocery data:", data);
       return data;
     },
-    staleTime: 0,
+    staleTime: 5000, // Cache for 5 seconds to prevent excessive refetching
     refetchOnMount: true,
   });
 
@@ -125,6 +104,14 @@ export function MealPlanning() {
       });
       setNewMeal({ day: "", mealType: "", meal: "", ingredients: "", notes: "" });
       setIsMealModalOpen(false);
+    },
+    onError: (error: any) => {
+      console.error("Error adding meal:", error);
+      toast({
+        title: "Error adding meal",
+        description: error.message || "Failed to add meal. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
