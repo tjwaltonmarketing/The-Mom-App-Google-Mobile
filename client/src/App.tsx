@@ -66,7 +66,7 @@ function Router() {
       return data;
     },
     retry: false,
-    enabled: !isAuthenticated && !isLoading, // Only check teen auth if not already parent authenticated
+    enabled: true, // Always check teen auth to handle session switching properly
     staleTime: 0, // Always refetch to ensure we get fresh session data
     gcTime: 0, // Don't cache teen auth data (v5 uses gcTime instead of cacheTime)
   });
