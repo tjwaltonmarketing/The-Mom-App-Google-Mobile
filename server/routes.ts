@@ -1326,6 +1326,53 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/grocery-items/share", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const { recipientFamilyMemberId, items } = req.body;
+
+      if (!recipientFamilyMemberId || !items || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ error: "Recipient family member ID and items array are required" });
+      }
+
+      // Verify the recipient is in the same family
+      const recipientMember = await storage.getFamilyMemberById(recipientFamilyMemberId);
+      if (!recipientMember || recipientMember.familyId !== familyMembership.familyId) {
+        return res.status(403).json({ error: "Can only share with family members" });
+      }
+
+      // Create grocery items for the recipient
+      const createdItems = [];
+      for (const item of items) {
+        const groceryItem = await storage.createGroceryItem({
+          item: item.item,
+          quantity: item.quantity,
+          category: item.category || "other",
+          isCompleted: false,
+          addedBy: recipientFamilyMemberId
+        });
+        createdItems.push(groceryItem);
+      }
+
+      res.json({ 
+        success: true, 
+        itemsCreated: createdItems.length,
+        message: `Successfully shared ${createdItems.length} grocery items`
+      });
+    } catch (error) {
+      console.error("Share grocery items error:", error);
+      res.status(500).json({ error: "Failed to share grocery items" });
+    }
+  });
+
   // Parent events endpoints
   app.post("/api/events", async (req, res) => {
     try {

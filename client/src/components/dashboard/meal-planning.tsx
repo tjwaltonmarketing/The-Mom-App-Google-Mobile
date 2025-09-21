@@ -288,22 +288,33 @@ export function MealPlanning() {
       return;
     }
 
-    // Create a notification for the selected family member
     try {
       const member = familyMembers.find((m: any) => m.id.toString() === selectedMember);
+      
+      // Copy each grocery item to the recipient's account using the share endpoint
+      await apiRequest("POST", "/api/grocery-items/share", {
+        recipientFamilyMemberId: parseInt(selectedMember),
+        items: pendingItems.map(item => ({
+          item: item.item,
+          quantity: item.quantity,
+          category: item.category
+        }))
+      });
+
       const itemsList = pendingItems.map((item: GroceryItem) => `${item.item} (${item.quantity})`).join(', ');
       
+      // Send notification about the shared items
       await apiRequest("POST", "/api/notifications", {
         type: "grocery_list",
         title: "Grocery List Shared",
-        message: `Shopping list: ${itemsList}`,
+        message: `${pendingItems.length} grocery items have been added to your shopping list: ${itemsList}`,
         recipientId: parseInt(selectedMember),
         deliveryMethod: "in_app"
       });
 
       toast({
         title: "Grocery list shared",
-        description: `Sent shopping list to ${member?.name}`,
+        description: `Copied ${pendingItems.length} items to ${member?.name}'s grocery list`,
       });
       
       setIsShareModalOpen(false);
@@ -311,7 +322,7 @@ export function MealPlanning() {
     } catch (error) {
       toast({
         title: "Failed to share",
-        description: "Could not send grocery list. Please try again.",
+        description: "Could not share grocery list. Please try again.",
         variant: "destructive",
       });
     }
