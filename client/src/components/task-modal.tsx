@@ -54,23 +54,14 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       const response = await apiRequest("POST", "/api/tasks", task);
       return response.json();
     },
-    onSuccess: (serverTask) => {
-      // Use invalidateQueries with explicit type and immediate refetch
-      queryClient.invalidateQueries({ 
-        queryKey: ["/api/tasks"], 
-        type: 'all',
-        refetchType: 'all'
-      });
-      queryClient.invalidateQueries({ 
-        queryKey: ["/api/tasks/pending"], 
-        type: 'all',
-        refetchType: 'all'
-      });
-      queryClient.invalidateQueries({ 
-        queryKey: ["/api/dashboard/stats"], 
-        type: 'all',
-        refetchType: 'all'
-      });
+    onSuccess: async (serverTask) => {
+      // Await cache invalidation to ensure it completes
+      await queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      // Force explicit refetch as backup
+      await queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
       
       toast({
         title: "Task Created",
