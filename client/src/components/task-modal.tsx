@@ -55,6 +55,8 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       return response.json();
     },
     onMutate: async (newTask) => {
+      console.log("🚀 Starting optimistic update for new task:", newTask);
+      
       // Cancel any outgoing refetches to avoid race conditions
       await queryClient.cancelQueries({ queryKey: ["/api/tasks"] });
       await queryClient.cancelQueries({ queryKey: ["/api/tasks/pending"] });
@@ -62,6 +64,9 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       // Snapshot the previous value for potential rollback
       const previousTasks = queryClient.getQueryData(["/api/tasks"]);
       const previousPendingTasks = queryClient.getQueryData(["/api/tasks/pending"]);
+      
+      console.log("📊 Previous tasks count:", Array.isArray(previousTasks) ? previousTasks.length : 0);
+      console.log("📊 Previous pending tasks count:", Array.isArray(previousPendingTasks) ? previousPendingTasks.length : 0);
       
       // Optimistically add the new task to the cache
       const optimisticTask = {
@@ -75,42 +80,56 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
         points: newTask.points || 10
       };
       
+      console.log("✨ Created optimistic task:", optimisticTask);
+      
       // Update the caches optimistically
       queryClient.setQueryData(["/api/tasks"], (old: any) => {
-        return old ? [...old, optimisticTask] : [optimisticTask];
+        const newData = old ? [...old, optimisticTask] : [optimisticTask];
+        console.log("📝 Updated /api/tasks cache, new count:", newData.length);
+        return newData;
       });
       
       queryClient.setQueryData(["/api/tasks/pending"], (old: any) => {
-        return old ? [...old, optimisticTask] : [optimisticTask];
+        const newData = old ? [...old, optimisticTask] : [optimisticTask];
+        console.log("📝 Updated /api/tasks/pending cache, new count:", newData.length);
+        return newData;
       });
       
       // Return a context object with the snapshotted value
       return { previousTasks, previousPendingTasks };
     },
     onSuccess: (serverTask) => {
+      console.log("✅ Task creation successful! Server returned:", serverTask);
+      
       // Update with the real server data
       queryClient.setQueryData(["/api/tasks"], (old: any) => {
         if (!old) return [serverTask];
-        return old.map((task: any) => 
+        const updated = old.map((task: any) => 
           task.id === serverTask.id || task.id > 1000000000000 // Handle temp ID
             ? serverTask 
             : task
         );
+        console.log("🔄 Replaced optimistic task with server data in /api/tasks");
+        return updated;
       });
       
       queryClient.setQueryData(["/api/tasks/pending"], (old: any) => {
         if (!old) return [serverTask];
-        return old.map((task: any) => 
+        const updated = old.map((task: any) => 
           task.id === serverTask.id || task.id > 1000000000000 // Handle temp ID
             ? serverTask 
             : task
         );
+        console.log("🔄 Replaced optimistic task with server data in /api/tasks/pending");
+        return updated;
       });
       
       // Invalidate to ensure fresh data from server
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
       queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      
+      console.log("🔄 Cache invalidated - fresh data will be fetched");
       
       toast({
         title: "Task Created",
