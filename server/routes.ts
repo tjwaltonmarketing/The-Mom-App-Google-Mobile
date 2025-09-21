@@ -1277,11 +1277,52 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family not found" });
       }
 
-      const groceryItems = await storage.getGroceryItems();
+      const groceryItems = await storage.getGroceryItemsByFamily(familyMembership.familyId);
       res.json(groceryItems);
     } catch (error) {
       console.error("Grocery items error:", error);
       res.status(500).json({ error: "Failed to get grocery items" });
+    }
+  });
+
+  app.post("/api/grocery-items", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const { item, quantity, category } = req.body;
+
+      if (!item || !quantity) {
+        return res.status(400).json({ error: "Item name and quantity are required" });
+      }
+
+      // Find a family member ID to use as addedBy (preferably the user)
+      const familyMembers = await storage.getFamilyMembersByFamily(familyMembership.familyId);
+      const userFamilyMember = familyMembers.find(fm => fm.userId === req.session.userId);
+      const addedByMemberId = userFamilyMember?.id || familyMembers[0]?.id;
+
+      if (!addedByMemberId) {
+        return res.status(400).json({ error: "No family member found to create grocery item" });
+      }
+
+      const groceryItem = await storage.createGroceryItem({
+        item,
+        quantity,
+        category: category || "other",
+        isCompleted: false,
+        addedBy: addedByMemberId
+      });
+
+      res.json(groceryItem);
+    } catch (error) {
+      console.error("Create grocery item error:", error);
+      res.status(500).json({ error: "Failed to create grocery item" });
     }
   });
 
