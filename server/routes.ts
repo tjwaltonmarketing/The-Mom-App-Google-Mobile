@@ -932,6 +932,60 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Teen grocery items endpoints
+  app.get("/api/teen/grocery-items", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get grocery items for the teen's family only
+      const groceryItems = await storage.getGroceryItemsByFamily(familyMember.familyId);
+      res.json(groceryItems);
+    } catch (error) {
+      console.error("Teen grocery items error:", error);
+      res.status(500).json({ error: "Failed to get grocery items" });
+    }
+  });
+
+  // Teen family members endpoints
+  app.get("/api/teen/family-members", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get family members for the teen's family only
+      const familyMembers = await storage.getFamilyMembersByFamily(familyMember.familyId);
+      res.json(familyMembers);
+    } catch (error) {
+      console.error("Teen family members error:", error);
+      res.status(500).json({ error: "Failed to get family members" });
+    }
+  });
+
   // Parent Household Settings Endpoints
   app.get("/api/household-settings", async (req, res) => {
     try {

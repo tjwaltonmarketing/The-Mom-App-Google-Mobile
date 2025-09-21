@@ -47,11 +47,24 @@ export function MealPlanning() {
   const [expandedMeal, setExpandedMeal] = useState<number | null>(null);
   const { toast } = useToast();
 
+  // Detect if we're in teen context
+  const { data: teenData } = useQuery<{ isAuthenticated: boolean; teenId: number | null; teenProfile: any | null }>({
+    queryKey: ["/api/teen/auth/user"],
+    retry: false,
+    enabled: true,
+  });
+  const isTeenUser = (teenData as any)?.isAuthenticated === true;
+
+  // Use appropriate API endpoints based on context
+  const mealPlansEndpoint = isTeenUser ? "/api/teen/meal-plans" : "/api/meal-plans";
+  const groceryItemsEndpoint = isTeenUser ? "/api/teen/grocery-items" : "/api/grocery-items";
+  const familyMembersEndpoint = isTeenUser ? "/api/teen/family-members" : "/api/family-members";
+
   // Fetch real meal plans data from API
   const { data: mealPlans = [], refetch: refetchMeals, isLoading: mealsLoading, error: mealsError } = useQuery<MealPlan[]>({
-    queryKey: ["/api/meal-plans"],
+    queryKey: [mealPlansEndpoint],
     queryFn: async () => {
-      const response = await fetch("/api/meal-plans", {
+      const response = await fetch(mealPlansEndpoint, {
         credentials: "include",
       });
       if (!response.ok) {
@@ -63,13 +76,14 @@ export function MealPlanning() {
     staleTime: 5000, // Cache for 5 seconds to prevent excessive refetching
     refetchOnMount: true,
     refetchOnWindowFocus: false, // Disable to reduce unnecessary requests
+    enabled: !!teenData, // Only fetch after we know the user context
   });
 
   // Fetch real grocery list data from API
   const { data: groceryList = [], refetch: refetchGrocery } = useQuery<GroceryItem[]>({
-    queryKey: ["/api/grocery-items"],
+    queryKey: [groceryItemsEndpoint],
     queryFn: async () => {
-      const response = await fetch("/api/grocery-items", {
+      const response = await fetch(groceryItemsEndpoint, {
         credentials: "include",
       });
       if (!response.ok) {
@@ -80,11 +94,13 @@ export function MealPlanning() {
     },
     staleTime: 5000, // Cache for 5 seconds to prevent excessive refetching
     refetchOnMount: true,
+    enabled: !!teenData, // Only fetch after we know the user context
   });
 
   // Fetch family members for sharing
   const { data: familyMembers = [] } = useQuery<any[]>({
-    queryKey: ["/api/family-members"],
+    queryKey: [familyMembersEndpoint],
+    enabled: !!teenData, // Only fetch after we know the user context
   });
 
   const addMealMutation = useMutation({
