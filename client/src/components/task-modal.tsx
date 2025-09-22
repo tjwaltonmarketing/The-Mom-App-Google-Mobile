@@ -28,7 +28,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const [assignedTo, setAssignedTo] = useState<string>("unassigned");
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [dueTime, setDueTime] = useState<string>("");
-  const [points, setPoints] = useState<string>("10");
+  const [points, setPoints] = useState<string>("0");
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -131,7 +131,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
     setAssignedTo("unassigned");
     setDueDate(undefined);
     setDueTime("");
-    setPoints("10");
+    setPoints("0");
     onClose();
   };
 
@@ -206,6 +206,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="0">None (No Points)</SelectItem>
                 <SelectItem value="5">5 points</SelectItem>
                 <SelectItem value="10">10 points</SelectItem>
                 <SelectItem value="15">15 points</SelectItem>
