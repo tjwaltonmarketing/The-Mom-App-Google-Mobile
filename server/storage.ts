@@ -376,20 +376,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async moveEventsToFamily(fromFamilyId: number, toFamilyId: number): Promise<void> {
-    // Move all events from one family to another
-    const membersFromFamily = await this.getFamilyMembersByFamilyId(fromFamilyId);
-    const membersToFamily = await this.getFamilyMembersByFamilyId(toFamilyId);
-    
-    // For simplicity, reassign events to the first member of the target family
-    const targetMember = membersToFamily[0];
-    if (targetMember) {
-      for (const member of membersFromFamily) {
-        await db
-          .update(events)
-          .set({ assignedTo: targetMember.id })
-          .where(eq(events.assignedTo, member.id));
-      }
-    }
+    // Move all events from one family to another - update family ID instead of assignedTo
+    await db
+      .update(events)
+      .set({ familyId: toFamilyId })
+      .where(eq(events.familyId, fromFamilyId));
   }
 
   async moveTasksToFamily(fromFamilyId: number, toFamilyId: number): Promise<void> {
@@ -468,7 +459,7 @@ export class DatabaseStorage implements IStorage {
       await db.delete(notifications).where(eq(notifications.recipientId, id));
       await db.delete(tasks).where(eq(tasks.assignedTo, id));
       await db.delete(tasks).where(eq(tasks.completedBy, id));
-      await db.delete(events).where(eq(events.assignedTo, id));
+      // Skip deleting events - they can remain with the member ID in assignedTo array
       await db.delete(voiceNotes).where(eq(voiceNotes.createdBy, id));
       
       // Now delete the family member
@@ -561,13 +552,12 @@ export class DatabaseStorage implements IStorage {
     
     const memberIds = familyMemberIds.map(fm => fm.id);
     
-    // Get events created by any family member or assigned to any family member
+    // Get events created by any family member 
     // Also include events where createdBy is null (legacy events)
     return await db.select().from(events)
       .where(
         or(
           inArray(events.createdBy, memberIds),
-          inArray(events.assignedTo, memberIds),
           isNull(events.createdBy)
         )
       );
@@ -882,7 +872,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createEventNotifications(event: Event): Promise<void> {
-    if (!event.assignedTo || event.isAllDay) return;
+    if (!event.assignedTo || event.assignedTo.length === 0 || event.isAllDay) return;
     
     const eventTime = new Date(event.startTime);
     const now = new Date();
@@ -894,22 +884,25 @@ export class DatabaseStorage implements IStorage {
       { hours: 0.25, title: "Event Starting Soon", message: `"${event.title}" starts in 15 minutes${event.location ? ` at ${event.location}` : ''}` }
     ];
     
-    for (const reminder of reminders) {
-      const reminderTime = new Date(eventTime.getTime() - reminder.hours * 60 * 60 * 1000);
-      
-      // Only create notifications for future times
-      if (reminderTime > now) {
-        const notification: InsertNotification = {
-          type: "event_reminder",
-          title: reminder.title,
-          message: reminder.message,
-          recipientId: event.assignedTo,
-          relatedEventId: event.id,
-          scheduledFor: reminderTime,
-          deliveryMethod: "sms"
-        };
+    // Create notifications for each assigned family member
+    for (const assignedMemberId of event.assignedTo) {
+      for (const reminder of reminders) {
+        const reminderTime = new Date(eventTime.getTime() - reminder.hours * 60 * 60 * 1000);
         
-        await this.createNotification(notification);
+        // Only create notifications for future times
+        if (reminderTime > now) {
+          const notification: InsertNotification = {
+            type: "event_reminder",
+            title: reminder.title,
+            message: reminder.message,
+            recipientId: assignedMemberId,
+            relatedEventId: event.id,
+            scheduledFor: reminderTime,
+            deliveryMethod: "sms"
+          };
+          
+          await this.createNotification(notification);
+        }
       }
     }
   }
