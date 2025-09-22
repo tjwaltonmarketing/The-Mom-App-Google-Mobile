@@ -64,7 +64,7 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
       title: "",
       description: "",
       location: "",
-      assignedTo: null,
+      assignedTo: [],
       isAllDay: false,
       visibilityType: "shared",
       sharedWith: [],
@@ -195,27 +195,67 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="assignedTo">Assign to Family Member</Label>
-            <Select
-              onValueChange={(value) => 
-                form.setValue("assignedTo", value === "none" ? null : parseInt(value))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select family member" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No one assigned</SelectItem>
+            <Label htmlFor="assignedTo">Assign to Family Members</Label>
+            <div className="space-y-3">
+              {/* Select All / None buttons */}
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const allMemberIds = familyMembers.map(m => m.id);
+                    form.setValue("assignedTo", allMemberIds);
+                  }}
+                  disabled={familyMembers.length === 0}
+                >
+                  <Users className="h-4 w-4 mr-1" />
+                  Select All
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => form.setValue("assignedTo", [])}
+                >
+                  Clear All
+                </Button>
+                <div className="text-sm text-gray-500 ml-auto">
+                  {(form.watch("assignedTo") || []).length} of {familyMembers.length} selected
+                </div>
+              </div>
+              
+              {/* Family member checkboxes */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
                 {familyMembers.map((member) => (
-                  <SelectItem key={member.id} value={member.id.toString()}>
-                    <div className="flex items-center gap-2">
-                      <span>{member.avatar}</span>
+                  <div key={member.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`assigned-${member.id}`}
+                      checked={(form.watch("assignedTo") || []).includes(member.id)}
+                      onChange={(e) => {
+                        const currentAssigned = form.watch("assignedTo") || [];
+                        if (e.target.checked) {
+                          form.setValue("assignedTo", [...currentAssigned, member.id]);
+                        } else {
+                          form.setValue("assignedTo", currentAssigned.filter(id => id !== member.id));
+                        }
+                      }}
+                      className="rounded"
+                    />
+                    <Label htmlFor={`assigned-${member.id}`} className="text-sm font-normal flex items-center gap-2 cursor-pointer">
+                      <span className="text-lg">{member.avatar}</span>
                       <span>{member.name}</span>
-                    </div>
-                  </SelectItem>
+                      <span className="text-xs text-gray-500 capitalize">({member.role})</span>
+                    </Label>
+                  </div>
                 ))}
-              </SelectContent>
-            </Select>
+              </div>
+              
+              <p className="text-xs text-gray-500">
+                Select which family members this event is assigned to. Everyone will see the event, but only assigned members get notifications.
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center space-x-2">

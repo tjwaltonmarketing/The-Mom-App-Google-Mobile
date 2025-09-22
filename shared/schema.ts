@@ -79,7 +79,7 @@ export const events = pgTable("events", {
   endTime: timestamp("end_time"),
   location: text("location"),
   familyId: integer("family_id").references(() => families.id),
-  assignedTo: integer("assigned_to").references(() => familyMembers.id),
+  assignedTo: integer("assigned_to").array().default([]),
   isAllDay: boolean("is_all_day").default(false),
   isPrivate: boolean("is_private").default(false),
   visibilityType: text("visibility_type").notNull().default("shared"), // "shared", "private", "busy"

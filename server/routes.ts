@@ -588,7 +588,7 @@ export async function registerRoutes(app: Express) {
         endTime: endDateTime,
         location: location || "",
         familyId: familyMember.familyId,
-        assignedTo: teenProfile.familyMemberId, // Assign to the teen
+        assignedTo: [teenProfile.familyMemberId], // Assign to the teen (as array)
         isAllDay: false,
         isPrivate: false,
         visibilityType: "shared", // Teen events are shared by default
@@ -1502,7 +1502,7 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family member record not found" });
       }
 
-      const { title, description, startTime, endTime, location, isAllDay, isPrivate, visibilityType, sharedWith } = req.body;
+      const { title, description, startTime, endTime, location, assignedTo, isAllDay, isPrivate, visibilityType, sharedWith } = req.body;
 
       if (!title || !startTime) {
         return res.status(400).json({ error: "Title and start time are required" });
@@ -1516,7 +1516,7 @@ export async function registerRoutes(app: Express) {
         endTime: endTime ? new Date(endTime) : null,
         location: location || "",
         familyId: familyMembership.familyId,
-        assignedTo: null, // No specific assignment for parent events
+        assignedTo: assignedTo || [], // Array of family member IDs
         isAllDay: isAllDay || false,
         isPrivate: isPrivate || false,
         visibilityType: visibilityType || "shared",
