@@ -82,6 +82,24 @@ export default function TeenPasswords() {
   // Fetch shared passwords for teen
   const { data: sharedPasswords = [], isLoading: isLoadingShared } = useQuery({
     queryKey: ["/api/teen/shared-passwords"],
+    queryFn: async () => {
+      console.log("Fetching teen shared passwords...");
+      const response = await fetch('/api/teen/shared-passwords', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Teen shared passwords fetched:", data);
+      return data;
+    },
+    enabled: !!(authData as any)?.isAuthenticated && !!teenProfile,
     retry: false,
   });
 
