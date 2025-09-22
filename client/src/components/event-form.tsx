@@ -244,7 +244,6 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
                       className="rounded"
                     />
                     <Label htmlFor={`assigned-${member.id}`} className="text-sm font-normal flex items-center gap-2 cursor-pointer">
-                      <span className="text-lg">{member.avatar}</span>
                       <span>{member.name}</span>
                       <span className="text-xs text-gray-500 capitalize">({member.role})</span>
                     </Label>
