@@ -456,20 +456,22 @@ export default function CalendarPage() {
     
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-4 mb-4">
-          <Button variant="outline" size="sm" onClick={backToMonth}>
-            <ArrowLeft size={16} className="mr-1" />
-            Back to Month
-          </Button>
-          <div className="text-lg font-medium">
-            {dayEvents.length} event{dayEvents.length !== 1 ? 's' : ''} scheduled
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="sm" onClick={backToMonth}>
+              <ArrowLeft size={16} className="mr-1" />
+              Back to Month
+            </Button>
+            <div className="text-lg font-medium">
+              {dayEvents.length} event{dayEvents.length !== 1 ? 's' : ''} scheduled
+            </div>
           </div>
           <Button 
             onClick={() => {
               setSelectedDate(currentDate);
               setShowEventModal(true);
             }}
-            className="ml-auto bg-primary hover:bg-primary/90"
+            className="sm:ml-auto bg-primary hover:bg-primary/90 w-full sm:w-auto"
           >
             <Plus size={16} className="mr-1" />
             Add Event
