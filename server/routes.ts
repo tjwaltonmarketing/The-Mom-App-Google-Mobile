@@ -671,6 +671,63 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Teen shared passwords endpoint - Get passwords shared with this teen
+  app.get("/api/teen/shared-passwords", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get all passwords and filter for ones shared with this teen
+      const allPasswords = await storage.getPasswordsByFamily(familyMember.familyId);
+      const sharedPasswords = allPasswords.filter(password => {
+        if (!password.sharedWith) return false;
+        
+        try {
+          const sharedWithArray = JSON.parse(password.sharedWith);
+          return Array.isArray(sharedWithArray) && sharedWithArray.includes(teenProfile.familyMemberId);
+        } catch (error) {
+          console.error("Error parsing sharedWith:", password.sharedWith, error);
+          return false;
+        }
+      });
+
+      // Transform to match the teen page interface
+      const transformedPasswords = sharedPasswords.map(password => {
+        // Get who shared it (creator name)
+        const createdByName = familyMember.familyId === familyMember.familyId ? "Family" : "Parent";
+        
+        return {
+          id: password.id,
+          service: password.title,
+          category: password.category,
+          username: password.username || password.email || "",
+          password: password.password,
+          notes: password.notes,
+          sharedBy: createdByName,
+          sharedAt: password.createdAt,
+          lastUsed: password.lastUpdated
+        };
+      });
+      
+      res.json(transformedPasswords);
+    } catch (error) {
+      console.error("Teen shared passwords fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch shared passwords" });
+    }
+  });
+
   // Teen create password endpoint
   app.post("/api/teen/passwords", async (req, res) => {
     try {
