@@ -1589,5 +1589,50 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/passwords", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get the parent's family member record
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      const { title, category, website, username, email, password, notes, sharedWith, isFavorite } = req.body;
+
+      if (!title || !password) {
+        return res.status(400).json({ error: "Title and password are required" });
+      }
+
+      // Create the password entry
+      const passwordData = {
+        title,
+        category: category || "other",
+        website: website || "",
+        username: username || "",
+        email: email || "",
+        password, // In production, this should be encrypted
+        notes: notes || "",
+        createdBy: familyMember.id,
+        sharedWith: sharedWith || "[]", // Default to not shared
+        isFavorite: isFavorite || false
+      };
+
+      const newPassword = await storage.createPassword(passwordData);
+      res.json(newPassword);
+    } catch (error) {
+      console.error("Password creation error:", error);
+      res.status(500).json({ error: "Failed to create password" });
+    }
+  });
+
   return server;
 }
