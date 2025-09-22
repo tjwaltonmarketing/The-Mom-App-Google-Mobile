@@ -1551,6 +1551,39 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Parent delete event endpoint
+  app.delete("/api/events/:eventId", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const eventId = parseInt(req.params.eventId);
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get the event to check it exists and belongs to the family
+      const event = await storage.getEventById(eventId);
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+
+      // Verify event belongs to the user's family
+      if (event.familyId !== familyMembership.familyId) {
+        return res.status(403).json({ error: "Event does not belong to your family" });
+      }
+
+      // Delete the event
+      await storage.deleteEvent(eventId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Parent event delete error:", error);
+      res.status(500).json({ error: "Failed to delete event" });
+    }
+  });
+
   app.get("/api/events/today", async (req, res) => {
     try {
       if (!req.session.userId) {
