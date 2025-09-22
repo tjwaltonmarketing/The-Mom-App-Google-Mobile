@@ -874,6 +874,8 @@ export class DatabaseStorage implements IStorage {
   async createEventNotifications(event: Event): Promise<void> {
     if (!event.assignedTo || event.assignedTo.length === 0 || event.isAllDay) return;
     
+    console.log("Event assigned to:", event.assignedTo, "Type:", typeof event.assignedTo, "IsArray:", Array.isArray(event.assignedTo));
+    
     const eventTime = new Date(event.startTime);
     const now = new Date();
     
@@ -886,6 +888,7 @@ export class DatabaseStorage implements IStorage {
     
     // Create notifications for each assigned family member
     for (const assignedMemberId of event.assignedTo) {
+      console.log("Creating notification for member:", assignedMemberId, "Type:", typeof assignedMemberId);
       for (const reminder of reminders) {
         const reminderTime = new Date(eventTime.getTime() - reminder.hours * 60 * 60 * 1000);
         
@@ -901,6 +904,7 @@ export class DatabaseStorage implements IStorage {
             deliveryMethod: "sms"
           };
           
+          console.log("About to create notification with recipientId:", notification.recipientId, "Type:", typeof notification.recipientId);
           await this.createNotification(notification);
         }
       }
