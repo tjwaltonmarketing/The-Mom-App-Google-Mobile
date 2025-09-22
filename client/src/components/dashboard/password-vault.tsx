@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,9 +22,13 @@ import {
   Mail,
   User,
   Globe,
-  Edit
+  Edit,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { apiRequest } from "@/lib/queryClient";
 import type { Password } from "@shared/schema";
 
 interface PasswordEntry {
@@ -42,44 +46,73 @@ interface PasswordEntry {
 
 export function PasswordVault() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [editingPassword, setEditingPassword] = useState<Password | null>(null);
-  const [passwords, setPasswords] = useState<Password[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [deleteConfirmPassword, setDeleteConfirmPassword] = useState<Password | null>(null);
+  const [showRemoveAllConfirm, setShowRemoveAllConfirm] = useState(false);
 
-  const fetchPasswords = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await fetch('/api/passwords', {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+  const { data: passwords = [], isLoading, error } = useQuery({
+    queryKey: ['/api/passwords'],
+    queryFn: () => fetch('/api/passwords', { credentials: 'include' }).then(res => res.json()) as Promise<Password[]>
+  });
+
+  // Individual password deletion
+  const deletePasswordMutation = useMutation({
+    mutationFn: async (passwordId: number) => {
+      return apiRequest("DELETE", `/api/passwords/${passwordId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/passwords"] });
+      toast({
+        title: "Password Deleted",
+        description: "Password has been successfully deleted.",
       });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch passwords: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setPasswords(data);
-    } catch (err: any) {
-      console.error('Password fetch error:', err);
-      setError(err.message || 'Failed to load passwords');
-    } finally {
-      setIsLoading(false);
+      setDeleteConfirmPassword(null);
+    },
+    onError: () => {
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete password. Please try again.",
+        variant: "destructive",
+      });
     }
-  };
+  });
 
-  useEffect(() => {
-    fetchPasswords();
-  }, []);
+  // Remove all passwords deletion
+  const removeAllPasswordsMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("DELETE", "/api/passwords");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/passwords"] });
+      toast({
+        title: "All Passwords Removed",
+        description: "All your passwords have been successfully deleted.",
+      });
+      setShowRemoveAllConfirm(false);
+    },
+    onError: () => {
+      toast({
+        title: "Remove All Failed",
+        description: "Failed to remove all passwords. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
+
+  const handleDeletePassword = (password: Password) => {
+    setDeleteConfirmPassword(password);
+  };
+
+  const handleRemoveAll = () => {
+    if (passwords.length > 0) {
+      setShowRemoveAllConfirm(true);
+    }
+  };
 
   const categories = [
     { id: "all", label: "All", count: passwords.length },
@@ -185,7 +218,21 @@ export function PasswordVault() {
             <Shield className="text-blue-600 dark:text-blue-400 blue-light-filter:text-amber-600" size={20} />
             <CardTitle className="text-lg">Password Vault</CardTitle>
           </div>
-          <PasswordModal onPasswordAdded={fetchPasswords} />
+          <div className="flex gap-2">
+            {passwords.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRemoveAll}
+                className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                data-testid="button-remove-all-passwords"
+              >
+                <Trash2 size={16} className="mr-2" />
+                Remove All
+              </Button>
+            )}
+            <PasswordModal onPasswordAdded={() => queryClient.invalidateQueries({ queryKey: ["/api/passwords"] })} />
+          </div>
         </div>
         
         <div className="flex gap-2 mt-4">
@@ -373,15 +420,28 @@ export function PasswordVault() {
                       <span className="text-xs text-gray-400">
                         Updated {password.lastUpdated ? new Date(password.lastUpdated).toLocaleDateString() : 'Never'}
                       </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditingPassword(password)}
-                        className="p-1 h-6 w-6 text-gray-400 hover:text-blue-600"
-                        title="Edit sharing permissions"
-                      >
-                        <Edit size={12} />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditingPassword(password)}
+                          className="p-1 h-6 w-6 text-gray-400 hover:text-blue-600"
+                          title="Edit sharing permissions"
+                          data-testid={`button-edit-password-${password.id}`}
+                        >
+                          <Edit size={12} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeletePassword(password)}
+                          className="p-1 h-6 w-6 text-gray-400 hover:text-red-600"
+                          title="Delete password"
+                          data-testid={`button-delete-password-${password.id}`}
+                        >
+                          <Trash2 size={12} />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -398,6 +458,56 @@ export function PasswordVault() {
           onClose={() => setEditingPassword(null)}
         />
       )}
+      
+      {/* Individual Delete Confirmation */}
+      <AlertDialog open={!!deleteConfirmPassword} onOpenChange={() => setDeleteConfirmPassword(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="text-red-500" size={20} />
+              Delete Password
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the password for "{deleteConfirmPassword?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteConfirmPassword && deletePasswordMutation.mutate(deleteConfirmPassword.id)}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={deletePasswordMutation.isPending}
+            >
+              {deletePasswordMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Remove All Confirmation */}
+      <AlertDialog open={showRemoveAllConfirm} onOpenChange={setShowRemoveAllConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="text-red-500" size={20} />
+              Remove All Passwords
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete ALL {passwords.length} passwords? This will permanently remove all your saved passwords and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => removeAllPasswordsMutation.mutate()}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={removeAllPasswordsMutation.isPending}
+            >
+              {removeAllPasswordsMutation.isPending ? "Removing All..." : "Remove All"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
