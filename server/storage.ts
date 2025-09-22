@@ -639,9 +639,9 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async deleteAllEvents(): Promise<boolean> {
-    const result = await db.delete(events);
-    return true;
+  async deleteAllEvents(familyId: number): Promise<boolean> {
+    const result = await db.delete(events).where(eq(events.familyId, familyId));
+    return result.rowCount !== null && result.rowCount >= 0;
   }
 
   async getTasks(): Promise<Task[]> {
@@ -1069,10 +1069,10 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async deleteAllGroceryItems(): Promise<boolean> {
+  async deleteAllGroceryItems(familyId: number): Promise<boolean> {
     try {
-      const result = await db.delete(groceryItems);
-      return true;
+      const result = await db.delete(groceryItems).where(eq(groceryItems.familyId, familyId));
+      return result.rowCount !== null && result.rowCount >= 0;
     } catch (error) {
       console.error('Failed to delete all grocery items:', error);
       return false;
