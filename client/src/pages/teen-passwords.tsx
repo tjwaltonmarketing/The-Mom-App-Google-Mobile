@@ -24,8 +24,16 @@ import {
   Plus,
   Edit,
   Trash2,
-  User
+  User,
+  X
 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import TeenNavigation from "@/components/teen/teen-navigation";
 
 interface SharedPassword {
@@ -39,6 +47,16 @@ interface SharedPassword {
   sharedAt: Date;
   lastUsed?: Date;
 }
+
+const passwordFormSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  category: z.string().min(1, "Category is required"),
+  website: z.string().optional(),
+  username: z.string().optional(),
+  email: z.string().optional(), 
+  password: z.string().min(1, "Password is required"),
+  notes: z.string().optional()
+});
 
 const categoryIcons = {
   streaming: <Tv className="h-5 w-5 text-blue-500" />,
@@ -62,6 +80,7 @@ export default function TeenPasswords() {
   const [, setLocation] = useLocation();
   const [showPasswords, setShowPasswords] = useState<Record<string | number, boolean>>({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [showAddPasswordModal, setShowAddPasswordModal] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -78,6 +97,30 @@ export default function TeenPasswords() {
   });
   
   const teenProfile = (authData as any)?.teenProfile;
+
+  // Fetch teen's own personal passwords
+  const { data: personalPasswords = [], isLoading: isLoadingPersonal } = useQuery({
+    queryKey: ["/api/teen/passwords"],
+    queryFn: async () => {
+      console.log("Fetching teen personal passwords...");
+      const response = await fetch('/api/teen/passwords', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Teen personal passwords fetched:", data);
+      return data;
+    },
+    enabled: !!(authData as any)?.isAuthenticated && !!teenProfile,
+    retry: false,
+  });
 
   // Fetch shared passwords for teen
   const { data: sharedPasswords = [], isLoading: isLoadingShared } = useQuery({
@@ -110,6 +153,28 @@ export default function TeenPasswords() {
     }));
   };
 
+  // Create personal password mutation
+  const createPasswordMutation = useMutation({
+    mutationFn: async (passwordData: any) => {
+      return apiRequest("POST", "/api/teen/passwords", passwordData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/passwords"] });
+      toast({
+        title: "Password Created",
+        description: "Your personal password has been saved securely.",
+      });
+      setShowAddPasswordModal(false);
+    },
+    onError: () => {
+      toast({
+        title: "Creation Failed",
+        description: "Failed to create password. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -126,6 +191,11 @@ export default function TeenPasswords() {
       });
     }
   };
+
+  const filteredPersonalPasswords = (personalPasswords as any[]).filter((password: any) =>
+    password.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    password.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const filteredSharedPasswords = (sharedPasswords as SharedPassword[]).filter((password: SharedPassword) =>
     password.service.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -150,13 +220,23 @@ export default function TeenPasswords() {
         {/* Page Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Family Passwords</h1>
-            <p className="text-gray-600">Access shared family passwords</p>
+            <h1 className="text-2xl font-bold">Passwords</h1>
+            <p className="text-gray-600">Manage your personal passwords and access family shared ones</p>
           </div>
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <Shield className="h-3 w-3" />
-            Secure
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => setShowAddPasswordModal(true)}
+              className="flex items-center gap-2"
+              data-testid="button-add-personal-password"
+            >
+              <Plus className="h-4 w-4" />
+              Add Personal Password
+            </Button>
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Shield className="h-3 w-3" />
+              Secure
+            </Badge>
+          </div>
         </div>
 
         {/* Search */}
@@ -174,6 +254,127 @@ export default function TeenPasswords() {
             </div>
           </CardContent>
         </Card>
+
+        {/* My Personal Passwords */}
+        <div className="space-y-4 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <User className="h-5 w-5" />
+            <h2 className="text-lg font-semibold">
+              My Personal Passwords ({filteredPersonalPasswords.length})
+            </h2>
+          </div>
+
+          {isLoadingPersonal ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+              <span className="ml-3 text-gray-600">Loading your passwords...</span>
+            </div>
+          ) : filteredPersonalPasswords.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <User className="h-8 w-8 text-blue-500" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {searchTerm ? "No passwords found" : "No personal passwords yet"}
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  {searchTerm 
+                    ? "Try adjusting your search terms" 
+                    : "Create your first personal password to get started"
+                  }
+                </p>
+                {!searchTerm && (
+                  <Button 
+                    onClick={() => setShowAddPasswordModal(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Personal Password
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
+              {filteredPersonalPasswords.map((password: any) => (
+                <Card key={password.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        {categoryIcons[password.category as keyof typeof categoryIcons] || categoryIcons.other}
+                        <div>
+                          <h3 className="font-semibold text-lg text-gray-900">{password.title}</h3>
+                          <Badge variant="outline" className={categoryColors[password.category as keyof typeof categoryColors]}>
+                            {password.category}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      {password.website && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-600">Website</span>
+                          <span className="text-sm text-gray-900">{password.website}</span>
+                        </div>
+                      )}
+                      
+                      {password.username && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-600">Username</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-gray-900">{password.username}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(password.username, "Username")}
+                              className="h-6 w-6 p-0"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-600">Password</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-mono">
+                            {showPasswords[password.id] ? password.password : '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => togglePasswordVisibility(password.id)}
+                            className="h-6 w-6 p-0"
+                          >
+                            {showPasswords[password.id] ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(password.password, "Password")}
+                            className="h-6 w-6 p-0"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {password.notes && (
+                        <div className="pt-2 border-t">
+                          <span className="text-sm font-medium text-gray-600">Notes</span>
+                          <p className="text-sm text-gray-700 mt-1">{password.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Shared Passwords */}
         <div className="space-y-4">
@@ -294,6 +495,164 @@ export default function TeenPasswords() {
           )}
         </div>
       </div>
+      
+      {/* Add Personal Password Modal */}
+      <Dialog open={showAddPasswordModal} onOpenChange={setShowAddPasswordModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Personal Password</DialogTitle>
+            <DialogDescription>
+              Create a secure password entry that only you can access.
+            </DialogDescription>
+          </DialogHeader>
+          <PersonalPasswordForm 
+            onSubmit={(data) => createPasswordMutation.mutate(data)} 
+            isLoading={createPasswordMutation.isPending}
+            onCancel={() => setShowAddPasswordModal(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+function PersonalPasswordForm({ onSubmit, isLoading, onCancel }: {
+  onSubmit: (data: any) => void;
+  isLoading: boolean;
+  onCancel: () => void;
+}) {
+  const form = useForm({
+    resolver: zodResolver(passwordFormSchema),
+    defaultValues: {
+      title: "",
+      category: "",
+      website: "",
+      username: "",
+      email: "",
+      password: "",
+      notes: ""
+    }
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title *</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., My Instagram" {...field} data-testid="input-password-title" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category *</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger data-testid="select-password-category">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="social">Social Media</SelectItem>
+                  <SelectItem value="school">School</SelectItem>
+                  <SelectItem value="gaming">Gaming</SelectItem>
+                  <SelectItem value="streaming">Streaming</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="website"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Website</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., instagram.com" {...field} data-testid="input-password-website" />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input placeholder="username" {...field} data-testid="input-password-username" />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="email@example.com" {...field} data-testid="input-password-email" />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password *</FormLabel>
+              <FormControl>
+                <Input type="password" placeholder="Enter password" {...field} data-testid="input-password-value" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Optional notes..." {...field} data-testid="textarea-password-notes" />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        
+        <div className="flex justify-end gap-3 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel} data-testid="button-cancel-password">
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isLoading} data-testid="button-save-password">
+            {isLoading ? "Saving..." : "Save Password"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
