@@ -1678,8 +1678,15 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family member not found" });
       }
 
-      // Delete all passwords created by this user
-      await storage.deletePasswordsByCreator(familyMember.id);
+      // For "Remove All", parents can delete all family passwords
+      if (familyMember.role === 'parent' || familyMember.role === 'mom' || familyMember.role === 'dad') {
+        // Delete all passwords for this family
+        await storage.deletePasswordsByFamily(familyMember.familyId);
+      } else {
+        // Non-parents can only delete their own passwords
+        await storage.deletePasswordsByCreator(familyMember.id);
+      }
+      
       res.json({ success: true });
     } catch (error) {
       console.error("Bulk password deletion error:", error);
