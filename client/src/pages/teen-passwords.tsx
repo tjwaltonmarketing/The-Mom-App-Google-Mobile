@@ -81,6 +81,8 @@ export default function TeenPasswords() {
   const [showPasswords, setShowPasswords] = useState<Record<string | number, boolean>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddPasswordModal, setShowAddPasswordModal] = useState(false);
+  const [showEditPasswordModal, setShowEditPasswordModal] = useState(false);
+  const [editingPassword, setEditingPassword] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -170,6 +172,50 @@ export default function TeenPasswords() {
       toast({
         title: "Creation Failed",
         description: "Failed to create password. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Update personal password mutation
+  const updatePasswordMutation = useMutation({
+    mutationFn: async ({ id, ...passwordData }: any) => {
+      return apiRequest("PUT", `/api/teen/passwords/${id}`, passwordData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/passwords"] });
+      toast({
+        title: "Password Updated",
+        description: "Your personal password has been updated securely.",
+      });
+      setShowEditPasswordModal(false);
+      setEditingPassword(null);
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update password. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Delete personal password mutation
+  const deletePasswordMutation = useMutation({
+    mutationFn: async (passwordId: number) => {
+      return apiRequest("DELETE", `/api/teen/passwords/${passwordId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/passwords"] });
+      toast({
+        title: "Password Deleted",
+        description: "Your personal password has been deleted.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete password. Please try again.",
         variant: "destructive",
       });
     }
@@ -309,6 +355,33 @@ export default function TeenPasswords() {
                             {password.category}
                           </Badge>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingPassword(password);
+                            setShowEditPasswordModal(true);
+                          }}
+                          className="h-8 w-8 p-0"
+                          data-testid={`button-edit-password-${password.id}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (confirm('Are you sure you want to delete this password?')) {
+                              deletePasswordMutation.mutate(password.id);
+                            }
+                          }}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                          data-testid={`button-delete-password-${password.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
 
@@ -512,25 +585,47 @@ export default function TeenPasswords() {
           />
         </DialogContent>
       </Dialog>
+      
+      {/* Edit Personal Password Modal */}
+      <Dialog open={showEditPasswordModal} onOpenChange={setShowEditPasswordModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Personal Password</DialogTitle>
+            <DialogDescription>
+              Update your secure password entry.
+            </DialogDescription>
+          </DialogHeader>
+          <PersonalPasswordForm 
+            initialData={editingPassword}
+            onSubmit={(data) => updatePasswordMutation.mutate({ id: editingPassword?.id, ...data })} 
+            isLoading={updatePasswordMutation.isPending}
+            onCancel={() => {
+              setShowEditPasswordModal(false);
+              setEditingPassword(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-function PersonalPasswordForm({ onSubmit, isLoading, onCancel }: {
+function PersonalPasswordForm({ onSubmit, isLoading, onCancel, initialData }: {
   onSubmit: (data: any) => void;
   isLoading: boolean;
   onCancel: () => void;
+  initialData?: any;
 }) {
   const form = useForm({
     resolver: zodResolver(passwordFormSchema),
     defaultValues: {
-      title: "",
-      category: "",
-      website: "",
-      username: "",
-      email: "",
-      password: "",
-      notes: ""
+      title: initialData?.title || "",
+      category: initialData?.category || "",
+      website: initialData?.website || "",
+      username: initialData?.username || "",
+      email: initialData?.email || "",
+      password: initialData?.password || "",
+      notes: initialData?.notes || ""
     }
   });
 
