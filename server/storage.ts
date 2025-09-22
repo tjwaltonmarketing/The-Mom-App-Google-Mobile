@@ -769,9 +769,9 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount !== null && result.rowCount > 0;
   }
 
-  async deleteAllTasks(): Promise<boolean> {
-    const result = await db.delete(tasks);
-    return true; // Always return true since we're clearing all tasks
+  async deleteAllTasks(familyId: number): Promise<boolean> {
+    const result = await db.delete(tasks).where(eq(tasks.familyId, familyId));
+    return result.rowCount !== null && result.rowCount >= 0;
   }
 
   async getTask(id: number): Promise<Task | undefined> {

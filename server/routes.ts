@@ -1289,7 +1289,7 @@ export async function registerRoutes(app: Express) {
       }
 
       // Allow parents to delete all tasks in their family
-      await storage.deleteAllTasks();
+      await storage.deleteAllTasks(familyMembership.familyId);
       res.json({ success: true });
     } catch (error) {
       console.error("Delete all tasks error:", error);
