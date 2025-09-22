@@ -230,7 +230,7 @@ export default function TeenPasswords() {
               data-testid="button-add-personal-password"
             >
               <Plus className="h-4 w-4" />
-              Add Personal Password
+              Add
             </Button>
             <Badge variant="secondary" className="flex items-center gap-1">
               <Shield className="h-3 w-3" />
@@ -290,7 +290,7 @@ export default function TeenPasswords() {
                     className="flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
-                    Add Personal Password
+                    Add
                   </Button>
                 )}
               </CardContent>
