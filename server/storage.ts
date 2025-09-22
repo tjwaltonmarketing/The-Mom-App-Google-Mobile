@@ -172,6 +172,7 @@ export interface IStorage {
   getPasswordById(id: number): Promise<Password | undefined>;
   updatePassword(id: number, updates: Partial<InsertPassword>): Promise<Password | undefined>;
   deletePassword(id: number): Promise<boolean>;
+  deletePasswordsByCreator(creatorId: number): Promise<number>;
   
   // Grocery Lists
   getGroceryItems(): Promise<GroceryItem[]>;
@@ -990,6 +991,18 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error(`Failed to delete password ${id}:`, error);
       return false;
+    }
+  }
+
+  async deletePasswordsByCreator(creatorId: number): Promise<number> {
+    try {
+      const result = await db
+        .delete(passwords)
+        .where(eq(passwords.createdBy, creatorId));
+      return result.rowCount || 0;
+    } catch (error) {
+      console.error(`Failed to delete passwords for creator ${creatorId}:`, error);
+      return 0;
     }
   }
 

@@ -1634,5 +1634,58 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.delete("/api/passwords/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const passwordId = parseInt(req.params.id);
+      
+      // Get the parent's family member record
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Verify the password exists and belongs to this family
+      const existingPassword = await storage.getPasswordById(passwordId);
+      if (!existingPassword) {
+        return res.status(404).json({ error: "Password not found" });
+      }
+
+      // Check if user can delete this password (must be creator or admin)
+      if (existingPassword.createdBy !== familyMember.id) {
+        return res.status(403).json({ error: "You can only delete passwords you created" });
+      }
+
+      await storage.deletePassword(passwordId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Password deletion error:", error);
+      res.status(500).json({ error: "Failed to delete password" });
+    }
+  });
+
+  app.delete("/api/passwords", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Delete all passwords created by this user
+      await storage.deletePasswordsByCreator(familyMember.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Bulk password deletion error:", error);
+      res.status(500).json({ error: "Failed to delete passwords" });
+    }
+  });
+
   return server;
 }
