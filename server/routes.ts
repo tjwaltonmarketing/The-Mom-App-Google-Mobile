@@ -1634,6 +1634,40 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.patch("/api/passwords/:id/favorite", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const passwordId = parseInt(req.params.id);
+      const { isFavorite } = req.body;
+
+      // Get the parent's family member record
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Verify the password exists and belongs to this family
+      const existingPassword = await storage.getPasswordById(passwordId);
+      if (!existingPassword) {
+        return res.status(404).json({ error: "Password not found" });
+      }
+
+      // Check if user can modify this password (must be creator or admin)
+      if (existingPassword.createdBy !== familyMember.id) {
+        return res.status(403).json({ error: "You can only modify passwords you created" });
+      }
+
+      const updatedPassword = await storage.updatePassword(passwordId, { isFavorite });
+      res.json(updatedPassword);
+    } catch (error) {
+      console.error("Password favorite update error:", error);
+      res.status(500).json({ error: "Failed to update password favorite status" });
+    }
+  });
+
   app.delete("/api/passwords/:id", async (req, res) => {
     try {
       if (!req.session.userId) {

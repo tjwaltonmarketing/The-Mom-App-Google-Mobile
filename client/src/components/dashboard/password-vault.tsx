@@ -100,6 +100,27 @@ export function PasswordVault() {
     }
   });
 
+  // Toggle favorite mutation
+  const toggleFavoriteMutation = useMutation({
+    mutationFn: async ({ passwordId, isFavorite }: { passwordId: number; isFavorite: boolean }) => {
+      return apiRequest("PATCH", `/api/passwords/${passwordId}/favorite`, { isFavorite });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/passwords"] });
+      toast({
+        title: "Favorite Updated",
+        description: "Password favorite status has been updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update favorite status. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
@@ -112,6 +133,13 @@ export function PasswordVault() {
     if (passwords.length > 0) {
       setShowRemoveAllConfirm(true);
     }
+  };
+
+  const handleToggleFavorite = (password: Password) => {
+    toggleFavoriteMutation.mutate({
+      passwordId: password.id,
+      isFavorite: !password.isFavorite
+    });
   };
 
   const categories = [
@@ -313,8 +341,11 @@ export function PasswordVault() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => handleToggleFavorite(password)}
                         className="p-1 h-6 w-6 hover:bg-gray-200 dark:hover:bg-gray-600"
                         title={password.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                        disabled={toggleFavoriteMutation.isPending}
+                        data-testid={`button-toggle-favorite-${password.id}`}
                       >
                         {password.isFavorite ? <StarOff size={10} /> : <Star size={10} />}
                       </Button>
