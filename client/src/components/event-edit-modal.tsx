@@ -272,22 +272,24 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
             </div>
           )}
 
-          <div className="flex justify-between pt-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-3 pt-4">
             <Button
               type="button"
               variant={showDeleteConfirm ? "destructive" : "outline"}
               onClick={handleDelete}
               disabled={deleteEventMutation.isPending}
+              className="w-full sm:w-auto"
             >
               <Trash2 size={16} className="mr-2" />
               {showDeleteConfirm ? "Confirm Delete" : "Delete Event"}
             </Button>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsOpen(false)}
+                className="w-full sm:w-auto"
               >
                 <X size={16} className="mr-2" />
                 Cancel
@@ -295,6 +297,7 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
               <Button 
                 type="submit" 
                 disabled={updateEventMutation.isPending}
+                className="w-full sm:w-auto"
               >
                 <Save size={16} className="mr-2" />
                 {updateEventMutation.isPending ? "Saving..." : "Save Changes"}
