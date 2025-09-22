@@ -234,11 +234,19 @@ export default function TeenCalendar() {
     const eventDateMST = new Date(startTime.toLocaleString('en-US', {timeZone: 'America/Denver'}));
     eventDateMST.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
     
-    let dateLabel = "This Week";
+    // Calculate current week boundaries (Sunday to Saturday)
+    const startOfWeek = new Date(todayMST);
+    startOfWeek.setDate(todayMST.getDate() - todayMST.getDay()); // Go back to Sunday
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // Go to Saturday
+    
+    let dateLabel = "Future"; // Default for events outside current week
     if (eventDateMST.getTime() === todayMST.getTime()) {
       dateLabel = "Today";
     } else if (eventDateMST.getTime() === tomorrow.getTime()) {
       dateLabel = "Tomorrow";
+    } else if (eventDateMST >= startOfWeek && eventDateMST <= endOfWeek) {
+      dateLabel = "This Week";
     }
     
     // Format the full date display in MST timezone
@@ -570,8 +578,8 @@ export default function TeenCalendar() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {allEvents.filter(event => !["Today", "Tomorrow"].includes(event.date)).length > 0 ? (
-              allEvents.filter(event => !["Today", "Tomorrow"].includes(event.date)).map(renderEvent)
+            {allEvents.filter(event => event.date === "This Week").length > 0 ? (
+              allEvents.filter(event => event.date === "This Week").map(renderEvent)
             ) : (
               <p className="text-gray-500 text-center py-4">No other events this week</p>
             )}
