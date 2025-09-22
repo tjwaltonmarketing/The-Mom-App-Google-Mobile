@@ -125,7 +125,7 @@ export interface IStorage {
   createEvent(event: InsertEvent): Promise<Event>;
   updateEvent(id: number, updates: Partial<InsertEvent>): Promise<Event | undefined>;
   deleteEvent(id: number): Promise<boolean>;
-  deleteAllEvents(): Promise<boolean>;
+  deleteAllEvents(familyId: number): Promise<boolean>;
   
   // Tasks
   getTasks(): Promise<Task[]>;
