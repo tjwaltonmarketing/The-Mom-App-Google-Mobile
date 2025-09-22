@@ -1642,8 +1642,6 @@ export async function registerRoutes(app: Express) {
 
       const passwordId = parseInt(req.params.id);
       const { isFavorite } = req.body;
-      
-      console.log("Favorite update request:", { passwordId, isFavorite, body: req.body });
 
       // Get the parent's family member record
       const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
@@ -1656,8 +1654,6 @@ export async function registerRoutes(app: Express) {
       if (!existingPassword) {
         return res.status(404).json({ error: "Password not found" });
       }
-      
-      console.log("Before update - password.isFavorite:", existingPassword.isFavorite);
 
       // Check if user can modify this password (must be creator or admin)
       if (existingPassword.createdBy !== familyMember.id) {
@@ -1665,7 +1661,6 @@ export async function registerRoutes(app: Express) {
       }
 
       const updatedPassword = await storage.updatePassword(passwordId, { isFavorite });
-      console.log("After update - updatedPassword:", updatedPassword);
       
       res.json(updatedPassword);
     } catch (error) {
