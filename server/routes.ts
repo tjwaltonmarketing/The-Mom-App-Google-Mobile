@@ -1,6 +1,7 @@
 import { Express } from "express";
 import { createServer } from "http";
 import { DatabaseStorage } from "./storage";
+import { smartTaskCreation } from "./ai";
 import bcrypt from "bcryptjs";
 
 const storage = new DatabaseStorage();
@@ -1759,6 +1760,42 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Bulk password deletion error:", error);
       res.status(500).json({ error: "Failed to delete passwords" });
+    }
+  });
+
+  // AI Smart Task Creation Endpoint
+  app.post("/api/ai/smart-task-creation", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { voiceInput, familyMembers } = req.body;
+      
+      if (!voiceInput) {
+        return res.status(400).json({ error: "Voice input is required" });
+      }
+
+      // Get current user's family members if not provided
+      let members = familyMembers;
+      if (!members) {
+        const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+        if (familyMember) {
+          members = await storage.getFamilyMembersByFamilyId(familyMember.familyId);
+        }
+      }
+
+      // Call the AI processing function
+      const result = await smartTaskCreation(voiceInput, members || []);
+      
+      res.json(result);
+    } catch (error) {
+      console.error("AI smart task creation error:", error);
+      res.status(500).json({ 
+        error: "Failed to process voice input",
+        tasks: [],
+        interpretation: "I couldn't process that request. Please try again."
+      });
     }
   });
 
