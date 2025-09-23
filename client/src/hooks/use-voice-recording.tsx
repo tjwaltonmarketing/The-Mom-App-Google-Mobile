@@ -6,14 +6,13 @@ interface UseVoiceRecordingOptions {
 
 export function useVoiceRecording({ onTranscript }: UseVoiceRecordingOptions) {
   const [isRecording, setIsRecording] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const fullTranscriptRef = useRef<string>("");
 
   const startRecording = useCallback(() => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       // Fallback to show proper error message instead of mock data
       console.warn("Speech recognition not supported in this browser");
-      onError?.("Speech recognition is not supported in this browser. Please use Chrome, Safari, or Edge for voice features.");
       return;
     }
 
@@ -30,21 +29,19 @@ export function useVoiceRecording({ onTranscript }: UseVoiceRecordingOptions) {
       fullTranscriptRef.current = "";
     };
 
-    recognition.onresult = (event) => {
-      let finalTranscript = '';
+    recognition.onresult = (event: any) => {
       let interimTranscript = '';
       
-      for (let i = 0; i < event.results.length; i++) {
+      // Only process new results starting from resultIndex to avoid repetition
+      for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += transcript + ' ';
+          // Add final results to our accumulated transcript
+          fullTranscriptRef.current += transcript + ' ';
         } else {
+          // Collect interim results for live preview
           interimTranscript += transcript;
         }
-      }
-      
-      if (finalTranscript) {
-        fullTranscriptRef.current += finalTranscript;
       }
       
       // Send current complete transcript (final + interim for live preview)
@@ -54,7 +51,7 @@ export function useVoiceRecording({ onTranscript }: UseVoiceRecordingOptions) {
       }
     };
 
-    recognition.onerror = (event) => {
+    recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error);
       setIsRecording(false);
     };
@@ -88,7 +85,7 @@ export function useVoiceRecording({ onTranscript }: UseVoiceRecordingOptions) {
 // Extend Window interface for TypeScript
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
   }
 }
