@@ -3,7 +3,16 @@
 ## Overview
 The Mom App is a comprehensive family coordination platform designed to reduce mental load for busy parents. It is a full-stack web application with mobile support, featuring AI-powered assistance, smart calendar management with granular privacy controls, advanced task organization, and secure family data management. The project's vision is to streamline family logistics, enhance communication, and foster collaboration among family members, ultimately improving daily life for busy households.
 
-## Recent Changes (September 21, 2025)
+## Recent Changes (September 23, 2025)
+- **🎯 MAJOR ARCHITECTURAL SIMPLIFICATION - Task Management System**: Transformed from complex child account management to simple family member-grouped task view to reduce mental load
+- **Child Account System Removed**: Eliminated complex child profile creation, management, and authentication system that was adding unnecessary complexity
+- **Simplified Task Organization**: Implemented family member-grouped task sections with collapsible functionality (Emily's Tasks, TJ's Tasks, Adri's Tasks, Evie's Tasks, Unassigned Tasks)
+- **Printable Task Lists Added**: Created kid-friendly printable task lists with award-style design, emojis, and wall-posting format for children without devices
+- **Mental Load Reduction Achieved**: Users can now easily view and manage tasks by family member without navigating complex account systems
+- **Code Cleanup Completed**: Removed all child profile state variables, queries, mutations, handlers, and UI components from settings page
+- **⚠️ DESIGN PRINCIPLE CONFIRMED**: Features must reduce mental load, not add complexity - simple family member grouping proved more effective than sophisticated child account system
+
+## Previous Changes (September 21, 2025)
 - **🎯 CRITICAL FIX - React Query Cache Invalidation Issue**: Resolved persistent task creation cache refresh problem where newly created tasks wouldn't appear in UI until navigation refresh
 - **Root Cause Identified**: Multiple QueryClient instances caused cache invalidations to target wrong client - components imported singleton queryClient while useQuery/useMutation used QueryClientProvider instance
 - **Expert Solution Implemented**: 
