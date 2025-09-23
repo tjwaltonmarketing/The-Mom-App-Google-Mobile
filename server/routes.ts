@@ -2153,5 +2153,69 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Parent-managed teen password reset
+  app.post("/api/family-members/:teenId/reset-password", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const teenId = parseInt(req.params.teenId);
+      if (isNaN(teenId)) {
+        return res.status(400).json({ error: "Invalid teen ID" });
+      }
+
+      // Get the teen profile
+      const teenProfile = await storage.getTeenProfile(teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      // Get the teen's family member record
+      const teenFamilyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!teenFamilyMember) {
+        return res.status(404).json({ error: "Teen family member not found" });
+      }
+
+      // Get the parent's family member record
+      const parentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!parentFamilyMember) {
+        return res.status(404).json({ error: "Parent family member not found" });
+      }
+
+      // Verify they're in the same family
+      if (teenFamilyMember.familyId !== parentFamilyMember.familyId) {
+        return res.status(403).json({ error: "Not authorized to manage this teen's password" });
+      }
+
+      // Generate a new temporary password
+      const newPassword = Math.random().toString(36).slice(-8).toUpperCase();
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+
+      // Update the teen's password
+      await storage.updateUserPassword(teenProfile.userId, passwordHash);
+
+      // Create notification for parent about password reset
+      await storage.createNotification({
+        type: "password_reset",
+        title: "Teen Password Reset",
+        message: `You reset ${teenProfile.firstName}'s password. New password: ${newPassword}`,
+        recipientId: parentFamilyMember.id,
+        scheduledFor: new Date(),
+        deliveryMethod: "app",
+        status: "pending"
+      });
+
+      res.json({
+        success: true,
+        newPassword,
+        message: `Password reset successfully for ${teenProfile.firstName}`
+      });
+    } catch (error) {
+      console.error("Teen password reset error:", error);
+      res.status(500).json({ error: "Failed to reset teen password" });
+    }
+  });
+
   return server;
 }

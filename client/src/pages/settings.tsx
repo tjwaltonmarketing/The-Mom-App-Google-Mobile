@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star, Mail } from "lucide-react";
+import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star, Mail, KeyRound } from "lucide-react";
 import { Link } from "wouter";
 import { CalendarSync } from "@/components/calendar-sync";
 import { ImportExportModal } from "@/components/import-export-modal";
@@ -301,6 +301,27 @@ export default function SettingsPage() {
     },
   });
 
+  // Mutation for resetting teen password
+  const resetTeenPasswordMutation = useMutation({
+    mutationFn: async ({ teenId, teenName }: { teenId: number; teenName: string }) => {
+      return apiRequest("POST", `/api/family-members/${teenId}/reset-password`);
+    },
+    onSuccess: (data: any, variables) => {
+      toast({
+        title: "Password Reset Successfully",
+        description: `${variables.teenName}'s password has been reset. New password: ${data.newPassword}`,
+        duration: 10000, // Show longer for password copying
+      });
+    },
+    onError: (error: any, variables) => {
+      toast({
+        title: "Password Reset Failed",
+        description: error.message || `Failed to reset ${variables.teenName}'s password`,
+        variant: "destructive",
+      });
+    },
+  });
+
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tabParam = urlParams.get('tab');
@@ -351,6 +372,12 @@ export default function SettingsPage() {
   const handleDeleteMember = (id: number, name: string) => {
     if (confirm(`Are you sure you want to remove ${name} from your family?`)) {
       deleteMemberMutation.mutate(id);
+    }
+  };
+
+  const handleResetTeenPassword = (teenId: number, teenName: string) => {
+    if (confirm(`Are you sure you want to reset ${teenName}'s password? This will generate a new temporary password.`)) {
+      resetTeenPasswordMutation.mutate({ teenId, teenName });
     }
   };
 
@@ -651,6 +678,17 @@ export default function SettingsPage() {
                             >
                               <Edit className="h-3 w-3" />
                             </Button>
+                            {member.role === 'teen' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleResetTeenPassword(member.id, member.name)}
+                                className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
+                                title="Reset Password"
+                              >
+                                <KeyRound className="h-3 w-3" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
