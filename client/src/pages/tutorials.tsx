@@ -76,42 +76,36 @@ const tutorials: Tutorial[] = [
     ]
   },
   {
-    id: "teen-account-setup",
-    title: "Teen Account Setup (Anti-Nagging System)",
-    description: "Set up teen accounts with smart notifications and task assignment that eliminates parent nagging",
-    duration: "6 min",
+    id: "simplified-task-management",
+    title: "Simplified Task Management",
+    description: "Organize family tasks by person with collapsible sections - no complex account setup needed",
+    duration: "3 min",
     difficulty: "beginner",
     icon: Users,
     category: "family-coordination",
     steps: [
       {
-        title: "Create Teen Invite",
-        description: "From Settings > Family, click 'Invite Teen to Family'. Enter their name, phone number or email, and set permissions.",
-        action: "Fill out teen information and contact details",
-        tips: ["Use their real phone number for SMS invites", "Set appropriate permissions based on age", "Teen accounts reduce parent 'nagging' by automating reminders"]
+        title: "View Tasks by Family Member",
+        description: "Your tasks are automatically grouped by family member: Emily's Tasks, TJ's Tasks, Adri's Tasks, Evie's Tasks, and Unassigned Tasks.",
+        action: "Navigate to Tasks tab to see family member sections",
+        tips: ["Each family member has their own collapsible section", "Tasks are color-coded by priority", "No complex account setup required"]
       },
       {
-        title: "Send Multi-Channel Invitation",
-        description: "Choose to send via SMS (Twilio) or email (SendGrid). The teen receives an invite code with setup instructions across multiple channels.",
-        action: "Click 'Send Via Text' or 'Send Via Email' with automatic failover",
-        tips: ["SMS delivery is instant with A2P 10DLC compliance", "Email includes professional HTML templates", "Invite codes expire in 7 days", "SMS: 'Hi [Teen Name]! You've been invited to join your family's Mom App. Use code [CODE] or visit: [URL]'"]
+        title: "Collapse/Expand Sections",
+        description: "Click the arrow next to any family member's name to collapse or expand their task section. This prevents long scrolling through tasks.",
+        action: "Try collapsing and expanding different family member sections",
+        tips: ["Collapsed sections save screen space", "Focus on one person's tasks at a time", "Section state is remembered between visits"]
       },
       {
-        title: "Teen Dashboard & Gamification",
-        description: "Teens get a focused interface with points system (10-50 points per task), streak tracking, and achievement badges for completing tasks.",
-        action: "Help teen explore their dashboard and point system",
-        tips: ["Points motivate task completion", "Streaks build habits", "Dark mode and blue light filter available", "Calendar shows assigned tasks and family dinners"]
+        title: "Create Tasks for Family Members",
+        description: "Click 'Add Task' and assign it to any family member from the dropdown. The task will automatically appear in their section.",
+        action: "Create a test task and assign it to a family member",
+        tips: ["Tasks immediately appear in the correct family member section", "Use clear, actionable task titles", "Set due dates and priorities as needed"]
       },
       {
-        title: "Parent Task Assignment",
-        description: "Assign tasks directly to teens with categories (chores, homework, family), time estimates, and point values. Tasks flow seamlessly to teen dashboard.",
-        action: "Use task assignment modal to create teen-specific tasks",
-        tips: ["Include clear descriptions and time estimates", "Set appropriate point values", "Use categories for organization", "Teens get notified automatically"]
-      },
-      {
-        title: "Smart Progressive Notifications",
-        description: "The app handles chore reminders automatically with gentle escalation, quiet hours respect, and celebration messages - eliminating parent nagging.",
-        tips: ["Gentle first reminders", "Escalation for overdue tasks", "Celebration messages for completion", "Respects quiet hours (9 PM - 8 AM)", "Parents get completion notifications"]
+        title: "Mental Load Reduction",
+        description: "This simple grouping approach reduces mental load by organizing tasks visually without complex account management or child profiles.",
+        tips: ["No need to create separate accounts for children", "All family task coordination in one simple view", "Easy to see who has what responsibilities"]
       }
     ]
   },
@@ -209,74 +203,70 @@ const tutorials: Tutorial[] = [
     ]
   },
   {
-    id: "teen-dashboard-guide",
-    title: "Teen Dashboard & Gamification",
-    description: "Help teens stay motivated with points, streaks, and achievement tracking",
-    duration: "5 min",
+    id: "printable-task-lists",
+    title: "Printable Task Lists",
+    description: "Create printable task lists with different styles for parents and children",
+    duration: "3 min",
     difficulty: "beginner",
     icon: Star,
     category: "family-coordination",
     steps: [
       {
-        title: "Understanding the Teen Dashboard",
-        description: "The teen dashboard shows assigned tasks, today's events, points earned, and current streak.",
-        tips: ["Tasks are color-coded by priority", "Streaks encourage daily completion", "Points can be tracked weekly"]
+        title: "Print Task Lists for Family Members",
+        description: "Each family member section has a print button (printer icon) that creates a printable task list in the appropriate style for that person.",
+        action: "Find the printer icon next to any family member's name and click it",
+        tips: ["Print button shows just the printer icon to save space", "Each family member gets their own customized printout", "No account setup needed - works with basic family member profiles"]
       },
       {
-        title: "Task Completion System",
-        description: "Teens tap 'Mark Complete' on tasks to earn points and maintain their streak.",
-        action: "Show teen how to complete tasks",
-        tips: ["Completing tasks before deadline earns bonus points", "Streaks reset if tasks are missed", "Parents get automatic completion notifications"]
+        title: "Parent Task Lists - Professional Style",
+        description: "Parents get clean, professional checklist printouts with simple checkboxes, task titles, descriptions, and priority levels.",
+        action: "Try printing a parent's task list to see the professional format",
+        tips: ["Clean black and white design", "No gamification elements", "Perfect for office or home use", "Shows priority levels as text"]
       },
       {
-        title: "Smart Notification Settings",
-        description: "Teens can customize when and how they receive task reminders to fit their schedule.",
-        action: "Help teen set quiet hours and notification preferences",
-        tips: ["Quiet hours prevent late-night notifications", "Progressive reminders get more urgent over time", "Achievement celebrations are always allowed"]
+        title: "Children's Task Lists - Fun & Motivating",
+        description: "Children get colorful, gamified printouts with emojis, fun borders, and encouraging messages to motivate completion.",
+        action: "Try printing a child's task list to see the fun design",
+        tips: ["Bright colors and fun fonts", "Emojis and motivational messages", "Perfect for posting on bedroom walls", "Encourages task completion through visual appeal"]
       },
       {
-        title: "Parent Benefits",
-        description: "Parents see real-time completion status and can focus on encouragement instead of reminders.",
-        tips: ["No more repeated asking about chores", "Automatic escalation for overdue tasks", "Celebration messages for achievements"]
+        title: "Wall-Posting for Kids Without Devices",
+        description: "Printed task lists are perfect for young children who don't have phones or devices - post them on bedroom doors or bulletin boards.",
+        tips: ["No devices required for kids", "Visual reminders throughout the day", "Parents can check off completed tasks", "Builds independence and responsibility"]
       }
     ]
   },
   {
-    id: "parent-teen-task-assignment",
-    title: "Parent-to-Teen Task Assignment",
-    description: "Assign tasks directly to teens with points, categories, and automatic notifications",
-    duration: "5 min",
+    id: "family-member-management",
+    title: "Family Member Management",
+    description: "Add and manage family members with simple profiles - no complex accounts needed",
+    duration: "4 min",
     difficulty: "beginner",
     icon: Users,
     category: "family-coordination",
     steps: [
       {
-        title: "Open Task Assignment",
-        description: "From your dashboard or task management page, click 'Assign Task to Teen' or use the task assignment modal.",
-        action: "Select the teen you want to assign a task to",
-        tips: ["Only teens with accounts can receive assigned tasks", "Demo teens (Alex, Jordan, Sam) are available for testing"]
+        title: "Add Family Members",
+        description: "Go to Settings > Family and click 'Add Child or Teen Profile'. Simply enter their name and role - no complex account setup required.",
+        action: "Try adding a family member with just name and role",
+        tips: ["Only basic info needed: name and role", "No passwords or complex onboarding", "Family members appear immediately in task sections"]
       },
       {
-        title: "Create the Task",
-        description: "Enter task title, detailed description, category (chores, homework, family), and estimated time to complete.",
-        action: "Fill out task details with clear expectations",
-        tips: ["Include specific instructions", "Set realistic time estimates", "Choose appropriate categories for organization"]
+        title: "Customize Family Member Profiles",
+        description: "Set colors and avatars for each family member to make them easily recognizable in the task interface.",
+        action: "Edit a family member to set their color and avatar",
+        tips: ["Colors help identify family members quickly", "Avatars make the interface more personal", "Customization is optional but helpful"]
       },
       {
-        title: "Set Points and Priority",
-        description: "Assign point values (10-50 points) based on task difficulty and set priority level (low, medium, high).",
-        action: "Choose points that motivate without overwhelming",
-        tips: ["10-20 points for simple tasks", "30-40 points for moderate tasks", "50 points for complex or important tasks"]
+        title: "Delete Family Members When Needed",
+        description: "You can delete family members from Settings > Family using the trash icon. This removes them and all their assigned tasks.",
+        action: "Practice deleting a test family member",
+        tips: ["Deletion removes all associated tasks", "Use carefully as this cannot be undone", "Family members are deleted immediately"]
       },
       {
-        title: "Schedule and Assign",
-        description: "Set due date, assign to specific teen, and send the task. The teen receives automatic notifications and sees it on their dashboard.",
-        tips: ["Tasks appear immediately on teen dashboard", "Progressive reminders automatically handle follow-up", "Parents get completion notifications"]
-      },
-      {
-        title: "Track Progress",
-        description: "Monitor task completion, teen points, and streaks from your parent dashboard. Celebrate achievements and adjust point values as needed.",
-        tips: ["Completed tasks boost teen streaks", "Points accumulate for achievements", "Use completion data to refine task assignment"]
+        title: "Simple Task Assignment",
+        description: "Once family members are added, you can assign tasks to them from the task creation modal - they'll appear in their family member section.",
+        tips: ["No account setup needed for task assignment", "Tasks immediately appear in family member sections", "Much simpler than complex child account systems"]
       }
     ]
   },
