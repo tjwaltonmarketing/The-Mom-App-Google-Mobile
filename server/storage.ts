@@ -798,6 +798,12 @@ export class DatabaseStorage implements IStorage {
     return note;
   }
 
+  async getVoiceNotesByCreator(creatorId: number): Promise<VoiceNote[]> {
+    return await db.select().from(voiceNotes)
+      .where(eq(voiceNotes.createdBy, creatorId))
+      .orderBy(desc(voiceNotes.createdAt));
+  }
+
   async getDeadlines(): Promise<Deadline[]> {
     return await db.select().from(deadlines);
   }

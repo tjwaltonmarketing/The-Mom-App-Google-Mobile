@@ -1763,6 +1763,61 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Voice Notes Endpoints
+  app.post("/api/voice-notes", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { content, transcription } = req.body;
+      
+      if (!content) {
+        return res.status(400).json({ error: "Voice note content is required" });
+      }
+
+      // Get current user's family member
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Create voice note
+      const voiceNote = await storage.createVoiceNote({
+        content,
+        transcription: transcription || content,
+        createdBy: familyMember.id
+      });
+      
+      res.json(voiceNote);
+    } catch (error) {
+      console.error("Voice note creation error:", error);
+      res.status(500).json({ error: "Failed to create voice note" });
+    }
+  });
+
+  app.get("/api/voice-notes", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get current user's family member
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get voice notes for this family
+      const voiceNotes = await storage.getVoiceNotesByCreator(familyMember.id);
+      
+      res.json(voiceNotes);
+    } catch (error) {
+      console.error("Voice notes fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch voice notes" });
+    }
+  });
+
   // AI Smart Task Creation Endpoint
   app.post("/api/ai/smart-task-creation", async (req, res) => {
     try {
