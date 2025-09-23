@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { TeenTaskDetailModal } from "@/components/teen-task-detail-modal";
 import { TeenEventDetailModal } from "@/components/teen-event-detail-modal";
-import { TeenDishwasherStatus } from "@/components/teen-dishwasher-status";
+import { FamilyDishwasher } from "@/components/family-dishwasher";
 import { 
   Calendar, 
   CheckCircle2, 
@@ -440,7 +440,10 @@ export default function TeenDashboard() {
           
           {/* Dishwasher Status Card - Full Width at Bottom */}
           <div className="md:col-span-2 lg:col-span-3">
-            <TeenDishwasherStatus />
+            <FamilyDishwasher 
+              apiEndpoint="/api/teen/household-settings" 
+              updateEndpoint="/api/teen/household-settings/dishwasher" 
+            />
           </div>
         </div>
       </div>
