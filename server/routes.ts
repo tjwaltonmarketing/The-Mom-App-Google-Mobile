@@ -2008,6 +2008,32 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Verify SMS code for parents (without resetting password)
+  app.post("/api/auth/verify-sms-code", async (req, res) => {
+    try {
+      const { token } = req.body;
+      
+      if (!token) {
+        return res.status(400).json({ error: "SMS code is required" });
+      }
+
+      // Just verify the token exists and is valid, don't mark as used yet
+      const resetToken = await storage.getPasswordResetToken(token);
+      if (!resetToken || resetToken.resetType !== "sms") {
+        return res.status(400).json({ error: "Invalid or expired SMS code" });
+      }
+
+      res.json({
+        success: true,
+        token: resetToken.token,
+        message: "SMS code verified successfully"
+      });
+    } catch (error) {
+      console.error("SMS code verification error:", error);
+      res.status(500).json({ error: "Failed to verify SMS code" });
+    }
+  });
+
   // Verify security questions for teens
   app.post("/api/auth/verify-security-questions", async (req, res) => {
     try {

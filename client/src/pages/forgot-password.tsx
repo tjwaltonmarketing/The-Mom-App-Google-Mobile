@@ -112,14 +112,14 @@ export default function ForgotPassword() {
   // Verify SMS code
   const verifySmsCodeMutation = useMutation({
     mutationFn: async (data: SmsCodeData) => {
-      const response = await apiRequest("POST", "/api/auth/reset-password", {
+      // Just verify the code exists and is valid, don't reset password yet
+      const response = await apiRequest("POST", "/api/auth/verify-sms-code", {
         token: data.code,
-        newPassword: "temp", // We'll redirect to password change after verification
       });
       return response.json();
     },
-    onSuccess: () => {
-      setResetToken("verified");
+    onSuccess: (data) => {
+      setResetToken(data.token || smsForm.getValues().code);
       setCurrentFlow("new_password");
     },
     onError: (error: any) => {
@@ -172,7 +172,12 @@ export default function ForgotPassword() {
         title: "Password Reset Successful",
         description: "You can now log in with your new password.",
       });
-      setLocation("/login");
+      // Redirect to appropriate login page
+      if (resetType === "security_questions") {
+        setLocation("/teen-login");
+      } else {
+        setLocation("/login");
+      }
     },
     onError: (error: any) => {
       toast({
@@ -193,8 +198,7 @@ export default function ForgotPassword() {
   };
 
   const onSmsSubmit = (data: SmsCodeData) => {
-    // For SMS, we go directly to new password with the code as token
-    setCurrentFlow("new_password");
+    verifySmsCodeMutation.mutate(data);
   };
 
   const onSecuritySubmit = (data: SecurityAnswersData) => {

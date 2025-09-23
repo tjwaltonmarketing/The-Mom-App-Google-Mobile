@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Users, ArrowLeft, Smartphone, Eye, EyeOff } from "lucide-react";
+import { Users, ArrowLeft, Smartphone, Eye, EyeOff, HelpCircle } from "lucide-react";
 
 export default function TeenLogin() {
   const [loginMethod, setLoginMethod] = useState<"invite" | "credentials">("invite");
@@ -224,6 +224,17 @@ export default function TeenLogin() {
                 >
                   {credentialsLoginMutation.isPending ? "Logging in..." : "Login"}
                 </Button>
+
+                <div className="text-center">
+                  <Button 
+                    variant="link" 
+                    onClick={() => setLocation("/forgot-password")}
+                    className="p-0 h-auto text-sm"
+                  >
+                    <HelpCircle className="h-3 w-3 mr-1" />
+                    Forgot Password?
+                  </Button>
+                </div>
               </div>
             )}
 
