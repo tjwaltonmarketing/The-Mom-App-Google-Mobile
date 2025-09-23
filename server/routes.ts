@@ -1246,24 +1246,31 @@ export async function registerRoutes(app: Express) {
 
       const { title, description, dueDate, priority, assignedTo, category, points, estimatedTime, childProfileId } = req.body;
 
-      // Debug logging to see what we're receiving
-      console.log("=== TASK CREATION DEBUG ===");
-      console.log("Request body:", req.body);
-      console.log("assignedTo:", assignedTo);
-      console.log("childProfileId:", childProfileId);
-      console.log("==========================");
+      // Check if assignedTo is a family member with a child profile
+      let finalAssignedTo = assignedTo || null;
+      let finalChildProfileId = childProfileId || null;
+
+      if (assignedTo && !childProfileId) {
+        // Check if this family member has a child profile
+        const childProfile = await storage.getChildProfileByFamilyMember(assignedTo, userFamilyMember.id);
+        if (childProfile) {
+          // This is a child profile assignment
+          finalAssignedTo = null;
+          finalChildProfileId = childProfile.id;
+        }
+      }
 
       const task = await storage.createTask({
         title,
         description,
         dueDate: dueDate ? new Date(dueDate) : undefined,
         priority: priority || "medium",
-        assignedTo: assignedTo || null,
+        assignedTo: finalAssignedTo,
         createdBy: userFamilyMember.id,
         category: category || "general",
         points: points || 0,
         estimatedTime: estimatedTime || 0,
-        childProfileId: childProfileId || null
+        childProfileId: finalChildProfileId
       });
 
       res.json(task);
