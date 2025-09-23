@@ -42,13 +42,8 @@ export default function CalendarPage() {
   const [view, setView] = useState<CalendarView>("month");
   const [showEventModal, setShowEventModal] = useState(false);
 
-  // Scroll to top when page loads - only if not from quick action
-  useEffect(() => {
-    // Use a shorter delay to avoid conflicts with quick actions
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'auto' });
-    }, 100);
-  }, []);
+  // Remove automatic scroll to avoid conflicts with quick actions
+  // Quick actions handle their own scrolling
 
   const { data: events = [] } = useQuery<Event[]>({
     queryKey: ["/api/events"],

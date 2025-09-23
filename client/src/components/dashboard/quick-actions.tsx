@@ -14,16 +14,30 @@ export function QuickActions() {
   ];
   
   const handleActionClick = (href: string) => {
-    // First navigate
+    // Navigate to the page
     setLocation(href);
-    // Then force scroll to top after page content loads
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'auto' });
-      // Force another scroll to ensure it sticks
-      setTimeout(() => {
-        window.scrollTo(0, 0);
-      }, 10);
-    }, 200);
+    
+    // Use multiple scroll methods to ensure it works
+    const forceScrollToTop = () => {
+      // Method 1: Traditional window.scrollTo
+      window.scrollTo(0, 0);
+      
+      // Method 2: Direct DOM manipulation
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      
+      // Method 3: Using scrollIntoView on the top element
+      const topElement = document.querySelector('body');
+      if (topElement) {
+        topElement.scrollIntoView({ behavior: 'auto', block: 'start' });
+      }
+    };
+    
+    // Execute immediately and with delays to handle timing issues
+    forceScrollToTop();
+    setTimeout(forceScrollToTop, 10);
+    setTimeout(forceScrollToTop, 100);
+    setTimeout(forceScrollToTop, 300);
   };
 
   return (
