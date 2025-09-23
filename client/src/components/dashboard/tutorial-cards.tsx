@@ -27,10 +27,10 @@ const quickTutorials = [
     color: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
   },
   {
-    id: "mindful-usage", 
-    title: "Wellness & Blue Light Filter",
-    description: "Protect your eyes and set healthy boundaries",
-    duration: "4 min",
+    id: "simplified-task-management", 
+    title: "Simplified Task Management",
+    description: "Organize family tasks by person - no complex setup needed",
+    duration: "3 min",
     difficulty: "beginner" as const,
     icon: Users,
     color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
