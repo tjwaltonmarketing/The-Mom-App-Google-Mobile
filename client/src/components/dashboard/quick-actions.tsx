@@ -16,10 +16,14 @@ export function QuickActions() {
   const handleActionClick = (href: string) => {
     // First navigate
     setLocation(href);
-    // Then scroll to top after a brief delay to ensure page loads
+    // Then force scroll to top after page content loads
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'auto' });
-    }, 50);
+      // Force another scroll to ensure it sticks
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 10);
+    }, 200);
   };
 
   return (
