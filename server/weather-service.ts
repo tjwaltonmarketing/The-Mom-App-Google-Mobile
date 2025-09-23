@@ -27,7 +27,12 @@ export class WeatherService {
 
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`,
+        {
+          headers: {
+            'User-Agent': 'MomApp/1.0 (Family coordination app)'
+          }
+        }
       );
       
       if (!response.ok) {
