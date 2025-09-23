@@ -147,14 +147,14 @@ export default function FamilyChatPage() {
             {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <MessageCircle className="h-5 w-5 text-primary" />
                     Communication
                   </div>
                   <Dialog open={isMessageModalOpen} onOpenChange={setIsMessageModalOpen}>
                     <DialogTrigger asChild>
-                      <Button className="gap-2" data-testid="button-send-message">
+                      <Button className="gap-2 w-full sm:w-auto" data-testid="button-send-message">
                         <Plus className="h-4 w-4" />
                         Send Message
                       </Button>
