@@ -1807,9 +1807,9 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
 
-    // Get tasks assigned to the child's family member
+    // Get tasks assigned to this child profile
     return await db.select().from(tasks)
-      .where(eq(tasks.assignedTo, childProfile.familyMemberId))
+      .where(eq(tasks.childProfileId, childProfileId))
       .orderBy(desc(tasks.createdAt));
   }
 
