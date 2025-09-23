@@ -2380,5 +2380,228 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Child Profile Management Endpoints
+  app.get("/api/child-profiles", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const parentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!parentFamilyMember) {
+        return res.status(404).json({ error: "Parent family member not found" });
+      }
+
+      const childProfiles = await storage.getChildProfilesByFamily(parentFamilyMember.familyId!, parentFamilyMember.id);
+      res.json(childProfiles);
+    } catch (error) {
+      console.error("Get child profiles error:", error);
+      res.status(500).json({ error: "Failed to get child profiles" });
+    }
+  });
+
+  app.post("/api/child-profiles", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const parentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!parentFamilyMember) {
+        return res.status(404).json({ error: "Parent family member not found" });
+      }
+
+      const { familyMemberId, displayName, printPreferences } = req.body;
+
+      if (!familyMemberId || !displayName) {
+        return res.status(400).json({ error: "Family member ID and display name are required" });
+      }
+
+      // Validate that the family member belongs to the same family
+      const familyMember = await storage.getFamilyMemberById(familyMemberId);
+      if (!familyMember || familyMember.familyId !== parentFamilyMember.familyId) {
+        return res.status(400).json({ error: "Invalid family member" });
+      }
+
+      const childProfile = await storage.createChildProfile({
+        familyMemberId,
+        displayName,
+        printPreferences: printPreferences || {}
+      }, parentFamilyMember.id);
+
+      res.json(childProfile);
+    } catch (error) {
+      console.error("Create child profile error:", error);
+      res.status(500).json({ error: "Failed to create child profile" });
+    }
+  });
+
+  app.get("/api/child-profiles/:childProfileId", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const parentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!parentFamilyMember) {
+        return res.status(404).json({ error: "Parent family member not found" });
+      }
+
+      const childProfileId = parseInt(req.params.childProfileId);
+      if (isNaN(childProfileId)) {
+        return res.status(400).json({ error: "Invalid child profile ID" });
+      }
+
+      const childProfile = await storage.getChildProfile(childProfileId, parentFamilyMember.id);
+      if (!childProfile) {
+        return res.status(404).json({ error: "Child profile not found" });
+      }
+
+      res.json(childProfile);
+    } catch (error) {
+      console.error("Get child profile error:", error);
+      res.status(500).json({ error: "Failed to get child profile" });
+    }
+  });
+
+  app.put("/api/child-profiles/:childProfileId", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const parentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!parentFamilyMember) {
+        return res.status(404).json({ error: "Parent family member not found" });
+      }
+
+      const childProfileId = parseInt(req.params.childProfileId);
+      if (isNaN(childProfileId)) {
+        return res.status(400).json({ error: "Invalid child profile ID" });
+      }
+
+      const { displayName, printPreferences } = req.body;
+      const updates: any = {};
+
+      if (displayName !== undefined) updates.displayName = displayName;
+      if (printPreferences !== undefined) updates.printPreferences = printPreferences;
+
+      const updatedProfile = await storage.updateChildProfile(childProfileId, updates, parentFamilyMember.id);
+      if (!updatedProfile) {
+        return res.status(404).json({ error: "Child profile not found" });
+      }
+
+      res.json(updatedProfile);
+    } catch (error) {
+      console.error("Update child profile error:", error);
+      res.status(500).json({ error: "Failed to update child profile" });
+    }
+  });
+
+  app.delete("/api/child-profiles/:childProfileId", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const parentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!parentFamilyMember) {
+        return res.status(404).json({ error: "Parent family member not found" });
+      }
+
+      const childProfileId = parseInt(req.params.childProfileId);
+      if (isNaN(childProfileId)) {
+        return res.status(400).json({ error: "Invalid child profile ID" });
+      }
+
+      const success = await storage.deleteChildProfile(childProfileId, parentFamilyMember.id);
+      if (!success) {
+        return res.status(404).json({ error: "Child profile not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete child profile error:", error);
+      res.status(500).json({ error: "Failed to delete child profile" });
+    }
+  });
+
+  // Child Task Management Endpoints
+  app.get("/api/child-profiles/:childProfileId/tasks", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const parentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!parentFamilyMember) {
+        return res.status(404).json({ error: "Parent family member not found" });
+      }
+
+      const childProfileId = parseInt(req.params.childProfileId);
+      if (isNaN(childProfileId)) {
+        return res.status(400).json({ error: "Invalid child profile ID" });
+      }
+
+      const tasks = await storage.getTasksForChild(childProfileId, parentFamilyMember.id);
+      res.json(tasks);
+    } catch (error) {
+      console.error("Get child tasks error:", error);
+      res.status(500).json({ error: "Failed to get child tasks" });
+    }
+  });
+
+  app.post("/api/child-profiles/:childProfileId/tasks/:taskId/complete", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const parentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!parentFamilyMember) {
+        return res.status(404).json({ error: "Parent family member not found" });
+      }
+
+      const childProfileId = parseInt(req.params.childProfileId);
+      const taskId = parseInt(req.params.taskId);
+
+      if (isNaN(childProfileId) || isNaN(taskId)) {
+        return res.status(400).json({ error: "Invalid child profile ID or task ID" });
+      }
+
+      const { notes } = req.body;
+
+      const completedTask = await storage.completeTaskForChild(taskId, childProfileId, parentFamilyMember.id, notes);
+      res.json(completedTask);
+    } catch (error) {
+      console.error("Complete child task error:", error);
+      res.status(500).json({ error: "Failed to complete task for child" });
+    }
+  });
+
+  app.get("/api/child-profiles/:childProfileId/completions", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const parentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!parentFamilyMember) {
+        return res.status(404).json({ error: "Parent family member not found" });
+      }
+
+      const childProfileId = parseInt(req.params.childProfileId);
+      if (isNaN(childProfileId)) {
+        return res.status(400).json({ error: "Invalid child profile ID" });
+      }
+
+      const completions = await storage.getParentTaskCompletions(childProfileId, parentFamilyMember.id);
+      res.json(completions);
+    } catch (error) {
+      console.error("Get child completions error:", error);
+      res.status(500).json({ error: "Failed to get task completions" });
+    }
+  });
+
   return server;
 }
