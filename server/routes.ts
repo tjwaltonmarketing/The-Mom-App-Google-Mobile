@@ -2,6 +2,7 @@ import { Express } from "express";
 import { createServer } from "http";
 import { DatabaseStorage } from "./storage";
 import { smartTaskCreation } from "./ai";
+import { WeatherService } from "./weather-service";
 import bcrypt from "bcryptjs";
 
 const storage = new DatabaseStorage();
@@ -18,6 +19,28 @@ export async function registerRoutes(app: Express) {
   // Placeholder for API routes
   app.get("/api/test", (req, res) => {
     res.json({ message: "API is working" });
+  });
+
+  // Weather API endpoint
+  app.get("/api/weather/:location", async (req, res) => {
+    try {
+      const location = decodeURIComponent(req.params.location);
+      
+      if (!location || location.trim() === '') {
+        return res.status(400).json({ error: "Location parameter is required" });
+      }
+
+      const weather = await WeatherService.getWeatherForLocation(location);
+      
+      if (!weather) {
+        return res.status(404).json({ error: "Weather data not available for this location" });
+      }
+
+      res.json(weather);
+    } catch (error) {
+      console.error("Weather API error:", error);
+      res.status(500).json({ error: "Failed to fetch weather data" });
+    }
   });
 
   // Parent Authentication Endpoints
