@@ -1584,6 +1584,8 @@ export async function registerRoutes(app: Express) {
 
       const eventId = parseInt(req.params.eventId);
       const updates = req.body;
+      
+      console.log("Event update request body:", JSON.stringify(updates, null, 2));
 
       // Get family membership for the user
       const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
