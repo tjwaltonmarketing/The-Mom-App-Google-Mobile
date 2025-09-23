@@ -105,6 +105,7 @@ export const tasks = pgTable("tasks", {
   estimatedTime: integer("estimated_time"), // in minutes
   points: integer("points").default(10), // reward points for teens
   teenId: integer("teen_id"), // reference to teen profile if assigned to teen
+  childProfileId: integer("child_profile_id").references(() => childProfiles.id), // reference to child profile if assigned to child
 });
 
 export const voiceNotes = pgTable("voice_notes", {

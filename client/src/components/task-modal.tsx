@@ -51,6 +51,24 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
     }
   });
 
+  const { data: childProfiles = [] } = useQuery<any[]>({
+    queryKey: ["/api/child-profiles"],
+    queryFn: async () => {
+      const response = await fetch('/api/child-profiles', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    }
+  });
+
   const createTaskMutation = useMutation({
     mutationFn: async (task: InsertTask) => {
       const response = await apiRequest("POST", "/api/tasks", task);
@@ -112,13 +130,29 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       }
     }
 
+    // Parse assignment value to determine if it's a family member or child profile
+    let parsedAssignedTo = null;
+    let childProfileId = null;
+    
+    if (assignedTo !== "unassigned") {
+      if (assignedTo.startsWith("member-")) {
+        parsedAssignedTo = parseInt(assignedTo.replace("member-", ""));
+      } else if (assignedTo.startsWith("child-")) {
+        childProfileId = parseInt(assignedTo.replace("child-", ""));
+        // For child profiles, we don't set assignedTo since it's a different system
+        parsedAssignedTo = null;
+      }
+    }
+
     const taskData: InsertTask = {
       title: title.trim(),
       description: description.trim() || null,
       priority,
-      assignedTo: assignedTo !== "unassigned" ? parseInt(assignedTo) : null,
+      assignedTo: parsedAssignedTo,
       dueDate: finalDueDate ? finalDueDate.toISOString() : null,
       points: parseInt(points),
+      // Add childProfileId if needed for backend processing
+      ...(childProfileId && { childProfileId }),
     };
 
     createTaskMutation.mutate(taskData);
@@ -190,10 +224,22 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
                 <SelectContent>
                   <SelectItem value="unassigned">Unassigned</SelectItem>
                   {familyMembers.map((member) => (
-                    <SelectItem key={member.id} value={member.id.toString()}>
-                      {member.name}
+                    <SelectItem key={`member-${member.id}`} value={`member-${member.id}`}>
+                      {member.name} ({member.role})
                     </SelectItem>
                   ))}
+                  {childProfiles.length > 0 && (
+                    <>
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1">
+                        Child Accounts
+                      </div>
+                      {childProfiles.map((child) => (
+                        <SelectItem key={`child-${child.id}`} value={`child-${child.id}`}>
+                          {child.displayName} (Child Account)
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>
