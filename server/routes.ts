@@ -1357,6 +1357,44 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/family-members", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const { name, role, color, avatar, phone, email, notificationPreference } = req.body;
+
+      if (!name || !role) {
+        return res.status(400).json({ error: "Name and role are required" });
+      }
+
+      const memberData = {
+        name,
+        role,
+        color: color || "#3B82F6",
+        avatar: avatar || null,
+        phone: phone || null,
+        email: email || null,
+        notificationPreference: notificationPreference || "sms",
+        familyId: familyMembership.familyId,
+        canLogin: false,
+        isActive: true
+      };
+
+      const newMember = await storage.createFamilyMember(memberData);
+      res.json(newMember);
+    } catch (error) {
+      console.error("Family member creation error:", error);
+      res.status(500).json({ error: "Failed to create family member" });
+    }
+  });
+
   app.get("/api/meal-plans", async (req, res) => {
     try {
       if (!req.session.userId) {
