@@ -49,6 +49,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/voice-notes"] });
+      handleClose();
     },
   });
 
@@ -106,6 +107,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      handleClose();
     },
   });
 
@@ -121,6 +123,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      handleClose();
     },
   });
 
@@ -136,6 +139,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+      handleClose();
     },
   });
 
