@@ -13,15 +13,26 @@ interface VoiceNotesProps {
 export function VoiceNotes({ onStartRecording }: VoiceNotesProps) {
   const { data: recentNotes = [], isLoading: notesLoading, error: notesError } = useQuery<VoiceNote[]>({
     queryKey: ["/api/voice-notes/recent"],
+    queryFn: async () => {
+      const response = await fetch('/api/voice-notes/recent', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    },
+    staleTime: 0, // Always consider data stale for immediate updates
+    gcTime: 0,    // Don't cache in garbage collection
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
-  console.log("VoiceNotes component - Query state:", {
-    recentNotes,
-    notesLoading,
-    notesError,
-    hasData: !!recentNotes,
-    dataLength: recentNotes?.length
-  });
 
   const { data: familyMembers = [], isLoading: membersLoading } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
