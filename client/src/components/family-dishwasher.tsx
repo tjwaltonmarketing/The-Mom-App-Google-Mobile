@@ -6,6 +6,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Clock, Users } from "lucide-react";
 import type { HouseholdSettings } from "@shared/schema";
+import { useAuth } from "@/hooks/use-auth";
 
 interface FamilyDishwasherProps {
   apiEndpoint: string;
@@ -15,9 +16,24 @@ interface FamilyDishwasherProps {
 export function FamilyDishwasher({ apiEndpoint, updateEndpoint }: FamilyDishwasherProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: settings, isLoading, error } = useQuery<HouseholdSettings>({
     queryKey: [apiEndpoint],
+    queryFn: async () => {
+      console.log("FamilyDishwasher: Making API call to", apiEndpoint);
+      const response = await apiRequest("GET", apiEndpoint);
+      console.log("FamilyDishwasher: API response status:", response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("FamilyDishwasher: API error:", errorText);
+        throw new Error(`API call failed: ${response.status} ${errorText}`);
+      }
+      const data = await response.json();
+      console.log("FamilyDishwasher: API success data:", data);
+      return data;
+    },
+    enabled: !!user, // Only fetch when user is authenticated
     retry: 1,
     staleTime: 30000, // Cache for 30 seconds
   });
