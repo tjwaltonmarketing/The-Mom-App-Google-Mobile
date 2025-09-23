@@ -1,15 +1,24 @@
 import { Plus, ShoppingCart, Utensils, Users, Zap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export function QuickActions() {
+  const [, setLocation] = useLocation();
+  
   const actions = [
     { icon: Plus, label: "Add Event", color: "text-primary", href: "/calendar" },
     { icon: ShoppingCart, label: "Grocery List", color: "text-pink-500", href: "/grocery-list" },
     { icon: Utensils, label: "Meal Plan", color: "text-accent", href: "/meal-plan" },
     { icon: Users, label: "Family Chat", color: "text-primary", href: "/family-chat" },
   ];
+  
+  const handleActionClick = (href: string) => {
+    // Immediately scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Then navigate
+    setLocation(href);
+  };
 
   return (
     <Card>
@@ -23,15 +32,16 @@ export function QuickActions() {
       <CardContent>
         <div className="grid grid-cols-2 gap-3">
           {actions.map((action, index) => (
-            <Link key={index} href={action.href}>
-              <Button
-                variant="ghost"
-                className="bg-gray-50 hover:bg-gray-100 h-auto p-4 flex flex-col items-center space-y-2 w-full"
-              >
-                <action.icon className={`${action.color} h-6 w-6`} />
-                <span className="text-sm font-medium">{action.label}</span>
-              </Button>
-            </Link>
+            <Button
+              key={index}
+              variant="ghost"
+              className="bg-gray-50 hover:bg-gray-100 h-auto p-4 flex flex-col items-center space-y-2 w-full"
+              onClick={() => handleActionClick(action.href)}
+              data-testid={`quick-action-${action.label.toLowerCase().replace(' ', '-')}`}
+            >
+              <action.icon className={`${action.color} h-6 w-6`} />
+              <span className="text-sm font-medium">{action.label}</span>
+            </Button>
           ))}
         </div>
       </CardContent>
