@@ -39,23 +39,13 @@ export function SplashScreen({ isLoading, onComplete }: SplashScreenProps) {
         <div className="relative">
           <img 
             src={logoPath} 
-            alt="The Mom App" 
+            alt="Logo" 
             className="w-64 h-64 object-contain animate-pulse"
           />
           {/* Subtle glow effect behind the logo */}
           <div className="absolute inset-0 bg-gradient-to-r from-pink-200/20 to-purple-200/20 rounded-full blur-xl animate-pulse -z-10" />
         </div>
         
-        {/* App title */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-            The Mom App
-          </h1>
-          <p className="text-gray-600 text-lg">
-            Family Coordination Hub
-          </p>
-        </div>
-
         {/* Loading indicator */}
         <div className="flex items-center space-x-2 mt-8">
           <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
