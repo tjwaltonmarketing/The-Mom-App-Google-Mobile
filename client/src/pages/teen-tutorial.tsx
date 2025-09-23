@@ -35,13 +35,13 @@ interface TutorialStep {
 const tutorialSteps: TutorialStep[] = [
   {
     id: 1,
-    title: "Welcome to Your Dashboard!",
-    description: "This is your personal space to stay organized and connected with your family. Think of it as your digital headquarters!",
+    title: "Welcome to Your Family Space!",
+    description: "This is your simple dashboard to stay connected with your family. No complex features - just what you need!",
     icon: <Star className="h-8 w-8 text-purple-500" />,
     tips: [
-      "You can see your points and streak at the top",
-      "Your family members appear in the bottom section",
-      "Everything syncs with your parents' calendar automatically"
+      "See your tasks assigned by family members",
+      "View today's family events and activities",
+      "Simple, clean interface focused on what matters"
     ]
   },
   {
@@ -64,7 +64,7 @@ const tutorialSteps: TutorialStep[] = [
     tips: [
       "Purple events = Your personal stuff",
       "Green/Blue events = Family activities", 
-      "Tasks show with time and points you'll earn",
+      "Tasks show with clear descriptions and due dates",
       "Tap the + button to add your own events"
     ]
   },
@@ -76,20 +76,20 @@ const tutorialSteps: TutorialStep[] = [
     tips: [
       "Click the bell to see family updates",
       "Get notified about new tasks or events",
-      "See achievements and points you've earned",
+      "See family updates and important messages",
       "Never miss important family stuff"
     ]
   },
   {
     id: 5,
-    title: "Points & Achievements",
-    description: "Earn points by completing tasks and helping your family. Your progress is automatically saved and tracked over time!",
-    icon: <Trophy className="h-8 w-8 text-yellow-500" />,
+    title: "Task Completion",
+    description: "Mark tasks complete when you finish them. Simple and straightforward - no complex scoring needed!",
+    icon: <CheckCircle className="h-8 w-8 text-green-500" />,
     tips: [
-      "Complete tasks to earn 10-50 points (varies by difficulty)",
-      "Keep your streak going for bonus points",
-      "All your points and achievements are permanently saved",
-      "Parents can track your progress and celebrate milestones!"
+      "Mark tasks complete when you finish them",
+      "Parents get notified automatically",
+      "No complex points system - just simple completion",
+      "Focus on helping family rather than earning scores"
     ]
   },
   {
