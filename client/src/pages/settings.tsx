@@ -53,9 +53,18 @@ const familyMergeSchema = z.object({
   partnerEmail: z.string().email("Please enter a valid email address"),
 });
 
+const resetPasswordSchema = z.object({
+  newPassword: z.string().min(6, "Password must be at least 6 characters long"),
+  confirmPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
 type AddFamilyMemberForm = z.infer<typeof addFamilyMemberSchema>;
 type EditMemberForm = z.infer<typeof editMemberSchema>;
 type FamilyMergeForm = z.infer<typeof familyMergeSchema>;
+type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -82,6 +91,8 @@ export default function SettingsPage() {
   const [showBillingDecisionDialog, setShowBillingDecisionDialog] = useState(false);
   const [pendingMergeRequestId, setPendingMergeRequestId] = useState<number | null>(null);
   const [billingPreference, setBillingPreference] = useState<string>("keep_mine");
+  const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
+  const [selectedTeenForReset, setSelectedTeenForReset] = useState<{id: number, name: string, username?: string} | null>(null);
 
   // Fetch existing family members
   const { data: familyMembers = [], isLoading: isFamilyMembersLoading, error: familyMembersError } = useQuery<FamilyMember[]>({
@@ -151,6 +162,15 @@ export default function SettingsPage() {
     resolver: zodResolver(familyMergeSchema),
     defaultValues: {
       partnerEmail: "",
+    },
+  });
+
+  // Form for password reset
+  const resetPasswordForm = useForm<ResetPasswordForm>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      newPassword: "",
+      confirmPassword: "",
     },
   });
 
@@ -303,20 +323,23 @@ export default function SettingsPage() {
 
   // Mutation for resetting teen password
   const resetTeenPasswordMutation = useMutation({
-    mutationFn: async ({ teenId, teenName }: { teenId: number; teenName: string }) => {
-      return apiRequest("POST", `/api/family-members/${teenId}/reset-password`);
+    mutationFn: async ({ teenId, newPassword }: { teenId: number; newPassword: string }) => {
+      return apiRequest("POST", `/api/family-members/${teenId}/reset-password`, { newPassword });
     },
-    onSuccess: (data: any, variables) => {
+    onSuccess: (data: any) => {
       toast({
         title: "Password Reset Successfully",
-        description: `${variables.teenName}'s password has been reset. New password: ${data.newPassword}`,
-        duration: 10000, // Show longer for password copying
+        description: data.message || "Teen's password has been reset successfully.",
       });
+      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
+      setShowResetPasswordDialog(false);
+      resetPasswordForm.reset();
+      setSelectedTeenForReset(null);
     },
-    onError: (error: any, variables) => {
+    onError: (error: any) => {
       toast({
         title: "Password Reset Failed",
-        description: error.message || `Failed to reset ${variables.teenName}'s password`,
+        description: error.message || "Failed to reset password",
         variant: "destructive",
       });
     },
@@ -375,9 +398,17 @@ export default function SettingsPage() {
     }
   };
 
-  const handleResetTeenPassword = (teenId: number, teenName: string) => {
-    if (confirm(`Are you sure you want to reset ${teenName}'s password? This will generate a new temporary password.`)) {
-      resetTeenPasswordMutation.mutate({ teenId, teenName });
+  const handleResetTeenPassword = (teenId: number, teenName: string, username?: string) => {
+    setSelectedTeenForReset({ id: teenId, name: teenName, username });
+    setShowResetPasswordDialog(true);
+  };
+
+  const onResetPasswordSubmit = (data: ResetPasswordForm) => {
+    if (selectedTeenForReset) {
+      resetTeenPasswordMutation.mutate({ 
+        teenId: selectedTeenForReset.id, 
+        newPassword: data.newPassword 
+      });
     }
   };
 
@@ -667,6 +698,11 @@ export default function SettingsPage() {
                             <div>
                               <div className="font-medium text-sm">{member.name}</div>
                               <div className="text-xs text-muted-foreground capitalize">{member.role}</div>
+                              {member.role === 'teen' && (member as any).username && (
+                                <div className="text-xs text-blue-600 dark:text-blue-400 font-mono">
+                                  @{(member as any).username}
+                                </div>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
@@ -682,7 +718,7 @@ export default function SettingsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleResetTeenPassword(member.id, member.name)}
+                                onClick={() => handleResetTeenPassword(member.id, member.name, (member as any).username)}
                                 className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
                                 title="Reset Password"
                               >
@@ -1857,6 +1893,79 @@ export default function SettingsPage() {
                 {approveMergeRequestMutation.isPending ? "Approving..." : "Approve & Merge"}
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Password Reset Modal */}
+        <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Reset Password for {selectedTeenForReset?.name}</DialogTitle>
+              <DialogDescription>
+                Set a new password for {selectedTeenForReset?.name}
+                {selectedTeenForReset?.username && (
+                  <span className="font-mono text-blue-600 dark:text-blue-400">
+                    (@{selectedTeenForReset.username})
+                  </span>
+                )}. They'll use this password to log in.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <Form {...resetPasswordForm}>
+              <form onSubmit={resetPasswordForm.handleSubmit(onResetPasswordSubmit)} className="space-y-4">
+                <FormField
+                  control={resetPasswordForm.control}
+                  name="newPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>New Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Enter new password (min 6 characters)"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={resetPasswordForm.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Confirm new password"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowResetPasswordDialog(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={resetTeenPasswordMutation.isPending}
+                  >
+                    {resetTeenPasswordMutation.isPending ? "Resetting..." : "Reset Password"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </main>

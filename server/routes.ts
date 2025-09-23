@@ -1335,7 +1335,22 @@ export async function registerRoutes(app: Express) {
       }
 
       const familyMembers = await storage.getFamilyMembersByFamily(familyMembership.familyId);
-      res.json(familyMembers);
+      
+      // Enhance family members with teen usernames
+      const enhancedMembers = await Promise.all(
+        familyMembers.map(async (member) => {
+          if (member.role === 'teen' && member.userId) {
+            const teenProfile = await storage.getTeenProfileByUserId(member.userId);
+            return {
+              ...member,
+              username: teenProfile?.username || null
+            };
+          }
+          return member;
+        })
+      );
+      
+      res.json(enhancedMembers);
     } catch (error) {
       console.error("Family members error:", error);
       res.status(500).json({ error: "Failed to get family members" });
@@ -2149,8 +2164,14 @@ export async function registerRoutes(app: Express) {
       }
 
       const teenId = parseInt(req.params.teenId);
+      const { newPassword } = req.body;
+      
       if (isNaN(teenId)) {
         return res.status(400).json({ error: "Invalid teen ID" });
+      }
+
+      if (!newPassword || newPassword.length < 6) {
+        return res.status(400).json({ error: "Password must be at least 6 characters long" });
       }
 
       // Get the teen profile
@@ -2176,8 +2197,7 @@ export async function registerRoutes(app: Express) {
         return res.status(403).json({ error: "Not authorized to manage this teen's password" });
       }
 
-      // Generate a new temporary password
-      const newPassword = Math.random().toString(36).slice(-8).toUpperCase();
+      // Hash the new password
       const passwordHash = await bcrypt.hash(newPassword, 10);
 
       // Update the teen's password
@@ -2187,7 +2207,7 @@ export async function registerRoutes(app: Express) {
       await storage.createNotification({
         type: "password_reset",
         title: "Teen Password Reset",
-        message: `You reset ${teenProfile.firstName}'s password. New password: ${newPassword}`,
+        message: `You reset ${teenProfile.firstName}'s password successfully.`,
         recipientId: parentFamilyMember.id,
         scheduledFor: new Date(),
         deliveryMethod: "app",
@@ -2196,7 +2216,6 @@ export async function registerRoutes(app: Express) {
 
       res.json({
         success: true,
-        newPassword,
         message: `Password reset successfully for ${teenProfile.firstName}`
       });
     } catch (error) {
