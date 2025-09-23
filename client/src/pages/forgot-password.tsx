@@ -17,17 +17,8 @@ const parentResetSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
 });
 
-const teenResetSchema = z.object({
-  username: z.string().min(1, "Please enter your username"),
-});
-
 const smsCodeSchema = z.object({
   code: z.string().length(6, "Please enter the 6-digit code"),
-});
-
-const securityAnswersSchema = z.object({
-  answer1: z.string().min(1, "Please answer the first security question"),
-  answer2: z.string().min(1, "Please answer the second security question"),
 });
 
 const newPasswordSchema = z.object({
@@ -39,19 +30,14 @@ const newPasswordSchema = z.object({
 });
 
 type ParentResetData = z.infer<typeof parentResetSchema>;
-type TeenResetData = z.infer<typeof teenResetSchema>;
 type SmsCodeData = z.infer<typeof smsCodeSchema>;
-type SecurityAnswersData = z.infer<typeof securityAnswersSchema>;
 type NewPasswordData = z.infer<typeof newPasswordSchema>;
 
 export default function ForgotPassword() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [currentFlow, setCurrentFlow] = useState<"initial" | "sms_sent" | "security_questions" | "new_password">("initial");
-  const [resetType, setResetType] = useState<"sms" | "security_questions" | null>(null);
+  const [currentFlow, setCurrentFlow] = useState<"initial" | "sms_sent" | "new_password">("initial");
   const [resetToken, setResetToken] = useState<string | null>(null);
-  const [securityQuestions, setSecurityQuestions] = useState<string[]>([]);
-  const [currentUsername, setCurrentUsername] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -60,19 +46,9 @@ export default function ForgotPassword() {
     defaultValues: { email: "" },
   });
 
-  const teenForm = useForm<TeenResetData>({
-    resolver: zodResolver(teenResetSchema),
-    defaultValues: { username: "" },
-  });
-
   const smsForm = useForm<SmsCodeData>({
     resolver: zodResolver(smsCodeSchema),
     defaultValues: { code: "" },
-  });
-
-  const securityForm = useForm<SecurityAnswersData>({
-    resolver: zodResolver(securityAnswersSchema),
-    defaultValues: { answer1: "", answer2: "" },
   });
 
   const passwordForm = useForm<NewPasswordData>({
@@ -82,23 +58,16 @@ export default function ForgotPassword() {
 
   // Request password reset
   const requestResetMutation = useMutation({
-    mutationFn: async (data: ParentResetData | TeenResetData) => {
+    mutationFn: async (data: ParentResetData) => {
       const response = await apiRequest("POST", "/api/auth/request-password-reset", data);
       return response.json();
     },
     onSuccess: (data) => {
-      if (data.resetType === "sms") {
-        setResetType("sms");
-        setCurrentFlow("sms_sent");
-        toast({
-          title: "SMS Sent",
-          description: data.message,
-        });
-      } else if (data.resetType === "security_questions") {
-        setResetType("security_questions");
-        setSecurityQuestions(data.securityQuestions);
-        setCurrentFlow("security_questions");
-      }
+      setCurrentFlow("sms_sent");
+      toast({
+        title: "SMS Sent",
+        description: data.message,
+      });
     },
     onError: (error: any) => {
       toast({
@@ -131,38 +100,12 @@ export default function ForgotPassword() {
     },
   });
 
-  // Verify security questions
-  const verifySecurityQuestionsMutation = useMutation({
-    mutationFn: async (data: SecurityAnswersData) => {
-      const response = await apiRequest("POST", "/api/auth/verify-security-questions", {
-        username: currentUsername,
-        answers: [data.answer1, data.answer2],
-      });
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setResetToken(data.resetToken);
-      setCurrentFlow("new_password");
-      toast({
-        title: "Verification Successful",
-        description: data.message,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Incorrect Answers",
-        description: error.message || "Please check your answers and try again",
-        variant: "destructive",
-      });
-    },
-  });
 
   // Set new password
   const setNewPasswordMutation = useMutation({
     mutationFn: async (data: NewPasswordData) => {
-      const token = resetType === "sms" ? smsForm.getValues().code : resetToken;
       const response = await apiRequest("POST", "/api/auth/reset-password", {
-        token: token,
+        token: smsForm.getValues().code,
         newPassword: data.newPassword,
       });
       return response.json();
@@ -172,12 +115,7 @@ export default function ForgotPassword() {
         title: "Password Reset Successful",
         description: "You can now log in with your new password.",
       });
-      // Redirect to appropriate login page
-      if (resetType === "security_questions") {
-        setLocation("/teen-login");
-      } else {
-        setLocation("/login");
-      }
+      setLocation("/login");
     },
     onError: (error: any) => {
       toast({
@@ -192,17 +130,8 @@ export default function ForgotPassword() {
     requestResetMutation.mutate(data);
   };
 
-  const onTeenSubmit = (data: TeenResetData) => {
-    setCurrentUsername(data.username);
-    requestResetMutation.mutate(data);
-  };
-
   const onSmsSubmit = (data: SmsCodeData) => {
     verifySmsCodeMutation.mutate(data);
-  };
-
-  const onSecuritySubmit = (data: SecurityAnswersData) => {
-    verifySecurityQuestionsMutation.mutate(data);
   };
 
   const onPasswordSubmit = (data: NewPasswordData) => {
@@ -294,78 +223,6 @@ export default function ForgotPassword() {
     );
   }
 
-  // Security questions verification step
-  if (currentFlow === "security_questions") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-            </div>
-            <CardTitle className="text-xl">Security Questions</CardTitle>
-            <CardDescription>
-              Please answer your security questions to verify your identity.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={securityForm.handleSubmit(onSecuritySubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="answer1">{securityQuestions[0]}</Label>
-                <Input
-                  id="answer1"
-                  type="text"
-                  placeholder="Your answer"
-                  {...securityForm.register("answer1")}
-                  disabled={verifySecurityQuestionsMutation.isPending}
-                />
-                {securityForm.formState.errors.answer1 && (
-                  <p className="text-sm text-destructive">
-                    {securityForm.formState.errors.answer1.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="answer2">{securityQuestions[1]}</Label>
-                <Input
-                  id="answer2"
-                  type="text"
-                  placeholder="Your answer"
-                  {...securityForm.register("answer2")}
-                  disabled={verifySecurityQuestionsMutation.isPending}
-                />
-                {securityForm.formState.errors.answer2 && (
-                  <p className="text-sm text-destructive">
-                    {securityForm.formState.errors.answer2.message}
-                  </p>
-                )}
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full"
-                disabled={verifySecurityQuestionsMutation.isPending}
-              >
-                {verifySecurityQuestionsMutation.isPending ? "Verifying..." : "Verify Answers"}
-              </Button>
-
-              <div className="text-center">
-                <Button 
-                  variant="link" 
-                  className="p-0"
-                  onClick={() => setCurrentFlow("initial")}
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   // New password step
   if (currentFlow === "new_password") {
@@ -465,7 +322,7 @@ export default function ForgotPassword() {
                 <Smartphone className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               </div>
               <p className="text-sm text-muted-foreground mb-6">
-                We'll send a reset code to your phone via SMS
+                Enter your email address and we'll send a reset code to the phone number on your account
               </p>
               <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6">
                 <p className="text-sm text-amber-800 dark:text-amber-200">
