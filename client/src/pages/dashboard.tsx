@@ -15,7 +15,7 @@ import { TrialBanner } from "@/components/dashboard/trial-banner";
 import { AdvancedTaskManagement } from "@/components/dashboard/advanced-task-management";
 import { MealPlanning } from "@/components/dashboard/meal-planning";
 
-import { HouseholdStatus } from "@/components/household-status";
+import { FamilyDishwasher } from "@/components/family-dishwasher";
 
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { MindfulUsage } from "@/components/mindful-usage";
@@ -80,7 +80,10 @@ export default function Dashboard() {
               {/* Right Column */}
               <div className="space-y-6">
                 <QuickActions />
-                <HouseholdStatus />
+                <FamilyDishwasher 
+                  apiEndpoint="/api/household-settings" 
+                  updateEndpoint="/api/household-settings/dishwasher" 
+                />
                 <NotificationDemo />
                 <WeatherWidget />
                 <FamilyProgress />
