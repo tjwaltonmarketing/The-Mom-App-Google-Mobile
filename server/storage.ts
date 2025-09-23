@@ -559,6 +559,8 @@ export class DatabaseStorage implements IStorage {
       await db.delete(notifications).where(eq(notifications.recipientId, id));
       await db.delete(tasks).where(eq(tasks.assignedTo, id));
       await db.delete(tasks).where(eq(tasks.completedBy, id));
+      await db.delete(childProfiles).where(eq(childProfiles.familyMemberId, id));
+      await db.delete(parentTaskCompletions).where(eq(parentTaskCompletions.parentId, id));
       // Skip deleting events - they can remain with the member ID in assignedTo array
       await db.delete(voiceNotes).where(eq(voiceNotes.createdBy, id));
       
