@@ -3,6 +3,7 @@ import {
   events, 
   tasks, 
   voiceNotes, 
+  textNotes,
   deadlines,
   notifications,
   passwords,
@@ -27,6 +28,8 @@ import {
   type InsertTask,
   type VoiceNote,
   type InsertVoiceNote,
+  type TextNote,
+  type InsertTextNote,
   type Deadline,
   type InsertDeadline,
   type Notification,
@@ -161,6 +164,14 @@ export interface IStorage {
   getRecentVoiceNotes(): Promise<VoiceNote[]>;
   getRecentVoiceNotesByFamily(familyId: number): Promise<VoiceNote[]>;
   createVoiceNote(note: InsertVoiceNote): Promise<VoiceNote>;
+  
+  // Text Notes
+  getTextNotes(): Promise<TextNote[]>;
+  getTextNotesByFamily(familyId: number): Promise<TextNote[]>;
+  getTextNoteById(id: number): Promise<TextNote | undefined>;
+  createTextNote(note: InsertTextNote): Promise<TextNote>;
+  updateTextNote(id: number, updates: Partial<InsertTextNote>): Promise<TextNote | undefined>;
+  deleteTextNote(id: number): Promise<boolean>;
   
   // Deadlines
   getDeadlines(): Promise<Deadline[]>;
@@ -887,6 +898,44 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(voiceNotes)
       .where(eq(voiceNotes.createdBy, creatorId))
       .orderBy(desc(voiceNotes.createdAt));
+  }
+
+  // Text Notes implementations
+  async getTextNotes(): Promise<TextNote[]> {
+    return await db.select().from(textNotes).orderBy(desc(textNotes.updatedAt));
+  }
+
+  async getTextNotesByFamily(familyId: number): Promise<TextNote[]> {
+    return await db.select().from(textNotes)
+      .where(eq(textNotes.familyId, familyId))
+      .orderBy(desc(textNotes.updatedAt));
+  }
+
+  async getTextNoteById(id: number): Promise<TextNote | undefined> {
+    const [note] = await db.select().from(textNotes).where(eq(textNotes.id, id));
+    return note;
+  }
+
+  async createTextNote(insertNote: InsertTextNote): Promise<TextNote> {
+    const [note] = await db.insert(textNotes).values({
+      ...insertNote,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }).returning();
+    return note;
+  }
+
+  async updateTextNote(id: number, updates: Partial<InsertTextNote>): Promise<TextNote | undefined> {
+    const [note] = await db.update(textNotes)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(textNotes.id, id))
+      .returning();
+    return note;
+  }
+
+  async deleteTextNote(id: number): Promise<boolean> {
+    const result = await db.delete(textNotes).where(eq(textNotes.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
   }
 
   async getDeadlines(): Promise<Deadline[]> {

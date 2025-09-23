@@ -1937,6 +1937,170 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Text Notes Endpoints
+  app.get("/api/text-notes", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get current user's family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get text notes for this family
+      const textNotes = await storage.getTextNotesByFamily(familyMembership.familyId);
+      
+      res.json(textNotes);
+    } catch (error) {
+      console.error("Text notes fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch text notes" });
+    }
+  });
+
+  app.get("/api/text-notes/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const noteId = parseInt(req.params.id);
+      if (isNaN(noteId)) {
+        return res.status(400).json({ error: "Invalid note ID" });
+      }
+
+      // Get the text note
+      const textNote = await storage.getTextNoteById(noteId);
+      if (!textNote) {
+        return res.status(404).json({ error: "Text note not found" });
+      }
+
+      // Check if user has access to this note (same family)
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership || familyMembership.familyId !== textNote.familyId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      res.json(textNote);
+    } catch (error) {
+      console.error("Text note fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch text note" });
+    }
+  });
+
+  app.post("/api/text-notes", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { title, content } = req.body;
+      
+      if (!title || !content) {
+        return res.status(400).json({ error: "Title and content are required" });
+      }
+
+      // Get current user's family member
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Create new text note
+      const newNote = await storage.createTextNote({
+        title,
+        content,
+        familyId: familyMember.familyId,
+        createdBy: familyMember.id
+      });
+
+      res.status(201).json(newNote);
+    } catch (error) {
+      console.error("Text note creation error:", error);
+      res.status(500).json({ error: "Failed to create text note" });
+    }
+  });
+
+  app.put("/api/text-notes/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const noteId = parseInt(req.params.id);
+      if (isNaN(noteId)) {
+        return res.status(400).json({ error: "Invalid note ID" });
+      }
+
+      const { title, content } = req.body;
+      
+      if (!title || !content) {
+        return res.status(400).json({ error: "Title and content are required" });
+      }
+
+      // Get the text note to verify ownership and family membership
+      const existingNote = await storage.getTextNoteById(noteId);
+      if (!existingNote) {
+        return res.status(404).json({ error: "Text note not found" });
+      }
+
+      // Check if user has access to this note (same family)
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership || familyMembership.familyId !== existingNote.familyId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // Update the text note
+      const updatedNote = await storage.updateTextNote(noteId, { title, content });
+      if (!updatedNote) {
+        return res.status(404).json({ error: "Failed to update text note" });
+      }
+
+      res.json(updatedNote);
+    } catch (error) {
+      console.error("Text note update error:", error);
+      res.status(500).json({ error: "Failed to update text note" });
+    }
+  });
+
+  app.delete("/api/text-notes/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const noteId = parseInt(req.params.id);
+      if (isNaN(noteId)) {
+        return res.status(400).json({ error: "Invalid note ID" });
+      }
+
+      // Get the text note to verify ownership and family membership
+      const existingNote = await storage.getTextNoteById(noteId);
+      if (!existingNote) {
+        return res.status(404).json({ error: "Text note not found" });
+      }
+
+      // Check if user has access to this note (same family)
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership || familyMembership.familyId !== existingNote.familyId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // Delete the text note
+      const deleted = await storage.deleteTextNote(noteId);
+      if (!deleted) {
+        return res.status(500).json({ error: "Failed to delete text note" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Text note deletion error:", error);
+      res.status(500).json({ error: "Failed to delete text note" });
+    }
+  });
+
   // AI Smart Task Creation Endpoint
   app.post("/api/ai/smart-task-creation", async (req, res) => {
     try {
