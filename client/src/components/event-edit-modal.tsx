@@ -97,8 +97,8 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
 
       const eventPayload = {
         ...eventData,
-        startTime: startDateTime,
-        endTime: endDateTime,
+        startTime: startDateTime.toISOString(),
+        endTime: endDateTime ? endDateTime.toISOString() : null,
         isAllDay,
         assignedTo: eventData.assignedTo ? [eventData.assignedTo] : [],
       };
