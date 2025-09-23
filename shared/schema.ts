@@ -36,6 +36,8 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   token: text("token").notNull().unique(),
   expiresAt: timestamp("expires_at").notNull(),
   isUsed: boolean("is_used").default(false),
+  resetType: text("reset_type").notNull().default("email"), // "email", "sms", "security_questions"
+  phoneNumber: text("phone_number"), // for SMS resets
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -233,6 +235,11 @@ export const teenProfiles = pgTable("teen_profiles", {
   points: integer("points").default(0),
   streak: integer("streak").default(0), // consecutive days of completing tasks
   lastActivityDate: timestamp("lastActivityDate"),
+  // Security questions for password reset
+  securityQuestion1: text("securityQuestion1"),
+  securityAnswer1: text("securityAnswer1"),
+  securityQuestion2: text("securityQuestion2"),
+  securityAnswer2: text("securityAnswer2"),
   createdAt: timestamp("createdAt").defaultNow(),
   updatedAt: timestamp("updatedAt").defaultNow(),
 });
