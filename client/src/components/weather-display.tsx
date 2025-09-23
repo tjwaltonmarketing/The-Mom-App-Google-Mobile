@@ -49,7 +49,7 @@ export function WeatherDisplay({ location, compact = false, className = "" }: We
     return (
       <div className={`flex items-center gap-1 text-sm text-gray-600 ${className}`} data-testid="weather-compact">
         <span>{weather.icon}</span>
-        <span>{weather.temperature}°</span>
+        <span>{weather.temperature}°F</span>
         {weather.chanceOfRain > 50 && (
           <span className="text-blue-600">
             <Droplets size={12} className="inline" />
