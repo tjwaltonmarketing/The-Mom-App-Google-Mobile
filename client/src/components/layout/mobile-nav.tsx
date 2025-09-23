@@ -1,4 +1,4 @@
-import { Home, Calendar, CheckSquare, Utensils } from "lucide-react";
+import { Home, Calendar, CheckSquare, Utensils, FileText } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 export function MobileNav() {
@@ -18,6 +18,10 @@ export function MobileNav() {
         <Link href="/tasks" className={`flex flex-col items-center py-2 px-2 flex-1 ${location === "/tasks" ? "text-primary" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600"}`}>
           <CheckSquare className="text-lg" />
           <span className="text-xs mt-1">Tasks</span>
+        </Link>
+        <Link href="/notes" className={`flex flex-col items-center py-2 px-2 flex-1 ${location === "/notes" ? "text-primary" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600"}`}>
+          <FileText className="text-lg" />
+          <span className="text-xs mt-1">Notes</span>
         </Link>
         <Link href="/meal-plan" className={`flex flex-col items-center py-2 px-2 flex-1 ${location === "/meal-plan" ? "text-primary" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600"}`}>
           <Utensils className="text-lg" />

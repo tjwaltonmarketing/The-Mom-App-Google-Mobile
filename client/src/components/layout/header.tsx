@@ -59,6 +59,9 @@ export function Header({ onStartVoiceNote }: HeaderProps) {
               <Link href="/tasks" className={location === "/tasks" ? "text-primary font-medium border-b-2 border-primary pb-1" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors"}>
                 Tasks
               </Link>
+              <Link href="/notes" className={location === "/notes" ? "text-primary font-medium border-b-2 border-primary pb-1" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors"}>
+                Notes
+              </Link>
               <Link href="/meal-plan" className={location === "/meal-plan" ? "text-primary font-medium border-b-2 border-primary pb-1" : "text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-600 hover:text-primary transition-colors"}>
                 Meal Plan
               </Link>

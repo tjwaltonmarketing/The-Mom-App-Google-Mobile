@@ -1,21 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { Mic, Quote, ChevronDown, ChevronUp } from "lucide-react";
+import { Mic } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import type { VoiceNote, FamilyMember } from "@shared/schema";
-import { formatDistanceToNow } from "date-fns";
-import { useMemo, useState } from "react";
+import type { VoiceNote } from "@shared/schema";
 
 interface VoiceNotesProps {
   onStartRecording: () => void;
 }
 
 export function VoiceNotes({ onStartRecording }: VoiceNotesProps) {
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  
-  const { data: allNotes = [], isLoading: notesLoading, error: notesError } = useQuery<VoiceNote[]>({
+  const { data: allNotes = [], isLoading: notesLoading } = useQuery<VoiceNote[]>({
     queryKey: ["/api/voice-notes/recent"],
     queryFn: async () => {
       const response = await fetch('/api/voice-notes/recent', {
@@ -37,29 +32,6 @@ export function VoiceNotes({ onStartRecording }: VoiceNotesProps) {
     refetchOnWindowFocus: true
   });
 
-  const { data: familyMembers = [], isLoading: membersLoading } = useQuery<FamilyMember[]>({
-    queryKey: ["/api/family-members"],
-  });
-
-  // Split notes into recent (first 3) and older notes
-  const { recentNotes, olderNotes } = useMemo(() => {
-    const sortedNotes = [...allNotes].sort((a, b) => {
-      // Handle notes without timestamps by putting them at the end
-      if (!a.createdAt && !b.createdAt) return 0;
-      if (!a.createdAt) return 1;
-      if (!b.createdAt) return -1;
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
-    return {
-      recentNotes: sortedNotes.slice(0, 3),
-      olderNotes: sortedNotes.slice(3)
-    };
-  }, [allNotes]);
-
-  const getMemberById = (id: number | null) => {
-    return familyMembers.find(member => member.id === id);
-  };
-
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -77,7 +49,7 @@ export function VoiceNotes({ onStartRecording }: VoiceNotesProps) {
       </CardHeader>
       
       <CardContent>
-        {notesLoading || membersLoading ? (
+        {notesLoading ? (
           <div className="flex items-center justify-center py-8">
             <LoadingSpinner variant="mom" size="md" />
           </div>
@@ -93,75 +65,19 @@ export function VoiceNotes({ onStartRecording }: VoiceNotesProps) {
               </div>
             </div>
             
-            {/* Recent Notes (Latest 3) */}
-            {recentNotes.length > 0 && (
-              <div className="space-y-3">
-                <h4 className="text-sm font-medium text-gray-700">Latest Notes</h4>
-                {recentNotes.map((note) => {
-                  const member = getMemberById(note.createdBy);
-                  return (
-                    <div key={note.id} className="bg-blue-50 rounded-lg p-3">
-                      <div className="flex items-start space-x-3">
-                        <Quote className="text-blue-400 text-sm mt-1 h-4 w-4" />
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-700">
-                            "{note.transcription || note.content}"
-                          </p>
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="text-xs text-gray-500">
-                              {note.createdAt && formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })} • {member?.name || 'Unknown'}
-                            </span>
-                            <Button variant="link" className="text-xs text-primary hover:text-blue-600 p-0 h-auto">
-                              Create Tasks
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+            {/* Quick access to view all notes */}
+            {allNotes.length > 0 && (
+              <div className="mt-4 text-center">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-sm"
+                  onClick={() => window.location.href = '/notes'}
+                  data-testid="view-all-notes-button"
+                >
+                  View All Notes ({allNotes.length})
+                </Button>
               </div>
-            )}
-            
-            {/* Older Notes (Collapsible History) */}
-            {olderNotes.length > 0 && (
-              <Collapsible open={isHistoryOpen} onOpenChange={setIsHistoryOpen} className="mt-4">
-                <CollapsibleTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-between text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-50 p-2"
-                    data-testid="toggle-voice-notes-history"
-                  >
-                    <span>View {olderNotes.length} older note{olderNotes.length !== 1 ? 's' : ''}</span>
-                    {isHistoryOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-3 mt-3">
-                  {olderNotes.map((note) => {
-                    const member = getMemberById(note.createdBy);
-                    return (
-                      <div key={note.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <div className="flex items-start space-x-3">
-                          <Quote className="text-gray-400 text-sm mt-1 h-4 w-4" />
-                          <div className="flex-1">
-                            <p className="text-sm text-gray-600">
-                              "{note.transcription || note.content}"
-                            </p>
-                            <div className="flex items-center justify-between mt-2">
-                              <span className="text-xs text-gray-400">
-                                {note.createdAt && formatDistanceToNow(new Date(note.createdAt), { addSuffix: true })} • {member?.name || 'Unknown'}
-                              </span>
-                              <Button variant="link" className="text-xs text-gray-500 hover:text-gray-700 p-0 h-auto">
-                                Create Tasks
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </CollapsibleContent>
-              </Collapsible>
             )}
           </>
         )}
