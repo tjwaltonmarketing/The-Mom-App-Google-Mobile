@@ -20,6 +20,8 @@ import {
   teenNotificationSettings,
   teenTaskHistory,
   teenNotificationLog,
+  childProfiles,
+  parentTaskCompletions,
   type FamilyMember, 
   type InsertFamilyMember,
   type Event,
@@ -62,6 +64,10 @@ import {
   type InsertUserSubscription,
   type HouseholdSettings,
   type InsertHouseholdSettings,
+  type ChildProfile,
+  type InsertChildProfile,
+  type ParentTaskCompletion,
+  type InsertParentTaskCompletion,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lt, desc, isNull, or, inArray } from "drizzle-orm";
@@ -243,6 +249,20 @@ export interface IStorage {
   // Additional methods for notifications
   getTask(id: number): Promise<Task | undefined>;
   getTasksForTeen(teenProfileId: number): Promise<Task[]>;
+  
+  // Child Profile System
+  createChildProfile(profile: InsertChildProfile, parentFamilyMemberId: number): Promise<ChildProfile>;
+  getChildProfile(childProfileId: number, parentFamilyMemberId: number): Promise<ChildProfile | undefined>;
+  getChildProfilesByFamily(familyId: number, parentFamilyMemberId: number): Promise<ChildProfile[]>;
+  getChildProfileByFamilyMember(familyMemberId: number, parentFamilyMemberId: number): Promise<ChildProfile | undefined>;
+  updateChildProfile(childProfileId: number, updates: Partial<InsertChildProfile>, parentFamilyMemberId: number): Promise<ChildProfile | undefined>;
+  deleteChildProfile(childProfileId: number, parentFamilyMemberId: number): Promise<boolean>;
+  
+  // Parent Task Completion for Children
+  createParentTaskCompletion(taskId: number, childProfileId: number, parentFamilyMemberId: number, notes?: string): Promise<ParentTaskCompletion>;
+  getParentTaskCompletions(childProfileId: number, parentFamilyMemberId: number): Promise<ParentTaskCompletion[]>;
+  getTasksForChild(childProfileId: number, parentFamilyMemberId: number): Promise<Task[]>;
+  completeTaskForChild(taskId: number, childProfileId: number, parentFamilyMemberId: number, notes?: string): Promise<Task>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1649,7 +1669,176 @@ export class DatabaseStorage implements IStorage {
     return notificationLog;
   }
 
+  // Child Profile System Methods
+  async createChildProfile(profile: InsertChildProfile, parentFamilyMemberId: number): Promise<ChildProfile> {
+    // Validate that the parent belongs to the same family as the child
+    const parentMember = await db.select().from(familyMembers).where(eq(familyMembers.id, parentFamilyMemberId));
+    const childMember = await db.select().from(familyMembers).where(eq(familyMembers.id, profile.familyMemberId));
+    
+    if (!parentMember[0] || !childMember[0] || parentMember[0].familyId !== childMember[0].familyId) {
+      throw new Error("Parent and child must belong to the same family");
+    }
 
+    // Set the familyId to match the family member's family
+    const profileWithFamily = {
+      ...profile,
+      familyId: childMember[0].familyId!,
+      createdBy: parentFamilyMemberId
+    };
+
+    const [childProfile] = await db.insert(childProfiles).values(profileWithFamily).returning();
+    return childProfile;
+  }
+
+  async getChildProfile(childProfileId: number, parentFamilyMemberId: number): Promise<ChildProfile | undefined> {
+    // Validate parent family membership
+    const parentMember = await db.select().from(familyMembers).where(eq(familyMembers.id, parentFamilyMemberId));
+    if (!parentMember[0]) {
+      throw new Error("Parent family member not found");
+    }
+
+    const [profile] = await db.select().from(childProfiles)
+      .where(and(
+        eq(childProfiles.id, childProfileId),
+        eq(childProfiles.familyId, parentMember[0].familyId!)
+      ));
+    return profile || undefined;
+  }
+
+  async getChildProfilesByFamily(familyId: number, parentFamilyMemberId: number): Promise<ChildProfile[]> {
+    // Validate parent belongs to the requested family
+    const parentMember = await db.select().from(familyMembers).where(eq(familyMembers.id, parentFamilyMemberId));
+    if (!parentMember[0] || parentMember[0].familyId !== familyId) {
+      throw new Error("Parent must belong to the requested family");
+    }
+
+    return await db.select().from(childProfiles)
+      .where(and(eq(childProfiles.familyId, familyId), eq(childProfiles.isActive, true)));
+  }
+
+  async getChildProfileByFamilyMember(familyMemberId: number, parentFamilyMemberId: number): Promise<ChildProfile | undefined> {
+    // Validate parent family membership
+    const parentMember = await db.select().from(familyMembers).where(eq(familyMembers.id, parentFamilyMemberId));
+    if (!parentMember[0]) {
+      throw new Error("Parent family member not found");
+    }
+
+    const [profile] = await db.select().from(childProfiles)
+      .where(and(
+        eq(childProfiles.familyMemberId, familyMemberId),
+        eq(childProfiles.familyId, parentMember[0].familyId!)
+      ));
+    return profile || undefined;
+  }
+
+  async updateChildProfile(childProfileId: number, updates: Partial<InsertChildProfile>, parentFamilyMemberId: number): Promise<ChildProfile | undefined> {
+    // Validate that the parent belongs to the same family as the child
+    const childProfile = await this.getChildProfile(childProfileId, parentFamilyMemberId);
+    if (!childProfile) {
+      throw new Error("Child profile not found or access denied");
+    }
+
+    const [updatedProfile] = await db.update(childProfiles)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(childProfiles.id, childProfileId))
+      .returning();
+    return updatedProfile;
+  }
+
+  async deleteChildProfile(childProfileId: number, parentFamilyMemberId: number): Promise<boolean> {
+    // Validate that the parent belongs to the same family as the child
+    const childProfile = await this.getChildProfile(childProfileId, parentFamilyMemberId);
+    if (!childProfile) {
+      return false;
+    }
+
+    // Soft delete by setting isActive to false
+    const [deletedProfile] = await db.update(childProfiles)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(childProfiles.id, childProfileId))
+      .returning();
+    return !!deletedProfile;
+  }
+
+  // Parent Task Completion Methods
+  async createParentTaskCompletion(taskId: number, childProfileId: number, parentFamilyMemberId: number, notes?: string): Promise<ParentTaskCompletion> {
+    // Validate that the parent has access to this child profile (includes family validation)
+    const childProfile = await this.getChildProfile(childProfileId, parentFamilyMemberId);
+    if (!childProfile) {
+      throw new Error("Child profile not found or access denied");
+    }
+
+    // Get parent member details for family validation
+    const parentMember = await db.select().from(familyMembers).where(eq(familyMembers.id, parentFamilyMemberId));
+    if (!parentMember[0]) {
+      throw new Error("Parent family member not found");
+    }
+
+    // Create the completion record with server-side validation
+    const completionData = {
+      taskId,
+      childProfileId,
+      completedByParent: parentFamilyMemberId,
+      familyId: parentMember[0].familyId!,
+      completionMethod: "manual" as const,
+      notes: notes || null
+    };
+
+    const [parentCompletion] = await db.insert(parentTaskCompletions).values(completionData).returning();
+    return parentCompletion;
+  }
+
+  async getParentTaskCompletions(childProfileId: number, parentFamilyMemberId: number): Promise<ParentTaskCompletion[]> {
+    // Validate that the parent has access to this child profile
+    const childProfile = await this.getChildProfile(childProfileId, parentFamilyMemberId);
+    if (!childProfile) {
+      throw new Error("Child profile not found or access denied");
+    }
+
+    return await db.select().from(parentTaskCompletions)
+      .where(eq(parentTaskCompletions.childProfileId, childProfileId))
+      .orderBy(desc(parentTaskCompletions.completedAt));
+  }
+
+  async getTasksForChild(childProfileId: number, parentFamilyMemberId: number): Promise<Task[]> {
+    // Validate that the parent has access to this child profile
+    const childProfile = await this.getChildProfile(childProfileId, parentFamilyMemberId);
+    if (!childProfile) {
+      return [];
+    }
+
+    // Get tasks assigned to the child's family member
+    return await db.select().from(tasks)
+      .where(eq(tasks.assignedTo, childProfile.familyMemberId))
+      .orderBy(desc(tasks.createdAt));
+  }
+
+  async completeTaskForChild(taskId: number, childProfileId: number, parentFamilyMemberId: number, notes?: string): Promise<Task> {
+    // Validate that the parent has access to this child profile
+    const childProfile = await this.getChildProfile(childProfileId, parentFamilyMemberId);
+    if (!childProfile) {
+      throw new Error("Child profile not found or access denied");
+    }
+
+    // Complete the task
+    const [task] = await db.update(tasks)
+      .set({ 
+        isCompleted: true, 
+        completedBy: parentFamilyMemberId, 
+        completedAt: new Date() 
+      })
+      .where(eq(tasks.id, taskId))
+      .returning();
+
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    // Log the parent completion using the new secure method
+    await this.createParentTaskCompletion(taskId, childProfileId, parentFamilyMemberId, notes);
+
+    return task;
+  }
 
   // Teen invite methods
   async createTeenInvite(inviteData: InsertFamilyInvite): Promise<FamilyInvite> {
