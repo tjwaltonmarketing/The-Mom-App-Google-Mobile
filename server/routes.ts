@@ -1958,21 +1958,9 @@ export async function registerRoutes(app: Express) {
       }
 
       if (isTeenUser) {
-        // For teens, check if security questions are set up
-        const teenProfile = await storage.getTeenProfileByUserId(user.id);
-        if (!teenProfile?.securityQuestion1 || !teenProfile?.securityQuestion2) {
-          return res.status(400).json({ 
-            error: "Security questions not set up. Please contact a parent for help." 
-          });
-        }
-        
-        // Return security questions for verification
-        res.json({
-          resetType: "security_questions",
-          securityQuestions: [
-            teenProfile.securityQuestion1,
-            teenProfile.securityQuestion2
-          ]
+        // Teens must contact their parent for password reset
+        return res.status(400).json({ 
+          error: "Please ask your parent to reset your password from Family Settings → Family Members." 
         });
       } else {
         // For parents, send SMS reset token
