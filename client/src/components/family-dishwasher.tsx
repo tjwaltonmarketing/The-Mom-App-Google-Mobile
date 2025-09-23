@@ -6,7 +6,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Clock, Users } from "lucide-react";
 import type { HouseholdSettings } from "@shared/schema";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 
 interface FamilyDishwasherProps {
   apiEndpoint: string;
