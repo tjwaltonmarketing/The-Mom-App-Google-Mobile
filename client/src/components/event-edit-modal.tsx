@@ -23,6 +23,7 @@ const eventFormSchema = insertEventSchema.extend({
   startTime: z.string(),
   endDate: z.string().optional(),
   endTime: z.string().optional(),
+  assignedTo: z.number().optional(),
 });
 
 type EventFormData = z.infer<typeof eventFormSchema>;
@@ -51,7 +52,7 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
       title: event.title,
       description: event.description || "",
       location: event.location || "",
-      assignedTo: event.assignedTo || undefined,
+      assignedTo: event.assignedTo?.[0] || undefined,
       isAllDay: event.isAllDay || false,
       startDate: format(new Date(event.startTime), "yyyy-MM-dd"),
       startTime: format(new Date(event.startTime), "HH:mm"),
@@ -72,12 +73,12 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
       let endDateTime: Date | null = null;
 
       if (isAllDay) {
-        startDateTime = new Date(startDate + "T00:00:00");
-        endDateTime = new Date(startDate + "T23:59:59");
+        startDateTime = new Date(startDate + "T00:00:00.000Z");
+        endDateTime = new Date(startDate + "T23:59:59.000Z");
       } else {
-        startDateTime = new Date(startDate + "T" + startTime);
+        startDateTime = new Date(startDate + "T" + startTime + ":00.000Z");
         if (endDate && endTime) {
-          endDateTime = new Date(endDate + "T" + endTime);
+          endDateTime = new Date(endDate + "T" + endTime + ":00.000Z");
         }
       }
 
@@ -86,6 +87,7 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
         startTime: startDateTime,
         endTime: endDateTime,
         isAllDay,
+        assignedTo: eventData.assignedTo ? [eventData.assignedTo] : [],
       };
 
       return apiRequest("PUT", `/api/events/${event.id}`, eventPayload);
