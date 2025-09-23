@@ -1603,8 +1603,17 @@ export async function registerRoutes(app: Express) {
         return res.status(403).json({ error: "Not authorized to update this event" });
       }
 
+      // Convert string dates back to Date objects for database
+      const processedUpdates = {
+        ...updates,
+        startTime: updates.startTime ? new Date(updates.startTime) : undefined,
+        endTime: updates.endTime ? new Date(updates.endTime) : undefined,
+      };
+      
+      console.log("Processed updates:", JSON.stringify(processedUpdates, null, 2));
+
       // Update the event
-      const updatedEvent = await storage.updateEvent(eventId, updates);
+      const updatedEvent = await storage.updateEvent(eventId, processedUpdates);
       if (!updatedEvent) {
         return res.status(404).json({ error: "Failed to update event" });
       }
