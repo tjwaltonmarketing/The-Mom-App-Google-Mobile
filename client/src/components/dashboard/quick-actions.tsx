@@ -14,10 +14,12 @@ export function QuickActions() {
   ];
   
   const handleActionClick = (href: string) => {
-    // Immediately scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Then navigate
+    // First navigate
     setLocation(href);
+    // Then scroll to top after a brief delay to ensure page loads
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }, 50);
   };
 
   return (
