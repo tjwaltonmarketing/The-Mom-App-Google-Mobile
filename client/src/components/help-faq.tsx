@@ -29,53 +29,53 @@ const faqItems: FAQItem[] = [
     tags: ["parent", "invite", "spouse", "partner", "setup"]
   },
   {
-    id: "teen-accounts-overview",
-    question: "How do teen accounts help reduce parent 'nagging'?",
-    answer: "Teen accounts include smart notification systems that handle chore reminders automatically. Instead of parents repeatedly asking about tasks, the app sends progressive reminders to teens directly. It starts with gentle notifications and escalates appropriately, while celebrating completions. Parents get status updates without needing to ask, and teens develop independence through gamified task management with points and streaks.",
+    id: "simplified-task-organization",
+    question: "How does the simplified task organization reduce mental load?",
+    answer: "Tasks are automatically organized into collapsible sections by family member (Emily's Tasks, TJ's Tasks, Adri's Tasks, Evie's Tasks, Unassigned Tasks). This visual grouping eliminates the need for complex child account management while making it clear who is responsible for what. You can collapse sections to focus on specific family members, reducing screen clutter and mental load.",
     category: "features",
-    tags: ["teen", "accounts", "notifications", "chores", "independence", "gamification"]
+    tags: ["task", "organization", "family", "mental-load", "simplicity"]
   },
   {
-    id: "teen-invite-process",
-    question: "How do I set up a teen account for my child?",
-    answer: "From Settings > Family, click 'Invite Teen to Family'. Enter their name, phone number or email, set age-appropriate permissions, and send the invitation via SMS (Twilio) or email (SendGrid). They'll receive an invite code with download instructions across multiple channels. Teen accounts include task assignments, calendar access, and smart notifications while restricting access to adult features like family passwords or task assignment to others.",
+    id: "add-family-members",
+    question: "How do I add family members for task organization?",
+    answer: "Go to Settings > Family and click 'Add Child or Teen Profile'. Simply enter their name and role - no complex account setup, passwords, or onboarding required. They immediately appear as a collapsible section in your task management with their own color coding and avatar. This simple approach focuses on task organization rather than complex account management.",
     category: "getting-started",
-    tags: ["teen", "setup", "invite", "permissions", "SMS", "email"]
+    tags: ["family", "members", "simple", "setup", "no-accounts"]
   },
   {
-    id: "parent-teen-task-assignment",
-    question: "How do I assign tasks directly to my teen?",
-    answer: "Use the task assignment modal to create tasks specifically for teens. Include task description, category (chores, homework, family), estimated time, and point value (10-50 points). Tasks automatically appear on the teen's dashboard with notifications. You can track completion, monitor teen points and streaks, and receive completion notifications without needing to ask about progress.",
+    id: "assign-tasks-family-members",
+    question: "How do I assign tasks to family members?",
+    answer: "When creating a task, simply select the family member from the dropdown menu. The task automatically appears in their collapsible section on the task management page. No complex point systems or gamification - just simple, visual task organization that makes it clear who is responsible for each task. You can print customized task lists for each family member.",
     category: "features",
-    tags: ["teen", "tasks", "assignment", "points", "tracking"]
+    tags: ["tasks", "assignment", "family", "simple", "organization"]
   },
   {
-    id: "teen-gamification",
-    question: "How does the points and streaks system work for teens?",
-    answer: "Teens earn 10-50 points for completing tasks on time, with bonus points for early completion. Daily streaks encourage consistent task completion. The teen dashboard shows weekly points, current streak, and today's completion status with tab navigation between Home, Calendar, and Passwords. This gamification makes chores more engaging while giving parents visibility into progress without constant check-ins. Achievement celebrations reinforce positive behavior.",
+    id: "printable-task-lists",
+    question: "How do the printable task lists work for different family members?",
+    answer: "Each family member section has a print button (printer icon) that creates customized printable task lists. Parents get clean, professional checklists perfect for office use. Children get colorful, gamified printouts with emojis and fun designs that are perfect for posting on bedroom walls. This approach works for kids without devices while maintaining visual motivation.",
     category: "features",
-    tags: ["teen", "points", "streaks", "gamification", "motivation", "dashboard"]
+    tags: ["print", "task-lists", "children", "parents", "customized"]
   },
   {
-    id: "teen-dashboard-features",
-    question: "What can teens see and do in their dashboard?",
-    answer: "Teen dashboards include tab navigation with Home (assigned tasks, points, streaks), Calendar (family events and personal schedule), and Passwords (parent-shared family accounts). They can complete tasks, view family dinner plans, access dark mode and blue light filters, and receive achievement notifications. Parents control which family passwords are shared with teens for appropriate access to family accounts.",
+    id: "family-member-sections",
+    question: "How do the collapsible family member sections work?",
+    answer: "Each family member gets their own collapsible section in the task management interface. Click the arrow next to any family member's name to expand or collapse their tasks. This prevents long scrolling and helps you focus on one person's responsibilities at a time. Section states are remembered between visits, and each family member is color-coded for easy identification.",
     category: "features",
-    tags: ["teen", "dashboard", "navigation", "calendar", "passwords", "features"]
+    tags: ["family", "sections", "collapsible", "organization", "color-coding"]
   },
   {
-    id: "teen-notifications",
-    question: "How do smart notifications work for teen accounts?",
-    answer: "Teen accounts include progressive reminder systems that respect quiet hours and personal schedules. Notifications start gentle and escalate appropriately for overdue tasks. Teens can customize notification preferences, set quiet hours, and choose how they want to receive reminders. The system celebrates achievements and maintains positive engagement while ensuring tasks get completed.",
+    id: "delete-family-members",
+    question: "How do I remove family members when no longer needed?",
+    answer: "Go to Settings > Family and use the trash icon next to any family member to delete them. This immediately removes them from the task interface and deletes all their assigned tasks. Use this carefully as deletion cannot be undone. This is helpful when family circumstances change or you no longer need to track certain family members.",
     category: "features",
-    tags: ["teen", "notifications", "reminders", "quiet hours", "customization"]
+    tags: ["family", "delete", "remove", "management", "cleanup"]
   },
   {
-    id: "multi-channel-invites",
-    question: "What communication methods are used for teen and parent invites?",
-    answer: "Teen invites use multi-channel delivery with SMS via Twilio and email via SendGrid, providing reliable delivery with automatic failover. Parent invites are sent via email with secure invite codes. Both systems include professional HTML templates, setup instructions, and account creation guidance. All invite codes are secure, expire after 7 days, and can be resent if needed.",
+    id: "mental-load-reduction",
+    question: "How does this simplified approach reduce mental load for parents?",
+    answer: "By eliminating complex child account setup and focusing on simple family member grouping, parents can immediately see who has what tasks without navigating multiple accounts or dashboards. The collapsible sections let you focus on one person at a time, and printable lists work for kids without devices. This visual organization requires less mental energy than complex systems.",
     category: "features",
-    tags: ["invites", "SMS", "email", "Twilio", "SendGrid", "delivery"]
+    tags: ["mental-load", "simplicity", "visual", "organization", "parents"]
   },
   {
     id: "voice-assistant-basics",
