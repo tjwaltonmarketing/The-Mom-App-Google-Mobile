@@ -3,10 +3,12 @@ import { MapPin, Thermometer, Droplets, Wind } from "lucide-react";
 
 interface WeatherData {
   temperature: number;
+  temperatureUnit: 'celsius' | 'fahrenheit';
   description: string;
   icon: string;
   humidity: number;
   windSpeed: number;
+  windSpeedUnit: 'mph' | 'kmh';
   chanceOfRain: number;
 }
 
@@ -17,10 +19,23 @@ interface WeatherDisplayProps {
 }
 
 export function WeatherDisplay({ location, compact = false, className = "" }: WeatherDisplayProps) {
+  // Detect if user is likely in the US based on timezone
+  const isUSTimezone = () => {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return timezone.startsWith('America/') && 
+           (timezone.includes('New_York') || timezone.includes('Chicago') || 
+            timezone.includes('Denver') || timezone.includes('Los_Angeles') ||
+            timezone.includes('Phoenix') || timezone.includes('Anchorage') ||
+            timezone.includes('Honolulu') || timezone.includes('Detroit') ||
+            timezone.includes('Miami') || timezone.includes('Seattle'));
+  };
+  
+  const temperatureUnit = isUSTimezone() ? 'fahrenheit' : 'celsius';
+
   const { data: weather, isLoading, error } = useQuery<WeatherData>({
-    queryKey: ['/api/weather', location],
+    queryKey: ['/api/weather', location, temperatureUnit],
     queryFn: async () => {
-      const response = await fetch(`/api/weather/${encodeURIComponent(location)}`, {
+      const response = await fetch(`/api/weather/${encodeURIComponent(location)}?unit=${temperatureUnit}`, {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -49,7 +64,7 @@ export function WeatherDisplay({ location, compact = false, className = "" }: We
     return (
       <div className={`flex items-center gap-1 text-sm text-gray-600 ${className}`} data-testid="weather-compact">
         <span>{weather.icon}</span>
-        <span>{weather.temperature}°F</span>
+        <span>{weather.temperature}°{weather.temperatureUnit === 'celsius' ? 'C' : 'F'}</span>
         {weather.chanceOfRain > 50 && (
           <span className="text-blue-600">
             <Droplets size={12} className="inline" />
@@ -72,7 +87,7 @@ export function WeatherDisplay({ location, compact = false, className = "" }: We
           <span className="text-2xl">{weather.icon}</span>
           <div>
             <div className="font-semibold text-gray-900 dark:text-gray-100">
-              {weather.temperature}°F
+              {weather.temperature}°{weather.temperatureUnit === 'celsius' ? 'C' : 'F'}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               {weather.description}
@@ -89,7 +104,7 @@ export function WeatherDisplay({ location, compact = false, className = "" }: We
           )}
           <div className="flex items-center gap-1">
             <Wind size={12} />
-            {weather.windSpeed} mph
+            {weather.windSpeed} {weather.windSpeedUnit === 'kmh' ? 'km/h' : 'mph'}
           </div>
           <div className="flex items-center gap-1">
             <Thermometer size={12} />

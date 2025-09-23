@@ -1,9 +1,11 @@
 interface WeatherData {
   temperature: number;
+  temperatureUnit: 'celsius' | 'fahrenheit';
   description: string;
   icon: string;
   humidity: number;
   windSpeed: number;
+  windSpeedUnit: 'mph' | 'kmh';
   chanceOfRain: number;
 }
 
@@ -64,8 +66,8 @@ export class WeatherService {
   /**
    * Get weather data for coordinates using Open-Meteo API (free, no API key needed)
    */
-  private static async getWeatherForCoordinates(lat: number, lon: number): Promise<WeatherData | null> {
-    const cacheKey = `${lat},${lon}`;
+  private static async getWeatherForCoordinates(lat: number, lon: number, temperatureUnit: 'celsius' | 'fahrenheit' = 'fahrenheit'): Promise<WeatherData | null> {
+    const cacheKey = `${lat},${lon},${temperatureUnit}`;
     const now = Date.now();
 
     // Check cache (weather data valid for 30 minutes)
@@ -77,8 +79,9 @@ export class WeatherService {
     }
 
     try {
+      const windSpeedUnit = temperatureUnit === 'fahrenheit' ? 'mph' : 'kmh';
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code,wind_speed_10m&timezone=auto&temperature_unit=fahrenheit&wind_speed_unit=mph`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code,wind_speed_10m&timezone=auto&temperature_unit=${temperatureUnit}&wind_speed_unit=${windSpeedUnit}`
       );
 
       if (!response.ok) {
@@ -91,10 +94,12 @@ export class WeatherService {
 
       const weatherData: WeatherData = {
         temperature: Math.round(current.temperature_2m),
+        temperatureUnit: temperatureUnit,
         description: this.getWeatherDescription(current.weather_code),
         icon: this.getWeatherIcon(current.weather_code),
         humidity: current.relative_humidity_2m,
         windSpeed: Math.round(current.wind_speed_10m),
+        windSpeedUnit: windSpeedUnit,
         chanceOfRain: current.precipitation_probability || 0
       };
 
@@ -114,7 +119,7 @@ export class WeatherService {
   /**
    * Get weather data for a location string
    */
-  static async getWeatherForLocation(location: string): Promise<WeatherData | null> {
+  static async getWeatherForLocation(location: string, temperatureUnit: 'celsius' | 'fahrenheit' = 'fahrenheit'): Promise<WeatherData | null> {
     if (!location || location.trim() === '') {
       return null;
     }
@@ -124,7 +129,7 @@ export class WeatherService {
       return null;
     }
 
-    return await this.getWeatherForCoordinates(coordinates.lat, coordinates.lon);
+    return await this.getWeatherForCoordinates(coordinates.lat, coordinates.lon, temperatureUnit);
   }
 
   /**

@@ -25,12 +25,13 @@ export async function registerRoutes(app: Express) {
   app.get("/api/weather/:location", async (req, res) => {
     try {
       const location = decodeURIComponent(req.params.location);
+      const unit = req.query.unit as 'celsius' | 'fahrenheit' || 'fahrenheit';
       
       if (!location || location.trim() === '') {
         return res.status(400).json({ error: "Location parameter is required" });
       }
 
-      const weather = await WeatherService.getWeatherForLocation(location);
+      const weather = await WeatherService.getWeatherForLocation(location, unit);
       
       if (!weather) {
         return res.status(404).json({ error: "Weather data not available for this location" });
