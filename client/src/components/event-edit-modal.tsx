@@ -69,18 +69,31 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
     mutationFn: async (data: EventFormData) => {
       const { startDate, startTime, endDate, endTime, ...eventData } = data;
       
+      console.log("Form data:", { startDate, startTime, endDate, endTime });
+      
       let startDateTime: Date;
       let endDateTime: Date | null = null;
 
       if (isAllDay) {
-        startDateTime = new Date(startDate + "T00:00:00.000Z");
-        endDateTime = new Date(startDate + "T23:59:59.000Z");
+        // For all-day events, use the date directly
+        startDateTime = new Date(startDate + "T00:00:00");
+        endDateTime = new Date(startDate + "T23:59:59");
       } else {
-        startDateTime = new Date(startDate + "T" + startTime + ":00.000Z");
+        // For timed events, ensure proper format
+        const startTimeFormatted = startTime.includes(":") ? startTime : startTime + ":00";
+        startDateTime = new Date(startDate + "T" + startTimeFormatted);
+        
         if (endDate && endTime) {
-          endDateTime = new Date(endDate + "T" + endTime + ":00.000Z");
+          const endTimeFormatted = endTime.includes(":") ? endTime : endTime + ":00";
+          endDateTime = new Date(endDate + "T" + endTimeFormatted);
         }
       }
+
+      console.log("Created dates:", { startDateTime, endDateTime });
+      console.log("Are valid dates:", { 
+        startValid: !isNaN(startDateTime.getTime()), 
+        endValid: endDateTime ? !isNaN(endDateTime.getTime()) : true 
+      });
 
       const eventPayload = {
         ...eventData,
@@ -90,6 +103,7 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
         assignedTo: eventData.assignedTo ? [eventData.assignedTo] : [],
       };
 
+      console.log("Event payload:", eventPayload);
       return apiRequest("PUT", `/api/events/${event.id}`, eventPayload);
     },
     onSuccess: () => {
