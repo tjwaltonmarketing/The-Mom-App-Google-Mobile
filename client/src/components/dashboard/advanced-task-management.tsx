@@ -404,7 +404,97 @@ export function AdvancedTaskManagement() {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    const printHTML = `
+    // Check if this is for a parent (use simple checklist) or child (use gamified design)
+    const isParent = member.role === 'parent' || member.role === 'mom' || member.role === 'dad';
+
+    const printHTML = isParent ? `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${member.name}'s Task List</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              padding: 20px; 
+              background: white;
+              color: #333;
+            }
+            .container { 
+              max-width: 600px;
+              margin: 0 auto;
+            }
+            h1 { 
+              color: #333; 
+              border-bottom: 2px solid #333;
+              padding-bottom: 10px;
+              margin-bottom: 20px;
+            }
+            .task { 
+              display: flex; 
+              align-items: flex-start; 
+              padding: 12px 0; 
+              border-bottom: 1px solid #eee;
+            }
+            .checkbox { 
+              width: 16px; 
+              height: 16px; 
+              margin-right: 12px;
+              margin-top: 2px;
+              border: 2px solid #333;
+              flex-shrink: 0;
+            }
+            .task-content { 
+              flex-grow: 1;
+            }
+            .task-title { 
+              font-weight: 600;
+              margin-bottom: 4px;
+            }
+            .task-description {
+              color: #666;
+              font-size: 0.9em;
+              margin-bottom: 4px;
+            }
+            .task-meta {
+              font-size: 0.85em;
+              color: #888;
+            }
+            .priority-high .task-title { color: #d32f2f; }
+            .priority-medium .task-title { color: #f57c00; }
+            .priority-low .task-title { color: #388e3c; }
+            .footer {
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 1px solid #eee;
+              text-align: center;
+              color: #666;
+              font-size: 0.9em;
+            }
+            @media print {
+              body { background: white !important; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>${member.name}'s Task List</h1>
+            ${memberTasks.map(task => `
+              <div class="task priority-${task.priority}">
+                <div class="checkbox"></div>
+                <div class="task-content">
+                  <div class="task-title">${task.title}</div>
+                  ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                  <div class="task-meta">Priority: ${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</div>
+                </div>
+              </div>
+            `).join('')}
+            <div class="footer">
+              Printed on ${new Date().toLocaleDateString()}
+            </div>
+          </div>
+        </body>
+      </html>
+    ` : `
       <!DOCTYPE html>
       <html>
         <head>
@@ -673,8 +763,7 @@ export function AdvancedTaskManagement() {
                                 }}
                                 data-testid={`button-print-${member.name.toLowerCase()}-tasks`}
                               >
-                                <Printer className="h-4 w-4 mr-1" />
-                                Print
+                                <Printer className="h-4 w-4" />
                               </Button>
                               {isCollapsed ? (
                                 <ChevronRight className="h-4 w-4" />
