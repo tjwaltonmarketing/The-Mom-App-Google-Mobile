@@ -9,6 +9,7 @@ import type { Event, FamilyMember } from "@shared/schema";
 import { format } from "date-fns";
 import { formatTimeInUserTimezone } from "@/lib/timezone";
 import { useState } from "react";
+import { WeatherDisplay } from "@/components/weather-display";
 
 export function TodaySchedule() {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -95,7 +96,9 @@ export function TodaySchedule() {
                     </div>
                     <p className="text-sm text-gray-600">{event.description}</p>
                     {event.location && (
-                      <p className="text-xs text-gray-500 mt-1">{event.location}</p>
+                      <div className="mt-2">
+                        <WeatherDisplay location={event.location} compact={true} />
+                      </div>
                     )}
                   </div>
                 </div>
