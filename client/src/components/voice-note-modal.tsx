@@ -439,10 +439,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
                 </Button>
                 <Button
                   className="flex-1 bg-primary hover:bg-blue-600"
-                  onClick={() => {
-                    handleStopRecording();
-                    handleSaveNote();
-                  }}
+                  onClick={handleStopRecording}
                   disabled={createVoiceNoteMutation.isPending}
                 >
                   <Check className="mr-2 h-4 w-4" />
