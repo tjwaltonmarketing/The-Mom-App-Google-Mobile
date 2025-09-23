@@ -11,8 +11,16 @@ interface VoiceNotesProps {
 }
 
 export function VoiceNotes({ onStartRecording }: VoiceNotesProps) {
-  const { data: recentNotes = [], isLoading: notesLoading } = useQuery<VoiceNote[]>({
+  const { data: recentNotes = [], isLoading: notesLoading, error: notesError } = useQuery<VoiceNote[]>({
     queryKey: ["/api/voice-notes/recent"],
+  });
+
+  console.log("VoiceNotes component - Query state:", {
+    recentNotes,
+    notesLoading,
+    notesError,
+    hasData: !!recentNotes,
+    dataLength: recentNotes?.length
   });
 
   const { data: familyMembers = [], isLoading: membersLoading } = useQuery<FamilyMember[]>({
