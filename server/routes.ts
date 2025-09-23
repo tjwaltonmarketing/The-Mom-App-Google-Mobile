@@ -1246,6 +1246,13 @@ export async function registerRoutes(app: Express) {
 
       const { title, description, dueDate, priority, assignedTo, category, points, estimatedTime, childProfileId } = req.body;
 
+      // Debug logging to see what we're receiving
+      console.log("=== TASK CREATION DEBUG ===");
+      console.log("Request body:", req.body);
+      console.log("assignedTo:", assignedTo);
+      console.log("childProfileId:", childProfileId);
+      console.log("==========================");
+
       const task = await storage.createTask({
         title,
         description,
