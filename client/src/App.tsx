@@ -25,6 +25,8 @@ import TeenCalendar from "@/pages/teen-calendar";
 import TeenPasswords from "@/pages/teen-passwords";
 import TeenProfile from "@/pages/teen-profile";
 import MealPlan from "@/pages/meal-plan";
+import GroceryList from "@/pages/grocery-list";
+import FamilyChat from "@/pages/family-chat";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -160,6 +162,8 @@ function Router() {
               <Route path="/calendar" component={Calendar} />
               <Route path="/tasks" component={Tasks} />
               <Route path="/meal-plan" component={MealPlan} />
+              <Route path="/grocery-list" component={GroceryList} />
+              <Route path="/family-chat" component={FamilyChat} />
             </>
           )}
           <Route component={NotFound} />
