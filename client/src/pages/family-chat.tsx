@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import type { FamilyMember, Notification } from "@shared/schema";
 
 export default function FamilyChatPage() {
@@ -22,6 +23,7 @@ export default function FamilyChatPage() {
   const [newMessage, setNewMessage] = useState({ recipient: "", title: "", message: "", deliveryMethod: "in_app" });
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Scroll to top when page loads
   useEffect(() => {
@@ -31,11 +33,13 @@ export default function FamilyChatPage() {
   // Fetch family members
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
+    enabled: !!user,
   });
 
   // Fetch family notifications/messages
   const { data: notifications = [] } = useQuery<Notification[]>({
-    queryKey: ["/api/notifications"],
+    queryKey: ["/api/notifications/pending"],
+    enabled: !!user,
   });
 
   const sendMessageMutation = useMutation({
@@ -77,6 +81,28 @@ export default function FamilyChatPage() {
     }
 
     sendMessageMutation.mutate(newMessage);
+  };
+
+  const handleSendReminder = () => {
+    // Open the send message modal with reminder preset
+    setNewMessage({ 
+      recipient: "", 
+      title: "Reminder", 
+      message: "", 
+      deliveryMethod: "sms" 
+    });
+    setIsMessageModalOpen(true);
+  };
+
+  const handleScheduleMessage = () => {
+    // Open the send message modal with schedule preset
+    setNewMessage({ 
+      recipient: "", 
+      title: "Scheduled Message", 
+      message: "", 
+      deliveryMethod: "in_app" 
+    });
+    setIsMessageModalOpen(true);
   };
 
   const getInitials = (name: string) => {
@@ -128,7 +154,7 @@ export default function FamilyChatPage() {
                   </div>
                   <Dialog open={isMessageModalOpen} onOpenChange={setIsMessageModalOpen}>
                     <DialogTrigger asChild>
-                      <Button className="gap-2">
+                      <Button className="gap-2" data-testid="button-send-message">
                         <Plus className="h-4 w-4" />
                         Send Message
                       </Button>
@@ -138,11 +164,21 @@ export default function FamilyChatPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline" className="h-16 flex flex-col gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="h-16 flex flex-col gap-2"
+                    onClick={handleSendReminder}
+                    data-testid="button-send-reminder"
+                  >
                     <Bell className="h-5 w-5" />
                     <span className="text-sm">Send Reminder</span>
                   </Button>
-                  <Button variant="outline" className="h-16 flex flex-col gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="h-16 flex flex-col gap-2"
+                    onClick={handleScheduleMessage}
+                    data-testid="button-schedule-message"
+                  >
                     <Calendar className="h-5 w-5" />
                     <span className="text-sm">Schedule Message</span>
                   </Button>
