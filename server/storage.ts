@@ -159,6 +159,7 @@ export interface IStorage {
   // Voice Notes
   getVoiceNotes(): Promise<VoiceNote[]>;
   getRecentVoiceNotes(): Promise<VoiceNote[]>;
+  getRecentVoiceNotesByFamily(familyId: number): Promise<VoiceNote[]>;
   createVoiceNote(note: InsertVoiceNote): Promise<VoiceNote>;
   
   // Deadlines
@@ -855,6 +856,22 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(voiceNotes)
       .orderBy(desc(voiceNotes.createdAt))
       .limit(5);
+  }
+
+  async getRecentVoiceNotesByFamily(familyId: number): Promise<VoiceNote[]> {
+    return await db.select({
+      id: voiceNotes.id,
+      content: voiceNotes.content,
+      transcription: voiceNotes.transcription,
+      createdBy: voiceNotes.createdBy,
+      createdAt: voiceNotes.createdAt,
+      isProcessed: voiceNotes.isProcessed
+    })
+    .from(voiceNotes)
+    .innerJoin(familyMembers, eq(voiceNotes.createdBy, familyMembers.id))
+    .where(eq(familyMembers.familyId, familyId))
+    .orderBy(desc(voiceNotes.createdAt))
+    .limit(5);
   }
 
   async createVoiceNote(insertNote: InsertVoiceNote): Promise<VoiceNote> {

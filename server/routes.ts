@@ -1908,6 +1908,28 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.get("/api/voice-notes/recent", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get current user's family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get recent voice notes for this family
+      const recentVoiceNotes = await storage.getRecentVoiceNotesByFamily(familyMembership.familyId);
+      
+      res.json(recentVoiceNotes);
+    } catch (error) {
+      console.error("Recent voice notes fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch recent voice notes" });
+    }
+  });
+
   // AI Smart Task Creation Endpoint
   app.post("/api/ai/smart-task-creation", async (req, res) => {
     try {
