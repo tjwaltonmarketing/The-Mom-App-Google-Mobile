@@ -116,6 +116,16 @@ export const voiceNotes = pgTable("voice_notes", {
   isProcessed: boolean("is_processed").default(false),
 });
 
+export const textNotes = pgTable("text_notes", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  familyId: integer("family_id").references(() => families.id).notNull(),
+  createdBy: integer("created_by").references(() => familyMembers.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const deadlines = pgTable("deadlines", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -297,6 +307,12 @@ export const insertVoiceNoteSchema = createInsertSchema(voiceNotes).omit({
   isProcessed: true,
 });
 
+export const insertTextNoteSchema = createInsertSchema(textNotes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertDeadlineSchema = createInsertSchema(deadlines).omit({
   id: true,
 });
@@ -431,6 +447,7 @@ export const familyMembersRelations = relations(familyMembers, ({ many }) => ({
   assignedTasks: many(tasks, { relationName: "assignedTo" }),
   completedTasks: many(tasks, { relationName: "completedBy" }),
   voiceNotes: many(voiceNotes),
+  textNotes: many(textNotes),
   deadlines: many(deadlines),
 }));
 
@@ -458,6 +475,17 @@ export const voiceNotesRelations = relations(voiceNotes, ({ one }) => ({
   createdBy: one(familyMembers, {
     fields: [voiceNotes.createdBy],
     references: [familyMembers.id],
+  }),
+}));
+
+export const textNotesRelations = relations(textNotes, ({ one }) => ({
+  createdBy: one(familyMembers, {
+    fields: [textNotes.createdBy],
+    references: [familyMembers.id],
+  }),
+  family: one(families, {
+    fields: [textNotes.familyId],
+    references: [families.id],
   }),
 }));
 
@@ -522,6 +550,9 @@ export type InsertTask = z.infer<typeof insertTaskSchema>;
 
 export type VoiceNote = typeof voiceNotes.$inferSelect;
 export type InsertVoiceNote = z.infer<typeof insertVoiceNoteSchema>;
+
+export type TextNote = typeof textNotes.$inferSelect;
+export type InsertTextNote = z.infer<typeof insertTextNoteSchema>;
 
 export type Deadline = typeof deadlines.$inferSelect;
 export type InsertDeadline = z.infer<typeof insertDeadlineSchema>;
