@@ -284,6 +284,37 @@ export const teenNotificationLog = pgTable("teen_notification_log", {
   createdAt: timestamp("createdAt").defaultNow(),
 });
 
+// Child account system for young kids without phones
+export const childProfiles = pgTable("child_profiles", {
+  id: serial("id").primaryKey(),
+  familyMemberId: integer("family_member_id").references(() => familyMembers.id).notNull().unique(),
+  familyId: integer("family_id").references(() => families.id).notNull(), // enforce family-level security
+  createdBy: integer("created_by").references(() => familyMembers.id).notNull(), // parent who created this
+  displayName: varchar("display_name", { length: 100 }).notNull(),
+  nickname: varchar("nickname", { length: 50 }),
+  age: integer("age"),
+  favoriteColor: varchar("favorite_color", { length: 20 }).default("blue"),
+  avatar: text("avatar"), // emoji or icon identifier
+  printLayout: text("print_layout").default("simple"), // "simple", "detailed", "pictorial"
+  showIcons: boolean("show_icons").default(true),
+  showTimeBlocks: boolean("show_time_blocks").default(false),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Track when parents complete tasks on behalf of children
+export const parentTaskCompletions = pgTable("parent_task_completions", {
+  id: serial("id").primaryKey(),
+  taskId: integer("task_id").references(() => tasks.id).notNull(),
+  childProfileId: integer("child_profile_id").references(() => childProfiles.id).notNull(),
+  completedByParent: integer("completed_by_parent").references(() => familyMembers.id).notNull(),
+  familyId: integer("family_id").references(() => families.id).notNull(), // enforce family-level security
+  completionMethod: text("completion_method").notNull().default("manual"), // "manual", "printed_checklist"
+  notes: text("notes"), // optional notes from parent
+  completedAt: timestamp("completed_at").defaultNow(),
+});
+
 export const insertFamilyMemberSchema = createInsertSchema(familyMembers).omit({
   id: true,
 });
@@ -382,6 +413,18 @@ export const insertTeenNotificationLogSchema = createInsertSchema(teenNotificati
   wasDelivered: true,
   wasOpened: true,
   createdAt: true,
+});
+
+// Child profile schemas
+export const insertChildProfileSchema = createInsertSchema(childProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertParentTaskCompletionSchema = createInsertSchema(parentTaskCompletions).omit({
+  id: true,
+  completedAt: true,
 });
 
 // New auth-related schemas
@@ -534,6 +577,43 @@ export const mealPlansRelations = relations(mealPlans, ({ one }) => ({
   }),
 }));
 
+// Child profile relations
+export const childProfilesRelations = relations(childProfiles, ({ one, many }) => ({
+  familyMember: one(familyMembers, {
+    fields: [childProfiles.familyMemberId],
+    references: [familyMembers.id],
+  }),
+  family: one(families, {
+    fields: [childProfiles.familyId],
+    references: [families.id],
+  }),
+  creator: one(familyMembers, {
+    fields: [childProfiles.createdBy],
+    references: [familyMembers.id],
+    relationName: "childProfileCreator",
+  }),
+  parentCompletions: many(parentTaskCompletions),
+}));
+
+export const parentTaskCompletionsRelations = relations(parentTaskCompletions, ({ one }) => ({
+  task: one(tasks, {
+    fields: [parentTaskCompletions.taskId],
+    references: [tasks.id],
+  }),
+  childProfile: one(childProfiles, {
+    fields: [parentTaskCompletions.childProfileId],
+    references: [childProfiles.id],
+  }),
+  parent: one(familyMembers, {
+    fields: [parentTaskCompletions.completedByParent],
+    references: [familyMembers.id],
+  }),
+  family: one(families, {
+    fields: [parentTaskCompletions.familyId],
+    references: [families.id],
+  }),
+}));
+
 export type FamilyMember = typeof familyMembers.$inferSelect;
 export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
 
@@ -593,6 +673,12 @@ export type InsertTeenTaskHistory = z.infer<typeof insertTeenTaskHistorySchema>;
 
 export type TeenNotificationLog = typeof teenNotificationLog.$inferSelect;
 export type InsertTeenNotificationLog = z.infer<typeof insertTeenNotificationLogSchema>;
+
+export type ChildProfile = typeof childProfiles.$inferSelect;
+export type InsertChildProfile = z.infer<typeof insertChildProfileSchema>;
+
+export type ParentTaskCompletion = typeof parentTaskCompletions.$inferSelect;
+export type InsertParentTaskCompletion = z.infer<typeof insertParentTaskCompletionSchema>;
 
 export type UserSubscription = typeof userSubscriptions.$inferSelect;
 export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema>;
