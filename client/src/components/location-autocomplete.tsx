@@ -37,59 +37,62 @@ export function LocationAutocomplete({
     setIsLoading(true);
     
     try {
-      // Check if Google Places API is available
-      if ((window as any).google?.maps?.places) {
-        const service = new (window as any).google.maps.places.AutocompleteService();
-        
-        service.getPlacePredictions(
-          {
-            input: query,
-            types: ['establishment', 'geocode'],
-            componentRestrictions: { country: 'us' }
-          },
-          (predictions: any[], status: string) => {
-            setIsLoading(false);
-            
-            if (status === (window as any).google.maps.places.PlacesServiceStatus.OK && predictions) {
-              const formattedSuggestions: LocationSuggestion[] = predictions.map((prediction: any) => ({
-                place_id: prediction.place_id,
-                description: prediction.description,
-                formatted_address: prediction.description
-              }));
-              
-              setSuggestions(formattedSuggestions);
-              setShowSuggestions(true);
-            } else {
-              setSuggestions([]);
-              setShowSuggestions(false);
-            }
+      // Use OpenStreetMap Nominatim for real location suggestions (same as our weather service)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=us&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'MomApp/1.0 (Family coordination app)'
           }
-        );
+        }
+      );
+      
+      if (response.ok) {
+        const results = await response.json();
+        
+        if (results && results.length > 0) {
+          const formattedSuggestions: LocationSuggestion[] = results.map((result: any, index: number) => ({
+            place_id: result.place_id || `geocode_${index}`,
+            description: result.display_name,
+            formatted_address: result.display_name
+          }));
+          
+          setSuggestions(formattedSuggestions);
+          setShowSuggestions(true);
+        } else {
+          // If no results from geocoding, show helpful fallback
+          const fallbackSuggestions: LocationSuggestion[] = [
+            { place_id: 'fallback_1', description: `${query} (Business/Restaurant)`, formatted_address: `${query} (Business/Restaurant)` },
+            { place_id: 'fallback_2', description: `${query} (Address)`, formatted_address: `${query} (Address)` },
+            { place_id: 'fallback_3', description: `${query} (Park/Recreation)`, formatted_address: `${query} (Park/Recreation)` }
+          ];
+          
+          setSuggestions(fallbackSuggestions);
+          setShowSuggestions(true);
+        }
       } else {
-        // Fallback to basic address completion
-        const commonPlaces = [
-          `${query} - Home`,
-          `${query} - Work`,
-          `${query} - School`,
-          `${query} - Park`,
-          `${query} - Restaurant`
+        // Network error fallback
+        const fallbackSuggestions: LocationSuggestion[] = [
+          { place_id: 'fallback_1', description: `${query} - Home`, formatted_address: `${query} - Home` },
+          { place_id: 'fallback_2', description: `${query} - Work`, formatted_address: `${query} - Work` },
+          { place_id: 'fallback_3', description: `${query} - School`, formatted_address: `${query} - School` }
         ];
         
-        const suggestions: LocationSuggestion[] = commonPlaces.map((place, index) => ({
-          place_id: `fallback_${index}`,
-          description: place,
-          formatted_address: place
-        }));
-        
-        setSuggestions(suggestions);
-        setIsLoading(false);
+        setSuggestions(fallbackSuggestions);
         setShowSuggestions(true);
       }
+      
+      setIsLoading(false);
     } catch (error) {
       console.error('Error searching places:', error);
+      // Error fallback - still show something useful
+      const fallbackSuggestions: LocationSuggestion[] = [
+        { place_id: 'fallback_1', description: `${query} (Location)`, formatted_address: `${query} (Location)` }
+      ];
+      
+      setSuggestions(fallbackSuggestions);
+      setShowSuggestions(true);
       setIsLoading(false);
-      setSuggestions([]);
-      setShowSuggestions(false);
     }
   };
 
