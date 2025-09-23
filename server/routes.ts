@@ -1575,6 +1575,45 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Parent update event endpoint
+  app.put("/api/events/:eventId", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const eventId = parseInt(req.params.eventId);
+      const updates = req.body;
+
+      // Get family membership for the user
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(403).json({ error: "No family access" });
+      }
+
+      // Check if the event exists and belongs to the user's family
+      const existingEvent = await storage.getEventById(eventId);
+      if (!existingEvent) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+
+      if (existingEvent.familyId !== familyMembership.familyId) {
+        return res.status(403).json({ error: "Not authorized to update this event" });
+      }
+
+      // Update the event
+      const updatedEvent = await storage.updateEvent(eventId, updates);
+      if (!updatedEvent) {
+        return res.status(404).json({ error: "Failed to update event" });
+      }
+
+      res.json(updatedEvent);
+    } catch (error) {
+      console.error("Event update error:", error);
+      res.status(500).json({ error: "Failed to update event" });
+    }
+  });
+
   // Parent delete event endpoint
   app.delete("/api/events/:eventId", async (req, res) => {
     try {
