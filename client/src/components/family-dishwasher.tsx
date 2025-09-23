@@ -46,8 +46,8 @@ export function FamilyDishwasher({ apiEndpoint, updateEndpoint }: FamilyDishwash
     updateDishwasherMutation.mutate(checked);
   };
 
-  const formatLastUpdated = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatLastUpdated = (dateInput: string | Date) => {
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
     
