@@ -1910,7 +1910,14 @@ export async function registerRoutes(app: Express) {
 
   app.get("/api/voice-notes/recent", async (req, res) => {
     try {
+      console.log("Voice notes recent - Session data:", {
+        hasSession: !!req.session,
+        userId: req.session?.userId,
+        sessionId: req.sessionID
+      });
+      
       if (!req.session.userId) {
+        console.log("Voice notes recent - Authentication failed");
         return res.status(401).json({ error: "Not authenticated" });
       }
 
