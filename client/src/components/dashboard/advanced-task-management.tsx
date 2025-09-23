@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, UserPlus, Edit, Users } from "lucide-react";
+import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, Edit, Users, ChevronDown, ChevronRight, Printer } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { 
   AlertDialog, 
@@ -24,17 +25,16 @@ import { apiRequest } from "@/lib/queryClient";
 import { useQueryClient } from "@tanstack/react-query";
 import { TaskModal } from "@/components/task-modal";
 import { TaskEditModal } from "@/components/task-edit-modal";
-import { TeenTaskAssignmentModal } from "@/components/teen-task-assignment-modal";
 import type { Task, FamilyMember } from "@shared/schema";
 import { format } from "date-fns";
 
 export function AdvancedTaskManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPriority, setFilterPriority] = useState("all");
-  const [filterAssignee, setFilterAssignee] = useState("all");
   const [showCompleted, setShowCompleted] = useState(false);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -96,34 +96,53 @@ export function AdvancedTaskManagement() {
     }
   });
 
-  // Find current user's family member ID
-  const currentUserMember = familyMembers.find(member => 
-    member.userId === currentUser?.id
-  );
+  // Group tasks by family member
+  const groupTasksByMember = () => {
+    const groups: Record<string, Task[]> = {};
+    
+    // Create groups for each family member
+    familyMembers.forEach(member => {
+      groups[`member-${member.id}`] = [];
+    });
+    
+    // Add unassigned group
+    groups['unassigned'] = [];
+    
+    // Group tasks
+    tasks.forEach(task => {
+      if (task.assignedTo) {
+        const groupKey = `member-${task.assignedTo}`;
+        if (groups[groupKey]) {
+          groups[groupKey].push(task);
+        }
+      } else {
+        groups['unassigned'].push(task);
+      }
+    });
+    
+    return groups;
+  };
 
-  // Separate tasks by assignee only
-  const myTasks = tasks.filter(task => 
-    task.assignedTo === currentUserMember?.id
-  );
+  const taskGroups = groupTasksByMember();
 
-  const familyTasks = tasks.filter(task => 
-    task.assignedTo !== currentUserMember?.id && 
-    task.assignedTo !== null // Only show tasks assigned to someone
-  );
-
-  // Apply filters to both task lists
+  // Apply filters to tasks
   const applyFilters = (tasksList: Task[]) => {
     return tasksList.filter(task => {
       const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            task.description?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPriority = filterPriority === 'all' || task.priority === filterPriority;
-      const matchesAssignee = filterAssignee === 'all' || 
-                             (filterAssignee === 'unassigned' && !task.assignedTo) ||
-                             (task.assignedTo && task.assignedTo.toString() === filterAssignee);
       const matchesCompletion = showCompleted || !task.isCompleted;
       
-      return matchesSearch && matchesPriority && matchesAssignee && matchesCompletion;
+      return matchesSearch && matchesPriority && matchesCompletion;
     });
+  };
+
+  // Toggle collapse state for sections
+  const toggleSection = (sectionKey: string) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey]
+    }));
   };
 
 
@@ -375,26 +394,119 @@ export function AdvancedTaskManagement() {
     </div>
   );
 
-  // Filter function for tasks
-  const filterTasks = (taskList: Task[]) => {
-    return taskList.filter(task => {
-      const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           task.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesPriority = filterPriority === "all" || task.priority === filterPriority;
-      
-      const matchesAssignee = filterAssignee === "all" || 
-                             (filterAssignee === "unassigned" && !task.assignedTo) ||
-                             task.assignedTo?.toString() === filterAssignee;
-      
-      const matchesCompletion = showCompleted || !task.isCompleted;
+  // Print task list for a family member
+  const printTaskList = (memberId: number) => {
+    const member = familyMembers.find(m => m.id === memberId);
+    const memberTasks = applyFilters(taskGroups[`member-${memberId}`] || []);
+    
+    if (!member) return;
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
 
-      return matchesSearch && matchesPriority && matchesAssignee && matchesCompletion;
-    });
+    const printHTML = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${member.name}'s Task List</title>
+          <style>
+            body { 
+              font-family: 'Comic Sans MS', cursive, sans-serif; 
+              padding: 20px; 
+              background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+              min-height: 100vh;
+            }
+            .container { 
+              background: white; 
+              padding: 30px; 
+              border-radius: 20px; 
+              box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+              max-width: 600px;
+              margin: 0 auto;
+            }
+            h1 { 
+              color: #2c3e50; 
+              text-align: center; 
+              font-size: 2.5em;
+              margin-bottom: 10px;
+            }
+            .subtitle {
+              text-align: center;
+              color: #7f8c8d;
+              font-size: 1.2em;
+              margin-bottom: 30px;
+            }
+            .task { 
+              display: flex; 
+              align-items: center; 
+              padding: 15px; 
+              margin: 10px 0; 
+              border: 3px dashed #3498db;
+              border-radius: 15px;
+              background: #f8f9fa;
+            }
+            .checkbox { 
+              width: 30px; 
+              height: 30px; 
+              margin-right: 15px;
+              border: 3px solid #3498db;
+              border-radius: 8px;
+            }
+            .task-title { 
+              font-size: 1.3em; 
+              font-weight: bold;
+              color: #2c3e50;
+            }
+            .priority-high { border-color: #e74c3c; background: #ffebee; }
+            .priority-medium { border-color: #f39c12; background: #fff8e1; }
+            .priority-low { border-color: #27ae60; background: #e8f5e8; }
+            .points { 
+              background: #9b59b6; 
+              color: white; 
+              padding: 5px 12px; 
+              border-radius: 20px; 
+              font-size: 0.9em;
+              margin-left: 10px;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              color: #7f8c8d;
+              font-size: 1.1em;
+            }
+            @media print {
+              body { background: white !important; }
+              .container { box-shadow: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>🎯 ${member.name}'s Tasks</h1>
+            <div class="subtitle">⭐ Complete each task and check it off! ⭐</div>
+            ${memberTasks.map(task => `
+              <div class="task priority-${task.priority}">
+                <div class="checkbox"></div>
+                <div>
+                  <div class="task-title">${task.title}</div>
+                  ${task.description ? `<div style="color: #7f8c8d; margin-top: 5px;">${task.description}</div>` : ''}
+                </div>
+                ${task.points ? `<div class="points">⭐ ${task.points} points</div>` : ''}
+              </div>
+            `).join('')}
+            <div class="footer">
+              🏆 Great job completing your tasks! 🏆<br>
+              📅 Printed on ${new Date().toLocaleDateString()}
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    printWindow.document.write(printHTML);
+    printWindow.document.close();
+    printWindow.print();
   };
-
-  const filteredMyTasks = filterTasks(myTasks);
-  const filteredFamilyTasks = filterTasks(familyTasks);
 
   const taskStats = {
     total: tasks.length,
@@ -418,13 +530,6 @@ export function AdvancedTaskManagement() {
                 <span className="hidden xs:inline">Add Task</span>
                 <span className="xs:hidden">Add</span>
               </Button>
-              <TeenTaskAssignmentModal>
-                <Button variant="outline" className="gap-2 flex-1 sm:flex-none">
-                  <UserPlus className="h-4 w-4" />
-                  <span className="hidden xs:inline">Assign to Teen</span>
-                  <span className="xs:hidden">Assign</span>
-                </Button>
-              </TeenTaskAssignmentModal>
               {tasks.length > 0 && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -507,21 +612,6 @@ export function AdvancedTaskManagement() {
                 </SelectContent>
               </Select>
 
-              <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-                <SelectTrigger className="w-40">
-                  <User className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Assignee" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Members</SelectItem>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {familyMembers.map(member => (
-                    <SelectItem key={member.id} value={member.id.toString()}>
-                      {member.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -536,56 +626,135 @@ export function AdvancedTaskManagement() {
             </div>
           </div>
 
-          {/* Task List */}
+          {/* Task List by Family Member */}
           {tasksLoading ? (
             <div className="flex items-center justify-center py-8">
               <LoadingSpinner variant="heart" size="md" />
             </div>
           ) : (
-            <div className="space-y-6">
-              {/* My Tasks Section */}
-              {filteredMyTasks.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 flex items-center">
-                    <User className="h-5 w-5 mr-2 text-blue-600" />
-                    My Tasks ({filteredMyTasks.length})
-                  </h3>
-                  <div className="space-y-3">
-                    {filteredMyTasks.map((task) => {
-                      const member = getMemberById(task.assignedTo);
-                      return (
-                        <div key={task.id}>
-                          {renderTaskItem(task, member)}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+            <div className="space-y-4">
+              {/* Family Member Sections */}
+              {familyMembers.map((member) => {
+                const memberTasks = applyFilters(taskGroups[`member-${member.id}`] || []);
+                const sectionKey = `member-${member.id}`;
+                const isCollapsed = collapsedSections[sectionKey];
+                
+                if (memberTasks.length === 0) return null;
+                
+                return (
+                  <Collapsible key={member.id} open={!isCollapsed} onOpenChange={() => toggleSection(sectionKey)}>
+                    <Card>
+                      <CollapsibleTrigger asChild>
+                        <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors" data-testid={`section-${member.name.toLowerCase()}-tasks`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                                style={{ backgroundColor: member.color }}
+                              >
+                                {member.avatar}
+                              </div>
+                              <div>
+                                <CardTitle className="text-lg">
+                                  {member.name}'s Tasks
+                                </CardTitle>
+                                <p className="text-sm text-gray-600">
+                                  {memberTasks.length} task{memberTasks.length !== 1 ? 's' : ''}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  printTaskList(member.id);
+                                }}
+                                data-testid={`button-print-${member.name.toLowerCase()}-tasks`}
+                              >
+                                <Printer className="h-4 w-4 mr-1" />
+                                Print
+                              </Button>
+                              {isCollapsed ? (
+                                <ChevronRight className="h-4 w-4" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4" />
+                              )}
+                            </div>
+                          </div>
+                        </CardHeader>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <CardContent className="space-y-3">
+                          {memberTasks.map((task) => (
+                            <div key={task.id}>
+                              {renderTaskItem(task, member)}
+                            </div>
+                          ))}
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Card>
+                  </Collapsible>
+                );
+              })}
 
-              {/* Family Tasks Section */}
-              {filteredFamilyTasks.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-semibold mb-3 flex items-center">
-                    <Users className="h-5 w-5 mr-2 text-green-600" />
-                    Family Tasks ({filteredFamilyTasks.length})
-                  </h3>
-                  <div className="space-y-3">
-                    {filteredFamilyTasks.map((task) => {
-                      const member = getMemberById(task.assignedTo);
-                      return (
-                        <div key={task.id}>
-                          {renderTaskItem(task, member)}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              {/* Unassigned Tasks Section */}
+              {(() => {
+                const unassignedTasks = applyFilters(taskGroups['unassigned'] || []);
+                const sectionKey = 'unassigned';
+                const isCollapsed = collapsedSections[sectionKey];
+                
+                if (unassignedTasks.length === 0) return null;
+                
+                return (
+                  <Collapsible key="unassigned" open={!isCollapsed} onOpenChange={() => toggleSection(sectionKey)}>
+                    <Card>
+                      <CollapsibleTrigger asChild>
+                        <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors" data-testid="section-unassigned-tasks">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center text-white text-sm">
+                                ?
+                              </div>
+                              <div>
+                                <CardTitle className="text-lg">Unassigned Tasks</CardTitle>
+                                <p className="text-sm text-gray-600">
+                                  {unassignedTasks.length} task{unassignedTasks.length !== 1 ? 's' : ''}
+                                </p>
+                              </div>
+                            </div>
+                            {isCollapsed ? (
+                              <ChevronRight className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </div>
+                        </CardHeader>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <CardContent className="space-y-3">
+                          {unassignedTasks.map((task) => (
+                            <div key={task.id}>
+                              {renderTaskItem(task, undefined)}
+                            </div>
+                          ))}
+                        </CardContent>
+                      </CollapsibleContent>
+                    </Card>
+                  </Collapsible>
+                );
+              })()}
 
-              {/* Empty state */}
-              {filteredMyTasks.length === 0 && filteredFamilyTasks.length === 0 && (
-                <p className="text-gray-500 text-center py-8">No tasks match your filters</p>
+              {/* No Tasks Message */}
+              {familyMembers.every(member => 
+                applyFilters(taskGroups[`member-${member.id}`] || []).length === 0
+              ) && applyFilters(taskGroups['unassigned'] || []).length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <Flag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p className="text-lg font-medium">No tasks found</p>
+                  <p className="text-sm">Try adjusting your filters or create a new task.</p>
+                </div>
               )}
             </div>
           )}
