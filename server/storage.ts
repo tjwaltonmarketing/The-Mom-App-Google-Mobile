@@ -86,6 +86,14 @@ export interface IStorage {
   getPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
   markPasswordResetTokenUsed(tokenId: number): Promise<void>;
   
+  // Teen Security Questions for Password Reset
+  setTeenSecurityQuestions(teenId: number, question1: string, answer1: string, question2: string, answer2: string): Promise<TeenProfile | undefined>;
+  verifyTeenSecurityAnswers(userId: number, answer1: string, answer2: string): Promise<boolean>;
+  
+  // SMS Password Reset for Parents
+  createSMSPasswordResetToken(userId: number, phoneNumber: string, token: string): Promise<PasswordResetToken>;
+  getFamilyMemberPhoneNumber(userId: number): Promise<string | undefined>;
+  
   // Family Management
   createFamily(family: InsertFamily): Promise<Family>;
   getFamilyByUserId(userId: number): Promise<Family | undefined>;
@@ -276,6 +284,66 @@ export class DatabaseStorage implements IStorage {
       .update(passwordResetTokens)
       .set({ isUsed: true })
       .where(eq(passwordResetTokens.id, tokenId));
+  }
+
+  // Teen Security Questions for Password Reset
+  async setTeenSecurityQuestions(teenId: number, question1: string, answer1: string, question2: string, answer2: string): Promise<TeenProfile | undefined> {
+    const [profile] = await db
+      .update(teenProfiles)
+      .set({
+        securityQuestion1: question1,
+        securityAnswer1: answer1,
+        securityQuestion2: question2,
+        securityAnswer2: answer2,
+      })
+      .where(eq(teenProfiles.id, teenId))
+      .returning();
+    return profile || undefined;
+  }
+
+  async verifyTeenSecurityAnswers(userId: number, answer1: string, answer2: string): Promise<boolean> {
+    const [profile] = await db
+      .select()
+      .from(teenProfiles)
+      .where(eq(teenProfiles.userId, userId));
+    
+    if (!profile || !profile.securityAnswer1 || !profile.securityAnswer2) {
+      return false;
+    }
+    
+    // Case-insensitive comparison
+    const isAnswer1Correct = profile.securityAnswer1.toLowerCase().trim() === answer1.toLowerCase().trim();
+    const isAnswer2Correct = profile.securityAnswer2.toLowerCase().trim() === answer2.toLowerCase().trim();
+    
+    return isAnswer1Correct && isAnswer2Correct;
+  }
+
+  // SMS Password Reset for Parents
+  async createSMSPasswordResetToken(userId: number, phoneNumber: string, token: string): Promise<PasswordResetToken> {
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1); // Token expires in 1 hour
+
+    const [resetToken] = await db
+      .insert(passwordResetTokens)
+      .values({
+        userId: userId,
+        token: token,
+        expiresAt: expiresAt,
+        resetType: "sms",
+        phoneNumber: phoneNumber,
+        isUsed: false,
+      })
+      .returning();
+    return resetToken;
+  }
+
+  async getFamilyMemberPhoneNumber(userId: number): Promise<string | undefined> {
+    const [member] = await db
+      .select()
+      .from(familyMembers)
+      .where(eq(familyMembers.userId, userId));
+    
+    return member?.phone || undefined;
   }
 
   // Trial and Subscription Management using separate table

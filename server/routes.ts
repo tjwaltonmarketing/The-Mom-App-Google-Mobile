@@ -3,6 +3,7 @@ import { createServer } from "http";
 import { DatabaseStorage } from "./storage";
 import { smartTaskCreation } from "./ai";
 import { WeatherService } from "./weather-service";
+import { sendSMS } from "./sms-service";
 import bcrypt from "bcryptjs";
 
 const storage = new DatabaseStorage();
@@ -1925,6 +1926,204 @@ export async function registerRoutes(app: Express) {
         tasks: [],
         interpretation: "I couldn't process that request. Please try again."
       });
+    }
+  });
+
+  // Password Reset Endpoints
+  app.post("/api/auth/request-password-reset", async (req, res) => {
+    try {
+      const { email, username } = req.body;
+      
+      if (!email && !username) {
+        return res.status(400).json({ error: "Email or username is required" });
+      }
+
+      let user;
+      let isTeenUser = false;
+      
+      // Check if it's a teen login (username provided)
+      if (username) {
+        const teenProfile = await storage.getTeenProfileByUsername(username);
+        if (teenProfile) {
+          user = await storage.getUserById(teenProfile.userId);
+          isTeenUser = true;
+        }
+      } else {
+        // Parent login (email provided)
+        user = await storage.getUserByEmail(email);
+      }
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      if (isTeenUser) {
+        // For teens, check if security questions are set up
+        const teenProfile = await storage.getTeenProfileByUserId(user.id);
+        if (!teenProfile?.securityQuestion1 || !teenProfile?.securityQuestion2) {
+          return res.status(400).json({ 
+            error: "Security questions not set up. Please contact a parent for help." 
+          });
+        }
+        
+        // Return security questions for verification
+        res.json({
+          resetType: "security_questions",
+          securityQuestions: [
+            teenProfile.securityQuestion1,
+            teenProfile.securityQuestion2
+          ]
+        });
+      } else {
+        // For parents, send SMS reset token
+        const phoneNumber = await storage.getFamilyMemberPhoneNumber(user.id);
+        if (!phoneNumber) {
+          return res.status(400).json({ 
+            error: "No phone number on file. Please contact support for help." 
+          });
+        }
+        
+        // Generate 6-digit reset code
+        const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Store the token
+        await storage.createSMSPasswordResetToken(user.id, phoneNumber, resetCode);
+        
+        // Send SMS
+        const message = `Your Mom App password reset code is: ${resetCode}. This code expires in 1 hour.`;
+        const smsSent = await sendSMS(phoneNumber, message);
+        
+        if (!smsSent) {
+          return res.status(500).json({ error: "Failed to send SMS. Please try again." });
+        }
+        
+        res.json({
+          resetType: "sms",
+          message: "Password reset code sent to your phone."
+        });
+      }
+    } catch (error) {
+      console.error("Password reset request error:", error);
+      res.status(500).json({ error: "Failed to process password reset request" });
+    }
+  });
+
+  // Verify security questions for teens
+  app.post("/api/auth/verify-security-questions", async (req, res) => {
+    try {
+      const { username, answers } = req.body;
+      
+      if (!username || !answers || answers.length !== 2) {
+        return res.status(400).json({ error: "Username and two security answers required" });
+      }
+
+      const teenProfile = await storage.getTeenProfileByUsername(username);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const isValid = await storage.verifyTeenSecurityAnswers(
+        teenProfile.userId, 
+        answers[0], 
+        answers[1]
+      );
+
+      if (!isValid) {
+        return res.status(400).json({ error: "Incorrect security answers" });
+      }
+
+      // Generate a temporary reset token for the validated teen
+      const resetToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+      await storage.createPasswordResetToken({
+        userId: teenProfile.userId,
+        token: resetToken,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 hour
+        resetType: "security_questions",
+        isUsed: false,
+      });
+
+      res.json({
+        success: true,
+        resetToken: resetToken,
+        message: "Security questions verified. You can now reset your password."
+      });
+    } catch (error) {
+      console.error("Security question verification error:", error);
+      res.status(500).json({ error: "Failed to verify security questions" });
+    }
+  });
+
+  // Reset password (final step)
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ error: "Token and new password are required" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: "Password must be at least 6 characters long" });
+      }
+
+      // Verify the reset token
+      const resetToken = await storage.getPasswordResetToken(token);
+      if (!resetToken) {
+        return res.status(400).json({ error: "Invalid or expired reset token" });
+      }
+
+      // Hash the new password
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+      
+      // Update the user's password
+      await storage.updateUserPassword(resetToken.userId, passwordHash);
+      
+      // Mark the token as used
+      await storage.markPasswordResetTokenUsed(resetToken.id);
+
+      res.json({
+        success: true,
+        message: "Password reset successfully"
+      });
+    } catch (error) {
+      console.error("Password reset error:", error);
+      res.status(500).json({ error: "Failed to reset password" });
+    }
+  });
+
+  // Set security questions for teens
+  app.post("/api/teen/security-questions", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { question1, answer1, question2, answer2 } = req.body;
+      
+      if (!question1 || !answer1 || !question2 || !answer2) {
+        return res.status(400).json({ error: "All security questions and answers are required" });
+      }
+
+      const teenProfile = await storage.getTeenProfileByUserId(req.session.userId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      await storage.setTeenSecurityQuestions(
+        teenProfile.id, 
+        question1, 
+        answer1.toLowerCase().trim(), 
+        question2, 
+        answer2.toLowerCase().trim()
+      );
+
+      res.json({
+        success: true,
+        message: "Security questions saved successfully"
+      });
+    } catch (error) {
+      console.error("Security questions setup error:", error);
+      res.status(500).json({ error: "Failed to save security questions" });
     }
   });
 
