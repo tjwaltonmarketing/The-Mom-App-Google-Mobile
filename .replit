@@ -36,17 +36,5 @@ waitForPort = 5000
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 38557
-externalPort = 3002
-
-[[ports]]
-localPort = 39961
-externalPort = 3000
-
-[[ports]]
-localPort = 42741
-externalPort = 3001
-
 [agent]
 integrations = ["javascript_stripe:1.0.0", "javascript_sendgrid:1.0.0", "javascript_openai:1.0.0", "javascript_log_in_with_replit:1.0.0"]

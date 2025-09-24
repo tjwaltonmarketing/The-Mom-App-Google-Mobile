@@ -59,16 +59,16 @@ jobs:
         cd android
         
         # Ensure variables.gradle has correct version configuration
-        if ! grep -q "versionCode = 74" variables.gradle; then
-          sed -i '/targetSdkVersion = 35/a\    versionCode = 74\n    versionName = "7.4"' variables.gradle
+        if ! grep -q "versionCode = 75" variables.gradle; then
+          sed -i '/targetSdkVersion = 35/a\    versionCode = 75\n    versionName = "7.5"' variables.gradle
         fi
         echo "Updated variables.gradle:"
         cat variables.gradle
         
         # Update app/build.gradle to use the version variables
         cd app
-        sed -i 's/versionCode.*$/versionCode 74/' build.gradle
-        sed -i 's/versionName.*$/versionName "7.4"/' build.gradle
+        sed -i 's/versionCode.*$/versionCode 75/' build.gradle
+        sed -i 's/versionName.*$/versionName "7.5"/' build.gradle
         
         echo "Final build.gradle version configuration:"
         grep -A2 -B2 "versionCode\|versionName" build.gradle
@@ -91,10 +91,10 @@ jobs:
           echo "Using existing keystore from secrets"
           echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d > upload-keystore.jks
         else
-          echo "Generating NEW upload keystore for version 74+ (fresh key)"
-          keytool -genkey -v -keystore upload-keystore-v74.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload-v74 \
+          echo "Generating NEW upload keystore for version 75+ (fresh key)"
+          keytool -genkey -v -keystore upload-keystore-v75.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload-v75 \
           -dname "CN=The Mom App, OU=Development, O=TJ Walton Marketing LLC, L=Unknown, ST=Unknown, C=US" \
-          -storepass android74 -keypass android74
+          -storepass android75 -keypass android75
           echo "IMPORTANT: Save this keystore to GitHub Secrets as UPLOAD_KEYSTORE_BASE64"
           echo "Run: base64 -w 0 upload-keystore.jks"
         fi
@@ -107,10 +107,10 @@ jobs:
         android {
             signingConfigs {
                 release {
-                    storeFile file('../upload-keystore-v74.jks')
-                    storePassword 'android74'
-                    keyAlias 'upload-v74'
-                    keyPassword 'android74'
+                    storeFile file('../upload-keystore-v75.jks')
+                    storePassword 'android75'
+                    keyAlias 'upload-v75'
+                    keyPassword 'android75'
                 }
             }
             buildTypes {
@@ -124,7 +124,7 @@ jobs:
     - name: Extract upload certificate fingerprint
       run: |
         cd android
-        keytool -list -v -keystore upload-keystore-v74.jks -alias upload-v74 -storepass android74 -keypass android74 | grep -E "(SHA1|SHA256)" > upload-cert-fingerprint.txt
+        keytool -list -v -keystore upload-keystore-v75.jks -alias upload-v75 -storepass android75 -keypass android75 | grep -E "(SHA1|SHA256)" > upload-cert-fingerprint.txt
         echo "Upload certificate fingerprint:"
         cat upload-cert-fingerprint.txt
         
@@ -185,7 +185,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: upload-keystore-backup
-        path: android/upload-keystore-v74.jks
+        path: android/upload-keystore-v75.jks
       if: env.UPLOAD_KEYSTORE_BASE64 == ''
         
     - name: Check for ProGuard mapping file
