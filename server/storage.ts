@@ -79,6 +79,24 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserPassword(userId: number, passwordHash: string): Promise<User | undefined>;
   
+  // Replit Auth Methods
+  getUserByReplitId(replitUserId: string): Promise<User | undefined>;
+  updateUserWithReplitAuth(userId: number, replitData: {
+    replitUserId: string;
+    firstName?: string;
+    lastName?: string;
+    profileImageUrl?: string;
+    authMethod: string;
+  }): Promise<User>;
+  createReplitUser(userData: {
+    email: string;
+    replitUserId: string;
+    firstName?: string;
+    lastName?: string;
+    profileImageUrl?: string;
+    authMethod: string;
+  }): Promise<User>;
+  
   // Trial and Subscription Management
   initializeUserTrial(userId: number): Promise<User | undefined>;
   getUserTrialStatus(userId: number): Promise<{ isActive: boolean; daysRemaining: number; expiresAt: Date | null }>;
@@ -288,6 +306,45 @@ export class DatabaseStorage implements IStorage {
       .set({ passwordHash, updatedAt: new Date() })
       .where(eq(users.id, userId))
       .returning();
+    return user;
+  }
+
+  // Replit Auth Methods
+  async getUserByReplitId(replitUserId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.replitUserId, replitUserId));
+    return user || undefined;
+  }
+
+  async updateUserWithReplitAuth(userId: number, replitData: {
+    replitUserId: string;
+    firstName?: string;
+    lastName?: string;
+    profileImageUrl?: string;
+    authMethod: string;
+  }): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        ...replitData,
+        updatedAt: new Date() 
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async createReplitUser(userData: {
+    email: string;
+    replitUserId: string;
+    firstName?: string;
+    lastName?: string;
+    profileImageUrl?: string;
+    authMethod: string;
+  }): Promise<User> {
+    const [user] = await db.insert(users).values({
+      ...userData,
+      isVerified: true, // Replit Auth users are pre-verified
+    }).returning();
     return user;
   }
 
