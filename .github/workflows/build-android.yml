@@ -28,7 +28,7 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
       with:
-        api-level: 34
+        api-level: 35
         
     - name: Set Android SDK environment
       run: |
@@ -52,16 +52,16 @@ jobs:
         cd android
         
         # Ensure variables.gradle has correct version configuration
-        if ! grep -q "versionCode = 71" variables.gradle; then
-          sed -i '/targetSdkVersion = 35/a\    versionCode = 71\n    versionName = "7.1"' variables.gradle
+        if ! grep -q "versionCode = 72" variables.gradle; then
+          sed -i '/targetSdkVersion = 35/a\    versionCode = 72\n    versionName = "7.2"' variables.gradle
         fi
         echo "Updated variables.gradle:"
         cat variables.gradle
         
         # Update app/build.gradle to use the version variables
         cd app
-        sed -i 's/versionCode.*$/versionCode 71/' build.gradle
-        sed -i 's/versionName.*$/versionName "7.1"/' build.gradle
+        sed -i 's/versionCode.*$/versionCode 72/' build.gradle
+        sed -i 's/versionName.*$/versionName "7.2"/' build.gradle
         
         echo "Final build.gradle version configuration:"
         grep -A2 -B2 "versionCode\|versionName" build.gradle
