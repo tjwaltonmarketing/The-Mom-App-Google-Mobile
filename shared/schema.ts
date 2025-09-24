@@ -1,4 +1,5 @@
-import { pgTable, text, serial, integer, boolean, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, index, jsonb } from "drizzle-orm/pg-core";
+import { sql } from 'drizzle-orm';
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -6,9 +7,12 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
+  passwordHash: text("password_hash"), // Make optional for Replit Auth users
   firstName: varchar("first_name", { length: 100 }),
   lastName: varchar("last_name", { length: 100 }),
+  profileImageUrl: varchar("profile_image_url", { length: 500 }), // Add for Replit Auth
+  replitUserId: varchar("replit_user_id", { length: 255 }).unique(), // Link to Replit Auth
+  authMethod: varchar("auth_method", { length: 50 }).default("email"), // "email", "replit"
   isVerified: boolean("is_verified").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -452,12 +456,16 @@ export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions
   updatedAt: true,
 });
 
-// Sessions table for authentication
-export const sessions = pgTable("sessions", {
-  sid: varchar("sid").primaryKey(),
-  sess: text("sess").notNull(),
-  expire: timestamp("expire").notNull(),
-});
+// Sessions table for authentication (Replit Auth compatible)
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
 
 // Family merge requests table - temporarily commented out for migration
 // export const familyMergeRequests = pgTable("family_merge_requests", {
