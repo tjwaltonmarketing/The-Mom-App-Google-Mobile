@@ -88,15 +88,15 @@ jobs:
       run: |
         cd android
         if [ ! -z "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" ]; then
-          echo "Using existing keystore from secrets"
+          echo "Using ORIGINAL keystore from secrets (should match Google Play expectations)"
           echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d > upload-keystore.jks
+          echo "Verifying keystore certificate fingerprint..."
+          keytool -list -v -keystore upload-keystore.jks -storepass android -keypass android | grep -E "(SHA1|SHA256)"
         else
-          echo "Generating NEW upload keystore for version 75+ (fresh key)"
-          keytool -genkey -v -keystore upload-keystore-v75.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload-v75 \
-          -dname "CN=The Mom App, OU=Development, O=TJ Walton Marketing LLC, L=Unknown, ST=Unknown, C=US" \
-          -storepass android75 -keypass android75
-          echo "IMPORTANT: Save this keystore to GitHub Secrets as UPLOAD_KEYSTORE_BASE64"
-          echo "Run: base64 -w 0 upload-keystore.jks"
+          echo "ERROR: Original keystore not found in secrets!"
+          echo "Expected SHA1: B4:EB:D6:09:54:A8:52:52:8F:90:39:9F:21:9A:36:71:F0:1B:4E:2C"
+          echo "You must upload the original keystore to GitHub Secrets as UPLOAD_KEYSTORE_BASE64"
+          exit 1
         fi
         
     - name: Configure upload signing for Google Play
@@ -107,10 +107,10 @@ jobs:
         android {
             signingConfigs {
                 release {
-                    storeFile file('../upload-keystore-v75.jks')
-                    storePassword 'android75'
-                    keyAlias 'upload-v75'
-                    keyPassword 'android75'
+                    storeFile file('../upload-keystore.jks')
+                    storePassword 'android'
+                    keyAlias 'upload'
+                    keyPassword 'android'
                 }
             }
             buildTypes {
@@ -124,7 +124,7 @@ jobs:
     - name: Extract upload certificate fingerprint
       run: |
         cd android
-        keytool -list -v -keystore upload-keystore-v75.jks -alias upload-v75 -storepass android75 -keypass android75 | grep -E "(SHA1|SHA256)" > upload-cert-fingerprint.txt
+        keytool -list -v -keystore upload-keystore.jks -alias upload -storepass android -keypass android | grep -E "(SHA1|SHA256)" > upload-cert-fingerprint.txt
         echo "Upload certificate fingerprint:"
         cat upload-cert-fingerprint.txt
         
@@ -185,7 +185,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: upload-keystore-backup
-        path: android/upload-keystore-v75.jks
+        path: android/upload-keystore.jks
       if: env.UPLOAD_KEYSTORE_BASE64 == ''
         
     - name: Check for ProGuard mapping file
