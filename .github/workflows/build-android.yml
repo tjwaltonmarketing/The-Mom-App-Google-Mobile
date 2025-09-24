@@ -41,27 +41,34 @@ jobs:
     - name: Build web app
       run: npm run build
       
-    - name: Clean and regenerate Android project
+    - name: Clean and regenerate Android project  
       run: |
         rm -rf android
         npx cap add android
         npx cap sync android
+        
+        # Force clean all possible cached configurations
+        rm -rf .gradle
+        rm -rf ~/.gradle
+        rm -rf android/.gradle
+        rm -rf android/app/build
+        rm -rf android/build
         
     - name: Set version code and name
       run: |
         cd android
         
         # Ensure variables.gradle has correct version configuration
-        if ! grep -q "versionCode = 73" variables.gradle; then
-          sed -i '/targetSdkVersion = 35/a\    versionCode = 73\n    versionName = "7.3"' variables.gradle
+        if ! grep -q "versionCode = 74" variables.gradle; then
+          sed -i '/targetSdkVersion = 35/a\    versionCode = 74\n    versionName = "7.4"' variables.gradle
         fi
         echo "Updated variables.gradle:"
         cat variables.gradle
         
         # Update app/build.gradle to use the version variables
         cd app
-        sed -i 's/versionCode.*$/versionCode 73/' build.gradle
-        sed -i 's/versionName.*$/versionName "7.3"/' build.gradle
+        sed -i 's/versionCode.*$/versionCode 74/' build.gradle
+        sed -i 's/versionName.*$/versionName "7.4"/' build.gradle
         
         echo "Final build.gradle version configuration:"
         grep -A2 -B2 "versionCode\|versionName" build.gradle
@@ -136,8 +143,16 @@ jobs:
         export ANDROID_COMPILE_SDK=35
         export ANDROID_BUILD_TOOLS=35.0.0
         export ANDROID_TARGET_SDK=35
-        rm -rf .gradle build app/build
-        ./gradlew clean bundleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64 --no-daemon --no-build-cache
+        
+        # Aggressive clean to remove all cached API 34 references
+        rm -rf .gradle build app/build app/.gradle capacitor-cordova-android-plugins/build capacitor-cordova-android-plugins/.gradle
+        rm -rf ~/.gradle/caches
+        
+        # Verify configuration before building
+        echo "=== VERIFYING ALL GRADLE FILES FOR API LEVELS ==="
+        find . -name "*.gradle" -exec echo "=== {} ===" \; -exec grep -n "compileSdk\|targetSdk\|api.*level" {} \;
+        
+        ./gradlew clean bundleRelease -Dorg.gradle.java.home=$JAVA_HOME_17_X64 --no-daemon --no-build-cache --refresh-dependencies
         
     - name: Build Android APK (unsigned)
       run: |
