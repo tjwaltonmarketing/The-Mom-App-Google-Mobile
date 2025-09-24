@@ -91,10 +91,10 @@ jobs:
           echo "Using existing keystore from secrets"
           echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d > upload-keystore.jks
         else
-          echo "Generating new upload keystore (first-time setup)"
-          keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload \
+          echo "Generating NEW upload keystore for version 74+ (fresh key)"
+          keytool -genkey -v -keystore upload-keystore-v74.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload-v74 \
           -dname "CN=The Mom App, OU=Development, O=TJ Walton Marketing LLC, L=Unknown, ST=Unknown, C=US" \
-          -storepass android -keypass android
+          -storepass android74 -keypass android74
           echo "IMPORTANT: Save this keystore to GitHub Secrets as UPLOAD_KEYSTORE_BASE64"
           echo "Run: base64 -w 0 upload-keystore.jks"
         fi
@@ -107,10 +107,10 @@ jobs:
         android {
             signingConfigs {
                 release {
-                    storeFile file('../upload-keystore.jks')
-                    storePassword 'android'
-                    keyAlias 'upload'
-                    keyPassword 'android'
+                    storeFile file('../upload-keystore-v74.jks')
+                    storePassword 'android74'
+                    keyAlias 'upload-v74'
+                    keyPassword 'android74'
                 }
             }
             buildTypes {
@@ -124,7 +124,7 @@ jobs:
     - name: Extract upload certificate fingerprint
       run: |
         cd android
-        keytool -list -v -keystore upload-keystore.jks -alias upload -storepass android -keypass android | grep -E "(SHA1|SHA256)" > upload-cert-fingerprint.txt
+        keytool -list -v -keystore upload-keystore-v74.jks -alias upload-v74 -storepass android74 -keypass android74 | grep -E "(SHA1|SHA256)" > upload-cert-fingerprint.txt
         echo "Upload certificate fingerprint:"
         cat upload-cert-fingerprint.txt
         
@@ -185,7 +185,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: upload-keystore-backup
-        path: android/upload-keystore.jks
+        path: android/upload-keystore-v74.jks
       if: env.UPLOAD_KEYSTORE_BASE64 == ''
         
     - name: Check for ProGuard mapping file
