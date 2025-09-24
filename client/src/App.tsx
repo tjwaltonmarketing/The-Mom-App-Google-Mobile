@@ -21,6 +21,8 @@ import TeenOnboarding from "@/pages/teen-onboarding";
 import TeenDashboard from "@/pages/teen-dashboard";
 import TeenTasks from "@/pages/teen-tasks";
 import TeenCalendar from "@/pages/teen-calendar";
+import Privacy from "@/pages/privacy";
+import Terms from "@/pages/terms";
 
 import TeenPasswords from "@/pages/teen-passwords";
 import TeenProfile from "@/pages/teen-profile";
@@ -114,6 +116,8 @@ function Router() {
       <Route path="/teen-login" component={TeenLogin} />
       <Route path="/teen/join" component={TeenOnboarding} />
       <Route path="/teen-join" component={TeenOnboarding} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
 
       {/* Teen dashboard route - only render if teen is authenticated */}
       <Route path="/teen-dashboard">
