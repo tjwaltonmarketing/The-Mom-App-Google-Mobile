@@ -59,16 +59,16 @@ jobs:
         cd android
         
         # Ensure variables.gradle has correct version configuration
-        if ! grep -q "versionCode = 75" variables.gradle; then
-          sed -i '/targetSdkVersion = 35/a\    versionCode = 75\n    versionName = "7.5"' variables.gradle
+        if ! grep -q "versionCode = 76" variables.gradle; then
+          sed -i '/targetSdkVersion = 35/a\    versionCode = 76\n    versionName = "7.6"' variables.gradle
         fi
         echo "Updated variables.gradle:"
         cat variables.gradle
         
         # Update app/build.gradle to use the version variables
         cd app
-        sed -i 's/versionCode.*$/versionCode 75/' build.gradle
-        sed -i 's/versionName.*$/versionName "7.5"/' build.gradle
+        sed -i 's/versionCode.*$/versionCode 76/' build.gradle
+        sed -i 's/versionName.*$/versionName "7.6"/' build.gradle
         
         echo "Final build.gradle version configuration:"
         grep -A2 -B2 "versionCode\|versionName" build.gradle
@@ -87,13 +87,13 @@ jobs:
     - name: Setup signing keystore
       run: |
         cd android
-        echo "Generating NEW upload keystore for version 75 (Replit original keystore not accessible)"
-        keytool -genkey -v -keystore upload-keystore-v75.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload-v75 \
+        echo "Generating NEW upload keystore for version 76 (Replit original keystore not accessible)"
+        keytool -genkey -v -keystore upload-keystore-v76.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload-v76 \
         -dname "CN=The Mom App, OU=Development, O=TJ Walton Marketing LLC, L=Unknown, ST=Unknown, C=US" \
-        -storepass android75 -keypass android75
+        -storepass android76 -keypass android76
         
         echo "NEW Certificate fingerprint for Google Play Console:"
-        keytool -list -v -keystore upload-keystore-v75.jks -alias upload-v75 -storepass android75 -keypass android75 | grep -E "(SHA1|SHA256)"
+        keytool -list -v -keystore upload-keystore-v76.jks -alias upload-v76 -storepass android76 -keypass android76 | grep -E "(SHA1|SHA256)"
         
     - name: Configure upload signing for Google Play
       run: |
@@ -103,10 +103,10 @@ jobs:
         android {
             signingConfigs {
                 release {
-                    storeFile file('../upload-keystore-v75.jks')
-                    storePassword 'android75'
-                    keyAlias 'upload-v75'
-                    keyPassword 'android75'
+                    storeFile file('../upload-keystore-v76.jks')
+                    storePassword 'android76'
+                    keyAlias 'upload-v76'
+                    keyPassword 'android76'
                 }
             }
             buildTypes {
@@ -120,7 +120,7 @@ jobs:
     - name: Extract upload certificate fingerprint
       run: |
         cd android
-        keytool -list -v -keystore upload-keystore-v75.jks -alias upload-v75 -storepass android75 -keypass android75 | grep -E "(SHA1|SHA256)" > upload-cert-fingerprint.txt
+        keytool -list -v -keystore upload-keystore-v76.jks -alias upload-v76 -storepass android76 -keypass android76 | grep -E "(SHA1|SHA256)" > upload-cert-fingerprint.txt
         echo "Upload certificate fingerprint:"
         cat upload-cert-fingerprint.txt
         
@@ -181,7 +181,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: upload-keystore-backup
-        path: android/upload-keystore-v75.jks
+        path: android/upload-keystore-v76.jks
       if: env.UPLOAD_KEYSTORE_BASE64 == ''
         
     - name: Check for ProGuard mapping file
