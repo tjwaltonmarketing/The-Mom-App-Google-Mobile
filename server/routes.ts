@@ -4,11 +4,15 @@ import { DatabaseStorage } from "./storage";
 import { smartTaskCreation } from "./ai";
 import { WeatherService } from "./weather-service";
 import { sendSMS } from "./sms-service";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import bcrypt from "bcryptjs";
 
 const storage = new DatabaseStorage();
 
 export async function registerRoutes(app: Express) {
+  // Setup Replit Auth first (handles sessions, passport, login/logout routes)
+  await setupAuth(app);
+  
   // Create HTTP server
   const server = createServer(app);
 
@@ -101,7 +105,7 @@ export async function registerRoutes(app: Express) {
 
   app.get("/api/auth/user", async (req, res) => {
     try {
-      // Check if user is authenticated via session
+      // Check traditional session-based authentication first
       if (req.session.userId) {
         const user = await storage.getUserById(req.session.userId);
         if (user) {
@@ -110,8 +114,30 @@ export async function registerRoutes(app: Express) {
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
+            profileImageUrl: user.profileImageUrl,
+            authMethod: user.authMethod,
             isVerified: user.isVerified
           });
+        }
+      }
+      
+      // Check Replit Auth authentication
+      if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+        const userClaims = (req.user as any).claims;
+        if (userClaims && userClaims.sub) {
+          // Find user by Replit ID
+          const user = await storage.getUserByReplitId(userClaims.sub);
+          if (user) {
+            return res.json({
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              profileImageUrl: user.profileImageUrl,
+              authMethod: user.authMethod,
+              isVerified: user.isVerified
+            });
+          }
         }
       }
       
