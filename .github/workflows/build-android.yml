@@ -87,13 +87,20 @@ jobs:
     - name: Setup signing keystore
       run: |
         cd android
-        echo "Generating NEW upload keystore for version 76 (Replit original keystore not accessible)"
-        keytool -genkey -v -keystore upload-keystore-v76.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload-v76 \
-        -dname "CN=The Mom App, OU=Development, O=TJ Walton Marketing LLC, L=Unknown, ST=Unknown, C=US" \
-        -storepass android76 -keypass android76
+        echo "Generating NEW upload keystore for Google Play Console reset request"
+        echo "Using Google's EXACT requirements: 2048-bit RSA with 25-year validity"
+        keytool -genkeypair -alias upload -keyalg RSA -keysize 2048 -validity 9125 -keystore upload-keystore.jks \
+        -dname "CN=The Mom App, OU=Development, O=TJ Walton Marketing LLC, L=Mountain View, ST=California, C=US" \
+        -storepass android -keypass android
         
-        echo "NEW Certificate fingerprint for Google Play Console:"
-        keytool -list -v -keystore upload-keystore-v76.jks -alias upload-v76 -storepass android76 -keypass android76 | grep -E "(SHA1|SHA256)"
+        echo "Exporting certificate to PEM format for Google Play Console upload key reset:"
+        keytool -export -rfc -keystore upload-keystore.jks -alias upload -file upload_certificate.pem -storepass android
+        
+        echo "Certificate fingerprint for verification:"
+        keytool -list -v -keystore upload-keystore.jks -alias upload -storepass android -keypass android | grep -E "(SHA1|SHA256)"
+        
+        echo "PEM certificate content (for Google Play Console):"
+        cat upload_certificate.pem
         
     - name: Configure upload signing for Google Play
       run: |
@@ -103,10 +110,10 @@ jobs:
         android {
             signingConfigs {
                 release {
-                    storeFile file('../upload-keystore-v76.jks')
-                    storePassword 'android76'
-                    keyAlias 'upload-v76'
-                    keyPassword 'android76'
+                    storeFile file('../upload-keystore.jks')
+                    storePassword 'android'
+                    keyAlias 'upload'
+                    keyPassword 'android'
                 }
             }
             buildTypes {
@@ -120,7 +127,7 @@ jobs:
     - name: Extract upload certificate fingerprint
       run: |
         cd android
-        keytool -list -v -keystore upload-keystore-v76.jks -alias upload-v76 -storepass android76 -keypass android76 | grep -E "(SHA1|SHA256)" > upload-cert-fingerprint.txt
+        keytool -list -v -keystore upload-keystore.jks -alias upload -storepass android -keypass android | grep -E "(SHA1|SHA256)" > upload-cert-fingerprint.txt
         echo "Upload certificate fingerprint:"
         cat upload-cert-fingerprint.txt
         
@@ -165,6 +172,12 @@ jobs:
         name: app-bundle
         path: android/app/build/outputs/bundle/release/app-release.aab
         
+    - name: Upload PEM certificate for Google Play Console reset
+      uses: actions/upload-artifact@v4
+      with:
+        name: upload-certificate-pem
+        path: android/upload_certificate.pem
+      
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
@@ -181,7 +194,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: upload-keystore-backup
-        path: android/upload-keystore-v76.jks
+        path: android/upload-keystore.jks
       if: env.UPLOAD_KEYSTORE_BASE64 == ''
         
     - name: Check for ProGuard mapping file
