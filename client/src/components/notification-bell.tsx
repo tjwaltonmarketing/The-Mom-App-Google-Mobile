@@ -1,18 +1,42 @@
 import { useState } from "react";
-import { Bell, X } from "lucide-react";
+import { Bell, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatTimeInUserTimezone } from "@/lib/timezone";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Notification } from "@shared/schema";
 
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications/pending"],
+  });
+
+  const clearAllNotificationsMutation = useMutation({
+    mutationFn: () => apiRequest("/api/notifications/clear-all", {
+      method: "DELETE"
+    }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications/pending"] });
+      toast({
+        title: "Notifications Cleared",
+        description: `Cleared ${data.deletedCount || 0} notification${data.deletedCount === 1 ? '' : 's'}`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to clear notifications",
+        variant: "destructive",
+      });
+    }
   });
 
   const pendingNotifications = notifications.filter(n => !n.sentAt);
@@ -68,14 +92,29 @@ export function NotificationBell() {
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm">Notifications</CardTitle>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setIsOpen(false)}
-                className="h-6 w-6 p-0"
-              >
-                <X size={14} />
-              </Button>
+              <div className="flex items-center gap-1">
+                {pendingNotifications.length > 0 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => clearAllNotificationsMutation.mutate()}
+                    disabled={clearAllNotificationsMutation.isPending}
+                    className="h-6 px-2 text-xs hover:text-red-600"
+                    data-testid="clear-all-notifications"
+                  >
+                    <Trash2 size={12} className="mr-1" />
+                    Clear All
+                  </Button>
+                )}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setIsOpen(false)}
+                  className="h-6 w-6 p-0"
+                >
+                  <X size={14} />
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="p-0">

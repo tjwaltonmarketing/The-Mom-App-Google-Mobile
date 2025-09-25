@@ -2229,6 +2229,76 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Notifications Endpoints
+  app.get("/api/notifications/pending", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get current user's family member
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get pending notifications for this user
+      const notifications = await storage.getNotifications(familyMember.id);
+      const pendingNotifications = notifications.filter(n => !n.sentAt);
+      
+      res.json(pendingNotifications);
+    } catch (error) {
+      console.error("Fetch pending notifications error:", error);
+      res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+  });
+
+  app.delete("/api/notifications/clear-all", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get current user's family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Clear all notifications for this family
+      const deletedCount = await storage.clearAllNotificationsByFamily(familyMembership.familyId);
+      
+      res.json({ success: true, deletedCount });
+    } catch (error) {
+      console.error("Clear all notifications error:", error);
+      res.status(500).json({ error: "Failed to clear notifications" });
+    }
+  });
+
+  app.delete("/api/notifications/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const notificationId = parseInt(req.params.id);
+      if (isNaN(notificationId)) {
+        return res.status(400).json({ error: "Invalid notification ID" });
+      }
+
+      // Delete the notification
+      const deleted = await storage.deleteNotification(notificationId);
+      if (!deleted) {
+        return res.status(404).json({ error: "Notification not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete notification error:", error);
+      res.status(500).json({ error: "Failed to delete notification" });
+    }
+  });
+
   // AI Smart Task Creation Endpoint
   app.post("/api/ai/smart-task-creation", async (req, res) => {
     try {

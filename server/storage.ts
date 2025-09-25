@@ -207,6 +207,8 @@ export interface IStorage {
   getPendingNotifications(): Promise<Notification[]>;
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationSent(id: number): Promise<void>;
+  deleteNotification(id: number): Promise<boolean>;
+  clearAllNotificationsByFamily(familyId: number): Promise<number>;
 
   // Passwords
   getPasswords(): Promise<Password[]>;
@@ -1065,6 +1067,31 @@ export class DatabaseStorage implements IStorage {
     await db.update(notifications)
       .set({ status: "sent", sentAt: new Date() })
       .where(eq(notifications.id, id));
+  }
+
+  async deleteNotification(id: number): Promise<boolean> {
+    const result = await db.delete(notifications)
+      .where(eq(notifications.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async clearAllNotificationsByFamily(familyId: number): Promise<number> {
+    // Get all family member IDs for this family
+    const familyMemberIds = await db.select({ id: familyMembers.id })
+      .from(familyMembers)
+      .where(eq(familyMembers.familyId, familyId));
+    
+    if (familyMemberIds.length === 0) {
+      return 0;
+    }
+    
+    const memberIds = familyMemberIds.map(fm => fm.id);
+    
+    // Delete notifications for all family members
+    const result = await db.delete(notifications)
+      .where(inArray(notifications.recipientId, memberIds));
+    
+    return result.rowCount || 0;
   }
 
   // Helper method to automatically create notifications when tasks are assigned
