@@ -191,10 +191,10 @@ export interface IStorage {
   
   // Text Notes
   getTextNotes(): Promise<TextNote[]>;
-  getTextNotesByUser(userId: number): Promise<TextNote[]>;
-  getTextNoteById(id: number, userId: number): Promise<TextNote | undefined>;
+  getTextNotesByFamily(familyId: number): Promise<TextNote[]>;
+  getTextNoteById(id: number, familyId: number): Promise<TextNote | undefined>;
   createTextNote(note: InsertTextNote): Promise<TextNote>;
-  updateTextNote(id: number, updates: Partial<InsertTextNote>, userId: number): Promise<TextNote | undefined>;
+  updateTextNote(id: number, updates: Partial<InsertTextNote>, familyId: number): Promise<TextNote | undefined>;
   deleteTextNote(id: number): Promise<boolean>;
   
   // Deadlines
@@ -984,15 +984,15 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(textNotes).orderBy(desc(textNotes.updatedAt));
   }
 
-  async getTextNotesByUser(userId: number): Promise<TextNote[]> {
+  async getTextNotesByFamily(familyId: number): Promise<TextNote[]> {
     return await db.select().from(textNotes)
-      .where(eq(textNotes.userId, userId))
+      .where(eq(textNotes.familyId, familyId))
       .orderBy(desc(textNotes.updatedAt));
   }
 
-  async getTextNoteById(id: number, userId: number): Promise<TextNote | undefined> {
+  async getTextNoteById(id: number, familyId: number): Promise<TextNote | undefined> {
     const [note] = await db.select().from(textNotes)
-      .where(and(eq(textNotes.id, id), eq(textNotes.userId, userId)));
+      .where(and(eq(textNotes.id, id), eq(textNotes.familyId, familyId)));
     return note;
   }
 
@@ -1005,17 +1005,17 @@ export class DatabaseStorage implements IStorage {
     return note;
   }
 
-  async updateTextNote(id: number, updates: Partial<InsertTextNote>, userId: number): Promise<TextNote | undefined> {
+  async updateTextNote(id: number, updates: Partial<InsertTextNote>, familyId: number): Promise<TextNote | undefined> {
     const [note] = await db.update(textNotes)
       .set({ ...updates, updatedAt: new Date() })
-      .where(and(eq(textNotes.id, id), eq(textNotes.userId, userId)))
+      .where(and(eq(textNotes.id, id), eq(textNotes.familyId, familyId)))
       .returning();
     return note;
   }
 
-  async deleteTextNote(id: number, userId: number): Promise<boolean> {
+  async deleteTextNote(id: number): Promise<boolean> {
     const result = await db.delete(textNotes)
-      .where(and(eq(textNotes.id, id), eq(textNotes.userId, userId)));
+      .where(eq(textNotes.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
