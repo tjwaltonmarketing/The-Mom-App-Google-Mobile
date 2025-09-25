@@ -17,6 +17,20 @@ export function NotificationBell() {
 
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications/pending"],
+    queryFn: async () => {
+      const response = await fetch('/api/notifications/pending', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    },
   });
 
   const clearAllNotificationsMutation = useMutation({
