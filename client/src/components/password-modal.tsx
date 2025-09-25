@@ -133,9 +133,8 @@ export function PasswordModal({ trigger, onPasswordAdded }: PasswordModalProps) 
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-            <Plus size={16} className="mr-2" />
-            Add Password
+          <Button size="sm" className="bg-accent hover:bg-orange-400">
+            + Add
           </Button>
         )}
       </DialogTrigger>
