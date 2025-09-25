@@ -2066,8 +2066,14 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      // Get text notes for this user
-      const textNotes = await storage.getTextNotesByUser(req.session.userId);
+      // Get current user's family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get text notes for this family
+      const textNotes = await storage.getTextNotesByFamily(familyMembership.familyId);
       
       res.json(textNotes);
     } catch (error) {
@@ -2087,8 +2093,14 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Invalid note ID" });
       }
 
-      // Get the text note (only if it belongs to this user)
-      const textNote = await storage.getTextNoteById(noteId, req.session.userId);
+      // Get current user's family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get the text note (only if it belongs to this family)
+      const textNote = await storage.getTextNoteById(noteId, familyMembership.familyId);
       if (!textNote) {
         return res.status(404).json({ error: "Text note not found" });
       }
@@ -2112,11 +2124,24 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Title and content are required" });
       }
 
-      // Create new text note for this user
+      // Get current user's family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get the family member record to get the correct ID
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Create new text note for this family
       const newNote = await storage.createTextNote({
         title,
         content,
-        userId: req.session.userId
+        familyId: familyMembership.familyId,
+        createdBy: familyMember.id
       });
 
       res.status(201).json(newNote);
@@ -2143,14 +2168,20 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Title and content are required" });
       }
 
-      // Verify the note exists and belongs to this user
-      const existingNote = await storage.getTextNoteById(noteId, req.session.userId);
+      // Get current user's family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Verify the note exists and belongs to this family
+      const existingNote = await storage.getTextNoteById(noteId, familyMembership.familyId);
       if (!existingNote) {
         return res.status(404).json({ error: "Text note not found" });
       }
 
       // Update the text note
-      const updatedNote = await storage.updateTextNote(noteId, { title, content }, req.session.userId);
+      const updatedNote = await storage.updateTextNote(noteId, { title, content }, familyMembership.familyId);
       if (!updatedNote) {
         return res.status(404).json({ error: "Failed to update text note" });
       }
@@ -2173,8 +2204,20 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Invalid note ID" });
       }
 
-      // Delete the text note (only if it belongs to this user)
-      const deleted = await storage.deleteTextNote(noteId, req.session.userId);
+      // Get current user's family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Verify the note exists and belongs to this family
+      const existingNote = await storage.getTextNoteById(noteId, familyMembership.familyId);
+      if (!existingNote) {
+        return res.status(404).json({ error: "Text note not found" });
+      }
+
+      // Delete the text note
+      const deleted = await storage.deleteTextNote(noteId);
       if (!deleted) {
         return res.status(404).json({ error: "Text note not found or access denied" });
       }
