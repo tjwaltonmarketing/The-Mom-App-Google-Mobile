@@ -20,10 +20,22 @@ export function NotificationBell() {
   });
 
   const clearAllNotificationsMutation = useMutation({
-    mutationFn: () => apiRequest("/api/notifications/clear-all", {
-      method: "DELETE"
-    }),
-    onSuccess: (data) => {
+    mutationFn: async () => {
+      const response = await fetch("/api/notifications/clear-all", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to clear notifications");
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data: { success: boolean; deletedCount: number }) => {
       queryClient.invalidateQueries({ queryKey: ["/api/notifications/pending"] });
       toast({
         title: "Notifications Cleared",
