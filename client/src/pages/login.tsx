@@ -120,8 +120,8 @@ export default function Login() {
             Sign in to your family command center
           </CardDescription>
           
-          {/* Mobile connection status */}
-          {connectionStatus && (
+          {/* Mobile connection status - only show in development */}
+          {import.meta.env.DEV && connectionStatus && (
             <div className="mt-2 space-y-2">
               <div className={`flex items-center justify-center gap-2 text-xs px-2 py-1 rounded ${
                 connectionStatus.isConnected 
