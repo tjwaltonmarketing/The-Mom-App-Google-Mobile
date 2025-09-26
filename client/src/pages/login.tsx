@@ -120,50 +120,6 @@ export default function Login() {
             Sign in to your family command center
           </CardDescription>
           
-          {/* Mobile connection status - only show in development */}
-          {import.meta.env.DEV && connectionStatus && (
-            <div className="mt-2 space-y-2">
-              <div className={`flex items-center justify-center gap-2 text-xs px-2 py-1 rounded ${
-                connectionStatus.isConnected 
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-red-100 text-red-700'
-              }`}>
-                {connectionStatus.isConnected ? (
-                  <Wifi className="w-3 h-3" />
-                ) : (
-                  <WifiOff className="w-3 h-3" />
-                )}
-                <span>
-                  {connectionStatus.isConnected 
-                    ? `Connected (${connectionStatus.responseTime}ms)`
-                    : connectionStatus.error || 'Connection failed'
-                  }
-                </span>
-              </div>
-              
-              {!connectionStatus.isConnected && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={testConnection}
-                  disabled={isTestingConnection}
-                  className="w-full text-xs"
-                >
-                  {isTestingConnection ? (
-                    <>
-                      <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
-                      Testing...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="w-3 h-3 mr-1" />
-                      Test Connection
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-          )}
         </CardHeader>
         <CardContent>
           {/* Social login options hidden - can be restored later when needed */}
