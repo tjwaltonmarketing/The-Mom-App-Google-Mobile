@@ -5,19 +5,37 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Crown, Check, Calendar, CreditCard, Gift } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 
 export default function SubscriptionPage() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
-  // Mock subscription data - in real app this would come from API
-  const subscription = {
-    status: "trial",
-    trialDaysLeft: 12,
-    plan: "family",
-    nextBillingDate: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
+  // Fetch real subscription data from API
+  const { data: subscription, isLoading: subscriptionLoading } = useQuery({
+    queryKey: ["/api/subscription"],
+    queryFn: async () => {
+      const response = await fetch("/api/subscription", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return response.json();
+    },
+    retry: false,
+  });
+
+  // Default subscription data while loading
+  const defaultSubscription = {
+    subscriptionPlan: "trial",
+    subscriptionStatus: "active",
+    trialDaysLeft: 0,
+    nextBillingDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
   };
+
+  const currentSubscription = subscription || defaultSubscription;
 
   const plans = {
     individual: {
@@ -79,7 +97,7 @@ export default function SubscriptionPage() {
                   Free Trial Active
                 </CardTitle>
                 <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  {subscription.trialDaysLeft} days left
+                  {currentSubscription.trialDaysLeft || 0} days left
                 </Badge>
               </div>
             </CardHeader>
@@ -117,7 +135,7 @@ export default function SubscriptionPage() {
 
                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                   <Calendar size={16} />
-                  Trial ends on {subscription.nextBillingDate.toLocaleDateString()}
+                  Trial ends on {new Date(currentSubscription.nextBillingDate).toLocaleDateString()}
                 </div>
               </div>
             </CardContent>

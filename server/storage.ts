@@ -7,6 +7,7 @@ import {
   deadlines,
   notifications,
   pushTokens,
+  userSubscriptions,
   passwords,
   passwordResetTokens,
   groceryItems,
@@ -39,6 +40,8 @@ import {
   type InsertNotification,
   type PushToken,
   type InsertPushToken,
+  type UserSubscription,
+  type InsertUserSubscription,
   type Password,
   type InsertPassword,
   type PasswordResetToken,
@@ -219,6 +222,11 @@ export interface IStorage {
   updatePushToken(tokenId: number, updates: Partial<InsertPushToken>): Promise<PushToken | undefined>;
   deletePushToken(tokenId: number): Promise<boolean>;
   getPushTokensByFamily(familyId: number): Promise<PushToken[]>;
+
+  // User Subscriptions
+  getUserSubscription(userId: number): Promise<UserSubscription | undefined>;
+  createUserSubscription(subscription: InsertUserSubscription): Promise<UserSubscription>;
+  updateUserSubscription(userId: number, updates: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined>;
 
   // Passwords
   getPasswords(): Promise<Password[]>;
@@ -1149,6 +1157,27 @@ export class DatabaseStorage implements IStorage {
         eq(pushTokens.isActive, true)
       ))
       .orderBy(desc(pushTokens.lastUsed));
+  }
+
+  // User Subscription implementations
+  async getUserSubscription(userId: number): Promise<UserSubscription | undefined> {
+    const [subscription] = await db.select().from(userSubscriptions)
+      .where(eq(userSubscriptions.userId, userId))
+      .limit(1);
+    return subscription;
+  }
+
+  async createUserSubscription(insertSubscription: InsertUserSubscription): Promise<UserSubscription> {
+    const [subscription] = await db.insert(userSubscriptions).values(insertSubscription).returning();
+    return subscription;
+  }
+
+  async updateUserSubscription(userId: number, updates: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined> {
+    const [updatedSubscription] = await db.update(userSubscriptions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(userSubscriptions.userId, userId))
+      .returning();
+    return updatedSubscription;
   }
 
   // Helper method to automatically create notifications when tasks are assigned

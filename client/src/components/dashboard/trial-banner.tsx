@@ -3,10 +3,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Crown, Clock, X } from "lucide-react";
 import { Link } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 
 export function TrialBanner() {
   const [isVisible, setIsVisible] = useState(true);
-  const trialDaysLeft = 12;
+  
+  // Fetch real subscription data from API
+  const { data: subscription } = useQuery({
+    queryKey: ["/api/subscription"],
+    queryFn: async () => {
+      const response = await fetch("/api/subscription", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return response.json();
+    },
+    retry: false,
+  });
+
+  const trialDaysLeft = subscription?.trialDaysLeft || 0;
 
   // Check if banner was dismissed in this session
   useEffect(() => {
@@ -22,7 +39,8 @@ export function TrialBanner() {
     sessionStorage.setItem('trialBannerDismissed', 'true');
   };
 
-  if (!isVisible) {
+  // Don't show banner if not visible or not on trial
+  if (!isVisible || !subscription || subscription.subscriptionPlan !== "trial") {
     return null;
   }
   
