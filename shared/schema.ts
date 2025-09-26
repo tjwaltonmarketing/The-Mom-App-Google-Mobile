@@ -125,8 +125,7 @@ export const textNotes = pgTable("text_notes", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   content: text("content").notNull(),
-  familyId: integer("family_id").references(() => families.id).notNull(),
-  createdBy: integer("created_by").references(() => familyMembers.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -555,13 +554,9 @@ export const voiceNotesRelations = relations(voiceNotes, ({ one }) => ({
 }));
 
 export const textNotesRelations = relations(textNotes, ({ one }) => ({
-  family: one(families, {
-    fields: [textNotes.familyId],
-    references: [families.id],
-  }),
-  createdBy: one(familyMembers, {
-    fields: [textNotes.createdBy],
-    references: [familyMembers.id],
+  user: one(users, {
+    fields: [textNotes.userId],
+    references: [users.id],
   }),
 }));
 

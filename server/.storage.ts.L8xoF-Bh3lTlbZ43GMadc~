@@ -1033,9 +1033,9 @@ export class DatabaseStorage implements IStorage {
     return note;
   }
 
-  async deleteTextNote(id: number): Promise<boolean> {
+  async deleteTextNote(id: number, userId: number): Promise<boolean> {
     const result = await db.delete(textNotes)
-      .where(eq(textNotes.id, id));
+      .where(and(eq(textNotes.id, id), eq(textNotes.userId, userId)));
     return result.rowCount ? result.rowCount > 0 : false;
   }
 
