@@ -6,6 +6,7 @@ import {
   textNotes,
   deadlines,
   notifications,
+  pushTokens,
   passwords,
   passwordResetTokens,
   groceryItems,
@@ -36,6 +37,8 @@ import {
   type InsertDeadline,
   type Notification,
   type InsertNotification,
+  type PushToken,
+  type InsertPushToken,
   type Password,
   type InsertPassword,
   type PasswordResetToken,
@@ -209,6 +212,13 @@ export interface IStorage {
   markNotificationSent(id: number): Promise<void>;
   deleteNotification(id: number): Promise<boolean>;
   clearAllNotificationsByFamily(familyId: number): Promise<number>;
+  
+  // Push Tokens
+  createPushToken(pushToken: InsertPushToken): Promise<PushToken>;
+  getPushTokensByUser(userId: number): Promise<PushToken[]>;
+  updatePushToken(tokenId: number, updates: Partial<InsertPushToken>): Promise<PushToken | undefined>;
+  deletePushToken(tokenId: number): Promise<boolean>;
+  getPushTokensByFamily(familyId: number): Promise<PushToken[]>;
 
   // Passwords
   getPasswords(): Promise<Password[]>;
@@ -1092,6 +1102,53 @@ export class DatabaseStorage implements IStorage {
       .where(inArray(notifications.recipientId, memberIds));
     
     return result.rowCount || 0;
+  }
+
+  // Push Token implementations
+  async createPushToken(insertPushToken: InsertPushToken): Promise<PushToken> {
+    const [pushToken] = await db.insert(pushTokens).values(insertPushToken).returning();
+    return pushToken;
+  }
+
+  async getPushTokensByUser(userId: number): Promise<PushToken[]> {
+    return await db.select().from(pushTokens)
+      .where(and(eq(pushTokens.userId, userId), eq(pushTokens.isActive, true)))
+      .orderBy(desc(pushTokens.lastUsed));
+  }
+
+  async updatePushToken(tokenId: number, updates: Partial<InsertPushToken>): Promise<PushToken | undefined> {
+    const [updatedToken] = await db.update(pushTokens)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(pushTokens.id, tokenId))
+      .returning();
+    return updatedToken;
+  }
+
+  async deletePushToken(tokenId: number): Promise<boolean> {
+    const result = await db.delete(pushTokens)
+      .where(eq(pushTokens.id, tokenId));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async getPushTokensByFamily(familyId: number): Promise<PushToken[]> {
+    // Get all family member IDs for this family
+    const familyMemberIds = await db.select({ id: familyMembers.id })
+      .from(familyMembers)
+      .where(eq(familyMembers.familyId, familyId));
+    
+    if (familyMemberIds.length === 0) {
+      return [];
+    }
+    
+    const memberIds = familyMemberIds.map(fm => fm.id);
+    
+    // Get push tokens for all family members
+    return await db.select().from(pushTokens)
+      .where(and(
+        inArray(pushTokens.familyMemberId, memberIds),
+        eq(pushTokens.isActive, true)
+      ))
+      .orderBy(desc(pushTokens.lastUsed));
   }
 
   // Helper method to automatically create notifications when tasks are assigned

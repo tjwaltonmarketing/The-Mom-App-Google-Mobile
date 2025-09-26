@@ -2299,6 +2299,39 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Push Token Endpoints
+  app.post("/api/push-tokens", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { token, platform, deviceInfo } = req.body;
+      
+      if (!token || !platform) {
+        return res.status(400).json({ error: "Token and platform are required" });
+      }
+
+      // Get current user's family member
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      
+      // Create or update push token
+      const pushToken = await storage.createPushToken({
+        userId: req.session.userId,
+        familyMemberId: familyMember?.id || null,
+        token,
+        platform,
+        deviceInfo,
+        isActive: true,
+      });
+
+      res.json(pushToken);
+    } catch (error) {
+      console.error("Create push token error:", error);
+      res.status(500).json({ error: "Failed to save push token" });
+    }
+  });
+
   // AI Smart Task Creation Endpoint
   app.post("/api/ai/smart-task-creation", async (req, res) => {
     try {

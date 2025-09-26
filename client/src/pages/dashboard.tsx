@@ -20,14 +20,34 @@ import { FamilyDishwasher } from "@/components/family-dishwasher";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { MindfulUsage } from "@/components/mindful-usage";
 import { SmartVoiceAssistant } from "@/components/smart-voice-assistant";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Mic, Bot, BookOpen } from "lucide-react";
 import { Link } from "wouter";
+import { setupPushNotifications } from "@/services/push-notifications";
 
 export default function Dashboard() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+
+  // Initialize push notifications when parent dashboard loads
+  useEffect(() => {
+    const initializePushNotifications = async () => {
+      try {
+        console.log('Parent Dashboard: Initializing push notifications...');
+        const success = await setupPushNotifications();
+        if (success) {
+          console.log('Parent Dashboard: Push notifications initialized successfully');
+        } else {
+          console.log('Parent Dashboard: Push notifications initialization failed or not supported');
+        }
+      } catch (error) {
+        console.error('Parent Dashboard: Push notification setup error:', error);
+      }
+    };
+
+    initializePushNotifications();
+  }, []);
 
   return (
     <div className="min-h-screen bg-neutral dark:bg-background blue-light-filter:bg-neutral">

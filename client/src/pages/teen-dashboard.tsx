@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import TeenNavigation from "@/components/teen/teen-navigation";
 import type { Task, Event } from "@shared/schema";
+import { setupPushNotifications } from "@/services/push-notifications";
 
 interface MealPlan {
   id: number;
@@ -41,6 +42,25 @@ export default function TeenDashboard() {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [, setLocation] = useLocation();
+
+  // Initialize push notifications when teen dashboard loads
+  useEffect(() => {
+    const initializePushNotifications = async () => {
+      try {
+        console.log('Teen Dashboard: Initializing push notifications...');
+        const success = await setupPushNotifications();
+        if (success) {
+          console.log('Teen Dashboard: Push notifications initialized successfully');
+        } else {
+          console.log('Teen Dashboard: Push notifications initialization failed or not supported');
+        }
+      } catch (error) {
+        console.error('Teen Dashboard: Push notification setup error:', error);
+      }
+    };
+
+    initializePushNotifications();
+  }, []);
 
   // Get teen profile data with avatar
   const { data: authData, isLoading: profileLoading } = useQuery({

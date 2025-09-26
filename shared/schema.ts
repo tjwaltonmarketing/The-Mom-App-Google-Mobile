@@ -156,6 +156,23 @@ export const notifications = pgTable("notifications", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const pushTokens = pgTable("push_tokens", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  familyMemberId: integer("family_member_id").references(() => familyMembers.id),
+  token: text("token").notNull().unique(),
+  platform: varchar("platform", { length: 20 }).notNull(), // "android", "ios", "web"
+  deviceInfo: jsonb("device_info"), // Store additional device information
+  isActive: boolean("is_active").default(true),
+  lastUsed: timestamp("last_used").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userIdIdx: index("push_tokens_user_id_idx").on(table.userId),
+  familyMemberIdIdx: index("push_tokens_family_member_id_idx").on(table.familyMemberId),
+  platformIdx: index("push_tokens_platform_idx").on(table.platform),
+}));
+
 export const passwords = pgTable("passwords", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(), // "Netflix", "School Portal", "Bank of America"
@@ -357,6 +374,13 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   id: true,
   sentAt: true,
   createdAt: true,
+});
+
+export const insertPushTokenSchema = createInsertSchema(pushTokens).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastUsed: true,
 });
 
 export const insertPasswordSchema = createInsertSchema(passwords).omit({
@@ -702,3 +726,6 @@ export type InsertUserSubscription = z.infer<typeof insertUserSubscriptionSchema
 
 export type HouseholdSettings = typeof householdSettings.$inferSelect;
 export type InsertHouseholdSettings = z.infer<typeof insertHouseholdSettingsSchema>;
+
+export type PushToken = typeof pushTokens.$inferSelect;
+export type InsertPushToken = z.infer<typeof insertPushTokenSchema>;
