@@ -8,15 +8,6 @@ const config: CapacitorConfig = {
     androidScheme: 'https',
     url: 'https://the-mom-app.replit.app'
   },
-  android: {
-    buildOptions: {
-      keystorePath: 'upload-keystore.jks',
-      keystorePassword: 'android',
-      keystoreAlias: 'upload',
-      keystoreAliasPassword: 'android',
-      releaseType: 'AAB'
-    }
-  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 3000,

@@ -14,7 +14,6 @@ import {
   mealPlans,
   householdSettings,
   users,
-  userSubscriptions,
   families,
   familyMemberships,
   familyInvites,
@@ -66,8 +65,6 @@ import {
   type InsertTeenTaskHistory,
   type TeenNotificationLog,
   type InsertTeenNotificationLog,
-  type UserSubscription,
-  type InsertUserSubscription,
   type HouseholdSettings,
   type InsertHouseholdSettings,
   type ChildProfile,
@@ -106,13 +103,7 @@ export interface IStorage {
   // Trial and Subscription Management
   initializeUserTrial(userId: number): Promise<User | undefined>;
   getUserTrialStatus(userId: number): Promise<{ isActive: boolean; daysRemaining: number; expiresAt: Date | null }>;
-  updateUserSubscription(userId: number, subscriptionData: {
-    plan: string;
-    status: string;
-    stripeCustomerId?: string;
-    stripeSubscriptionId?: string;
-    nextBillingDate?: Date;
-  }): Promise<User | undefined>;
+  updateUserSubscription(userId: number, updates: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined>;
   
   // Password Reset
   createPasswordResetToken(token: InsertPasswordResetToken): Promise<PasswordResetToken>;
@@ -494,29 +485,6 @@ export class DatabaseStorage implements IStorage {
     return { isActive, daysRemaining, expiresAt };
   }
 
-  async updateUserSubscription(userId: number, subscriptionData: {
-    plan: string;
-    status: string;
-    stripeCustomerId?: string;
-    stripeSubscriptionId?: string;
-    nextBillingDate?: Date;
-  }): Promise<User | undefined> {
-    await db
-      .update(userSubscriptions)
-      .set({
-        subscriptionPlan: subscriptionData.plan,
-        subscriptionStatus: subscriptionData.status,
-        stripeCustomerId: subscriptionData.stripeCustomerId,
-        stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
-        nextBillingDate: subscriptionData.nextBillingDate,
-        updatedAt: new Date()
-      })
-      .where(eq(userSubscriptions.userId, userId));
-    
-    // Return the user
-    const [user] = await db.select().from(users).where(eq(users.id, userId));
-    return user;
-  }
 
   // Family Management Methods
   async createFamily(insertFamily: InsertFamily): Promise<Family> {
