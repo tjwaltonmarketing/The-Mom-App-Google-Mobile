@@ -29,6 +29,16 @@ export async function testServerConnectivity(): Promise<{
     };
   } catch (error) {
     const responseTime = Date.now() - startTime;
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      return {
+        success: false,
+        server: getApiUrl(''),
+        responseTime,
+        error: 'Request timeout'
+      };
+    }
+    
     return {
       success: false,
       server: getApiUrl(''),
