@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { EventModal } from "@/components/event-modal";
 import { EventEditModal } from "@/components/event-edit-modal";
-import { CalendarSync } from "@/components/calendar-sync";
+// import { CalendarSync } from "@/components/calendar-sync"; // Disabled until Google OAuth verification
 import { useQuery } from "@tanstack/react-query";
 import type { Event, FamilyMember } from "@shared/schema";
 import { 
@@ -704,8 +704,9 @@ export default function CalendarPage() {
               </CardContent>
             </Card>
 
-            {/* Google Calendar Sync */}
+            {/* Google Calendar Sync - Disabled until Google OAuth verification is complete
             <CalendarSync />
+            */}
           </div>
         </div>
       </main>

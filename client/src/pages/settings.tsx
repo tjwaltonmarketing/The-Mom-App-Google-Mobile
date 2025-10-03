@@ -14,7 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Badge } from "@/components/ui/badge";
 import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star, Mail, KeyRound, CheckSquare } from "lucide-react";
 import { Link } from "wouter";
-import { CalendarSync } from "@/components/calendar-sync";
+// import { CalendarSync } from "@/components/calendar-sync"; // Disabled until Google OAuth verification
 import { ImportExportModal } from "@/components/import-export-modal";
 import { useTheme } from "@/components/theme-provider";
 import { useForm } from "react-hook-form";
@@ -533,8 +533,9 @@ export default function SettingsPage() {
 
           <TabsContent value="general" className="space-y-6">
 
-
+{/* Google Calendar Sync - Disabled until Google OAuth verification is complete
             <CalendarSync />
+*/}
 
             <Card>
               <CardHeader>
