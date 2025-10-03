@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -10,8 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Eye, EyeOff, Wifi, WifiOff, RefreshCw, Users } from "lucide-react";
-import { testServerConnectivity, getNetworkInfo } from "@/lib/connectivity";
+import { Eye, EyeOff, RefreshCw, Users } from "lucide-react";
 import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
 
 const loginSchema = z.object({
@@ -26,13 +25,6 @@ export default function Login() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<{
-    isConnected: boolean;
-    server: string;
-    responseTime?: number;
-    error?: string;
-  } | null>(null);
-  const [isTestingConnection, setIsTestingConnection] = useState(false);
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -42,25 +34,6 @@ export default function Login() {
     },
   });
 
-  // Test server connectivity on mobile apps
-  const testConnection = async () => {
-    const networkInfo = getNetworkInfo();
-    if (networkInfo.isMobile) {
-      setIsTestingConnection(true);
-      const result = await testServerConnectivity();
-      setConnectionStatus({
-        isConnected: result.success,
-        server: result.server,
-        responseTime: result.responseTime,
-        error: result.error
-      });
-      setIsTestingConnection(false);
-    }
-  };
-
-  useEffect(() => {
-    testConnection();
-  }, []);
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginForm) => {
@@ -82,17 +55,9 @@ export default function Login() {
       }
     },
     onError: (error: any) => {
-      // Enhanced error reporting for mobile
-      const networkInfo = getNetworkInfo();
-      let errorMessage = error.message || "Invalid email or password";
-      
-      if (networkInfo.isMobile && error.message?.includes('Failed to fetch')) {
-        errorMessage = `Connection failed to ${connectionStatus?.server || 'server'}. Please check your internet connection and try again.`;
-      }
-      
       toast({
         title: "Login Failed",
-        description: errorMessage,
+        description: error.message || "Invalid email or password",
         variant: "destructive",
       });
     },
