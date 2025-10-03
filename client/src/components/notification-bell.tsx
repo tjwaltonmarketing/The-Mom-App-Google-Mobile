@@ -65,7 +65,12 @@ export function NotificationBell() {
     }
   });
 
-  const pendingNotifications = notifications.filter(n => !n.sentAt);
+  const now = new Date();
+  const pendingNotifications = notifications.filter(n => {
+    if (n.sentAt) return false; // Already sent
+    const scheduledTime = new Date(n.scheduledFor);
+    return scheduledTime <= now; // Only show if scheduled time has arrived
+  });
   const unreadCount = pendingNotifications.length;
 
   const getNotificationIcon = (type: string) => {
