@@ -5,6 +5,7 @@ import { smartTaskCreation } from "./ai";
 import { WeatherService } from "./weather-service";
 import { sendSMS } from "./sms-service";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { GoogleCalendarService } from "./google-calendar-service";
 import bcrypt from "bcryptjs";
 
 const storage = new DatabaseStorage();
@@ -2280,6 +2281,154 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Create push token error:", error);
       res.status(500).json({ error: "Failed to save push token" });
+    }
+  });
+
+  // Google Calendar Import Endpoints
+  app.get("/api/calendar/connect", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const calendarService = new GoogleCalendarService();
+      const authUrl = calendarService.generateAuthUrl();
+      
+      // Store the user ID in session for the callback
+      req.session.calendarOAuthUserId = req.session.userId;
+      
+      res.redirect(authUrl);
+    } catch (error) {
+      console.error("Calendar connect error:", error);
+      res.status(500).json({ error: "Failed to initiate Google Calendar connection" });
+    }
+  });
+
+  app.get("/api/calendar/callback", async (req, res) => {
+    try {
+      const { code, error } = req.query;
+      
+      if (error) {
+        return res.redirect(`/?error=${error}`);
+      }
+
+      if (!code || typeof code !== 'string') {
+        return res.redirect('/?error=missing_code');
+      }
+
+      const calendarService = new GoogleCalendarService();
+      const tokens = await calendarService.getTokensFromCode(code);
+      
+      // Store tokens in session (in production, you'd store these in the database)
+      req.session.googleCalendarTokens = tokens;
+      
+      res.redirect('/settings?calendar_connected=true');
+    } catch (error) {
+      console.error("Calendar callback error:", error);
+      res.redirect('/?error=oauth_failed');
+    }
+  });
+
+  app.get("/api/calendar/calendars", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      if (!req.session.googleCalendarTokens) {
+        return res.json({ calendars: [] });
+      }
+
+      const calendarService = new GoogleCalendarService();
+      calendarService.setCredentials(req.session.googleCalendarTokens);
+      
+      const calendars = await calendarService.listCalendars();
+      res.json({ calendars });
+    } catch (error) {
+      console.error("List calendars error:", error);
+      res.status(500).json({ error: "Failed to fetch calendars" });
+    }
+  });
+
+  app.post("/api/calendar/import", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      if (!req.session.googleCalendarTokens) {
+        return res.status(401).json({ error: "Not connected to Google Calendar" });
+      }
+
+      const { calendarId = 'primary', daysToImport = 365 } = req.body;
+
+      // Get family membership
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get user's family member record
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      const calendarService = new GoogleCalendarService();
+      calendarService.setCredentials(req.session.googleCalendarTokens);
+      
+      const googleEvents = await calendarService.importEvents(calendarId, daysToImport);
+      
+      // Import events into the database
+      let importedCount = 0;
+      for (const googleEvent of googleEvents) {
+        try {
+          await storage.createEvent({
+            title: googleEvent.title,
+            description: googleEvent.description,
+            startTime: new Date(googleEvent.startTime),
+            endTime: googleEvent.endTime ? new Date(googleEvent.endTime) : null,
+            location: googleEvent.location,
+            familyId: familyMembership.familyId,
+            assignedTo: [], // No specific assignments for imported events
+            isAllDay: googleEvent.isAllDay,
+            isPrivate: false,
+            visibilityType: "shared",
+            sharedWith: [],
+            createdBy: familyMember.id
+          });
+          importedCount++;
+        } catch (error) {
+          console.error("Error importing event:", error);
+          // Continue with other events even if one fails
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        imported: importedCount, 
+        total: googleEvents.length 
+      });
+    } catch (error) {
+      console.error("Calendar import error:", error);
+      res.status(500).json({ error: "Failed to import calendar events" });
+    }
+  });
+
+  app.post("/api/calendar/disconnect", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Clear the tokens from session
+      delete req.session.googleCalendarTokens;
+      delete req.session.calendarOAuthUserId;
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Calendar disconnect error:", error);
+      res.status(500).json({ error: "Failed to disconnect calendar" });
     }
   });
 
