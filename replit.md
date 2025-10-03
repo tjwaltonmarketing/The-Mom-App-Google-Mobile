@@ -3,7 +3,14 @@
 ## Overview
 The Mom App is a comprehensive family coordination platform designed to reduce mental load for busy parents. It is a full-stack web application with mobile support, featuring AI-powered assistance, smart calendar management with granular privacy controls, advanced task organization, and secure family data management. The project's vision is to streamline family logistics, enhance communication, and foster collaboration among family members, ultimately improving daily life for busy households.
 
-## Recent Changes (October 1, 2025)
+## Recent Changes (October 3, 2025)
+- **📅 Google Calendar Import Feature**: Implemented full one-way import functionality with OAuth authentication, calendar selection, and event import (commented out in UI)
+- **🔒 Google OAuth Limitations**: Feature requires Google OAuth verification to work for all users - currently only works for test users added in Google Cloud Console
+- **🚀 Launch Decision**: Hidden Google Calendar import feature from Settings and Calendar pages until Google OAuth verification is complete (can take 2-8 weeks)
+- **📝 Future Enhancement**: Feature code remains in codebase (server/google-calendar-service.ts, client/src/components/calendar-sync.tsx) for easy re-enablement after verification
+- **⚠️ REMEMBER**: To re-enable, uncomment CalendarSync imports and components in settings.tsx and calendar.tsx after completing Google's verification process
+
+## Previous Changes (October 1, 2025)
 - **🚀 PRODUCTION DEPLOYMENT PREPARATION**: Prepared application for Google Play Store deployment with complete mobile app configuration
 - **📱 Splash Screen Added**: Implemented professional 3-second splash screen for mobile app with full-screen immersive display featuring app logo across all Android density configurations
 - **🤖 GitHub Actions CI/CD**: Created automated Android APK/AAB build workflow enabling non-technical users to build releases via one-click GitHub Actions triggers without local Android SDK
