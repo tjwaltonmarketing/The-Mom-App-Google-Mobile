@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "601086983321",
+    "project_id": "themom-app",
+    "storage_bucket": "themom-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:601086983321:android:ab861590eba01841f54c08",
+        "android_client_info": {
+          "package_name": "com.themomapp.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZMlR9BsWh0Pi--tlUQLAuYCS5xyxQ8H8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
