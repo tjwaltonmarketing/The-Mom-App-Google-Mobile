@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { Calendar, RefreshCw, CheckCircle, AlertCircle } from "lucide-react";
+import { Calendar, RefreshCw, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
@@ -18,9 +17,6 @@ interface GoogleCalendar {
 
 export function CalendarSync() {
   const [isConnected, setIsConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [autoSync, setAutoSync] = useState(true);
-  const [syncDirection, setSyncDirection] = useState("bidirectional");
   const [calendars, setCalendars] = useState<GoogleCalendar[]>([]);
   const [selectedCalendar, setSelectedCalendar] = useState("");
   const { toast } = useToast();
@@ -93,49 +89,13 @@ export function CalendarSync() {
   };
 
   const handleConnect = async () => {
-    setIsConnecting(true);
-    try {
-      const response = await apiRequest("POST", "/api/calendar/connect", {
-        provider: "google"
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        if (data.requiresAuth && data.authUrl) {
-          // Redirect to Google OAuth
-          toast({
-            title: "Redirecting to Google",
-            description: "Opening Google sign-in window...",
-          });
-          
-          // Always try the real OAuth flow first
-          window.location.href = data.authUrl;
-        } else if (data.calendars?.length > 0) {
-          // Already authenticated, show calendars
-          setCalendars(data.calendars);
-          const primaryCalendar = data.calendars.find((cal: any) => cal.primary);
-          if (primaryCalendar) {
-            setSelectedCalendar(primaryCalendar.id);
-          }
-          setIsConnected(true);
-          
-          toast({
-            title: "Calendars Found",
-            description: `Found ${data.calendars.length} calendar(s). Select which one to sync with.`
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Calendar connection error:", error);
-      toast({
-        title: "Connection Failed",
-        description: "Failed to connect to Google Calendar. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsConnecting(false);
-    }
+    toast({
+      title: "Redirecting to Google",
+      description: "Opening Google sign-in window...",
+    });
+    
+    // Navigate to the OAuth endpoint which will redirect to Google
+    window.location.href = '/api/calendar/connect';
   };
 
   const handleDisconnect = async () => {
@@ -157,24 +117,24 @@ export function CalendarSync() {
     }
   };
 
-  const handleSync = async () => {
+  const handleImport = async () => {
     try {
-      const response = await apiRequest("POST", "/api/calendar/sync", {
+      const response = await apiRequest("POST", "/api/calendar/import", {
         calendarId: selectedCalendar,
-        direction: syncDirection
+        daysToImport: 365
       });
       
       if (response.ok) {
         const data = await response.json();
         toast({
-          title: "Sync Complete",
-          description: `Synced ${data.eventCount} events successfully`
+          title: "Import Complete",
+          description: `Successfully imported ${data.imported} out of ${data.total} events from Google Calendar`
         });
       }
     } catch (error) {
       toast({
-        title: "Sync Failed",
-        description: "Please try again later",
+        title: "Import Failed",
+        description: "Failed to import calendar events. Please try again.",
         variant: "destructive"
       });
     }
@@ -188,7 +148,7 @@ export function CalendarSync() {
           Google Calendar Integration
         </CardTitle>
         <CardDescription>
-          Sync your family events with Google Calendar to keep everything in one place
+          Import events from your Google Calendar into The Mom App
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -281,51 +241,23 @@ export function CalendarSync() {
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="sync-direction">Sync Direction</Label>
-                <Select value={syncDirection} onValueChange={setSyncDirection}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="import">Import only (Google → Mom App)</SelectItem>
-                    <SelectItem value="export">Export only (Mom App → Google)</SelectItem>
-                    <SelectItem value="bidirectional">Two-way sync (Recommended)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="auto-sync">Automatic sync</Label>
-                <Switch
-                  id="auto-sync"
-                  checked={autoSync}
-                  onCheckedChange={setAutoSync}
-                />
+              <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                <div className="text-sm text-blue-700 dark:text-blue-300">
+                  <strong>One-time import:</strong> This will import upcoming events from your selected Google Calendar. 
+                  Events will be added to The Mom App but won't stay synced with Google Calendar.
+                </div>
               </div>
             </div>
 
             <div className="flex gap-2">
-              <Button onClick={handleSync} className="flex-1">
+              <Button onClick={handleImport} className="flex-1">
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Sync Now
+                Import Events
               </Button>
               <Button onClick={handleDisconnect} variant="outline">
                 Disconnect
               </Button>
             </div>
-
-            {syncDirection === "bidirectional" && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5" />
-                  <div className="text-sm text-blue-700 dark:text-blue-300">
-                    <strong>Two-way sync enabled:</strong> Events created in The Mom App will appear in Google Calendar, 
-                    and Google Calendar events will appear here. Changes made in either location will sync automatically.
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
