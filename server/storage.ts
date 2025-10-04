@@ -917,7 +917,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteAllTasks(familyId: number): Promise<boolean> {
-    const result = await db.delete(tasks).where(eq(tasks.familyId, familyId));
+    // Get all family member IDs for this family
+    const members = await db
+      .select({ id: familyMembers.id })
+      .from(familyMembers)
+      .where(eq(familyMembers.familyId, familyId));
+    
+    const memberIds = members.map(m => m.id);
+    
+    // If no members, nothing to delete
+    if (memberIds.length === 0) {
+      return true;
+    }
+    
+    // Delete all tasks created by any member of this family
+    const result = await db
+      .delete(tasks)
+      .where(inArray(tasks.createdBy, memberIds));
+    
     return result.rowCount !== null && result.rowCount >= 0;
   }
 
