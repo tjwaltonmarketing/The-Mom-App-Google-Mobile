@@ -1549,10 +1549,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteMealPlan(id: number): Promise<boolean> {
-    console.log(`Attempting to delete meal plan ID: ${id}`);
     const result = await db.delete(mealPlans).where(eq(mealPlans.id, id));
-    console.log(`Delete result:`, result);
-    console.log(`Row count:`, result.rowCount);
     return (result.rowCount ?? 0) > 0;
   }
 
