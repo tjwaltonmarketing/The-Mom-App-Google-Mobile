@@ -1457,7 +1457,24 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAllGroceryItems(familyId: number): Promise<boolean> {
     try {
-      const result = await db.delete(groceryItems).where(eq(groceryItems.familyId, familyId));
+      // Get all family member IDs for this family
+      const members = await db
+        .select({ id: familyMembers.id })
+        .from(familyMembers)
+        .where(eq(familyMembers.familyId, familyId));
+      
+      const memberIds = members.map(m => m.id);
+      
+      // If no members, nothing to delete
+      if (memberIds.length === 0) {
+        return true;
+      }
+      
+      // Delete all grocery items added by any member of this family
+      const result = await db
+        .delete(groceryItems)
+        .where(inArray(groceryItems.addedBy, memberIds));
+      
       return result.rowCount !== null && result.rowCount >= 0;
     } catch (error) {
       console.error('Failed to delete all grocery items:', error);

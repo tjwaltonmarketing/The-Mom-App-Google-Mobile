@@ -1677,6 +1677,45 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.delete("/api/grocery-items/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const itemId = parseInt(req.params.id);
+      const success = await storage.deleteGroceryItem(itemId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Grocery item not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete grocery item error:", error);
+      res.status(500).json({ error: "Failed to delete grocery item" });
+    }
+  });
+
+  app.delete("/api/grocery-items", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      await storage.deleteAllGroceryItems(familyMembership.familyId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete all grocery items error:", error);
+      res.status(500).json({ error: "Failed to delete all grocery items" });
+    }
+  });
+
   // Parent events endpoints
   app.post("/api/events", async (req, res) => {
     try {
