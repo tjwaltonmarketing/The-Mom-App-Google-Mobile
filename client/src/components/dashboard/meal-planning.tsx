@@ -1,6 +1,6 @@
 import { useState } from "react";
 import * as React from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, startOfWeek } from "date-fns";
 
@@ -46,6 +46,7 @@ export function MealPlanning() {
   const [selectedMember, setSelectedMember] = useState("");
   const [expandedMeal, setExpandedMeal] = useState<number | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Detect if we're in teen context
   const { data: teenData } = useQuery<{ isAuthenticated: boolean; teenId: number | null; teenProfile: any | null }>({
