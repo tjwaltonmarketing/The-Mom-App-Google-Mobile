@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, Edit, Users, ChevronDown, ChevronRight, Printer } from "lucide-react";
+import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, Edit, Users, ChevronDown, ChevronRight, Printer, MoreVertical } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -35,6 +36,7 @@ export function AdvancedTaskManagement() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [deleteScope, setDeleteScope] = useState<'self' | 'teens' | 'children' | 'all' | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -201,8 +203,8 @@ export function AdvancedTaskManagement() {
   });
 
   const deleteAllTasksMutation = useMutation({
-    mutationFn: async () => {
-      return apiRequest("DELETE", "/api/tasks");
+    mutationFn: async (scope: 'self' | 'teens' | 'children' | 'all') => {
+      return apiRequest("DELETE", "/api/tasks", { scope });
     },
     onMutate: async () => {
       // Cancel outgoing refetches
@@ -221,7 +223,7 @@ export function AdvancedTaskManagement() {
       queryClient.setQueryData(["/api/tasks"], context?.previousTasks);
       toast({
         title: "Error",
-        description: "Failed to delete all tasks. Please try again.",
+        description: "Failed to delete tasks. Please try again.",
         variant: "destructive",
       });
     },
@@ -272,8 +274,8 @@ export function AdvancedTaskManagement() {
     deleteTaskMutation.mutate(taskId);
   };
 
-  const handleDeleteAllTasks = () => {
-    deleteAllTasksMutation.mutate();
+  const handleDeleteAllTasks = (scope: 'self' | 'teens' | 'children' | 'all') => {
+    deleteAllTasksMutation.mutate(scope);
   };
 
   // Task item renderer
@@ -621,33 +623,47 @@ export function AdvancedTaskManagement() {
                 <span className="xs:hidden">Add</span>
               </Button>
               {tasks.length > 0 && (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
                     <Button variant="destructive" className="gap-2 flex-1 sm:flex-none">
                       <Trash2 className="h-4 w-4" />
-                      <span className="hidden xs:inline">Clear All</span>
+                      <span className="hidden xs:inline">Clear Tasks</span>
                       <span className="xs:hidden">Clear</span>
+                      <ChevronDown className="h-3 w-3 ml-1" />
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete All Tasks</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete all tasks? This will permanently remove all {tasks.length} tasks including completed ones. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDeleteAllTasks}
-                        disabled={deleteAllTasksMutation.isPending}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        {deleteAllTasksMutation.isPending ? "Deleting..." : "Delete All Tasks"}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem 
+                      onClick={() => setDeleteScope('self')}
+                      data-testid="clear-my-tasks"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Clear My Tasks
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => setDeleteScope('teens')}
+                      data-testid="clear-teen-tasks"
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      Clear Teen Tasks
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => setDeleteScope('children')}
+                      data-testid="clear-child-tasks"
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Clear Child Tasks
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => setDeleteScope('all')}
+                      className="text-red-600"
+                      data-testid="clear-all-manageable-tasks"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Clear All Manageable
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
             </div>
           </div>
@@ -865,6 +881,41 @@ export function AdvancedTaskManagement() {
           onClose={() => setEditingTask(null)}
         />
       )}
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteScope !== null} onOpenChange={(open) => !open && setDeleteScope(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {deleteScope === 'self' && 'Delete My Tasks'}
+              {deleteScope === 'teens' && 'Delete Teen Tasks'}
+              {deleteScope === 'children' && 'Delete Child Tasks'}
+              {deleteScope === 'all' && 'Delete All Manageable Tasks'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteScope === 'self' && 'This will permanently delete all of your tasks. This action cannot be undone.'}
+              {deleteScope === 'teens' && 'This will permanently delete all tasks assigned to teens. This action cannot be undone.'}
+              {deleteScope === 'children' && 'This will permanently delete all tasks assigned to children. This action cannot be undone.'}
+              {deleteScope === 'all' && 'This will permanently delete all tasks you manage (your tasks + teen tasks + child tasks). Other parent tasks will NOT be deleted. This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deleteScope) {
+                  handleDeleteAllTasks(deleteScope);
+                  setDeleteScope(null);
+                }
+              }}
+              disabled={deleteAllTasksMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteAllTasksMutation.isPending ? "Deleting..." : "Delete Tasks"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
