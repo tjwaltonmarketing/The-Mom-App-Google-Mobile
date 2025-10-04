@@ -1550,6 +1550,26 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.delete("/api/meal-plans/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const mealId = parseInt(req.params.id);
+      const success = await storage.deleteMealPlan(mealId);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Meal plan not found" });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete meal plan error:", error);
+      res.status(500).json({ error: "Failed to delete meal plan" });
+    }
+  });
+
   app.get("/api/grocery-items", async (req, res) => {
     try {
       if (!req.session.userId) {
