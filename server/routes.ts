@@ -1356,8 +1356,17 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family not found" });
       }
 
-      // Allow parents to delete all tasks in their family
-      await storage.deleteAllTasks(familyMembership.familyId);
+      // Get the current family member record
+      const currentMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!currentMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get scope from request body (default to 'self' for safety)
+      const { scope = 'self' } = req.body as { scope?: 'self' | 'teens' | 'children' | 'all' };
+
+      // Delete tasks based on scope
+      await storage.deleteTasksByScope(currentMember.id, familyMembership.familyId, scope);
       res.json({ success: true });
     } catch (error) {
       console.error("Delete all tasks error:", error);
