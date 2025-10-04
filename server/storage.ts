@@ -172,6 +172,7 @@ export interface IStorage {
   completeTask(id: number, completedBy: number): Promise<Task | undefined>;
   deleteTask(id: number): Promise<boolean>;
   deleteAllTasks(): Promise<boolean>;
+  deleteTasksByScope(currentMemberId: number, familyId: number, scope: 'self' | 'teens' | 'children' | 'all'): Promise<boolean>;
   getTasksForTeen(teenId: number): Promise<Task[]>;
   assignTaskToTeen(taskId: number, teenId: number): Promise<Task>;
   
@@ -934,6 +935,72 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(tasks)
       .where(inArray(tasks.createdBy, memberIds));
+    
+    return result.rowCount !== null && result.rowCount >= 0;
+  }
+
+  async deleteTasksByScope(currentMemberId: number, familyId: number, scope: 'self' | 'teens' | 'children' | 'all'): Promise<boolean> {
+    // Get the current member's role
+    const currentMember = await db
+      .select()
+      .from(familyMembers)
+      .where(eq(familyMembers.id, currentMemberId))
+      .limit(1);
+    
+    if (currentMember.length === 0) {
+      return false;
+    }
+    
+    const currentRole = currentMember[0].role;
+    const isParent = ['mom', 'dad', 'parent'].includes(currentRole);
+    
+    // Build list of member IDs whose tasks can be deleted
+    let memberIdsToDelete: number[] = [];
+    
+    if (scope === 'self') {
+      // Only delete current member's own tasks
+      memberIdsToDelete = [currentMemberId];
+    } else {
+      // Get all family members
+      const allMembers = await db
+        .select()
+        .from(familyMembers)
+        .where(eq(familyMembers.familyId, familyId));
+      
+      if (scope === 'teens') {
+        // Delete only teen tasks
+        const teenMembers = allMembers.filter(m => m.role === 'teen');
+        memberIdsToDelete = teenMembers.map(m => m.id);
+      } else if (scope === 'children') {
+        // Delete only child tasks
+        const childMembers = allMembers.filter(m => m.role === 'child');
+        memberIdsToDelete = childMembers.map(m => m.id);
+      } else if (scope === 'all') {
+        // Parents can delete: self + teens + children (but NOT other parents)
+        if (isParent) {
+          memberIdsToDelete = allMembers
+            .filter(m => 
+              m.id === currentMemberId || // Own tasks
+              m.role === 'teen' ||        // Teen tasks
+              m.role === 'child'          // Child tasks
+            )
+            .map(m => m.id);
+        } else {
+          // Non-parents can only delete their own
+          memberIdsToDelete = [currentMemberId];
+        }
+      }
+    }
+    
+    // If no member IDs to delete, return success (nothing to do)
+    if (memberIdsToDelete.length === 0) {
+      return true;
+    }
+    
+    // Delete tasks created by the specified members
+    const result = await db
+      .delete(tasks)
+      .where(inArray(tasks.createdBy, memberIdsToDelete));
     
     return result.rowCount !== null && result.rowCount >= 0;
   }
