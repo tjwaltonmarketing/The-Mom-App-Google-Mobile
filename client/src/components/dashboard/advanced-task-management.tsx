@@ -600,8 +600,12 @@ export function AdvancedTaskManagement() {
     printWindow.print();
   };
 
+  // Get current user's family member ID
+  const currentUserFamilyMember = familyMembers.find(fm => fm.userId === currentUser?.id);
+  
   const taskStats = {
     total: tasks.length,
+    myTasks: currentUserFamilyMember ? tasks.filter(t => !t.isCompleted && t.assignedTo === currentUserFamilyMember.id).length : 0,
     completed: tasks.filter(t => t.isCompleted).length,
     pending: tasks.filter(t => !t.isCompleted).length,
     high: tasks.filter(t => t.priority === 'high' && !t.isCompleted).length,
@@ -669,10 +673,14 @@ export function AdvancedTaskManagement() {
           </div>
           
           {/* Stats */}
-          <div className="grid grid-cols-4 gap-4 mt-4">
+          <div className="grid grid-cols-5 gap-4 mt-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{taskStats.total}</div>
               <div className="text-xs text-gray-600">Total Tasks</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">{taskStats.myTasks}</div>
+              <div className="text-xs text-gray-600">My Tasks</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">{taskStats.completed}</div>

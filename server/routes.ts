@@ -1187,11 +1187,17 @@ export async function registerRoutes(app: Express) {
       // Get pending tasks for the family (filtered for private tasks)
       const pendingTasks = await storage.getPendingTasksByFamily(familyMembership.familyId, currentMemberId);
       
+      // Get "My Tasks" - tasks assigned to the current user
+      const myTasks = currentMemberId 
+        ? pendingTasks.filter(task => task.assignedTo === currentMemberId) 
+        : [];
+      
       // Get events for today
       const todayEvents = await storage.getTodayEventsByFamily(familyMembership.familyId);
 
       res.json({
         pendingTasks: pendingTasks.length,
+        myTasks: myTasks.length,
         todayEvents: todayEvents.length,
         familyMembers: await storage.getFamilyMembersByFamily(familyMembership.familyId)
       });
