@@ -110,6 +110,7 @@ export const tasks = pgTable("tasks", {
   points: integer("points").default(10), // reward points for teens
   teenId: integer("teen_id"), // reference to teen profile if assigned to teen
   childProfileId: integer("child_profile_id").references(() => childProfiles.id), // reference to child profile if assigned to child
+  isPrivate: boolean("is_private").default(false), // private tasks only visible to creator
 });
 
 export const voiceNotes = pgTable("voice_notes", {
