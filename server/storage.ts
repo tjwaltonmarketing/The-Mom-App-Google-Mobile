@@ -817,7 +817,7 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(tasks).where(eq(tasks.isCompleted, false));
   }
 
-  async getTasksByFamily(familyId: number): Promise<Task[]> {
+  async getTasksByFamily(familyId: number, currentMemberId?: number): Promise<Task[]> {
     // Get all family members for this family
     const familyMemberIds = await db.select({ id: familyMembers.id })
       .from(familyMembers)
@@ -830,8 +830,16 @@ export class DatabaseStorage implements IStorage {
     const memberIds = familyMemberIds.map(fm => fm.id);
     
     // Get tasks created by any family member
-    return await db.select().from(tasks)
+    const allTasks = await db.select().from(tasks)
       .where(inArray(tasks.createdBy, memberIds));
+    
+    // Filter private tasks: only show if created by current user
+    if (currentMemberId) {
+      return allTasks.filter(task => !task.isPrivate || task.createdBy === currentMemberId);
+    }
+    
+    // If no currentMemberId provided, show all non-private tasks only
+    return allTasks.filter(task => !task.isPrivate);
   }
 
   async getTasksForTodayByFamily(familyId: number): Promise<Task[]> {
@@ -858,7 +866,7 @@ export class DatabaseStorage implements IStorage {
       ));
   }
 
-  async getPendingTasksByFamily(familyId: number): Promise<Task[]> {
+  async getPendingTasksByFamily(familyId: number, currentMemberId?: number): Promise<Task[]> {
     // Get all family members for this family
     const familyMemberIds = await db.select({ id: familyMembers.id })
       .from(familyMembers)
@@ -871,11 +879,19 @@ export class DatabaseStorage implements IStorage {
     const memberIds = familyMemberIds.map(fm => fm.id);
     
     // Get pending tasks created by any family member
-    return await db.select().from(tasks)
+    const allTasks = await db.select().from(tasks)
       .where(and(
         inArray(tasks.createdBy, memberIds),
         eq(tasks.isCompleted, false)
       ));
+    
+    // Filter private tasks: only show if created by current user
+    if (currentMemberId) {
+      return allTasks.filter(task => !task.isPrivate || task.createdBy === currentMemberId);
+    }
+    
+    // If no currentMemberId provided, show all non-private tasks only
+    return allTasks.filter(task => !task.isPrivate);
   }
 
   async createTask(insertTask: InsertTask): Promise<Task> {

@@ -1180,8 +1180,12 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family not found" });
       }
 
-      // Get pending tasks for the family
-      const pendingTasks = await storage.getPendingTasksByFamily(familyMembership.familyId);
+      // Get current user's family member ID for privacy filtering
+      const userFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      const currentMemberId = userFamilyMember?.id;
+
+      // Get pending tasks for the family (filtered for private tasks)
+      const pendingTasks = await storage.getPendingTasksByFamily(familyMembership.familyId, currentMemberId);
       
       // Get events for today
       const todayEvents = await storage.getTodayEventsByFamily(familyMembership.familyId);
@@ -1208,7 +1212,11 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family not found" });
       }
 
-      const pendingTasks = await storage.getPendingTasksByFamily(familyMembership.familyId);
+      // Get current user's family member ID for privacy filtering
+      const userFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      const currentMemberId = userFamilyMember?.id;
+
+      const pendingTasks = await storage.getPendingTasksByFamily(familyMembership.familyId, currentMemberId);
       res.json(pendingTasks);
     } catch (error) {
       console.error("Pending tasks error:", error);
@@ -1246,7 +1254,11 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family not found" });
       }
 
-      const tasks = await storage.getTasksByFamily(familyMembership.familyId);
+      // Get current user's family member ID for privacy filtering
+      const userFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      const currentMemberId = userFamilyMember?.id;
+
+      const tasks = await storage.getTasksByFamily(familyMembership.familyId, currentMemberId);
       res.json(tasks);
     } catch (error) {
       console.error("Tasks error:", error);
@@ -1271,7 +1283,7 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family member record not found" });
       }
 
-      const { title, description, dueDate, priority, assignedTo, category, points, estimatedTime, childProfileId } = req.body;
+      const { title, description, dueDate, priority, assignedTo, category, points, estimatedTime, childProfileId, isPrivate } = req.body;
 
       // Check if assignedTo is a family member with a child profile
       let finalAssignedTo = assignedTo || null;
@@ -1297,7 +1309,8 @@ export async function registerRoutes(app: Express) {
         category: category || "general",
         points: points || 0,
         estimatedTime: estimatedTime || 0,
-        childProfileId: finalChildProfileId
+        childProfileId: finalChildProfileId,
+        isPrivate: isPrivate || false
       });
 
       res.json(task);
