@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { CalendarDays, User, Flag } from "lucide-react";
+import { CalendarDays, User, Flag, Lock } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +30,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [dueTime, setDueTime] = useState<string>("");
   const [points, setPoints] = useState<string>("0");
+  const [isPrivate, setIsPrivate] = useState(false);
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -151,6 +153,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       assignedTo: parsedAssignedTo,
       dueDate: finalDueDate ? finalDueDate.toISOString() : null,
       points: parseInt(points),
+      isPrivate,
       // Add childProfileId if needed for backend processing
       ...(childProfileId && { childProfileId }),
     };
@@ -166,6 +169,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
     setDueDate(undefined);
     setDueTime("");
     setPoints("0");
+    setIsPrivate(false);
     onClose();
   };
 
@@ -262,6 +266,21 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
                 <SelectItem value="50">50 points</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Lock className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <label className="text-sm font-medium">Private Task</label>
+                <p className="text-xs text-muted-foreground">Only you can see this task</p>
+              </div>
+            </div>
+            <Switch
+              checked={isPrivate}
+              onCheckedChange={setIsPrivate}
+              data-testid="switch-private-task"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
