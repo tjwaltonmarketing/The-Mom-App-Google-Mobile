@@ -51,6 +51,85 @@ export async function registerRoutes(app: Express) {
   });
 
   // Parent Authentication Endpoints
+  app.post("/api/register", async (req, res) => {
+    try {
+      const { email, password, firstName, lastName, familyName } = req.body;
+      
+      if (!email || !password || !firstName || !lastName || !familyName) {
+        return res.status(400).json({ error: "All fields are required" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email.toLowerCase());
+      if (existingUser) {
+        return res.status(400).json({ error: "An account with this email already exists" });
+      }
+
+      // Hash password
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      // Create user
+      const newUser = await storage.createUser({
+        email: email.toLowerCase(),
+        passwordHash,
+        firstName,
+        lastName,
+        authMethod: 'email',
+        isVerified: false
+      });
+
+      // Create family
+      const family = await storage.createFamily({
+        name: familyName,
+        timezone: 'America/Denver' // Default timezone, can be updated later
+      });
+
+      // Create family member linking user to family
+      await storage.createFamilyMember({
+        userId: newUser.id,
+        familyId: family.id,
+        name: `${firstName} ${lastName}`,
+        role: 'parent',
+        color: '#EC4899', // Default pink color
+        avatar: firstName.charAt(0).toUpperCase(),
+        notificationPreference: 'sms',
+        canLogin: true,
+        isActive: true
+      });
+
+      // Set session to auto-login
+      req.session.userId = newUser.id;
+      delete req.session.teenId; // Clear teen session
+      
+      // Save session synchronously
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            reject(err);
+          } else {
+            console.log("Registration session saved successfully for user:", newUser.id);
+            resolve();
+          }
+        });
+      });
+
+      res.json({
+        success: true,
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          isVerified: newUser.isVerified
+        }
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ error: "Failed to create account" });
+    }
+  });
+
   app.post("/api/login", async (req, res) => {
     try {
       const { email, password } = req.body;
