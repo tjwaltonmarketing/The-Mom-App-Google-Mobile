@@ -81,6 +81,7 @@ export async function registerRoutes(app: Express) {
       // Create family
       const family = await storage.createFamily({
         name: familyName,
+        ownerId: newUser.id,
         timezone: 'America/Denver' // Default timezone, can be updated later
       });
 
