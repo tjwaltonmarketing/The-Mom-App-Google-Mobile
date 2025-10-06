@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { CheckCircle, Plus } from "lucide-react";
+import { CheckCircle, Plus, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -178,7 +178,10 @@ export function QuickTasks() {
                     disabled={task.isCompleted || completeTaskMutation.isPending}
                   />
                   <div className="flex-1">
-                    <p className={`font-medium ${task.isCompleted ? 'line-through' : ''}`}>
+                    <p className={`font-medium ${task.isCompleted ? 'line-through' : ''} flex items-center gap-1.5`}>
+                      {task.isPrivate && (
+                        <Lock className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+                      )}
                       {task.title}
                     </p>
                     <div className="flex items-center space-x-2 mt-1">

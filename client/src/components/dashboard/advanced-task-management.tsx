@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, Edit, Users, ChevronDown, ChevronRight, Printer, MoreVertical } from "lucide-react";
+import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, Edit, Users, ChevronDown, ChevronRight, Printer, MoreVertical, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -298,7 +298,10 @@ export function AdvancedTaskManagement() {
         <div className="flex-1 min-w-0 overflow-hidden">
           {/* Title and main actions row */}
           <div className="flex items-start gap-2 mb-2">
-            <h4 className={`font-medium text-sm flex-1 min-w-0 truncate ${task.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+            <h4 className={`font-medium text-sm flex-1 min-w-0 truncate ${task.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'} flex items-center gap-1.5`}>
+              {task.isPrivate && (
+                <Lock className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+              )}
               {task.title}
             </h4>
             <div className="flex items-center gap-1 flex-shrink-0">
