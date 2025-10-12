@@ -114,8 +114,12 @@ export async function registerRoutes(app: Express) {
         });
       });
 
+      // Generate JWT token for cross-domain authentication
+      const token = generateToken(newUser.id);
+
       res.json({
         success: true,
+        token,
         user: {
           id: newUser.id,
           email: newUser.email,
@@ -167,8 +171,12 @@ export async function registerRoutes(app: Express) {
         });
       });
 
+      // Generate JWT token for cross-domain authentication
+      const token = generateToken(user.id);
+
       res.json({
         success: true,
+        token,
         user: {
           id: user.id,
           email: user.email,
@@ -185,7 +193,27 @@ export async function registerRoutes(app: Express) {
 
   app.get("/api/auth/user", async (req, res) => {
     try {
-      // Check traditional session-based authentication first
+      // Check JWT token authentication first (for cross-domain)
+      const token = extractTokenFromRequest(req);
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) {
+          const user = await storage.getUserById(decoded.userId);
+          if (user) {
+            return res.json({
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              profileImageUrl: user.profileImageUrl,
+              authMethod: user.authMethod,
+              isVerified: user.isVerified
+            });
+          }
+        }
+      }
+      
+      // Check traditional session-based authentication
       if (req.session.userId) {
         const user = await storage.getUserById(req.session.userId);
         if (user) {

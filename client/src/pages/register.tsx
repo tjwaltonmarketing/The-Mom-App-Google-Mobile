@@ -51,9 +51,15 @@ export default function Register() {
     mutationFn: async (data: RegisterForm) => {
       // Remove confirmPassword before sending to server
       const { confirmPassword, ...registerData } = data;
-      return await apiRequest("POST", "/api/register", registerData);
+      const response = await apiRequest("POST", "/api/register", registerData);
+      return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      // Store JWT token for cross-domain authentication
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
+      
       toast({
         title: "Account Created!",
         description: "Welcome to your family command center!",
