@@ -17,7 +17,20 @@ setupSession(app);
 
 // CORS middleware for mobile app compatibility
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://the-mom-app.replit.app',
+    'https://themom.app',
+    'http://localhost:5000',
+    'http://localhost:5173',
+    'capacitor://localhost',
+    'http://localhost'
+  ];
+  
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With, Accept, Origin, User-Agent');
   res.header('Access-Control-Allow-Credentials', 'true');
