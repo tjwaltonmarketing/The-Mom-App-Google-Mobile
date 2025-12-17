@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import logoPath from "@assets/The Mom app (2)_1753471031852.png";
+import logoPath from "@assets/The_Mom_app_(5)_1766014062224.png";
 
 interface SplashScreenProps {
   isLoading: boolean;

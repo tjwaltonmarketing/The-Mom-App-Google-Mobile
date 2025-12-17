@@ -1,4 +1,4 @@
-import logoPath from "@assets/playstore.png";
+import logoPath from "@assets/The_Mom_app_(5)_1766014062224.png";
 
 interface LogoProps {
   className?: string;

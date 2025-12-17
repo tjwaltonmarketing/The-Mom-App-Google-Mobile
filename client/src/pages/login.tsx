@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Eye, EyeOff, RefreshCw, Users } from "lucide-react";
-import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
+import logoPath from "@assets/The_Mom_app_(5)_1766014062224.png";
+import beforeAfterPath from "@assets/The_Mom_app_(4)_1766014201419.png";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -74,7 +75,9 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
-      <Card className="w-full max-w-md">
+      <div className="flex w-full max-w-5xl items-center gap-8">
+        {/* Login Card - Left Side */}
+        <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center -mb-8">
             <img 
@@ -207,6 +210,16 @@ export default function Login() {
           </div>
         </CardContent>
       </Card>
+      
+      {/* Before/After Image - Right Side (hidden on mobile) */}
+      <div className="hidden lg:block flex-1 max-w-md">
+        <img 
+          src={beforeAfterPath} 
+          alt="Before and After using The Mom App" 
+          className="w-full h-auto rounded-2xl shadow-2xl"
+        />
+      </div>
+      </div>
     </div>
   );
 }
