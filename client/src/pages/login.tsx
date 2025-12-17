@@ -74,7 +74,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-pink-100 to-rose-50 p-4">
       <div className="flex w-full max-w-5xl items-center gap-8">
         {/* Login Card - Left Side */}
         <Card className="w-full max-w-md">
@@ -212,7 +212,20 @@ export default function Login() {
       </Card>
       
       {/* Before/After Image - Right Side (hidden on mobile) */}
-      <div className="hidden lg:block flex-1 max-w-md">
+      <div className="hidden lg:flex flex-col flex-1 max-w-lg text-center">
+        {/* Marketing Text */}
+        <div className="mb-6">
+          <p className="text-gray-600 text-sm mb-2">✨ AI-Powered Family Organizer</p>
+          <h2 className="text-4xl font-bold italic text-gray-800 mb-1">Mom Life.</h2>
+          <h2 className="text-4xl font-bold text-pink-500">Made Easy.</h2>
+          <p className="text-gray-600 mt-4 text-sm leading-relaxed">
+            Reduce your mental load with AI voice assistance. Manage your family's 
+            calendar, tasks, meals, notes, passwords, dishwasher status, and more — 
+            all in one place.
+          </p>
+        </div>
+        
+        {/* Before/After Image */}
         <img 
           src={beforeAfterPath} 
           alt="Before and After using The Mom App" 
