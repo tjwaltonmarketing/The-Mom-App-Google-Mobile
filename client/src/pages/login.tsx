@@ -216,7 +216,7 @@ export default function Login() {
         {/* Marketing Text */}
         <div className="mb-6">
           <p className="text-gray-600 text-sm mb-2">✨ AI-Powered Family Organizer</p>
-          <h2 className="text-4xl font-bold italic text-gray-800 mb-1">Mom Life.</h2>
+          <h2 className="text-4xl font-bold text-gray-800 mb-1">Mom Life.</h2>
           <h2 className="text-4xl font-bold text-pink-500">Made Easy.</h2>
           <p className="text-gray-600 mt-4 text-sm leading-relaxed">
             Reduce your mental load with AI voice assistance. Manage your family's 
