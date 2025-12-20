@@ -648,6 +648,27 @@ export const parentTaskCompletionsRelations = relations(parentTaskCompletions, (
   }),
 }));
 
+// Feedback prompts for user satisfaction tracking
+export const feedbackPrompts = pgTable("feedback_prompts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  promptType: varchar("prompt_type", { length: 50 }).notNull().default("7_day_check"), // "7_day_check", "30_day_check", etc.
+  response: varchar("response", { length: 50 }), // "yes", "no", null if not responded
+  feedbackText: text("feedback_text"), // For negative feedback
+  reviewRequested: boolean("review_requested").default(false), // If they said yes to leaving review
+  reviewCompleted: boolean("review_completed").default(false), // If they clicked through to store
+  remindLater: boolean("remind_later").default(false), // If they chose "Maybe Later"
+  remindAt: timestamp("remind_at"), // When to remind them again
+  shownAt: timestamp("shown_at").defaultNow(),
+  respondedAt: timestamp("responded_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertFeedbackPromptSchema = createInsertSchema(feedbackPrompts).omit({ id: true, createdAt: true });
+
+export type FeedbackPrompt = typeof feedbackPrompts.$inferSelect;
+export type InsertFeedbackPrompt = z.infer<typeof insertFeedbackPromptSchema>;
+
 export type FamilyMember = typeof familyMembers.$inferSelect;
 export type InsertFamilyMember = z.infer<typeof insertFamilyMemberSchema>;
 
