@@ -23,6 +23,7 @@ import {
   teenNotificationLog,
   childProfiles,
   parentTaskCompletions,
+  feedbackPrompts,
   type FamilyMember, 
   type InsertFamilyMember,
   type Event,
@@ -71,6 +72,8 @@ import {
   type InsertChildProfile,
   type ParentTaskCompletion,
   type InsertParentTaskCompletion,
+  type FeedbackPrompt,
+  type InsertFeedbackPrompt,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lt, desc, isNull, or, inArray } from "drizzle-orm";
@@ -293,6 +296,12 @@ export interface IStorage {
   getParentTaskCompletions(childProfileId: number, parentFamilyMemberId: number): Promise<ParentTaskCompletion[]>;
   getTasksForChild(childProfileId: number, parentFamilyMemberId: number): Promise<Task[]>;
   completeTaskForChild(taskId: number, childProfileId: number, parentFamilyMemberId: number, notes?: string): Promise<Task>;
+
+  // Feedback Prompts
+  shouldShowFeedbackPrompt(userId: number): Promise<boolean>;
+  createFeedbackPrompt(userId: number, promptType: string): Promise<FeedbackPrompt>;
+  updateFeedbackPromptResponse(userId: number, response: string, feedbackText?: string, reviewRequested?: boolean, remindLater?: boolean): Promise<FeedbackPrompt | undefined>;
+  getPendingFeedbackPrompt(userId: number): Promise<FeedbackPrompt | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2183,6 +2192,110 @@ export class DatabaseStorage implements IStorage {
       }).returning();
       return newSettings;
     }
+  }
+
+  // Feedback Prompts
+  async shouldShowFeedbackPrompt(userId: number): Promise<boolean> {
+    // Check if user has already responded to this prompt type
+    const existingPrompt = await db.select()
+      .from(feedbackPrompts)
+      .where(and(
+        eq(feedbackPrompts.userId, userId),
+        eq(feedbackPrompts.promptType, "7_day_check")
+      ));
+    
+    // If they have a prompt and responded or chose remind later with future date, don't show
+    if (existingPrompt.length > 0) {
+      const prompt = existingPrompt[0];
+      if (prompt.response && !prompt.remindLater) {
+        return false;
+      }
+      // If remind later and remind_at is in future, don't show
+      if (prompt.remindLater && prompt.remindAt && new Date(prompt.remindAt) > new Date()) {
+        return false;
+      }
+    }
+    
+    // Check if user is at least 7 days old
+    const user = await this.getUserById(userId);
+    if (!user || !user.createdAt) {
+      return false;
+    }
+    
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    return new Date(user.createdAt) <= sevenDaysAgo;
+  }
+
+  async createFeedbackPrompt(userId: number, promptType: string): Promise<FeedbackPrompt> {
+    const [prompt] = await db.insert(feedbackPrompts).values({
+      userId,
+      promptType,
+      shownAt: new Date()
+    }).returning();
+    return prompt;
+  }
+
+  async updateFeedbackPromptResponse(
+    userId: number, 
+    response: string, 
+    feedbackText?: string, 
+    reviewRequested?: boolean, 
+    remindLater?: boolean
+  ): Promise<FeedbackPrompt | undefined> {
+    // Find the pending prompt for this user
+    const [existing] = await db.select()
+      .from(feedbackPrompts)
+      .where(and(
+        eq(feedbackPrompts.userId, userId),
+        eq(feedbackPrompts.promptType, "7_day_check")
+      ))
+      .orderBy(desc(feedbackPrompts.id))
+      .limit(1);
+    
+    if (!existing) {
+      // Create one if it doesn't exist
+      const [newPrompt] = await db.insert(feedbackPrompts).values({
+        userId,
+        promptType: "7_day_check",
+        response,
+        feedbackText,
+        reviewRequested: reviewRequested || false,
+        remindLater: remindLater || false,
+        remindAt: remindLater ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
+        respondedAt: new Date()
+      }).returning();
+      return newPrompt;
+    }
+    
+    const [updated] = await db.update(feedbackPrompts)
+      .set({
+        response,
+        feedbackText,
+        reviewRequested: reviewRequested || false,
+        remindLater: remindLater || false,
+        remindAt: remindLater ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null,
+        respondedAt: new Date()
+      })
+      .where(eq(feedbackPrompts.id, existing.id))
+      .returning();
+    
+    return updated;
+  }
+
+  async getPendingFeedbackPrompt(userId: number): Promise<FeedbackPrompt | undefined> {
+    const [prompt] = await db.select()
+      .from(feedbackPrompts)
+      .where(and(
+        eq(feedbackPrompts.userId, userId),
+        eq(feedbackPrompts.promptType, "7_day_check"),
+        isNull(feedbackPrompts.response)
+      ))
+      .orderBy(desc(feedbackPrompts.id))
+      .limit(1);
+    
+    return prompt || undefined;
   }
 }
 

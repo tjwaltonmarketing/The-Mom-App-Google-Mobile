@@ -1275,6 +1275,44 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Feedback Prompt Endpoints
+  app.get("/api/feedback-prompt/check", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.json({ shouldShow: false });
+      }
+
+      const shouldShow = await storage.shouldShowFeedbackPrompt(req.session.userId);
+      res.json({ shouldShow });
+    } catch (error) {
+      console.error("Feedback prompt check error:", error);
+      res.json({ shouldShow: false });
+    }
+  });
+
+  app.post("/api/feedback-prompt/respond", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { response, feedbackText, reviewRequested, remindLater } = req.body;
+      
+      const prompt = await storage.updateFeedbackPromptResponse(
+        req.session.userId,
+        response,
+        feedbackText,
+        reviewRequested,
+        remindLater
+      );
+
+      res.json({ success: true, prompt });
+    } catch (error) {
+      console.error("Feedback prompt respond error:", error);
+      res.status(500).json({ error: "Failed to save feedback" });
+    }
+  });
+
   // Parent Dashboard and Task Management Endpoints
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
