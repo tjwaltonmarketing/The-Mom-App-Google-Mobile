@@ -118,6 +118,20 @@ export async function registerRoutes(app: Express) {
       // Generate JWT token for cross-domain authentication
       const token = generateToken(newUser.id);
 
+      // Send SMS notification to admin about new signup
+      const adminPhone = process.env.ADMIN_PHONE_NUMBER;
+      if (adminPhone) {
+        try {
+          await sendSMS(
+            adminPhone,
+            `🎉 New Mom App signup!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nFamily: ${familyName}\nTime: ${new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}`
+          );
+        } catch (smsError) {
+          console.error("Failed to send admin signup notification:", smsError);
+          // Don't fail registration if SMS fails
+        }
+      }
+
       res.json({
         success: true,
         token,
