@@ -95,6 +95,21 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
 
   const { data: familyInfo } = useQuery<{ id: number; name: string }>({
     queryKey: ["/api/family"],
+    queryFn: async () => {
+      const response = await fetch('/api/family', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return response.json();
+    },
+    retry: false,
   });
 
   const getGreeting = () => {
