@@ -1590,6 +1590,50 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Get family info
+  app.get("/api/family", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const family = await storage.getFamilyByUserId(req.session.userId);
+      if (!family) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      res.json(family);
+    } catch (error) {
+      console.error("Get family error:", error);
+      res.status(500).json({ error: "Failed to get family" });
+    }
+  });
+
+  // Update family name
+  app.patch("/api/family", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { name } = req.body;
+      if (!name || typeof name !== "string" || name.trim().length === 0) {
+        return res.status(400).json({ error: "Family name is required" });
+      }
+
+      const family = await storage.getFamilyByUserId(req.session.userId);
+      if (!family) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const updated = await storage.updateFamily(family.id, { name: name.trim() });
+      res.json(updated);
+    } catch (error) {
+      console.error("Update family error:", error);
+      res.status(500).json({ error: "Failed to update family" });
+    }
+  });
+
   app.get("/api/family-members", async (req, res) => {
     try {
       if (!req.session.userId) {

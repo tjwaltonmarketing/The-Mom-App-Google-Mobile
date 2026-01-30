@@ -117,6 +117,37 @@ export default function SettingsPage() {
   });
 
 
+  // Fetch family info (for family name)
+  const { data: familyInfo } = useQuery<{ id: number; name: string }>({
+    queryKey: ["/api/family"],
+  });
+  
+  const [familyName, setFamilyName] = useState("");
+  const [isEditingFamilyName, setIsEditingFamilyName] = useState(false);
+
+  // Update local state when family info loads
+  useEffect(() => {
+    if (familyInfo?.name) {
+      setFamilyName(familyInfo.name);
+    }
+  }, [familyInfo]);
+
+  // Mutation to update family name
+  const updateFamilyNameMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const response = await apiRequest("PATCH", "/api/family", { name });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/family"] });
+      toast({ title: "Family name updated!" });
+      setIsEditingFamilyName(false);
+    },
+    onError: () => {
+      toast({ title: "Failed to update family name", variant: "destructive" });
+    }
+  });
+
   // Fetch pending merge requests
   const { data: mergeRequests = [] } = useQuery<any[]>({
     queryKey: ["/api/family/merge-requests"],
@@ -665,6 +696,64 @@ export default function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="family" className="space-y-6">
+            {/* Family Name Setting */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-primary" />
+                  Family Name
+                </CardTitle>
+                <CardDescription>
+                  This name appears on your home screen greeting
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  {isEditingFamilyName ? (
+                    <>
+                      <Input
+                        value={familyName}
+                        onChange={(e) => setFamilyName(e.target.value)}
+                        placeholder="Enter family name"
+                        className="flex-1"
+                      />
+                      <Button 
+                        size="sm"
+                        onClick={() => updateFamilyNameMutation.mutate(familyName)}
+                        disabled={updateFamilyNameMutation.isPending || !familyName.trim()}
+                      >
+                        Save
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          setFamilyName(familyInfo?.name || "");
+                          setIsEditingFamilyName(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex-1 p-2 bg-muted rounded-md">
+                        <span className="font-medium">{familyInfo?.name || "Your Family"}</span>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => setIsEditingFamilyName(true)}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

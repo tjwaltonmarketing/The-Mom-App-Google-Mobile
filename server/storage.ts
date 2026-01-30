@@ -126,6 +126,7 @@ export interface IStorage {
   getFamilyByUserId(userId: number): Promise<Family | undefined>;
   getUserFamily(userId: number): Promise<Family | undefined>;
   updateUserFamily(userId: number, familyId: number): Promise<void>;
+  updateFamily(familyId: number, updates: { name?: string }): Promise<Family | undefined>;
   moveEventsToFamily(fromFamilyId: number, toFamilyId: number): Promise<void>;
   moveTasksToFamily(fromFamilyId: number, toFamilyId: number): Promise<void>;
   
@@ -528,6 +529,15 @@ export class DatabaseStorage implements IStorage {
       .update(familyMemberships)
       .set({ familyId })
       .where(eq(familyMemberships.userId, userId));
+  }
+
+  async updateFamily(familyId: number, updates: { name?: string }): Promise<Family | undefined> {
+    const [updated] = await db
+      .update(families)
+      .set(updates)
+      .where(eq(families.id, familyId))
+      .returning();
+    return updated || undefined;
   }
 
   async moveEventsToFamily(fromFamilyId: number, toFamilyId: number): Promise<void> {
