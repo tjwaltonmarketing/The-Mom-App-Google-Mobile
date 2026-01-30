@@ -13,6 +13,7 @@ import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { RichTextEditor, RichTextDisplay } from "@/components/ui/rich-text-editor";
 import type { VoiceNote, TextNote, FamilyMember } from "@shared/schema";
 import { formatDistanceToNow, format, isToday, isYesterday, startOfDay } from "date-fns";
 
@@ -378,13 +379,10 @@ export default function Notes() {
               className="font-medium"
               data-testid="edit-note-title"
             />
-            <Textarea
-              value={editContent}
-              onChange={(e) => setEditContent(e.target.value)}
+            <RichTextEditor
+              content={editContent}
+              onChange={setEditContent}
               placeholder="Note content..."
-              rows={4}
-              className="resize-none"
-              data-testid="edit-note-content"
             />
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -426,9 +424,10 @@ export default function Notes() {
                 <h3 className="font-medium text-gray-900 dark:text-white mb-2">
                   {note.title}
                 </h3>
-                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                  {note.content}
-                </p>
+                <RichTextDisplay 
+                  content={note.content} 
+                  className="text-sm text-gray-700 dark:text-gray-300"
+                />
               </div>
             </div>
             <div className="flex items-center justify-between">
@@ -525,13 +524,10 @@ export default function Notes() {
                       onChange={(e) => setNewNoteTitle(e.target.value)}
                       data-testid="new-note-title"
                     />
-                    <Textarea
+                    <RichTextEditor
+                      content={newNoteContent}
+                      onChange={setNewNoteContent}
                       placeholder="Note content..."
-                      value={newNoteContent}
-                      onChange={(e) => setNewNoteContent(e.target.value)}
-                      rows={6}
-                      className="resize-none"
-                      data-testid="new-note-content"
                     />
                     <div className="flex justify-end space-x-2">
                       <Button 
