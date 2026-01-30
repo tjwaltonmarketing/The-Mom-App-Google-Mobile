@@ -98,6 +98,13 @@ export async function registerRoutes(app: Express) {
         isActive: true
       });
 
+      // Create family membership entry (required for getFamilyByUserId to work)
+      await storage.createFamilyMembership({
+        userId: newUser.id,
+        familyId: family.id,
+        role: 'owner'
+      });
+
       // Set session to auto-login
       req.session.userId = newUser.id;
       delete req.session.teenId; // Clear teen session
