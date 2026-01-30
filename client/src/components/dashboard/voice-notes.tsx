@@ -48,20 +48,20 @@ export function VoiceNotes({ onStartRecording }: VoiceNotesProps) {
         </Button>
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="pt-0">
         {notesLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <LoadingSpinner variant="mom" size="md" />
+          <div className="flex items-center justify-center py-4">
+            <LoadingSpinner variant="mom" size="sm" />
           </div>
         ) : (
           <>
-            <div className="bg-gray-50 rounded-lg p-4 mb-4">
-              <div className="text-center text-gray-500 py-8">
-                <Mic className="h-12 w-12 text-gray-300 mb-4 mx-auto" />
-                <p className="text-sm">Tap the microphone to start a voice note</p>
-                <p className="text-xs text-gray-400 mt-2">
-                  We'll automatically convert it to text and create tasks!
-                </p>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-center gap-3 text-gray-500">
+                <Mic className="h-6 w-6 text-gray-300" />
+                <div>
+                  <p className="text-sm">Tap the microphone to start a voice note</p>
+                  <p className="text-xs text-gray-400">Auto-converts to text & creates tasks!</p>
+                </div>
               </div>
             </div>
             

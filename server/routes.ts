@@ -1382,20 +1382,25 @@ export async function registerRoutes(app: Express) {
         return res.json([]);
       }
 
-      // Get all family members for this family
+      // Get all family members for this family who are teens
       const familyMembers = await storage.getFamilyMembersByFamily(familyMembership.familyId);
-      const familyMemberIds = familyMembers.map(m => m.id);
+      const teenMembers = familyMembers.filter(m => m.role === 'teen');
 
-      // Get teen profiles that belong to this family via familyMemberId
-      const allTeens = await Promise.all(
-        familyMemberIds.map(async (memberId) => {
-          const teens = await db.select().from(teenProfiles).where(eq(teenProfiles.familyMemberId, memberId));
-          return teens;
+      // Get teen profiles for each teen member
+      const teens = await Promise.all(
+        teenMembers.map(async (member) => {
+          if (member.userId) {
+            const profile = await storage.getTeenProfileByUserId(member.userId);
+            return profile;
+          }
+          return null;
         })
       );
 
-      const teens = allTeens.flat();
-      res.json(teens);
+      res.json(teens.filter(Boolean));
+    } catch (error) {
+      console.error("Get teen profiles error:", error);
+      res.status(500).json({ error: "Failed to get teen profiles" });
     }
   });
 

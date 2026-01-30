@@ -655,15 +655,6 @@ export default function SettingsPage() {
                     <div className="w-full h-8 bg-gray-900 rounded mb-2"></div>
                     <span className="text-sm">Dark</span>
                   </div>
-                  <div 
-                    className={`text-center p-3 border rounded-lg cursor-pointer hover:border-primary ${
-                      theme === "blue-light-filter" ? "border-primary bg-primary/5" : ""
-                    }`}
-                    onClick={() => setTheme("blue-light-filter")}
-                  >
-                    <div className="w-full h-8 bg-gradient-to-r from-orange-100 to-yellow-100 rounded mb-2"></div>
-                    <span className="text-sm">Blue Light</span>
-                  </div>
                 </div>
               </CardContent>
             </Card>
