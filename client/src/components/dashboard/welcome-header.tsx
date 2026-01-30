@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Mic, Bot } from "lucide-react";
+import { Mic, Bot, BookOpen } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 
@@ -133,6 +133,11 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
               className="bg-accent hover:bg-orange-400 text-white w-8 h-8 p-0 rounded-full"
             >
               <Mic className="h-4 w-4" />
+            </Button>
+            <Button asChild size="sm" className="bg-amber-500 hover:bg-amber-600 text-white w-8 h-8 p-0 rounded-full">
+              <Link href="/tutorials">
+                <BookOpen className="h-4 w-4" />
+              </Link>
             </Button>
             <Button asChild size="sm" className="bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white w-8 h-8 p-0 rounded-full">
               <Link href="/ai-assistant">
