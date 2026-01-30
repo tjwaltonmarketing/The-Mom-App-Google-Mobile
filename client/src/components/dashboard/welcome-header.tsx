@@ -105,7 +105,6 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-text-primary">
-            <span className="block">👋</span>
             {getGreeting()}, {user?.lastName || "Walton"} Family!
           </h2>
           <p className="text-gray-600 mt-1">Here's what's happening today</p>
