@@ -2759,6 +2759,90 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // AI Chat Endpoint with Event/Task Creation
+  app.post("/api/ai/chat", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { message } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      // Get user's family context
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      let familyMembers: any[] = [];
+      let familyId: number | null = null;
+      
+      if (familyMember) {
+        familyId = familyMember.familyId;
+        familyMembers = await storage.getFamilyMembersByFamilyId(familyMember.familyId);
+      }
+
+      // Process with AI including action detection
+      const { processAIChatWithActions } = await import("./ai");
+      const result = await processAIChatWithActions(message, familyMembers, familyId, req.session.userId!);
+
+      // Execute any detected actions
+      if (result.actions && result.actions.length > 0 && familyId) {
+        for (const action of result.actions) {
+          try {
+            if (action.type === "create_event" && action.data) {
+              const eventData = {
+                title: action.data.title,
+                description: action.data.description || "",
+                startTime: new Date(action.data.startTime),
+                endTime: action.data.endTime ? new Date(action.data.endTime) : new Date(new Date(action.data.startTime).getTime() + 60 * 60 * 1000),
+                allDay: action.data.allDay || false,
+                privacyType: "shared" as const,
+                familyId: familyId,
+                createdBy: req.session.userId!,
+                createdAt: new Date(),
+                assignedTo: action.data.assignedTo || null,
+                recurrence: null,
+                location: action.data.location || null,
+                color: "#EC4899",
+                reminders: null,
+              };
+              await storage.createEvent(eventData);
+              action.executed = true;
+            } else if (action.type === "create_task" && action.data) {
+              const taskData = {
+                title: action.data.title,
+                description: action.data.description || "",
+                priority: action.data.priority || "medium",
+                dueDate: action.data.dueDate ? new Date(action.data.dueDate) : null,
+                familyId: familyId,
+                createdBy: req.session.userId!,
+                assignedTo: action.data.assignedTo || null,
+                isRecurring: false,
+                recurrencePattern: null,
+                points: 10,
+                createdAt: new Date(),
+              };
+              await storage.createTask(taskData);
+              action.executed = true;
+            }
+          } catch (actionError) {
+            console.error("Failed to execute action:", action.type, actionError);
+            action.executed = false;
+          }
+        }
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("AI chat error:", error);
+      res.status(500).json({ 
+        message: "I'm having trouble processing your request right now. Please try again.",
+        actions: []
+      });
+    }
+  });
+
   // AI Smart Task Creation Endpoint
   app.post("/api/ai/smart-task-creation", async (req, res) => {
     try {

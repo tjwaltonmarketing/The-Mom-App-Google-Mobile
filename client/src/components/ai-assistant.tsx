@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Bot, Send, Sparkles, User } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Message {
@@ -65,6 +65,20 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
       };
 
       setMessages(prev => [...prev, aiMessage]);
+
+      // Invalidate relevant queries if actions were created
+      if (data.actions && data.actions.length > 0) {
+        if (data.actions.some((a: any) => a.type === "create_event")) {
+          queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/events/today"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+        }
+        if (data.actions.some((a: any) => a.type === "create_task")) {
+          queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+        }
+      }
     } catch (error) {
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),

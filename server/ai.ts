@@ -173,6 +173,127 @@ If the user wants to create tasks, events, or reminders, include them in your re
   }
 }
 
+export async function processAIChatWithActions(
+  message: string, 
+  familyMembers: any[], 
+  familyId: number | null,
+  userId: number
+): Promise<{ message: string; actions: any[] }> {
+  // Check for fallback responses first
+  const fallbackResponse = getFallbackResponse(message);
+  if (fallbackResponse) {
+    return {
+      message: fallbackResponse,
+      actions: []
+    };
+  }
+
+  if (!openai) {
+    return {
+      message: "The AI assistant is not configured. Please add your OpenAI API key to enable smart calendar and task features.",
+      actions: []
+    };
+  }
+
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const systemPrompt = `You are a helpful AI assistant for "The Mom App" - a family coordination app.
+
+CURRENT DATE/TIME: ${today.toLocaleString()}
+TOMORROW: ${tomorrow.toLocaleDateString()}
+
+FAMILY MEMBERS:
+${familyMembers.map(m => `- ${m.name} (${m.role}, ID: ${m.id})`).join("\n") || "No family members configured"}
+
+CRITICAL INSTRUCTIONS:
+When the user asks to CREATE, ADD, or SCHEDULE something (task, event, reminder, appointment), you MUST:
+1. Parse the request and determine what to create
+2. Return a JSON response with BOTH a friendly message AND an actions array
+
+RESPONSE FORMAT (when creating items):
+{
+  "message": "Your friendly confirmation message",
+  "actions": [
+    {
+      "type": "create_event",
+      "data": {
+        "title": "Event title",
+        "description": "Optional description",
+        "startTime": "2024-01-31T18:00:00",
+        "endTime": "2024-01-31T19:00:00",
+        "location": "Optional location",
+        "assignedTo": null
+      }
+    }
+  ]
+}
+
+For tasks:
+{
+  "type": "create_task",
+  "data": {
+    "title": "Task title",
+    "description": "Optional description",
+    "dueDate": "2024-01-31",
+    "priority": "medium",
+    "assignedTo": null
+  }
+}
+
+IMPORTANT:
+- Always use ISO 8601 date format for dates/times
+- For "tomorrow at 6pm", calculate the actual date from today's date
+- Parse natural language times like "6pm tomorrow" into proper datetime strings
+- If no specific time is given, use 9:00 AM as default
+- Events should have 1 hour duration by default
+- For support questions (not creation requests), return just: {"message": "your helpful response", "actions": []}
+
+ALWAYS return valid JSON. Do not include markdown code blocks or any text outside the JSON.`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: message }
+      ],
+      response_format: { type: "json_object" },
+    });
+
+    const content = response.choices[0].message.content || '{"message": "I\'m here to help!", "actions": []}';
+    
+    try {
+      const parsed = JSON.parse(content);
+      return {
+        message: parsed.message || "Got it!",
+        actions: parsed.actions || []
+      };
+    } catch (parseError) {
+      console.error("Failed to parse AI response as JSON:", content);
+      return {
+        message: content,
+        actions: []
+      };
+    }
+  } catch (error: any) {
+    console.error("AI chat processing error:", error);
+    
+    if (error?.status === 429 || error?.code === 'insufficient_quota') {
+      return {
+        message: "I'm experiencing high demand. Please try again in a moment.",
+        actions: []
+      };
+    }
+    
+    return {
+      message: "I'm having trouble processing that right now. Please try again.",
+      actions: []
+    };
+  }
+}
+
 export async function generateMealSuggestions(preferences: {
   dietary?: string[];
   cookingTime?: string;
