@@ -1370,6 +1370,35 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Get teen profiles for the family (for parents to see kids' points)
+  app.get("/api/teen-profiles", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.json([]);
+      }
+
+      // Get all family members for this family
+      const familyMembers = await storage.getFamilyMembersByFamily(familyMembership.familyId);
+      const familyMemberIds = familyMembers.map(m => m.id);
+
+      // Get teen profiles that belong to this family via familyMemberId
+      const allTeens = await Promise.all(
+        familyMemberIds.map(async (memberId) => {
+          const teens = await db.select().from(teenProfiles).where(eq(teenProfiles.familyMemberId, memberId));
+          return teens;
+        })
+      );
+
+      const teens = allTeens.flat();
+      res.json(teens);
+    }
+  });
+
   app.get("/api/tasks/pending", async (req, res) => {
     try {
       if (!req.session.userId) {

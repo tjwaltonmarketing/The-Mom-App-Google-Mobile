@@ -150,25 +150,19 @@ export function WeatherWidget() {
 
   return (
     <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-lg font-semibold">
-          Today's Weather {weatherData?.location && `(${weatherData.location})`}
-        </CardTitle>
-        <CloudSun className="h-8 w-8" />
-      </CardHeader>
-      
-      <CardContent>
-        <div className="text-3xl font-bold mb-2">{weatherData?.temperature}°F</div>
-        <p className="text-blue-100 mb-4">{weatherData?.description}</p>
-        <div className="bg-white/20 rounded-lg p-3">
-          <p className="text-sm font-medium mb-1">Outfit Suggestion:</p>
-          <p className="text-sm text-blue-100">{weatherData?.outfitSuggestion}</p>
+      <CardContent className="py-3 px-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <CloudSun className="h-6 w-6" />
+            <div>
+              <span className="text-2xl font-bold">{weatherData?.temperature}°F</span>
+              <span className="text-blue-100 text-sm ml-2">{weatherData?.description}</span>
+            </div>
+          </div>
+          <div className="text-right text-xs text-blue-100 max-w-[140px]">
+            {weatherData?.outfitSuggestion}
+          </div>
         </div>
-        {error && (
-          <p className="text-xs text-blue-200 mt-2 opacity-75">
-            Using cached data - {error}
-          </p>
-        )}
       </CardContent>
     </Card>
   );
