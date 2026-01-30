@@ -6,25 +6,13 @@ import { QuickTasks } from "@/components/dashboard/quick-tasks";
 import { VoiceNotes } from "@/components/dashboard/voice-notes";
 import { WeatherWidget } from "@/components/dashboard/weather-widget";
 import { FamilyProgress } from "@/components/dashboard/family-progress";
-import { QuickActions } from "@/components/dashboard/quick-actions";
-import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines";
-import { NotificationDemo } from "@/components/dashboard/notification-demo";
 import { PasswordVault } from "@/components/dashboard/password-vault";
 import { TrialBanner } from "@/components/dashboard/trial-banner";
-
-import { AdvancedTaskManagement } from "@/components/dashboard/advanced-task-management";
-import { MealPlanning } from "@/components/dashboard/meal-planning";
-
 import { FamilyDishwasher } from "@/components/family-dishwasher";
-
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { MindfulUsage } from "@/components/mindful-usage";
-import { SmartVoiceAssistant } from "@/components/smart-voice-assistant";
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Mic, Bot, BookOpen } from "lucide-react";
-import { Link } from "wouter";
 import { setupPushNotifications } from "@/services/push-notifications";
 
 export default function Dashboard() {
@@ -81,6 +69,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left Column */}
               <div className="lg:col-span-2 space-y-6">
+                <WeatherWidget />
                 <TodaySchedule />
                 <QuickTasks />
                 <VoiceNotes onStartRecording={() => setIsVoiceModalOpen(true)} />
@@ -88,15 +77,11 @@ export default function Dashboard() {
 
               {/* Right Column */}
               <div className="space-y-6">
-                <QuickActions />
                 <FamilyDishwasher 
                   apiEndpoint="/api/household-settings" 
                   updateEndpoint="/api/household-settings/dishwasher" 
                 />
-                <NotificationDemo />
-                <WeatherWidget />
                 <FamilyProgress />
-                <UpcomingDeadlines />
               </div>
             </div>
           </TabsContent>

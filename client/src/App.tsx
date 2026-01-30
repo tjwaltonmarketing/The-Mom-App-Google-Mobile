@@ -28,7 +28,6 @@ import TeenPasswords from "@/pages/teen-passwords";
 import TeenProfile from "@/pages/teen-profile";
 import MealPlan from "@/pages/meal-plan";
 import GroceryList from "@/pages/grocery-list";
-import FamilyChat from "@/pages/family-chat";
 import Notes from "@/pages/notes";
 
 const queryClient = new QueryClient({
@@ -169,7 +168,6 @@ function Router() {
               <Route path="/notes" component={Notes} />
               <Route path="/meal-plan" component={MealPlan} />
               <Route path="/grocery-list" component={GroceryList} />
-              <Route path="/family-chat" component={FamilyChat} />
             </>
           )}
           <Route component={NotFound} />
