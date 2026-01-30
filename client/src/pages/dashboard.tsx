@@ -66,20 +66,9 @@ export default function Dashboard() {
         
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="w-full mb-6 h-auto p-1">
-            <div className="flex flex-col sm:flex-row gap-1 w-full">
-              {/* First row on mobile, all tabs on desktop */}
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 w-full">
-                <TabsTrigger value="dashboard" className="text-xs sm:text-sm">Dashboard</TabsTrigger>
-                <TabsTrigger value="tasks" className="text-xs sm:text-sm">Tasks</TabsTrigger>
-                <TabsTrigger value="meals" className="text-xs sm:text-sm">Meals</TabsTrigger>
-                <TabsTrigger value="voice" className="text-xs sm:text-sm hidden sm:block">Voice Assistant</TabsTrigger>
-                <TabsTrigger value="passwords" className="text-xs sm:text-sm hidden sm:block">Password Vault</TabsTrigger>
-              </div>
-              {/* Second row on mobile only */}
-              <div className="grid grid-cols-2 gap-1 w-full sm:hidden">
-                <TabsTrigger value="voice" className="text-xs">Voice Assistant</TabsTrigger>
-                <TabsTrigger value="passwords" className="text-xs">Passwords</TabsTrigger>
-              </div>
+            <div className="grid grid-cols-2 gap-1 w-full">
+              <TabsTrigger value="dashboard" className="text-xs sm:text-sm">Dashboard</TabsTrigger>
+              <TabsTrigger value="passwords" className="text-xs sm:text-sm">Passwords</TabsTrigger>
             </div>
           </TabsList>
           
@@ -110,20 +99,6 @@ export default function Dashboard() {
                 <UpcomingDeadlines />
               </div>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="voice">
-            <div className="space-y-6">
-              <SmartVoiceAssistant />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="tasks">
-            <AdvancedTaskManagement />
-          </TabsContent>
-          
-          <TabsContent value="meals">
-            <MealPlanning />
           </TabsContent>
           
           <TabsContent value="passwords">
