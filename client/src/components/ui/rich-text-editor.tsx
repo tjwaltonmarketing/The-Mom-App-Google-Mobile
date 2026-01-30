@@ -200,7 +200,7 @@ export function RichTextDisplay({ content, className, truncate = false, maxLengt
       ? plainText.substring(0, maxLength).trim() + '...' 
       : plainText;
     return (
-      <p className={`${className || ''}`}>
+      <p className={`${className || ''} break-words overflow-hidden`}>
         {truncatedText}
       </p>
     );
