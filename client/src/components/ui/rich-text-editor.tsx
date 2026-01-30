@@ -184,9 +184,28 @@ export function RichTextEditor({ content, onChange, placeholder, className }: Ri
 interface RichTextDisplayProps {
   content: string;
   className?: string;
+  truncate?: boolean;
+  maxLength?: number;
 }
 
-export function RichTextDisplay({ content, className }: RichTextDisplayProps) {
+function stripHtml(html: string): string {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || '';
+}
+
+export function RichTextDisplay({ content, className, truncate = false, maxLength = 100 }: RichTextDisplayProps) {
+  if (truncate) {
+    const plainText = stripHtml(content);
+    const truncatedText = plainText.length > maxLength 
+      ? plainText.substring(0, maxLength).trim() + '...' 
+      : plainText;
+    return (
+      <p className={`${className || ''}`}>
+        {truncatedText}
+      </p>
+    );
+  }
+  
   return (
     <div 
       className={`prose prose-sm max-w-none dark:prose-invert ${className || ''}`}

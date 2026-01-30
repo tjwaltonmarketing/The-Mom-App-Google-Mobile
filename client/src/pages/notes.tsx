@@ -427,6 +427,8 @@ export default function Notes() {
                 <RichTextDisplay 
                   content={note.content} 
                   className="text-sm text-gray-700 dark:text-gray-300"
+                  truncate={true}
+                  maxLength={80}
                 />
               </div>
             </div>
