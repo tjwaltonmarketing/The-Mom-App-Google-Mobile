@@ -1043,7 +1043,7 @@ export class DatabaseStorage implements IStorage {
           .delete(tasks)
           .where(and(
             inArray(tasks.createdBy, memberIdsToDelete),
-            eq(tasks.completed, true)
+            eq(tasks.isCompleted, true)
           ));
         
         return result.rowCount !== null && result.rowCount >= 0;

@@ -52,8 +52,10 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
       return apiRequest("PATCH", `/api/tasks/${task.id}`, updates);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"], refetchType: "all" });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"], refetchType: "all" });
+      queryClient.refetchQueries({ queryKey: ["/api/tasks"] });
       toast({
         title: "Task updated",
         description: "Your task has been updated successfully",
