@@ -155,7 +155,7 @@ export interface IStorage {
   
   // Events
   getEvents(): Promise<Event[]>;
-  getEventsByFamily(familyId: number): Promise<Event[]>;
+  getEventsByFamily(familyId: number, expandRecurrences?: boolean): Promise<Event[]>;
   getTodayEvents(): Promise<Event[]>;
   getTodayEventsByFamily(familyId: number): Promise<Event[]>;
   createEvent(event: InsertEvent): Promise<Event>;
@@ -707,7 +707,79 @@ export class DatabaseStorage implements IStorage {
       ));
   }
 
-  async getEventsByFamily(familyId: number): Promise<Event[]> {
+  // Helper function to expand recurring events into instances
+  expandRecurringEvents(baseEvents: Event[], startRange: Date, endRange: Date): Event[] {
+    const expandedEvents: Event[] = [];
+    
+    for (const event of baseEvents) {
+      const recurrenceType = (event as any).recurrenceType || 'none';
+      const recurrenceInterval = (event as any).recurrenceInterval || 1;
+      const recurrenceEndDate = (event as any).recurrenceEndDate;
+      
+      // Non-recurring events are added as-is
+      if (recurrenceType === 'none' || !recurrenceType) {
+        expandedEvents.push(event);
+        continue;
+      }
+      
+      // Add the original event instance
+      expandedEvents.push(event);
+      
+      // Generate recurring instances within the date range
+      const eventStart = new Date(event.startTime);
+      const eventDuration = event.endTime ? new Date(event.endTime).getTime() - eventStart.getTime() : 0;
+      let currentDate = new Date(eventStart);
+      let instanceCount = 0;
+      const maxInstances = 365; // Limit to prevent infinite loops
+      
+      while (instanceCount < maxInstances) {
+        // Calculate next occurrence
+        switch (recurrenceType) {
+          case 'daily':
+            currentDate = new Date(currentDate.getTime() + recurrenceInterval * 24 * 60 * 60 * 1000);
+            break;
+          case 'weekly':
+            currentDate = new Date(currentDate.getTime() + recurrenceInterval * 7 * 24 * 60 * 60 * 1000);
+            break;
+          case 'monthly':
+            currentDate = new Date(currentDate.setMonth(currentDate.getMonth() + recurrenceInterval));
+            break;
+          case 'yearly':
+            currentDate = new Date(currentDate.setFullYear(currentDate.getFullYear() + recurrenceInterval));
+            break;
+          default:
+            break;
+        }
+        
+        // Check if we've passed the end date
+        if (recurrenceEndDate && currentDate > new Date(recurrenceEndDate)) {
+          break;
+        }
+        
+        // Check if we've passed the range end
+        if (currentDate > endRange) {
+          break;
+        }
+        
+        // Only add instances within the date range
+        if (currentDate >= startRange) {
+          const virtualEvent: Event = {
+            ...event,
+            id: -(event.id * 10000 + instanceCount), // Negative ID for virtual instances
+            startTime: new Date(currentDate),
+            endTime: eventDuration ? new Date(currentDate.getTime() + eventDuration) : null,
+          };
+          expandedEvents.push(virtualEvent);
+        }
+        
+        instanceCount++;
+      }
+    }
+    
+    return expandedEvents;
+  }
+
+  async getEventsByFamily(familyId: number, expandRecurrences: boolean = true): Promise<Event[]> {
     // Get all family members for this family
     const familyMemberIds = await db.select({ id: familyMembers.id })
       .from(familyMembers)
@@ -721,18 +793,27 @@ export class DatabaseStorage implements IStorage {
     
     // Get events created by any family member 
     // Also include events where createdBy is null (legacy events)
-    return await db.select().from(events)
+    const baseEvents = await db.select().from(events)
       .where(
         or(
           inArray(events.createdBy, memberIds),
           isNull(events.createdBy)
         )
       );
+    
+    // Expand recurring events if requested
+    if (expandRecurrences) {
+      const now = new Date();
+      const startRange = new Date(now.getFullYear(), now.getMonth() - 1, 1); // 1 month ago
+      const endRange = new Date(now.getFullYear(), now.getMonth() + 12, 0); // 12 months ahead
+      return this.expandRecurringEvents(baseEvents, startRange, endRange);
+    }
+    
+    return baseEvents;
   }
 
   async getTodayEventsByFamily(familyId: number): Promise<Event[]> {
     // Use Mountain Time (MDT/MST) - adjust for timezone
-    // In August, Mountain Time is UTC-6 (MDT)
     const now = new Date();
     const timezoneOffset = 6 * 60 * 60 * 1000; // 6 hours in milliseconds for MDT
     
@@ -758,13 +839,23 @@ export class DatabaseStorage implements IStorage {
     
     const memberIds = familyMemberIds.map(fm => fm.id);
     
-    // Get today's events created by any family member
-    return await db.select().from(events)
-      .where(and(
-        inArray(events.createdBy, memberIds),
-        gte(events.startTime, todayStartUTC),
-        lt(events.startTime, todayEndUTC)
-      ));
+    // Get all events (including recurring) and filter for today
+    const allEvents = await db.select().from(events)
+      .where(
+        or(
+          inArray(events.createdBy, memberIds),
+          isNull(events.createdBy)
+        )
+      );
+    
+    // Expand recurring events and filter for today
+    const expandedEvents = this.expandRecurringEvents(allEvents, todayStartUTC, todayEndUTC);
+    
+    // Filter to only today's events
+    return expandedEvents.filter(event => {
+      const eventStart = new Date(event.startTime);
+      return eventStart >= todayStartUTC && eventStart < todayEndUTC;
+    });
   }
 
   async createEvent(insertEvent: InsertEvent): Promise<Event> {
