@@ -15,7 +15,6 @@ import {
   X,
   Moon,
   Sun,
-  Eye,
   BookOpen,
   LogOut
 } from "lucide-react";
@@ -25,7 +24,6 @@ export default function TeenProfile() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [blueLight, setBlueLight] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -452,37 +450,10 @@ export default function TeenProfile() {
                   </Button>
                 </div>
 
-                {/* Blue Light Filter */}
-                <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-800/50 rounded-lg">
-                      <Eye className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <Label className="text-base font-medium text-gray-900 dark:text-white">Blue Light Filter</Label>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        Reduces blue light for better sleep
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant={blueLight ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      setBlueLight(!blueLight);
-                      // Apply blue light filter CSS
-                      const filter = blueLight ? 'none' : 'sepia(10%) saturate(120%) hue-rotate(15deg)';
-                      document.documentElement.style.filter = filter;
-                    }}
-                  >
-                    {blueLight ? "On" : "Off"}
-                  </Button>
-                </div>
-
                 <div className="bg-amber-50 p-3 rounded-lg">
                   <p className="text-sm text-amber-700">
-                    <strong>Tip:</strong> Blue light filter is great for evening use. 
-                    It helps reduce eye strain and may improve sleep quality.
+                    <strong>Tip:</strong> Dark mode is great for evening use. 
+                    It helps reduce eye strain and is easier on your eyes at night.
                   </p>
                 </div>
               </div>

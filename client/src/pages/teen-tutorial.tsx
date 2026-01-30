@@ -47,12 +47,12 @@ const tutorialSteps: TutorialStep[] = [
   {
     id: 2,
     title: "Quick Theme Controls",
-    description: "Make the app comfortable for your eyes! Use these buttons anytime you want.",
+    description: "Make the app comfortable for your eyes! Use the theme toggle anytime.",
     icon: <Moon className="h-8 w-8 text-blue-500" />,
     tips: [
-      "🌙 Moon icon = Dark mode (great for night time)",
-      "👁️ Eye icon = Blue light filter (easier on your eyes)",
-      "Both work instantly when you click them",
+      "🌙 Moon/Sun icon = Toggle between Light and Dark mode",
+      "Dark mode is great for night time and easier on your eyes",
+      "Changes work instantly when you click the button",
       "Perfect for studying late or using before bed"
     ]
   },
@@ -101,7 +101,7 @@ const tutorialSteps: TutorialStep[] = [
       "Click the Settings gear to customize",
       "Upload your own profile picture",
       "Choose your favorite theme color",
-      "Set up dark mode and blue light filter preferences"
+      "Set up dark mode for easier night viewing"
     ]
   }
 ];

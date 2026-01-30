@@ -54,8 +54,8 @@ function getFallbackResponse(message: string): string | null {
     return "To add family members: Go to Settings > Family Settings. Click 'Add Member' and enter their name, role (mom, dad, child), and assign a color for easy identification. Each member can have their own task assignments and notification preferences.";
   }
   
-  // Dark mode / eye strain specific
-  if (lowerMessage.includes('blue light') || lowerMessage.includes('filter') || lowerMessage.includes('eye strain')) {
+  // Eye strain / night viewing questions
+  if (lowerMessage.includes('eye strain') || lowerMessage.includes('night mode') || lowerMessage.includes('evening') || lowerMessage.includes('easier on eyes')) {
     return "For easier viewing at night, switch to Dark Mode using the theme toggle in the header (sun/moon icon). Dark Mode reduces eye strain and is perfect for evening use.";
   }
   
