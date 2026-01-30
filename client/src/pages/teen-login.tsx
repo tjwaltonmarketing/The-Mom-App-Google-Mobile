@@ -247,7 +247,7 @@ export default function TeenLogin() {
                 </p>
                 <Button 
                   variant="link" 
-                  onClick={() => setLocation("/teen-onboarding-demo")}
+                  onClick={() => setLocation("/teen-join")}
                   className="p-0 h-auto"
                 >
                   Get an invite code from your parents

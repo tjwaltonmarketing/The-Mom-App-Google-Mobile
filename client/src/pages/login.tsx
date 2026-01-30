@@ -187,7 +187,7 @@ export default function Login() {
                 className="w-full border-blue-200 text-blue-700 hover:bg-blue-50"
                 asChild
               >
-                <Link href="/teen-onboarding-demo">
+                <Link href="/teen-join">
                   <Users className="w-4 h-4 mr-2" />
                   Join Family with Invite Code
                 </Link>
