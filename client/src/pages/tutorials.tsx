@@ -366,48 +366,52 @@ const tutorials: Tutorial[] = [
   },
   {
     id: "ai-assistant",
-    title: "AI Family Assistant & Voice Features",
-    description: "Get smart suggestions and automate family coordination with voice commands",
-    duration: "7 min",
-    difficulty: "intermediate",
+    title: "AI Family Assistant & Voice Commands",
+    description: "Create calendar events, tasks, notes, and meal plans using voice commands or chat",
+    duration: "5 min",
+    difficulty: "beginner",
     icon: Brain,
-    category: "advanced-features",
+    category: "getting-started",
     steps: [
       {
-        title: "Ask for Help",
-        description: "Chat with your AI assistant about family planning, schedules, or task management.",
-        action: "Try: 'What should we have for dinner this week?'"
+        title: "Access the AI Assistant",
+        description: "Tap the purple AI button (robot icon) in the header or go to the AI Assistant page to chat with your family coordinator.",
+        action: "Try typing or saying: 'Add soccer practice tomorrow at 6pm'"
       },
       {
-        title: "Voice-to-Assistant",
-        description: "Record voice notes that automatically create tasks and calendar events. Click the voice note button to start recording.",
-        action: "Try saying: 'Remind me to pick up groceries tomorrow and schedule Emma's dentist appointment for next Friday'",
-        tips: ["Speak naturally - the AI understands context", "Review suggested tasks before creating them"]
+        title: "Create Calendar Events",
+        description: "Tell the AI to add events to your calendar and they'll be created automatically. Include dates and times for best results.",
+        action: "Examples: 'Schedule dentist appointment Friday at 2pm' or 'Add family movie night this Saturday at 7pm'",
+        tips: ["Events are added to your family calendar immediately", "Include specific times like '6pm' or '2:30pm'", "Say 'tomorrow', 'Friday', or specific dates"]
       },
       {
-        title: "Smart Action Recognition",
-        description: "The AI analyzes your voice input and suggests relevant tasks, calendar events, and reminders.",
-        tips: ["Mention family member names for task assignments", "Include dates and times for automatic scheduling"]
+        title: "Create Tasks",
+        description: "Ask the AI to create tasks and they'll appear in your task list. Mention family members to assign tasks automatically.",
+        action: "Examples: 'Create a task to buy groceries' or 'Add a task for Emma to clean her room'",
+        tips: ["Tasks appear in the assigned family member's section", "Set priorities by saying 'urgent' or 'high priority'", "Include due dates for automatic scheduling"]
       },
       {
-        title: "Voice Note Management",
-        description: "All voice recordings are transcribed and saved as searchable notes, even if you don't create tasks from them.",
-        tips: ["Use voice notes for quick thoughts", "Convert important notes to tasks later"]
+        title: "Add Notes",
+        description: "Save quick notes by telling the AI. Notes are stored and searchable.",
+        action: "Example: 'Save a note that Emma's shoe size is now 7'",
+        tips: ["Notes appear in your voice notes section", "Great for quick reminders and information"]
       },
       {
-        title: "Smart Suggestions",
-        description: "Get personalized meal plans, activity ideas, and schedule optimization based on your family's preferences.",
-        tips: ["Mention dietary restrictions or preferences", "Ask for kid-friendly options"]
+        title: "Plan Meals",
+        description: "Add meals to your weekly meal plan by voice command.",
+        action: "Example: 'Add spaghetti and meatballs to Monday dinner'",
+        tips: ["Specify the day and meal type (breakfast, lunch, dinner)", "Meal plans appear in your meal planning section"]
       },
       {
-        title: "Automated Task Creation",
-        description: "The AI can create multiple related tasks from a single request.",
-        action: "Try: 'Plan Emma's birthday party for next Saturday'"
+        title: "Assignment Prompts",
+        description: "If you don't specify who a task or event is for, the AI will ask who to assign it to from your family members.",
+        tips: ["Mention names like 'for Emma' or 'assign to Dad'", "Unassigned items can be edited later", "The AI knows your family members"]
       },
       {
-        title: "Family Context",
-        description: "The assistant knows your family members, their schedules, and preferences for better suggestions.",
-        tips: ["It remembers previous conversations", "Ask follow-up questions for refined suggestions"]
+        title: "Voice Notes Button",
+        description: "Use the orange microphone button for quick voice capture. Speak naturally and the AI will suggest tasks and events to create.",
+        action: "Click the mic, speak your command, then confirm the suggested actions",
+        tips: ["Review suggestions before confirming", "You can edit suggestions before creating", "Create all or individual items"]
       }
     ]
   },
@@ -443,39 +447,29 @@ const tutorials: Tutorial[] = [
     ]
   },
   {
-    id: "mindful-usage",
-    title: "Mindful Usage & Wellness",
-    description: "Set healthy boundaries and protect your eyes during screen time",
-    duration: "4 min",
+    id: "theme-settings",
+    title: "Theme & Display Settings",
+    description: "Customize your app appearance with Light or Dark mode",
+    duration: "2 min",
     difficulty: "beginner",
     icon: Clock,
     category: "getting-started",
     steps: [
       {
-        title: "Enable Break Reminders",
-        description: "Go to Settings > Mindful Usage to set up gentle reminders to take breaks.",
-        action: "Choose reminder intervals that work for your schedule"
+        title: "Switch Themes",
+        description: "Click the theme toggle button (sun/moon icon) in the header to switch between Light and Dark mode.",
+        action: "Try switching between Light and Dark mode to see which you prefer",
+        tips: ["Dark mode is easier on the eyes at night", "Light mode works best in bright environments"]
       },
       {
-        title: "Activate Blue Light Filter",
-        description: "Switch to the blue light filter theme to reduce eye strain during evening use.",
-        action: "Click the theme toggle and select 'Blue Light Filter' for easier nighttime viewing",
-        tips: ["Perfect for late-night planning sessions", "Reduces sleep disruption from screen time"]
+        title: "Dark Mode Benefits",
+        description: "Dark mode reduces eye strain during evening use and can help preserve battery on mobile devices.",
+        tips: ["Great for nighttime planning sessions", "Easier to use in dark rooms", "Reduces screen glare"]
       },
       {
-        title: "Customize Messages",
-        description: "Set motivational messages that resonate with your goals as a mom.",
-        tips: ["Default messages are designed for busy moms", "Add personal reminders about self-care"]
-      },
-      {
-        title: "Track Usage",
-        description: "See your daily app usage and break patterns to maintain healthy boundaries.",
-        tips: ["Aim for productive sessions with regular breaks", "Use breaks for family time or self-care"]
-      },
-      {
-        title: "Family Modeling",
-        description: "Demonstrate healthy tech habits for your children by taking visible breaks.",
-        tips: ["Tell kids when you're taking a phone break", "Use break time for family interaction"]
+        title: "Theme Persistence",
+        description: "Your theme choice is saved automatically and applies across all pages of the app.",
+        tips: ["Theme preference is remembered between sessions", "Both themes have full functionality"]
       }
     ]
   },

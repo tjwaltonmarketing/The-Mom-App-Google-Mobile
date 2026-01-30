@@ -204,18 +204,32 @@ const faqItems: FAQItem[] = [
     tags: ["mindful", "breaks", "reminders", "wellness"]
   },
   {
-    id: "blue-light-filter",
-    question: "What is the blue light filter and when should I use it?",
-    answer: "The blue light filter theme reduces harsh blue light from your screen, making it easier on your eyes during evening use. Perfect for late-night planning sessions or when checking tasks before bed. This can help reduce eye strain and minimize sleep disruption from screen time.",
+    id: "dark-mode",
+    question: "What is dark mode and when should I use it?",
+    answer: "Dark mode uses darker colors throughout the app, making it easier on your eyes during evening use. Perfect for late-night planning sessions or when checking tasks before bed. This can help reduce eye strain and is easier to use in dark rooms.",
     category: "features",
-    tags: ["blue light", "filter", "eye strain", "sleep", "wellness"]
+    tags: ["dark mode", "theme", "eye strain", "night", "display"]
   },
   {
     id: "theme-switching",
-    question: "How do I switch between light, dark, and blue light filter themes?",
-    answer: "Click the theme toggle button in the header (looks like a sun/moon icon) to cycle between light mode, dark mode, and blue light filter. Each theme is designed for different times of day and lighting conditions to optimize your comfort and eye health.",
+    question: "How do I switch between light and dark themes?",
+    answer: "Click the theme toggle button in the header (looks like a sun/moon icon) to switch between light mode and dark mode. Light mode works best in bright environments, while dark mode is easier on the eyes at night.",
     category: "getting-started",
-    tags: ["theme", "light", "dark", "blue light", "settings"]
+    tags: ["theme", "light", "dark", "settings", "display"]
+  },
+  {
+    id: "ai-voice-commands",
+    question: "What can I do with voice commands and the AI assistant?",
+    answer: "The AI assistant can create calendar events, tasks, notes, and meal plans from your voice commands. Just say things like 'Add soccer practice tomorrow at 6pm' or 'Create a task to buy groceries'. The AI understands natural language and will add items to your calendar or task list automatically.",
+    category: "features",
+    tags: ["AI", "voice", "commands", "calendar", "tasks", "assistant"]
+  },
+  {
+    id: "ai-assignment",
+    question: "Will the AI ask me who to assign tasks to?",
+    answer: "Yes! If you don't mention a family member in your command, the AI will ask who the task or event should be assigned to. You can also mention names directly like 'Add a task for Emma to clean her room' and it will automatically assign to that person.",
+    category: "features",
+    tags: ["AI", "assignment", "tasks", "family", "voice"]
   },
   {
     id: "password-vault-security",
