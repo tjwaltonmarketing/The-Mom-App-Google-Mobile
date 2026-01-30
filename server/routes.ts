@@ -2766,7 +2766,7 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const { message } = req.body;
+      const { message, conversationHistory } = req.body;
       
       if (!message) {
         return res.status(400).json({ error: "Message is required" });
@@ -2782,9 +2782,9 @@ export async function registerRoutes(app: Express) {
         familyMembers = await storage.getFamilyMembersByFamilyId(familyMember.familyId);
       }
 
-      // Process with AI including action detection
+      // Process with AI including action detection and conversation history
       const { processAIChatWithActions } = await import("./ai");
-      const result = await processAIChatWithActions(message, familyMembers, familyId, req.session.userId!);
+      const result = await processAIChatWithActions(message, familyMembers, familyId, req.session.userId!, conversationHistory);
 
       // Execute any detected actions
       if (result.actions && result.actions.length > 0 && familyId) {

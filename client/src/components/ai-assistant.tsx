@@ -29,11 +29,14 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-    }
+    scrollToBottom();
   }, [messages]);
 
   const handleSendMessage = async () => {
@@ -47,12 +50,22 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputValue;
     setInputValue("");
     setIsLoading(true);
 
     try {
+      // Build conversation history for context (last 10 messages for context window)
+      const conversationHistory = [...messages, userMessage]
+        .slice(-10)
+        .map(m => ({
+          role: m.type === "user" ? "user" : "assistant",
+          content: m.content
+        }));
+
       const response = await apiRequest("POST", "/api/ai/chat", {
-        message: inputValue
+        message: currentInput,
+        conversationHistory: conversationHistory
       });
 
       const data = await response.json();
@@ -137,20 +150,86 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-4 gap-4 min-h-0">
-        {/* Welcome Message - No Scroll */}
+        {/* Messages Area - Scrollable */}
+        <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
+          <div className="space-y-4 pr-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex gap-3 ${
+                  message.type === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                {message.type === "assistant" && (
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Bot className="text-white" size={16} />
+                  </div>
+                )}
+                
+                <div
+                  className={`max-w-[80%] p-3 rounded-lg ${
+                    message.type === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"
+                  }`}
+                >
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <span className="text-xs opacity-70 mt-1 block">
+                    {message.timestamp.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit"
+                    })}
+                  </span>
+                </div>
+
+                {message.type === "user" && (
+                  <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="text-primary-foreground" size={16} />
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex gap-3 justify-start">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <Bot className="text-white" size={16} />
+                </div>
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
+
+        {/* Quick Prompts - Only show when no conversation started */}
         {messages.length === 1 && (
-          <div className="flex gap-3 justify-start">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-              <Bot className="text-white" size={16} />
-            </div>
-            <div className="bg-muted p-3 rounded-lg">
-              <p className="text-sm whitespace-pre-wrap">{messages[0].content}</p>
+          <div className="flex-shrink-0 space-y-2">
+            <p className="text-sm text-muted-foreground">Quick suggestions:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {quickPrompts.slice(0, 4).map((prompt, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  className="text-left justify-start h-auto p-2 text-xs"
+                  onClick={() => setInputValue(prompt)}
+                >
+                  {prompt}
+                </Button>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Input - Above Quick Prompts */}
-        <div className="flex gap-2 flex-shrink-0">
+        {/* Input - Fixed at Bottom */}
+        <div className="flex gap-2 flex-shrink-0 pt-2 border-t">
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -167,87 +246,6 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
             <Send size={16} />
           </Button>
         </div>
-
-        {/* Quick Prompts - Scrollable */}
-        {messages.length === 1 && (
-          <div className="space-y-2 flex-1 min-h-0">
-            <p className="text-sm text-muted-foreground">Quick suggestions:</p>
-            <ScrollArea className="h-full">
-              <div className="grid grid-cols-1 gap-2 pb-4">
-                {quickPrompts.map((prompt, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    className="text-left justify-start h-auto p-2 text-xs"
-                    onClick={() => setInputValue(prompt)}
-                  >
-                    {prompt}
-                  </Button>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        )}
-
-        {/* Messages - Only for conversation history */}
-        {messages.length > 1 && (
-          <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
-            <div className="space-y-4">
-              {messages.slice(1).map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-3 ${
-                    message.type === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  {message.type === "assistant" && (
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Bot className="text-white" size={16} />
-                    </div>
-                  )}
-                  
-                  <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
-                      message.type === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                    <span className="text-xs opacity-70 mt-1 block">
-                      {message.timestamp.toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit"
-                      })}
-                    </span>
-                  </div>
-
-                  {message.type === "user" && (
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                      <User className="text-primary-foreground" size={16} />
-                    </div>
-                  )}
-                </div>
-              ))}
-              
-              {isLoading && (
-                <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <Bot className="text-white" size={16} />
-                  </div>
-                  <div className="bg-muted p-3 rounded-lg">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </ScrollArea>
-        )}
       </CardContent>
     </Card>
   );

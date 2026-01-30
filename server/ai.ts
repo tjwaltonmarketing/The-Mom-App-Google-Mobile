@@ -194,7 +194,8 @@ export async function processAIChatWithActions(
   message: string, 
   familyMembers: any[], 
   familyId: number | null,
-  userId: number
+  userId: number,
+  conversationHistory?: { role: string; content: string }[]
 ): Promise<{ message: string; actions: any[] }> {
   // Check for fallback responses first
   const fallbackResponse = getFallbackResponse(message);
@@ -230,10 +231,12 @@ FAMILY MEMBERS:
 ${familyMembers.map(m => `- ${m.name} (${m.role}, ID: ${m.id})`).join("\n") || "No family members configured"}
 
 CRITICAL INSTRUCTIONS:
-When the user asks to CREATE, ADD, or SCHEDULE something (task, event, reminder, appointment, note, meal, grocery item), you MUST:
-1. Parse the request and determine what to create
-2. Return a JSON response with BOTH a friendly message AND an actions array
-3. If the user doesn't specify WHO the item is for (no family member mentioned), ask them who to assign it to in your message, but still include the action with assignedTo: null
+1. When asked for IDEAS, SUGGESTIONS, or LISTS (e.g., "give me 5 dinner ideas"), ALWAYS include the actual items in your message text - never say "here are ideas" without listing them.
+2. When the user asks to CREATE, ADD, or SCHEDULE something (task, event, reminder, appointment, note, meal, grocery item), you MUST:
+   - Parse the request and determine what to create
+   - Return a JSON response with BOTH a friendly message AND an actions array
+   - If the user doesn't specify WHO the item is for (no family member mentioned), ask them who to assign it to in your message, but still include the action with assignedTo: null
+3. When the user refers to previous messages (e.g., "add those to my meal plan"), use the conversation context to understand what "those" refers to and create the appropriate actions.
 
 RESPONSE FORMAT FOR EVENTS:
 {
@@ -340,12 +343,29 @@ For support questions (not creation requests), return just: {"message": "your he
 ALWAYS return valid JSON. Do not include markdown code blocks or any text outside the JSON.`;
 
   try {
+    // Build messages array with conversation history for context
+    const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
+      { role: "system", content: systemPrompt }
+    ];
+    
+    // Add conversation history if provided (excluding the current message which is already there)
+    if (conversationHistory && conversationHistory.length > 0) {
+      for (const msg of conversationHistory.slice(0, -1)) { // Exclude the last one (current message)
+        if (msg.role === "user" || msg.role === "assistant") {
+          messages.push({ 
+            role: msg.role as "user" | "assistant", 
+            content: msg.content 
+          });
+        }
+      }
+    }
+    
+    // Add the current message
+    messages.push({ role: "user", content: message });
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: message }
-      ],
+      messages: messages,
       response_format: { type: "json_object" },
     });
 
