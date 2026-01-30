@@ -283,21 +283,31 @@ RESPONSE FORMAT FOR NOTES:
   ]
 }
 
-RESPONSE FORMAT FOR MEAL PLANS:
+RESPONSE FORMAT FOR MEAL PLANS (can add multiple meals at once):
 {
-  "message": "I've added that to your meal plan.",
+  "message": "I've added 5 gluten-free dinners to your meal plan for the week!",
   "actions": [
     {
       "type": "create_meal",
       "data": {
-        "meal": "Spaghetti and meatballs",
+        "meal": "Grilled Salmon with Roasted Vegetables",
         "day": "monday",
         "mealType": "dinner",
-        "notes": "Optional notes"
+        "notes": "Gluten-free"
+      }
+    },
+    {
+      "type": "create_meal",
+      "data": {
+        "meal": "Chicken Stir Fry with Rice",
+        "day": "tuesday",
+        "mealType": "dinner",
+        "notes": "Gluten-free, use tamari instead of soy sauce"
       }
     }
   ]
 }
+IMPORTANT: When the user asks to add multiple meals (e.g., "add those dinners to my meal plan"), create separate create_meal actions for EACH meal - one per day (monday, tuesday, wednesday, thursday, friday, saturday, sunday). Always include all meals the user wants added.
 
 RESPONSE FORMAT FOR GROCERY ITEMS:
 {
