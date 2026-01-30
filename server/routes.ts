@@ -2825,6 +2825,28 @@ export async function registerRoutes(app: Express) {
               };
               await storage.createTask(taskData);
               action.executed = true;
+            } else if (action.type === "create_note" && action.data) {
+              const noteData = {
+                content: action.data.content,
+                transcription: action.data.content,
+                familyId: familyId,
+                createdBy: req.session.userId!,
+                createdAt: new Date(),
+              };
+              await storage.createVoiceNote(noteData);
+              action.executed = true;
+            } else if (action.type === "create_meal" && action.data) {
+              const mealData = {
+                meal: action.data.meal,
+                day: action.data.day,
+                mealType: action.data.mealType || "dinner",
+                familyId: familyId,
+                ingredients: action.data.ingredients || [],
+                notes: action.data.notes || "",
+                createdAt: new Date(),
+              };
+              await storage.createMealPlan(mealData);
+              action.executed = true;
             }
           } catch (actionError) {
             console.error("Failed to execute action:", action.type, actionError);

@@ -78,6 +78,13 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
           queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
           queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
         }
+        if (data.actions.some((a: any) => a.type === "create_note")) {
+          queryClient.invalidateQueries({ queryKey: ["/api/voice-notes"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/voice-notes/recent"] });
+        }
+        if (data.actions.some((a: any) => a.type === "create_meal")) {
+          queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+        }
       }
     } catch (error) {
       const errorMessage: Message = {

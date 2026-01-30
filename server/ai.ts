@@ -198,57 +198,102 @@ export async function processAIChatWithActions(
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
+  const currentYear = today.getFullYear();
+  const tomorrowFormatted = `${tomorrow.getFullYear()}-${(tomorrow.getMonth()+1).toString().padStart(2,'0')}-${tomorrow.getDate().toString().padStart(2,'0')}`;
+  const todayFormatted = `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2,'0')}-${today.getDate().toString().padStart(2,'0')}`;
 
   const systemPrompt = `You are a helpful AI assistant for "The Mom App" - a family coordination app.
 
-CURRENT DATE/TIME: ${today.toLocaleString()}
-TOMORROW: ${tomorrow.toLocaleDateString()}
+CURRENT DATE/TIME: ${today.toISOString()} (${today.toLocaleString()})
+TODAY: ${todayFormatted}
+TOMORROW: ${tomorrowFormatted}
+CURRENT YEAR: ${currentYear}
 
 FAMILY MEMBERS:
 ${familyMembers.map(m => `- ${m.name} (${m.role}, ID: ${m.id})`).join("\n") || "No family members configured"}
 
 CRITICAL INSTRUCTIONS:
-When the user asks to CREATE, ADD, or SCHEDULE something (task, event, reminder, appointment), you MUST:
+When the user asks to CREATE, ADD, or SCHEDULE something (task, event, reminder, appointment, note, meal), you MUST:
 1. Parse the request and determine what to create
 2. Return a JSON response with BOTH a friendly message AND an actions array
+3. If the user doesn't specify WHO the item is for (no family member mentioned), ask them who to assign it to in your message, but still include the action with assignedTo: null
 
-RESPONSE FORMAT (when creating items):
+RESPONSE FORMAT FOR EVENTS:
 {
-  "message": "Your friendly confirmation message",
+  "message": "I've added Soccer Practice to your calendar for tomorrow at 6:00 PM.",
   "actions": [
     {
       "type": "create_event",
       "data": {
-        "title": "Event title",
-        "description": "Optional description",
-        "startTime": "2024-01-31T18:00:00",
-        "endTime": "2024-01-31T19:00:00",
-        "location": "Optional location",
+        "title": "Soccer Practice",
+        "description": "Soccer practice session",
+        "startTime": "${tomorrowFormatted}T18:00:00",
+        "endTime": "${tomorrowFormatted}T19:00:00",
+        "location": null,
         "assignedTo": null
       }
     }
   ]
 }
 
-For tasks:
+RESPONSE FORMAT FOR TASKS:
 {
-  "type": "create_task",
-  "data": {
-    "title": "Task title",
-    "description": "Optional description",
-    "dueDate": "2024-01-31",
-    "priority": "medium",
-    "assignedTo": null
-  }
+  "message": "I've created a task for you.",
+  "actions": [
+    {
+      "type": "create_task",
+      "data": {
+        "title": "Task title",
+        "description": "Optional description",
+        "dueDate": "${tomorrowFormatted}",
+        "priority": "medium",
+        "assignedTo": null
+      }
+    }
+  ]
 }
 
-IMPORTANT:
-- Always use ISO 8601 date format for dates/times
-- For "tomorrow at 6pm", calculate the actual date from today's date
-- Parse natural language times like "6pm tomorrow" into proper datetime strings
-- If no specific time is given, use 9:00 AM as default
+RESPONSE FORMAT FOR NOTES:
+{
+  "message": "I've saved your note.",
+  "actions": [
+    {
+      "type": "create_note",
+      "data": {
+        "content": "The note content"
+      }
+    }
+  ]
+}
+
+RESPONSE FORMAT FOR MEAL PLANS:
+{
+  "message": "I've added that to your meal plan.",
+  "actions": [
+    {
+      "type": "create_meal",
+      "data": {
+        "meal": "Spaghetti and meatballs",
+        "day": "monday",
+        "mealType": "dinner",
+        "notes": "Optional notes"
+      }
+    }
+  ]
+}
+
+IMPORTANT DATE PARSING:
+- "tomorrow at 6pm" = "${tomorrowFormatted}T18:00:00"
+- "today at 3pm" = "${todayFormatted}T15:00:00"
+- Always use year ${currentYear}
+- If no specific time is given, use 09:00 for morning tasks, 12:00 for midday, 18:00 for evening
 - Events should have 1 hour duration by default
-- For support questions (not creation requests), return just: {"message": "your helpful response", "actions": []}
+
+ASSIGNMENT:
+- If user mentions a family member name, find their ID and set assignedTo to that ID
+- If no one is mentioned, set assignedTo to null but include a note asking who should be assigned in your message
+
+For support questions (not creation requests), return just: {"message": "your helpful response", "actions": []}
 
 ALWAYS return valid JSON. Do not include markdown code blocks or any text outside the JSON.`;
 
@@ -347,30 +392,34 @@ export async function smartTaskCreation(voiceInput: string, familyMembers: Array
     const currentDateStr = currentDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     
     const tomorrow = new Date(currentDate.getTime() + 24*60*60*1000);
+    const currentYear = currentDate.getFullYear();
+    const tomorrowFormatted = `${tomorrow.getFullYear()}-${(tomorrow.getMonth()+1).toString().padStart(2,'0')}-${tomorrow.getDate().toString().padStart(2,'0')}`;
+    
     const eventPrompt = `You are a smart calendar assistant. Extract event details from this voice input and create a properly scheduled calendar event.
 
 CURRENT DATE CONTEXT: 
 - Today: ${currentDate.toISOString()} (${currentDay}, ${currentDateStr})
 - Tomorrow: ${tomorrow.toDateString()}
-- Current Year: 2025 (IMPORTANT: Always use 2025 for the year)
+- Current Year: ${currentYear} (IMPORTANT: Always use ${currentYear} for the year)
 
 Voice input: "${voiceInput}"
 
 CRITICAL PARSING REQUIREMENTS:
-1. Parse relative dates to 2025 dates:
-   - "tomorrow" = ${tomorrow.getFullYear()}-${(tomorrow.getMonth()+1).toString().padStart(2,'0')}-${tomorrow.getDate().toString().padStart(2,'0')}
-   - "Friday" = next upcoming Friday in 2025
-   - "next Monday" = Monday of next week in 2025
-   - "July 10th" = 2025-07-10
+1. Parse relative dates to ${currentYear} dates:
+   - "tomorrow" = ${tomorrowFormatted}
+   - "Friday" = next upcoming Friday in ${currentYear}
+   - "next Monday" = Monday of next week in ${currentYear}
+   - "July 10th" = ${currentYear}-07-10
 
 2. Parse times precisely:
    - "2pm", "2:00 PM", "2 p.m." = 14:00 
    - "10am", "10:00 AM" = 10:00
+   - "6pm" = 18:00
    - Default to 12:00 if no time specified
 
-3. ALWAYS use year 2025 in timestamps
+3. ALWAYS use year ${currentYear} in timestamps
 4. Always include "type": "event" for calendar requests
-5. Format as "2025-MM-DDTHH:MM:00Z"
+5. Format as "${currentYear}-MM-DDTHH:MM:00Z"
 
 Respond with JSON: { 
   "tasks": [
@@ -378,16 +427,17 @@ Respond with JSON: {
       "title": "Soccer Practice",
       "description": "Weekly soccer practice session",
       "type": "event",
-      "dueDate": "2025-07-10T14:00:00Z",
+      "dueDate": "${tomorrowFormatted}T14:00:00Z",
       "priority": "medium"
     }
   ], 
-  "interpretation": "I'll add soccer practice to your calendar for July 10th at 2:00 PM"
+  "interpretation": "I'll add soccer practice to your calendar for tomorrow at 2:00 PM"
 }
 
 REQUIRED FORMAT EXAMPLES:
-- "tomorrow at 2pm" → "2025-07-10T14:00:00Z" (NOT 2023!)
-- "Friday at 10am" → "2025-07-11T10:00:00Z" (NOT 2023!)`;
+- "tomorrow at 2pm" → "${tomorrowFormatted}T14:00:00Z"
+- "Friday at 10am" → "${currentYear}-MM-DDT10:00:00Z" (use next Friday's date)
+- "tomorrow at 6pm" → "${tomorrowFormatted}T18:00:00Z"`;
 
     try {
       const response = await openai.chat.completions.create({

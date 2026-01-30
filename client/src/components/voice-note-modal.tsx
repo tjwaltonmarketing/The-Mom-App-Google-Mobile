@@ -202,8 +202,8 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
   };
 
   const handleCreateAll = () => {
-    smartActions.forEach(action => {
-      handleCreateAction(action);
+    smartActions.forEach((action, index) => {
+      handleCreateAction(action, index);
     });
     handleClose();
   };
