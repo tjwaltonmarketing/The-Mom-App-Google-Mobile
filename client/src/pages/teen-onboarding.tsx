@@ -1,19 +1,24 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle, Users, Calendar, Bell, Smartphone, ArrowRight, UserCircle } from "lucide-react";
+import { CheckCircle, Users, Bell, ArrowRight, UserCircle, KeyRound, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
 export default function TeenOnboarding() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [inviteCode, setInviteCode] = useState("");
+  const [familyData, setFamilyData] = useState<{
+    familyName: string;
+    teenName: string;
+    familyId: number;
+  } | null>(null);
   const [profile, setProfile] = useState({
     firstName: "",
     lastName: "",
@@ -32,6 +37,46 @@ export default function TeenOnboarding() {
   });
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+
+  const validateInviteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/teen/login-with-invite", {
+        inviteCode: inviteCode.trim().toUpperCase(),
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.needsSetup) {
+        setFamilyData({
+          familyName: data.inviteData.familyName,
+          teenName: data.inviteData.teenName,
+          familyId: data.inviteData.familyId,
+        });
+        if (data.inviteData.teenName) {
+          const nameParts = data.inviteData.teenName.split(' ');
+          setProfile(prev => ({
+            ...prev,
+            firstName: nameParts[0] || '',
+            lastName: nameParts.slice(1).join(' ') || '',
+          }));
+        }
+        setCurrentStep(1);
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: "You already have an account. Redirecting to dashboard...",
+        });
+        setLocation("/teen-dashboard");
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Invalid Code",
+        description: error.message || "Please check your invite code and try again",
+        variant: "destructive",
+      });
+    },
+  });
 
   const completeOnboardingMutation = useMutation({
     mutationFn: async () => {
@@ -59,6 +104,95 @@ export default function TeenOnboarding() {
 
   const steps = [
     {
+      title: "Enter Family Code",
+      description: "Get this code from your parents",
+      content: (
+        <div className="space-y-6">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <KeyRound className="h-8 w-8 text-pink-600" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Join Your Family</h3>
+            <p className="text-gray-600">
+              Enter the invite code your parents gave you to join your family's account
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="inviteCode">Family Invite Code</Label>
+              <Input
+                id="inviteCode"
+                value={inviteCode}
+                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                placeholder="Enter code (e.g., ABC123)"
+                className="text-center text-lg tracking-widest font-mono"
+                maxLength={10}
+              />
+              <p className="text-xs text-gray-500 mt-1 text-center">
+                Ask your parents for this code from their Mom App settings
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => validateInviteMutation.mutate()}
+            disabled={!inviteCode.trim() || validateInviteMutation.isPending}
+            className="w-full bg-pink-600 hover:bg-pink-700"
+          >
+            {validateInviteMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Checking code...
+              </>
+            ) : (
+              "Join Family"
+            )}
+          </Button>
+
+          <div className="text-center">
+            <Button
+              variant="link"
+              onClick={() => setLocation("/teen/login")}
+              className="text-gray-500"
+            >
+              Already have an account? Sign in
+            </Button>
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Welcome!",
+      description: "You're joining your family",
+      content: (
+        <div className="space-y-6">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="h-8 w-8 text-green-600" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Welcome to the {familyData?.familyName}!</h3>
+            <p className="text-gray-600">
+              Your family is waiting for you. Let's set up your account.
+            </p>
+          </div>
+
+          <div className="bg-pink-50 border border-pink-200 rounded-lg p-4 text-center">
+            <p className="text-pink-800 font-medium">
+              You'll be joining as a teen member of this family
+            </p>
+          </div>
+
+          <Button
+            onClick={() => setCurrentStep(2)}
+            className="w-full bg-pink-600 hover:bg-pink-700"
+          >
+            Continue to Profile Setup
+          </Button>
+        </div>
+      )
+    },
+    {
       title: "Create Your Profile",
       description: "Set up your personal information",
       content: (
@@ -69,7 +203,7 @@ export default function TeenOnboarding() {
             </div>
             <h3 className="text-lg font-semibold mb-2">Create Your Profile</h3>
             <p className="text-gray-600">
-              Set up your account to get started with the Walton family
+              Set up your account for the {familyData?.familyName}
             </p>
           </div>
 
@@ -151,7 +285,7 @@ export default function TeenOnboarding() {
           </div>
 
           <Button
-            onClick={() => setCurrentStep(1)}
+            onClick={() => setCurrentStep(3)}
             disabled={!profile.firstName || !profile.lastName || !profile.username || !profile.password || !profile.age}
             className="w-full"
           >
@@ -259,7 +393,7 @@ export default function TeenOnboarding() {
           </div>
 
           <Button
-            onClick={() => setCurrentStep(2)}
+            onClick={() => setCurrentStep(4)}
             className="w-full"
           >
             Complete Setup
@@ -278,7 +412,7 @@ export default function TeenOnboarding() {
             </div>
             <h3 className="text-lg font-semibold mb-2">Welcome, {profile.firstName}!</h3>
             <p className="text-gray-600">
-              You're now connected to the Walton family
+              You're now connected to the {familyData?.familyName}
             </p>
           </div>
 
@@ -295,7 +429,7 @@ export default function TeenOnboarding() {
           <Button
             onClick={() => completeOnboardingMutation.mutate()}
             disabled={completeOnboardingMutation.isPending}
-            className="w-full"
+            className="w-full bg-pink-600 hover:bg-pink-700"
           >
             {completeOnboardingMutation.isPending ? "Setting up..." : "Go to Dashboard"}
           </Button>
@@ -304,12 +438,18 @@ export default function TeenOnboarding() {
     }
   ];
 
+  const totalSteps = 5;
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 via-pink-100 to-rose-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Setup</h1>
-          <p className="text-gray-600">Just a few more steps to get you started</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            {currentStep === 0 ? "Join Your Family" : "Complete Your Setup"}
+          </h1>
+          <p className="text-gray-600">
+            {currentStep === 0 ? "Enter your family invite code to get started" : "Just a few more steps to get you started"}
+          </p>
         </div>
 
         <Card>
@@ -328,14 +468,17 @@ export default function TeenOnboarding() {
 
         <div className="mt-6 text-center">
           <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-            <div className={`w-2 h-2 rounded-full ${currentStep === 0 ? 'bg-blue-600' : currentStep > 0 ? 'bg-green-600' : 'bg-gray-300'}`} />
-            <ArrowRight className="h-3 w-3" />
-            <div className={`w-2 h-2 rounded-full ${currentStep === 1 ? 'bg-blue-600' : currentStep > 1 ? 'bg-green-600' : 'bg-gray-300'}`} />
-            <ArrowRight className="h-3 w-3" />
-            <div className={`w-2 h-2 rounded-full ${currentStep === 2 ? 'bg-green-600' : 'bg-gray-300'}`} />
+            {[0, 1, 2, 3, 4].map((step, idx) => (
+              <div key={step} className="flex items-center">
+                <div className={`w-2 h-2 rounded-full ${
+                  currentStep === step ? 'bg-pink-600' : currentStep > step ? 'bg-green-600' : 'bg-gray-300'
+                }`} />
+                {idx < 4 && <ArrowRight className="h-3 w-3 mx-1 text-gray-300" />}
+              </div>
+            ))}
           </div>
           <p className="mt-2 text-xs text-gray-400">
-            Step {currentStep + 1} of 3
+            Step {currentStep + 1} of {totalSteps}
           </p>
         </div>
       </div>

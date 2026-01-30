@@ -426,15 +426,18 @@ export async function registerRoutes(app: Express) {
         });
       }
 
-      // New teen needs setup
+      // New teen needs setup - get family name
       req.session.inviteCode = inviteCode;
+      
+      const family = await storage.getFamily(invite.familyId);
       
       res.json({
         success: true,
         needsSetup: true,
         inviteData: {
           teenName: invite.teenName,
-          familyId: invite.familyId
+          familyId: invite.familyId,
+          familyName: family?.name || 'Your Family'
         }
       });
     } catch (error) {
