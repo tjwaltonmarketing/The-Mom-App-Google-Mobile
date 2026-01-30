@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar, Clock, MapPin, User, Eye, EyeOff, Users } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Eye, EyeOff, Users, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,9 @@ const eventFormSchema = insertEventSchema.extend({
   endTime: z.string().optional(),
   visibilityType: z.enum(["shared", "private", "busy"]).default("shared"),
   sharedWith: z.array(z.number()).default([]),
+  recurrenceType: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).default("none"),
+  recurrenceInterval: z.number().min(1).default(1),
+  recurrenceEndDate: z.string().optional(),
 });
 
 type EventFormData = z.infer<typeof eventFormSchema>;
@@ -72,12 +75,15 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
       startTime: "09:00",
       endDate: format(defaultDate, "yyyy-MM-dd"),
       endTime: "22:00",
+      recurrenceType: "none",
+      recurrenceInterval: 1,
+      recurrenceEndDate: "",
     },
   });
 
   const createEventMutation = useMutation({
     mutationFn: async (data: EventFormData) => {
-      const { startDate, startTime, endDate, endTime, visibilityType, sharedWith, ...eventData } = data;
+      const { startDate, startTime, endDate, endTime, visibilityType, sharedWith, recurrenceType, recurrenceInterval, recurrenceEndDate, ...eventData } = data;
       
       let startDateTime: Date;
       let endDateTime: Date | null = null;
@@ -119,6 +125,9 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
         isPrivate,
         visibilityType,
         sharedWith: finalSharedWith,
+        recurrenceType: recurrenceType || "none",
+        recurrenceInterval: recurrenceInterval || 1,
+        recurrenceEndDate: recurrenceEndDate ? new Date(recurrenceEndDate) : null,
       };
 
       return apiRequest("POST", "/api/events", eventPayload);
@@ -307,6 +316,72 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
               </div>
             </div>
           )}
+
+          {/* Recurrence Options */}
+          <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+            <div className="flex items-center gap-2">
+              <Repeat size={18} className="text-gray-600 dark:text-gray-400" />
+              <Label className="text-sm font-medium">Repeat</Label>
+            </div>
+            
+            <div>
+              <Select
+                value={form.watch("recurrenceType")}
+                onValueChange={(value: "none" | "daily" | "weekly" | "monthly" | "yearly") => 
+                  form.setValue("recurrenceType", value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select repeat frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Does not repeat</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {form.watch("recurrenceType") !== "none" && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="recurrenceInterval">Repeat every</Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="recurrenceInterval"
+                        type="number"
+                        min={1}
+                        max={99}
+                        className="w-20"
+                        value={form.watch("recurrenceInterval")}
+                        onChange={(e) => form.setValue("recurrenceInterval", parseInt(e.target.value) || 1)}
+                      />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {form.watch("recurrenceType") === "daily" && "day(s)"}
+                        {form.watch("recurrenceType") === "weekly" && "week(s)"}
+                        {form.watch("recurrenceType") === "monthly" && "month(s)"}
+                        {form.watch("recurrenceType") === "yearly" && "year(s)"}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="recurrenceEndDate">End repeat (optional)</Label>
+                    <Input
+                      id="recurrenceEndDate"
+                      type="date"
+                      {...form.register("recurrenceEndDate")}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Leave end date empty to repeat indefinitely
+                </p>
+              </>
+            )}
+          </div>
 
           {/* Calendar Privacy Controls */}
           <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">

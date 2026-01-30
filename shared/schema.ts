@@ -91,6 +91,10 @@ export const events = pgTable("events", {
   visibilityType: text("visibility_type").notNull().default("shared"), // "shared", "private", "busy"
   sharedWith: integer("shared_with").array().default([]), // array of family member IDs
   createdBy: integer("created_by").references(() => familyMembers.id),
+  // Recurrence fields
+  recurrenceType: text("recurrence_type").default("none"), // "none", "daily", "weekly", "monthly", "yearly"
+  recurrenceInterval: integer("recurrence_interval").default(1), // every N days/weeks/months/years
+  recurrenceEndDate: timestamp("recurrence_end_date"), // when recurrence ends (null = forever)
 });
 
 export const tasks = pgTable("tasks", {
