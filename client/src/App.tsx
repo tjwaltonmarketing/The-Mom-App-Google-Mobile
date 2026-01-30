@@ -30,6 +30,7 @@ import MealPlan from "@/pages/meal-plan";
 import GroceryList from "@/pages/grocery-list";
 import Notes from "@/pages/notes";
 import Tutorials from "@/pages/tutorials";
+import AIAssistant from "@/pages/ai-assistant";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -170,6 +171,7 @@ function Router() {
               <Route path="/tutorials" component={Tutorials} />
               <Route path="/meal-plan" component={MealPlan} />
               <Route path="/grocery-list" component={GroceryList} />
+              <Route path="/ai-assistant" component={AIAssistant} />
             </>
           )}
           <Route component={NotFound} />
