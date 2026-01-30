@@ -225,7 +225,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
       <DialogContent className="max-w-md w-full mx-4">
         <DialogHeader>
           <DialogTitle className="text-center">
-            {isRecording ? "Listening..." : "Voice Note"}
+            {isRecording ? "Listening..." : "Voice Assistant"}
           </DialogTitle>
         </DialogHeader>
         
@@ -237,7 +237,10 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
           {isRecording ? (
             <p className="text-gray-600 mb-6">Speak naturally, I'll capture everything!</p>
           ) : (
-            <p className="text-gray-600 mb-6">Ready to record your voice note?</p>
+            <>
+              <p className="text-gray-700 font-medium mb-2">What would you like me to do?</p>
+              <p className="text-gray-500 text-sm mb-6">I can create tasks, schedule events, plan meals, or save a note</p>
+            </>
           )}
           
           {/* Live transcription area */}
