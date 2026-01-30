@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Mic, BookOpen, Bot } from "lucide-react";
+import { Mic, Bot } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 
@@ -104,7 +104,7 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
     <div className={`animate-fadeIn ${trialBannerDismissed ? 'mb-6 md:mb-6 -mt-2 md:mt-0' : 'mb-6'}`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-text-primary">
+          <h2 className="text-xl sm:text-2xl font-bold text-text-primary truncate max-w-[280px] sm:max-w-none">
             {getGreeting()}, {user?.lastName || "Walton"} Family! 👋
           </h2>
           <p className="text-gray-600 mt-1">Here's what's happening today</p>
@@ -133,11 +133,6 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
               className="bg-accent hover:bg-orange-400 text-white w-8 h-8 p-0 rounded-full"
             >
               <Mic className="h-4 w-4" />
-            </Button>
-            <Button asChild size="sm" className="bg-amber-500 hover:bg-amber-600 text-white w-8 h-8 p-0 rounded-full">
-              <Link href="/tutorials">
-                <BookOpen className="h-4 w-4" />
-              </Link>
             </Button>
             <Button asChild size="sm" className="bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white w-8 h-8 p-0 rounded-full">
               <Link href="/ai-assistant">
