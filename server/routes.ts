@@ -1523,6 +1523,78 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Parent task update endpoint
+  app.patch("/api/tasks/:taskId", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const taskId = parseInt(req.params.taskId);
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get the task to verify it exists
+      const task = await storage.getTaskById(taskId);
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      // Update the task
+      const { title, description, priority, assignedTo, dueDate, points } = req.body;
+      const updates: any = {};
+      
+      if (title !== undefined) updates.title = title;
+      if (description !== undefined) updates.description = description;
+      if (priority !== undefined) updates.priority = priority;
+      if (assignedTo !== undefined) updates.assignedTo = assignedTo;
+      if (dueDate !== undefined) updates.dueDate = dueDate ? new Date(dueDate) : null;
+      if (points !== undefined) updates.points = points;
+
+      const updatedTask = await storage.updateTask(taskId, updates);
+      res.json(updatedTask);
+    } catch (error) {
+      console.error("Update task error:", error);
+      res.status(500).json({ error: "Failed to update task" });
+    }
+  });
+
+  // Parent task completion endpoint
+  app.patch("/api/tasks/:taskId/complete", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const taskId = parseInt(req.params.taskId);
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get the current user's family member record
+      const currentMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!currentMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get the task to verify it exists
+      const task = await storage.getTaskById(taskId);
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+
+      // Mark task as completed
+      const completedTask = await storage.completeTask(taskId, currentMember.id);
+      res.json(completedTask);
+    } catch (error) {
+      console.error("Complete task error:", error);
+      res.status(500).json({ error: "Failed to complete task" });
+    }
+  });
+
   // Parent task deletion endpoints
   app.delete("/api/tasks/:taskId", async (req, res) => {
     try {
