@@ -15,7 +15,7 @@ export interface AIRequest {
 export interface AIResponse {
   message: string;
   actions?: Array<{
-    type: "create_task" | "create_event" | "create_reminder" | "add_to_meal_plan";
+    type: "create_task" | "create_event" | "create_reminder" | "add_to_meal_plan" | "create_grocery";
     data: any;
   }>;
 }
@@ -26,7 +26,7 @@ function getFallbackResponse(message: string): string | null {
   
   // Theme and display questions
   if (lowerMessage.includes('dark mode') || lowerMessage.includes('theme') || lowerMessage.includes('brightness')) {
-    return "To switch themes: Click the theme toggle button in the header (sun/moon icon). You can choose between Light Mode, Dark Mode, and Blue Light Filter. The Blue Light Filter is perfect for evening use as it reduces eye strain and helps maintain better sleep patterns.";
+    return "To switch themes: Click the theme toggle button in the header (sun/moon icon) to toggle between Light Mode and Dark Mode. Dark Mode is perfect for evening use as it's easier on your eyes.";
   }
   
   // Google Calendar sync questions
@@ -54,9 +54,14 @@ function getFallbackResponse(message: string): string | null {
     return "To add family members: Go to Settings > Family Settings. Click 'Add Member' and enter their name, role (mom, dad, child), and assign a color for easy identification. Each member can have their own task assignments and notification preferences.";
   }
   
-  // Blue light filter specific
+  // Dark mode / eye strain specific
   if (lowerMessage.includes('blue light') || lowerMessage.includes('filter') || lowerMessage.includes('eye strain')) {
-    return "The Blue Light Filter reduces harsh blue light from your screen, making it easier on your eyes during evening use. Access it through the theme toggle button in the header. It's perfect for late-night planning sessions and helps reduce sleep disruption from screen time.";
+    return "For easier viewing at night, switch to Dark Mode using the theme toggle in the header (sun/moon icon). Dark Mode reduces eye strain and is perfect for evening use.";
+  }
+  
+  // Grocery list questions
+  if (lowerMessage.includes('grocery') || lowerMessage.includes('groceries') || lowerMessage.includes('shopping list')) {
+    return "To manage your grocery list: Go to the Grocery tab or say 'add milk to my grocery list'. You can add items by voice command, check off items when purchased, and organize by category. The AI can also add groceries based on your meal plans!";
   }
   
   // Import/export data migration
@@ -114,22 +119,34 @@ Pending Tasks: ${request.familyContext.pendingTasks.map(t =>
 ` : "No family context available"}
 
 APP FEATURES FOR SUPPORT:
-- Voice Notes: Convert speech to tasks automatically
+- Voice Commands: Create calendar events, tasks, notes, meals, and groceries with voice
 - Calendar Sync: Google Calendar integration (Settings > Calendar Sync)
 - Password Vault: Secure family password storage (Dashboard > Passwords tab)
 - AI Meal Planning: Generate meal suggestions based on preferences
 - Task Management: Assign tasks with due dates and priorities
-- Mindful Usage & Blue Light Filter: Healthy screen time features
+- Grocery Lists: Add items by voice, organize by category, sync with meal plans
 - Notifications: SMS/email alerts for family members
-- Theme Options: Light, dark, and blue light filter modes
+- Theme Options: Light and Dark modes (toggle in header)
 
 COMMON SUPPORT SCENARIOS:
 - Calendar sync issues → Check Google account permissions in Settings
-- Voice notes not working → Verify microphone permissions
+- Voice notes not working → Verify microphone permissions in browser settings
 - Adding family members → Settings > Family Settings
-- Password security questions → Bank-level encryption, master password only
-- Theme switching → Header toggle button cycles through options
+- Password security questions → Bank-level encryption, secure vault
+- Theme switching → Header toggle button (sun/moon icon) switches light/dark
 - Notification setup → Settings > Notifications for SMS/email config
+
+APP TUTORIALS (Use this knowledge when users ask for help):
+1. Voice Commands: Tap mic icon in header → speak command → AI creates events/tasks/notes/meals/groceries automatically
+2. AI Assistant: Tap robot icon for text chat → ask questions or give commands → get smart suggestions
+3. Calendar: Create events with family member assignment and privacy controls (shared/busy/private)
+4. Tasks: Assign to family members, set priorities and due dates, organized by family member sections
+5. Meal Planning: Plan weekly meals, add via voice command like "Add pasta to Monday dinner"
+6. Grocery Lists: Add items by voice or manually, organize by category, check off when purchased
+7. Password Vault: Dashboard → Passwords tab → securely store family login credentials
+8. Teen Accounts: Settings → Teen Settings → Send invite codes via SMS for teen family members
+9. Printable Task Lists: From tasks page, print kid-friendly task lists for children without devices
+10. Settings: Family members, notifications, calendar sync, and account preferences
 
 RESPONSE APPROACH:
 - For family coordination: Provide practical, personalized suggestions using family context
@@ -213,7 +230,7 @@ FAMILY MEMBERS:
 ${familyMembers.map(m => `- ${m.name} (${m.role}, ID: ${m.id})`).join("\n") || "No family members configured"}
 
 CRITICAL INSTRUCTIONS:
-When the user asks to CREATE, ADD, or SCHEDULE something (task, event, reminder, appointment, note, meal), you MUST:
+When the user asks to CREATE, ADD, or SCHEDULE something (task, event, reminder, appointment, note, meal, grocery item), you MUST:
 1. Parse the request and determine what to create
 2. Return a JSON response with BOTH a friendly message AND an actions array
 3. If the user doesn't specify WHO the item is for (no family member mentioned), ask them who to assign it to in your message, but still include the action with assignedTo: null
@@ -277,6 +294,21 @@ RESPONSE FORMAT FOR MEAL PLANS:
         "day": "monday",
         "mealType": "dinner",
         "notes": "Optional notes"
+      }
+    }
+  ]
+}
+
+RESPONSE FORMAT FOR GROCERY ITEMS:
+{
+  "message": "I've added milk to your grocery list.",
+  "actions": [
+    {
+      "type": "create_grocery",
+      "data": {
+        "name": "Milk",
+        "category": "Dairy",
+        "quantity": "1 gallon"
       }
     }
   ]

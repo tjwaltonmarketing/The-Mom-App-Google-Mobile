@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar, Clock, Edit, Trash2, Save, X } from "lucide-react";
+import { Calendar, Clock, Edit, Trash2, Save, X, Eye, EyeOff, Users } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -23,7 +23,9 @@ const eventFormSchema = insertEventSchema.extend({
   startTime: z.string(),
   endDate: z.string().optional(),
   endTime: z.string().optional(),
-  assignedTo: z.number().optional(),
+  assignedToArray: z.array(z.number()).default([]),
+  visibilityType: z.enum(["shared", "private", "busy"]).default("shared"),
+  sharedWith: z.array(z.number()).default([]),
 });
 
 type EventFormData = z.infer<typeof eventFormSchema>;
@@ -46,14 +48,22 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
     queryKey: ["/api/family-members"],
   });
 
+  const getVisibilityType = (): "shared" | "private" | "busy" => {
+    if (event.visibilityType) return event.visibilityType as "shared" | "private" | "busy";
+    if (event.isPrivate) return "private";
+    return "shared";
+  };
+
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       title: event.title,
       description: event.description || "",
       location: event.location || "",
-      assignedTo: event.assignedTo?.[0] || undefined,
+      assignedToArray: event.assignedTo || [],
       isAllDay: event.isAllDay || false,
+      visibilityType: getVisibilityType(),
+      sharedWith: event.sharedWith || [],
       startDate: format(new Date(event.startTime), "yyyy-MM-dd"),
       startTime: format(new Date(event.startTime), "HH:mm"),
       endDate: event.endTime ? format(new Date(event.endTime), "yyyy-MM-dd") : format(new Date(event.startTime), "yyyy-MM-dd"),
@@ -67,19 +77,15 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
 
   const updateEventMutation = useMutation({
     mutationFn: async (data: EventFormData) => {
-      const { startDate, startTime, endDate, endTime, ...eventData } = data;
-      
-      console.log("Form data:", { startDate, startTime, endDate, endTime });
+      const { startDate, startTime, endDate, endTime, assignedToArray, visibilityType, sharedWith, ...eventData } = data;
       
       let startDateTime: Date;
       let endDateTime: Date | null = null;
 
       if (isAllDay) {
-        // For all-day events, use the date directly
         startDateTime = new Date(startDate + "T00:00:00");
         endDateTime = new Date(startDate + "T23:59:59");
       } else {
-        // For timed events, ensure proper format
         const startTimeFormatted = startTime.includes(":") ? startTime : startTime + ":00";
         startDateTime = new Date(startDate + "T" + startTimeFormatted);
         
@@ -89,21 +95,35 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
         }
       }
 
-      console.log("Created dates:", { startDateTime, endDateTime });
-      console.log("Are valid dates:", { 
-        startValid: !isNaN(startDateTime.getTime()), 
-        endValid: endDateTime ? !isNaN(endDateTime.getTime()) : true 
-      });
+      let isPrivate = false;
+      let finalSharedWith: number[] = [];
+
+      switch (visibilityType) {
+        case "private":
+          isPrivate = true;
+          break;
+        case "busy":
+          isPrivate = false;
+          finalSharedWith = [];
+          break;
+        case "shared":
+        default:
+          isPrivate = false;
+          finalSharedWith = sharedWith.length > 0 ? sharedWith : [];
+          break;
+      }
 
       const eventPayload = {
         ...eventData,
         startTime: startDateTime.toISOString(),
         endTime: endDateTime ? endDateTime.toISOString() : null,
         isAllDay,
-        assignedTo: eventData.assignedTo ? [eventData.assignedTo] : [],
+        assignedTo: assignedToArray,
+        isPrivate,
+        visibilityType,
+        sharedWith: finalSharedWith,
       };
 
-      console.log("Event payload:", eventPayload);
       return apiRequest("PUT", `/api/events/${event.id}`, eventPayload);
     },
     onSuccess: () => {
@@ -211,28 +231,64 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="assignedTo">Assign to</Label>
-            <Select 
-              value={form.watch("assignedTo")?.toString() || ""} 
-              onValueChange={(value) => form.setValue("assignedTo", parseInt(value))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select family member" />
-              </SelectTrigger>
-              <SelectContent>
+            <Label>Assign to Family Members</Label>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const allMemberIds = familyMembers.map(m => m.id);
+                    form.setValue("assignedToArray", allMemberIds);
+                  }}
+                  disabled={familyMembers.length === 0}
+                >
+                  <Users className="h-4 w-4 mr-1" />
+                  Select All
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => form.setValue("assignedToArray", [])}
+                >
+                  Clear All
+                </Button>
+                <div className="text-sm text-gray-500 ml-auto">
+                  {(form.watch("assignedToArray") || []).length} of {familyMembers.length} selected
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
                 {familyMembers.map((member) => (
-                  <SelectItem key={member.id} value={member.id.toString()}>
-                    <div className="flex items-center gap-2">
+                  <div key={member.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`edit-assigned-${member.id}`}
+                      checked={(form.watch("assignedToArray") || []).includes(member.id)}
+                      onChange={(e) => {
+                        const currentAssigned = form.watch("assignedToArray") || [];
+                        if (e.target.checked) {
+                          form.setValue("assignedToArray", [...currentAssigned, member.id]);
+                        } else {
+                          form.setValue("assignedToArray", currentAssigned.filter(id => id !== member.id));
+                        }
+                      }}
+                      className="rounded"
+                    />
+                    <Label htmlFor={`edit-assigned-${member.id}`} className="text-sm font-normal flex items-center gap-2 cursor-pointer">
                       <div
                         className="w-3 h-3 rounded-full"
                         style={{ backgroundColor: member.color }}
                       />
-                      {member.name}
-                    </div>
-                  </SelectItem>
+                      <span>{member.name}</span>
+                      <span className="text-xs text-gray-500 capitalize">({member.role})</span>
+                    </Label>
+                  </div>
                 ))}
-              </SelectContent>
-            </Select>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -287,6 +343,84 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
               </div>
             </div>
           )}
+
+          <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+            <div className="flex items-center gap-2">
+              <Eye size={18} className="text-gray-600 dark:text-gray-400" />
+              <Label className="text-sm font-medium">Privacy & Sharing</Label>
+            </div>
+            
+            <div>
+              <Label htmlFor="visibilityType" className="text-sm">Visibility</Label>
+              <Select
+                value={form.watch("visibilityType")}
+                onValueChange={(value: "shared" | "private" | "busy") => 
+                  form.setValue("visibilityType", value)
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="shared">
+                    <div className="flex items-center gap-2">
+                      <Users size={16} />
+                      <span>Shared - Everyone can see details</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="busy">
+                    <div className="flex items-center gap-2">
+                      <Eye size={16} />
+                      <span>Busy - Time blocked, no details shown</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="private">
+                    <div className="flex items-center gap-2">
+                      <EyeOff size={16} />
+                      <span>Private - Only visible to you</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {form.watch("visibilityType") === "shared" && "All family members can see event details"}
+                {form.watch("visibilityType") === "busy" && "Others see time is blocked but no event details"}
+                {form.watch("visibilityType") === "private" && "Only you can see this event"}
+              </p>
+            </div>
+
+            {form.watch("visibilityType") === "shared" && familyMembers.length > 1 && (
+              <div>
+                <Label className="text-sm">Share with specific family members (optional)</Label>
+                <div className="mt-2 space-y-2">
+                  {familyMembers.map((member) => (
+                    <div key={member.id} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`edit-share-${member.id}`}
+                        checked={(form.watch("sharedWith") || []).includes(member.id)}
+                        onChange={(e) => {
+                          const currentShared = form.watch("sharedWith") || [];
+                          if (e.target.checked) {
+                            form.setValue("sharedWith", [...currentShared, member.id]);
+                          } else {
+                            form.setValue("sharedWith", currentShared.filter(id => id !== member.id));
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      <Label htmlFor={`edit-share-${member.id}`} className="text-sm font-normal">
+                        {member.name}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Leave unchecked to share with all family members
+                </p>
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-col sm:flex-row sm:justify-between gap-3 pt-4">
             <Button

@@ -85,6 +85,9 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
         if (data.actions.some((a: any) => a.type === "create_meal")) {
           queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
         }
+        if (data.actions.some((a: any) => a.type === "create_grocery")) {
+          queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+        }
       }
     } catch (error) {
       const errorMessage: Message = {

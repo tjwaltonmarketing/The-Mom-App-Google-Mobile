@@ -2847,6 +2847,17 @@ export async function registerRoutes(app: Express) {
               };
               await storage.createMealPlan(mealData);
               action.executed = true;
+            } else if (action.type === "create_grocery" && action.data) {
+              const groceryData = {
+                name: action.data.name,
+                category: action.data.category || "Other",
+                quantity: action.data.quantity || "1",
+                familyId: familyId,
+                purchased: false,
+                createdAt: new Date(),
+              };
+              await storage.createGroceryItem(groceryData);
+              action.executed = true;
             }
           } catch (actionError) {
             console.error("Failed to execute action:", action.type, actionError);
