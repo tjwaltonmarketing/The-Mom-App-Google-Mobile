@@ -247,6 +247,7 @@ export interface IStorage {
   createMealPlan(plan: InsertMealPlan): Promise<MealPlan>;
   createMealPlanForFamily(plan: InsertMealPlan, familyId: number): Promise<MealPlan>;
   getMealPlansByFamily(familyId: number): Promise<MealPlan[]>;
+  updateMealPlan(id: number, updates: Partial<InsertMealPlan>): Promise<MealPlan | undefined>;
   deleteMealPlan(id: number): Promise<boolean>;
 
   // Household Settings
@@ -1712,6 +1713,14 @@ export class DatabaseStorage implements IStorage {
       .values(insertPlan)
       .returning();
     return plan;
+  }
+
+  async updateMealPlan(id: number, updates: Partial<InsertMealPlan>): Promise<MealPlan | undefined> {
+    const [updated] = await db.update(mealPlans)
+      .set(updates)
+      .where(eq(mealPlans.id, id))
+      .returning();
+    return updated;
   }
 
   async deleteMealPlan(id: number): Promise<boolean> {

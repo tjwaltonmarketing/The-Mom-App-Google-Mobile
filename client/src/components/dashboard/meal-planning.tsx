@@ -141,6 +141,32 @@ export function MealPlanning() {
     },
   });
 
+  const updateMealMutation = useMutation({
+    mutationFn: async ({ id, ...meal }: { id: number; day: string; mealType: string; meal: string; ingredients?: string[]; notes?: string }) => {
+      const response = await apiRequest("PATCH", `/api/meal-plans/${id}`, meal);
+      return response.json();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+      await refetchMeals();
+      toast({
+        title: "Meal updated",
+        description: "Meal has been updated successfully",
+      });
+      setNewMeal({ day: "", mealType: "", meal: "", ingredients: "", notes: "" });
+      setEditingMeal(null);
+      setIsMealModalOpen(false);
+    },
+    onError: (error: any) => {
+      console.error("Error updating meal:", error);
+      toast({
+        title: "Error updating meal",
+        description: error.message || "Failed to update meal. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const addGroceryMutation = useMutation({
     mutationFn: async (item: Omit<GroceryItem, 'id' | 'createdAt' | 'addedBy' | 'isCompleted'>) => {
       const response = await apiRequest("POST", "/api/grocery-items", {
@@ -221,6 +247,52 @@ export function MealPlanning() {
       });
     },
   });
+
+  const handleStartEdit = (meal: MealPlan) => {
+    setEditingMeal(meal);
+    setNewMeal({
+      day: meal.day,
+      mealType: meal.mealType,
+      meal: meal.meal,
+      ingredients: meal.ingredients ? meal.ingredients.join(', ') : "",
+      notes: meal.notes || "",
+    });
+    setIsMealModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsMealModalOpen(false);
+    setEditingMeal(null);
+    setNewMeal({ day: "", mealType: "", meal: "", ingredients: "", notes: "" });
+  };
+
+  const handleSaveMeal = () => {
+    if (!newMeal.day || !newMeal.mealType || !newMeal.meal) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const mealData = {
+      day: newMeal.day,
+      mealType: newMeal.mealType as "breakfast" | "lunch" | "dinner" | "snack",
+      meal: newMeal.meal,
+      notes: newMeal.notes,
+      ingredients: newMeal.ingredients ? newMeal.ingredients.split(',').map(i => i.trim()) : undefined,
+    };
+
+    if (editingMeal) {
+      updateMealMutation.mutate({
+        id: editingMeal.id,
+        ...mealData,
+      });
+    } else {
+      addMealMutation.mutate(mealData);
+    }
+  };
 
   const handleAddMeal = () => {
     if (!newMeal.day || !newMeal.mealType || !newMeal.meal) {
@@ -390,7 +462,7 @@ export function MealPlanning() {
           <TabsContent value="meals" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">Weekly Meal Plan</h3>
-              <Dialog open={isMealModalOpen} onOpenChange={setIsMealModalOpen}>
+              <Dialog open={isMealModalOpen} onOpenChange={handleCloseModal}>
                 <DialogTrigger asChild>
                   <Button className="gap-2">
                     <Plus className="h-4 w-4" />
@@ -399,7 +471,7 @@ export function MealPlanning() {
                 </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Add New Meal</DialogTitle>
+                    <DialogTitle>{editingMeal ? "Edit Meal" : "Add New Meal"}</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <Select value={newMeal.day} onValueChange={(value) => setNewMeal({...newMeal, day: value})}>
@@ -444,8 +516,14 @@ export function MealPlanning() {
                       onChange={(e) => setNewMeal({...newMeal, notes: e.target.value})}
                     />
 
-                    <Button onClick={handleAddMeal} className="w-full" disabled={addMealMutation.isPending}>
-                      {addMealMutation.isPending ? "Adding..." : "Add Meal"}
+                    <Button 
+                      onClick={handleSaveMeal} 
+                      className="w-full" 
+                      disabled={addMealMutation.isPending || updateMealMutation.isPending}
+                    >
+                      {addMealMutation.isPending || updateMealMutation.isPending 
+                        ? (editingMeal ? "Saving..." : "Adding...") 
+                        : (editingMeal ? "Save Changes" : "Add Meal")}
                     </Button>
                   </div>
                 </DialogContent>
@@ -466,17 +544,30 @@ export function MealPlanning() {
                             <Badge variant="outline" className="text-xs">
                               {meal.mealType}
                             </Badge>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 w-6 p-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteMealMutation.mutate(meal.id);
-                              }}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStartEdit(meal);
+                                }}
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteMealMutation.mutate(meal.id);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                           <div onClick={() => setExpandedMeal(expandedMeal === meal.id ? null : meal.id)}>
                             <p className="font-medium text-sm">{meal.meal}</p>

@@ -1889,6 +1889,35 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.patch("/api/meal-plans/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const mealId = parseInt(req.params.id);
+      const { day, mealType, meal, ingredients, notes, prepTime } = req.body;
+      
+      const updated = await storage.updateMealPlan(mealId, {
+        day,
+        mealType,
+        meal,
+        ingredients,
+        notes,
+        prepTime,
+      });
+      
+      if (!updated) {
+        return res.status(404).json({ error: "Meal plan not found" });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error("Update meal plan error:", error);
+      res.status(500).json({ error: "Failed to update meal plan" });
+    }
+  });
+
   app.delete("/api/meal-plans/:id", async (req, res) => {
     try {
       if (!req.session.userId) {
