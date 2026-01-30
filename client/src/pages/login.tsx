@@ -13,6 +13,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Eye, EyeOff, RefreshCw, Users } from "lucide-react";
 import logoPath from "@assets/The_Mom_app_(5)_1766014062224.png";
 import beforeAfterPath from "@assets/The_Mom_app_(4)_1766014201419.png";
+import { SplashScreen } from "@/components/splash-screen";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -26,6 +27,8 @@ export default function Login() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
+  const [showSplash, setShowSplash] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -49,15 +52,13 @@ export default function Login() {
         localStorage.setItem('auth_token', data.token);
       }
       
-      // Set user data immediately and navigate
+      // Set user data immediately and show splash screen
       if (data.user) {
         queryClient.setQueryData(["/api/auth/user"], data.user);
         
-        // Navigate immediately
-        setLocation("/");
-        
-        // Don't invalidate the query - let it refresh naturally on next request
-        // This prevents the authentication state from flickering
+        // Show splash screen while app loads
+        setShowSplash(true);
+        setIsLoggingIn(false);
       }
     },
     onError: (error: any) => {
@@ -72,6 +73,16 @@ export default function Login() {
   const onSubmit = (data: LoginForm) => {
     loginMutation.mutate(data);
   };
+
+  // Show splash screen after successful login
+  if (showSplash) {
+    return (
+      <SplashScreen 
+        isLoading={false} 
+        onComplete={() => setLocation("/")} 
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-pink-100 to-rose-50 p-4">

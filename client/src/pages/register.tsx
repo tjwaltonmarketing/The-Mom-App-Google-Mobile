@@ -223,7 +223,7 @@ export default function Register() {
                     <FormLabel>Family Name</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="e.g., The Smith Family"
+                        placeholder="e.g., Smith Family"
                         {...field} 
                       />
                     </FormControl>
