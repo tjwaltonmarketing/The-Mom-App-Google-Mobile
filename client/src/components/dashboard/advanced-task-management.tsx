@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, Edit, Users, ChevronDown, ChevronRight, Printer, MoreVertical, Lock } from "lucide-react";
+import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, Edit, Users, ChevronDown, ChevronRight, Printer, MoreVertical, Lock, CheckSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +36,7 @@ export function AdvancedTaskManagement() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
-  const [deleteScope, setDeleteScope] = useState<'self' | 'teens' | 'children' | 'all' | null>(null);
+  const [deleteScope, setDeleteScope] = useState<'self' | 'teens' | 'children' | 'all' | 'completed' | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -203,7 +203,7 @@ export function AdvancedTaskManagement() {
   });
 
   const deleteAllTasksMutation = useMutation({
-    mutationFn: async (scope: 'self' | 'teens' | 'children' | 'all') => {
+    mutationFn: async (scope: 'self' | 'teens' | 'children' | 'all' | 'completed') => {
       return apiRequest("DELETE", "/api/tasks", { scope });
     },
     onMutate: async () => {
@@ -274,7 +274,7 @@ export function AdvancedTaskManagement() {
     deleteTaskMutation.mutate(taskId);
   };
 
-  const handleDeleteAllTasks = (scope: 'self' | 'teens' | 'children' | 'all') => {
+  const handleDeleteAllTasks = (scope: 'self' | 'teens' | 'children' | 'all' | 'completed') => {
     deleteAllTasksMutation.mutate(scope);
   };
 
@@ -661,6 +661,13 @@ export function AdvancedTaskManagement() {
                       Clear Child Tasks
                     </DropdownMenuItem>
                     <DropdownMenuItem 
+                      onClick={() => setDeleteScope('completed')}
+                      data-testid="clear-completed-tasks"
+                    >
+                      <CheckSquare className="h-4 w-4 mr-2" />
+                      Clear Completed Tasks
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
                       onClick={() => setDeleteScope('all')}
                       className="text-red-600"
                       data-testid="clear-all-manageable-tasks"
@@ -896,12 +903,14 @@ export function AdvancedTaskManagement() {
               {deleteScope === 'self' && 'Delete My Tasks'}
               {deleteScope === 'teens' && 'Delete Teen Tasks'}
               {deleteScope === 'children' && 'Delete Child Tasks'}
+              {deleteScope === 'completed' && 'Clear Completed Tasks'}
               {deleteScope === 'all' && 'Delete All Manageable Tasks'}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {deleteScope === 'self' && 'This will permanently delete all of your tasks. This action cannot be undone.'}
               {deleteScope === 'teens' && 'This will permanently delete all tasks assigned to teens. This action cannot be undone.'}
               {deleteScope === 'children' && 'This will permanently delete all tasks assigned to children. This action cannot be undone.'}
+              {deleteScope === 'completed' && 'This will permanently delete all completed tasks. This action cannot be undone.'}
               {deleteScope === 'all' && 'This will permanently delete all tasks you manage (your tasks + teen tasks + child tasks). Other parent tasks will NOT be deleted. This action cannot be undone.'}
             </AlertDialogDescription>
           </AlertDialogHeader>

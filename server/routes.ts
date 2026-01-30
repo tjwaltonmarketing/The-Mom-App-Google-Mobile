@@ -1579,7 +1579,7 @@ export async function registerRoutes(app: Express) {
       }
 
       // Get scope from request body (default to 'self' for safety)
-      const { scope = 'self' } = req.body as { scope?: 'self' | 'teens' | 'children' | 'all' };
+      const { scope = 'self' } = req.body as { scope?: 'self' | 'teens' | 'children' | 'all' | 'completed' };
 
       // Delete tasks based on scope
       await storage.deleteTasksByScope(currentMember.id, familyMembership.familyId, scope);

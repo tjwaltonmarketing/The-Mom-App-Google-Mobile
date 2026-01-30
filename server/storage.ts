@@ -176,7 +176,7 @@ export interface IStorage {
   completeTask(id: number, completedBy: number): Promise<Task | undefined>;
   deleteTask(id: number): Promise<boolean>;
   deleteAllTasks(): Promise<boolean>;
-  deleteTasksByScope(currentMemberId: number, familyId: number, scope: 'self' | 'teens' | 'children' | 'all'): Promise<boolean>;
+  deleteTasksByScope(currentMemberId: number, familyId: number, scope: 'self' | 'teens' | 'children' | 'all' | 'completed'): Promise<boolean>;
   getTasksForTeen(teenId: number): Promise<Task[]>;
   assignTaskToTeen(taskId: number, teenId: number): Promise<Task>;
   
@@ -974,7 +974,7 @@ export class DatabaseStorage implements IStorage {
     return result.rowCount !== null && result.rowCount >= 0;
   }
 
-  async deleteTasksByScope(currentMemberId: number, familyId: number, scope: 'self' | 'teens' | 'children' | 'all'): Promise<boolean> {
+  async deleteTasksByScope(currentMemberId: number, familyId: number, scope: 'self' | 'teens' | 'children' | 'all' | 'completed'): Promise<boolean> {
     // Get the current member's role
     const currentMember = await db
       .select()
@@ -1024,6 +1024,29 @@ export class DatabaseStorage implements IStorage {
           // Non-parents can only delete their own
           memberIdsToDelete = [currentMemberId];
         }
+      } else if (scope === 'completed') {
+        // Delete all completed tasks for family members current user can manage
+        if (isParent) {
+          memberIdsToDelete = allMembers
+            .filter(m => 
+              m.id === currentMemberId || // Own tasks
+              m.role === 'teen' ||        // Teen tasks
+              m.role === 'child'          // Child tasks
+            )
+            .map(m => m.id);
+        } else {
+          memberIdsToDelete = [currentMemberId];
+        }
+        
+        // Delete only completed tasks
+        const result = await db
+          .delete(tasks)
+          .where(and(
+            inArray(tasks.createdBy, memberIdsToDelete),
+            eq(tasks.completed, true)
+          ));
+        
+        return result.rowCount !== null && result.rowCount >= 0;
       }
     }
     
