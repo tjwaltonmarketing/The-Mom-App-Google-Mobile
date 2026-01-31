@@ -588,6 +588,61 @@ Respond with JSON: {
     }
   }
 
+  // Handle grocery list requests
+  if (lowerInput.includes('grocery') || lowerInput.includes('groceries') || lowerInput.includes('shopping list') || lowerInput.includes('buy') || lowerInput.includes('need to get') || lowerInput.includes('pick up')) {
+    const groceryPrompt = `Parse this voice input and extract grocery items to add to a shopping list:
+"${voiceInput}"
+
+Extract grocery items mentioned and categorize them appropriately.
+
+Respond with JSON: { 
+  "tasks": [
+    {
+      "title": "Milk",
+      "description": "Dairy",
+      "type": "grocery",
+      "priority": "medium"
+    },
+    {
+      "title": "Bread",
+      "description": "Bakery",
+      "type": "grocery", 
+      "priority": "medium"
+    }
+  ], 
+  "interpretation": "I'll add milk and bread to your grocery list"
+}
+
+IMPORTANT: 
+- Each item should be a separate task with type "grocery"
+- Use common grocery categories for description (Produce, Dairy, Meat, Bakery, Frozen, Pantry, Beverages, Snacks, Household, Other)
+- Keep item titles simple (just the item name)`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: groceryPrompt }],
+        response_format: { type: "json_object" },
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || "{}");
+      const tasks = (result.tasks || []).map((task: any) => ({
+        ...task,
+        type: "grocery"
+      }));
+      return {
+        tasks,
+        interpretation: result.interpretation || "I'll add those items to your grocery list!"
+      };
+    } catch (error) {
+      console.error("Grocery list error:", error);
+      return {
+        tasks: [],
+        interpretation: "I couldn't parse the grocery items. Could you try listing them again?"
+      };
+    }
+  }
+
   // Regular task processing
   const prompt = `Parse this voice input from a parent and extract actionable tasks:
 "${voiceInput}"
@@ -596,11 +651,22 @@ Family members available for assignment: ${familyMembers.map(m => `${m.name} (ID
 
 Extract specific tasks with:
 - Clear task titles
-- Assign to family members when mentioned by name
-- Set due dates if time references are mentioned
+- IMPORTANT: Always include "type": "task" for each task
+- Assign to family members when mentioned by name (use their ID number)
+- Set due dates if time references are mentioned (use ISO format)
 - Set priority (low/medium/high) based on urgency
 
-Respond with JSON: { "tasks": [...], "interpretation": "friendly summary of what I understood" }`;
+Respond with JSON: { 
+  "tasks": [
+    {
+      "title": "Clean the kitchen",
+      "type": "task",
+      "assignedTo": 1,
+      "priority": "medium"
+    }
+  ], 
+  "interpretation": "friendly summary of what I understood" 
+}`;
 
   try {
     const response = await openai.chat.completions.create({
@@ -610,8 +676,13 @@ Respond with JSON: { "tasks": [...], "interpretation": "friendly summary of what
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
+    // Ensure all tasks have type "task"
+    const tasks = (result.tasks || []).map((task: any) => ({
+      ...task,
+      type: task.type || "task"
+    }));
     return {
-      tasks: result.tasks || [],
+      tasks,
       interpretation: result.interpretation || "I'll help you organize those tasks!"
     };
   } catch (error) {

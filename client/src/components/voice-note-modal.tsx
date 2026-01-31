@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils, ChevronDown, RotateCcw } from "lucide-react";
+import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils, ChevronDown, RotateCcw, ShoppingCart } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +21,7 @@ interface VoiceNoteModalProps {
 }
 
 interface SmartAction {
-  type: "task" | "event" | "reminder" | "meal";
+  type: "task" | "event" | "reminder" | "meal" | "grocery";
   title: string;
   description?: string;
   dueDate?: Date;
@@ -143,6 +143,19 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     },
   });
 
+  const createGroceryMutation = useMutation({
+    mutationFn: async (item: SmartAction) => {
+      return apiRequest("POST", "/api/grocery-items", {
+        name: item.title,
+        category: item.description || "Other",
+        quantity: 1,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+    },
+  });
+
   const handleStartRecording = () => {
     setTranscript("");
     setSmartActions([]);
@@ -184,6 +197,8 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
           mealType: scheduling.mealType 
         });
       }
+    } else if (action.type === "grocery") {
+      createGroceryMutation.mutate(action);
     }
   };
 
@@ -278,6 +293,8 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
                         <CheckSquare className="h-4 w-4 text-blue-500 mt-1" />
                       ) : action.type === "meal" ? (
                         <Utensils className="h-4 w-4 text-green-500 mt-1" />
+                      ) : action.type === "grocery" ? (
+                        <ShoppingCart className="h-4 w-4 text-orange-500 mt-1" />
                       ) : (
                         <Calendar className="h-4 w-4 text-purple-500 mt-1" />
                       )}
@@ -377,6 +394,17 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
                             onClick={() => handleCreateAction(action)}
                           >
                             Create Task
+                          </Button>
+                        )}
+                        
+                        {action.type === "grocery" && (
+                          <Button
+                            size="sm"
+                            className="w-full h-8 text-xs mt-2 bg-orange-500 hover:bg-orange-600"
+                            onClick={() => handleCreateAction(action)}
+                          >
+                            <ShoppingCart className="h-3 w-3 mr-1" />
+                            Add to Grocery List
                           </Button>
                         )}
                       </div>
