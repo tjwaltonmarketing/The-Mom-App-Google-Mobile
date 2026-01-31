@@ -2990,11 +2990,23 @@ export async function registerRoutes(app: Express) {
   // Subscription Endpoints
   app.get("/api/subscription", async (req, res) => {
     try {
-      if (!req.session.userId) {
+      // Check JWT token first for cross-origin compatibility
+      let userId = req.session.userId;
+      if (!userId) {
+        const token = extractTokenFromRequest(req);
+        if (token) {
+          const decoded = verifyToken(token);
+          if (decoded) {
+            userId = decoded.userId;
+          }
+        }
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const subscription = await storage.getUserSubscription(req.session.userId);
+      const subscription = await storage.getUserSubscription(userId);
       
       if (!subscription) {
         // No subscription exists - user needs to complete onboarding first
@@ -3020,7 +3032,19 @@ export async function registerRoutes(app: Express) {
   // Start Trial Endpoint
   app.post("/api/subscription/start-trial", async (req, res) => {
     try {
-      if (!req.session.userId) {
+      // Check JWT token first for cross-origin compatibility
+      let userId = req.session.userId;
+      if (!userId) {
+        const token = extractTokenFromRequest(req);
+        if (token) {
+          const decoded = verifyToken(token);
+          if (decoded) {
+            userId = decoded.userId;
+          }
+        }
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
@@ -3031,11 +3055,11 @@ export async function registerRoutes(app: Express) {
       }
 
       // Check if subscription already exists
-      const existingSubscription = await storage.getUserSubscription(req.session.userId);
+      const existingSubscription = await storage.getUserSubscription(userId);
       
       if (existingSubscription) {
         // Update existing subscription with new plan
-        const updated = await storage.updateUserSubscription(req.session.userId, {
+        const updated = await storage.updateUserSubscription(userId, {
           subscriptionPlan: plan,
           subscriptionStatus: "active",
           trialStartDate: new Date(),
@@ -3046,7 +3070,7 @@ export async function registerRoutes(app: Express) {
 
       // Create new trial subscription
       const newSubscription = await storage.createUserSubscription({
-        userId: req.session.userId,
+        userId: userId,
         subscriptionPlan: plan,
         subscriptionStatus: "active",
         trialStartDate: new Date(),
