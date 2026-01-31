@@ -154,10 +154,10 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
   });
 
   const createGroceryMutation = useMutation({
-    mutationFn: async (item: SmartAction) => {
+    mutationFn: async (groceryItem: SmartAction) => {
       return apiRequest("POST", "/api/grocery-items", {
-        name: item.title,
-        category: item.description || "Other",
+        item: groceryItem.title,
+        category: groceryItem.description || "Other",
         quantity: 1,
       });
     },
