@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Gift, X } from "lucide-react";
+import { Gift, X, Check } from "lucide-react";
 import { FaFacebook, FaInstagram } from "react-icons/fa";
 
 interface ShareModalProps {
@@ -12,9 +12,11 @@ interface ShareModalProps {
 
 export function ShareModal({ onShare, onSkip, isLoading = false }: ShareModalProps) {
   const [selectedPlatform, setSelectedPlatform] = useState<"facebook" | "instagram" | null>(null);
+  const [hasOpened, setHasOpened] = useState(false);
 
-  const handleShare = (platform: "facebook" | "instagram") => {
+  const openShareDialog = (platform: "facebook" | "instagram") => {
     setSelectedPlatform(platform);
+    setHasOpened(true);
     
     const shareUrl = "https://themom.app";
     const shareText = "I just discovered The Mom App - it's like having a personal assistant for all the family chaos! Check it out:";
@@ -28,8 +30,12 @@ export function ShareModal({ onShare, onSkip, isLoading = false }: ShareModalPro
     } else if (platform === "instagram") {
       navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
     }
-    
-    onShare(platform);
+  };
+
+  const handleClaim = () => {
+    if (selectedPlatform) {
+      onShare(selectedPlatform);
+    }
   };
 
   return (
@@ -60,32 +66,42 @@ export function ShareModal({ onShare, onSkip, isLoading = false }: ShareModalPro
 
         <div className="grid grid-cols-2 gap-4">
           <Button
-            onClick={() => handleShare("facebook")}
+            onClick={() => openShareDialog("facebook")}
             disabled={isLoading}
-            className="bg-[#1877F2] hover:bg-[#166FE5] text-white py-6 text-base flex items-center justify-center gap-2"
+            className={`py-6 text-base flex items-center justify-center gap-2 ${
+              selectedPlatform === "facebook" 
+                ? "bg-[#1877F2] ring-2 ring-offset-2 ring-[#1877F2]" 
+                : "bg-[#1877F2] hover:bg-[#166FE5]"
+            } text-white`}
           >
-            <FaFacebook className="h-5 w-5" />
+            {selectedPlatform === "facebook" ? <Check className="h-5 w-5" /> : <FaFacebook className="h-5 w-5" />}
             Facebook
           </Button>
 
           <Button
-            onClick={() => handleShare("instagram")}
+            onClick={() => openShareDialog("instagram")}
             disabled={isLoading}
-            className="bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] hover:opacity-90 text-white py-6 text-base flex items-center justify-center gap-2"
+            className={`py-6 text-base flex items-center justify-center gap-2 ${
+              selectedPlatform === "instagram"
+                ? "bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] ring-2 ring-offset-2 ring-pink-500"
+                : "bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] hover:opacity-90"
+            } text-white`}
           >
-            <FaInstagram className="h-5 w-5" />
+            {selectedPlatform === "instagram" ? <Check className="h-5 w-5" /> : <FaInstagram className="h-5 w-5" />}
             Instagram
           </Button>
         </div>
 
         <p className="text-xs text-gray-500">
-          (Instagram will copy the share link to your clipboard)
+          {selectedPlatform === "instagram" 
+            ? "Link copied! Paste it on Instagram to share."
+            : "(Instagram will copy the share link to your clipboard)"}
         </p>
 
         <Button
-          onClick={() => handleShare(selectedPlatform || "facebook")}
-          disabled={isLoading || !selectedPlatform}
-          className={`w-full py-6 text-lg ${selectedPlatform ? 'bg-pink-500 hover:bg-pink-600' : 'bg-gray-300'} text-white`}
+          onClick={handleClaim}
+          disabled={isLoading || !hasOpened}
+          className={`w-full py-6 text-lg ${hasOpened ? 'bg-pink-500 hover:bg-pink-600' : 'bg-gray-300 cursor-not-allowed'} text-white`}
         >
           {isLoading ? "CLAIMING YOUR BONUS..." : "CLAIM MY ADDITIONAL FREE WEEK!"}
         </Button>

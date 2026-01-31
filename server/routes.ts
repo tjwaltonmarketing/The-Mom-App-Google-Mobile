@@ -2954,8 +2954,12 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Platform is required" });
       }
 
+      // Check if user already received a bonus (prevent duplicate awards)
+      const existingShares = await storage.getReferralSharesByUser(req.session.userId);
+      const alreadyReceivedBonus = existingShares.some(s => s.bonusAwarded);
+
       // Create the referral share record
-      const bonusAwarded = platform !== "skip";
+      const bonusAwarded = platform !== "skip" && !alreadyReceivedBonus;
       const bonusDays = bonusAwarded ? 7 : 0;
 
       const share = await storage.createReferralShare({
@@ -2965,7 +2969,7 @@ export async function registerRoutes(app: Express) {
         bonusDays,
       });
 
-      // If they shared (not skipped), extend their trial by 7 days
+      // If they shared (not skipped) and haven't already received bonus, extend their trial by 7 days
       if (bonusAwarded) {
         const subscription = await storage.getUserSubscription(req.session.userId);
         if (subscription && subscription.trialEndDate) {
@@ -2980,7 +2984,7 @@ export async function registerRoutes(app: Express) {
         success: true, 
         bonusAwarded,
         bonusDays,
-        message: bonusAwarded ? "Your trial has been extended by 7 days!" : "No problem, enjoy your trial!"
+        message: bonusAwarded ? "Your trial has been extended by 7 days!" : alreadyReceivedBonus ? "You've already claimed your bonus!" : "No problem, enjoy your trial!"
       });
     } catch (error) {
       console.error("Referral share error:", error);
