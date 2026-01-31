@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils, ChevronDown, RotateCcw, ShoppingCart } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils, ChevronDown, RotateCcw, ShoppingCart, User } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,12 @@ interface SmartAction {
   priority?: string;
 }
 
+interface FamilyMember {
+  id: number;
+  name: string;
+  role: string;
+}
+
 export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
   const [transcript, setTranscript] = useState("");
   const [smartActions, setSmartActions] = useState<SmartAction[]>([]);
@@ -39,6 +45,11 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
   const [eventScheduling, setEventScheduling] = useState<{[key: number]: {date: string, time: string}}>({});
   const { isRecording, startRecording, stopRecording } = useVoiceRecording({
     onTranscript: setTranscript,
+  });
+
+  // Fetch family members from API
+  const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
+    queryKey: ["/api/family-members"],
   });
 
   const createVoiceNoteMutation = useMutation({
@@ -57,14 +68,10 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
 
   const processAIMutation = useMutation({
     mutationFn: async (voiceInput: string) => {
+      // Pass real family members from the API, or let backend fetch them
       const response = await apiRequest("POST", "/api/ai/smart-task-creation", {
         voiceInput,
-        familyMembers: [
-          { id: 1, name: "Mom", role: "mom" },
-          { id: 2, name: "Dad", role: "dad" },
-          { id: 3, name: "Emma", role: "child" },
-          { id: 4, name: "Sam", role: "child" }
-        ]
+        familyMembers: familyMembers.length > 0 ? familyMembers : undefined
       });
       return response.json();
     },
@@ -219,6 +226,25 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     }));
   };
 
+  const handleUpdateAssignment = (index: number, memberId: number | null) => {
+    const member = memberId ? familyMembers.find(m => m.id === memberId) : null;
+    setSmartActions(prev => prev.map((action, i) => 
+      i === index 
+        ? { 
+            ...action, 
+            assignedTo: memberId || undefined, 
+            assigneeName: member?.name || undefined 
+          }
+        : action
+    ));
+  };
+
+  const handleUpdatePoints = (index: number, points: number) => {
+    setSmartActions(prev => prev.map((action, i) => 
+      i === index ? { ...action, points } : action
+    ));
+  };
+
   const handleCreateAll = () => {
     smartActions.forEach((action, index) => {
       handleCreateAction(action, index);
@@ -312,18 +338,38 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
                           <p className="text-xs text-gray-600 mb-2">{action.description}</p>
                         )}
                         
-                        {action.type === "task" && (action.assigneeName || action.points) && (
+                        {action.type === "task" && (
                           <div className="flex flex-wrap gap-2 mb-2">
-                            {action.assigneeName && (
-                              <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
-                                Assigned to: {action.assigneeName}
-                              </Badge>
-                            )}
-                            {action.points && (
-                              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-700">
-                                {action.points} points
-                              </Badge>
-                            )}
+                            <div className="flex items-center gap-1">
+                              <User className="h-3 w-3 text-gray-500" />
+                              <Select
+                                value={action.assignedTo?.toString() || "unassigned"}
+                                onValueChange={(value) => handleUpdateAssignment(index, value === "unassigned" ? null : parseInt(value))}
+                              >
+                                <SelectTrigger className="h-7 text-xs w-[130px]">
+                                  <SelectValue placeholder="Assign to..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                                  {familyMembers.map((member) => (
+                                    <SelectItem key={member.id} value={member.id.toString()}>
+                                      {member.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-xs text-gray-500">Points:</span>
+                              <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                className="h-7 w-16 text-xs border rounded px-2"
+                                value={action.points || 10}
+                                onChange={(e) => handleUpdatePoints(index, parseInt(e.target.value) || 0)}
+                              />
+                            </div>
                           </div>
                         )}
                         
