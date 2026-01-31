@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils, ChevronDown, RotateCcw, ShoppingCart, User } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -153,6 +154,8 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     },
   });
 
+  const { toast } = useToast();
+
   const createGroceryMutation = useMutation({
     mutationFn: async (groceryItem: SmartAction) => {
       return apiRequest("POST", "/api/grocery-items", {
@@ -161,8 +164,19 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
         quantity: 1,
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, groceryItem) => {
       queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+      toast({
+        title: "Added to grocery list",
+        description: `${groceryItem.title} has been added to your grocery list`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to add item to grocery list",
+        variant: "destructive",
+      });
     },
   });
 

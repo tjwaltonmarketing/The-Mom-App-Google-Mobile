@@ -1,7 +1,7 @@
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
-import { ShoppingCart, Plus, Share2, Calendar, Check, Trash2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ShoppingCart, Plus, Share2, Calendar, Check, Trash2, ArrowUpDown } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ export default function GroceryListPage() {
   const [newGroceryItem, setNewGroceryItem] = useState({ item: "", quantity: "", category: "" });
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState("");
+  const [sortByCategory, setSortByCategory] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -47,6 +48,31 @@ export default function GroceryListPage() {
   const getCompletedGroceries = () => {
     return groceryList.filter((item: GroceryItem) => item.isCompleted);
   };
+
+  // Group pending items by category for sorted view
+  const groupedPendingItems = useMemo(() => {
+    const pending = getPendingGroceries();
+    const grouped: Record<string, GroceryItem[]> = {};
+    
+    // Initialize all categories
+    categories.forEach(cat => {
+      grouped[cat] = [];
+    });
+    grouped['other'] = [];
+    
+    // Group items
+    pending.forEach(item => {
+      const category = (item.category || 'other').toLowerCase();
+      if (grouped[category]) {
+        grouped[category].push(item);
+      } else {
+        grouped['other'].push(item);
+      }
+    });
+    
+    // Return only categories with items
+    return Object.entries(grouped).filter(([_, items]) => items.length > 0);
+  }, [groceryList]);
 
   const addGroceryMutation = useMutation({
     mutationFn: async (data: { item: string; quantity: string; category: string }) => {
@@ -220,46 +246,95 @@ export default function GroceryListPage() {
             {/* Pending Items */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+                <CardTitle className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <ShoppingCart className="h-5 w-5 text-pink-500" />
                     Shopping List ({getPendingGroceries().length} items)
                   </div>
-                  <Button variant="outline" onClick={() => setIsShareModalOpen(true)} className="gap-2">
-                    <Share2 className="h-4 w-4" />
-                    Share
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant={sortByCategory ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => setSortByCategory(!sortByCategory)} 
+                      className="gap-2"
+                    >
+                      <ArrowUpDown className="h-4 w-4" />
+                      {sortByCategory ? "Sorted" : "Sort by Category"}
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setIsShareModalOpen(true)} className="gap-2">
+                      <Share2 className="h-4 w-4" />
+                      Share
+                    </Button>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {getPendingGroceries().map((item: GroceryItem) => (
-                    <div key={item.id} className="flex items-center space-x-3 p-3 bg-white border rounded-lg">
-                      <Checkbox
-                        checked={false}
-                        onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
-                      />
-                      <div className="flex-1">
-                        <p className="font-medium">{item.item}</p>
-                        <p className="text-sm text-gray-600">{item.quantity}</p>
+                {sortByCategory ? (
+                  <div className="space-y-4">
+                    {groupedPendingItems.map(([category, items]) => (
+                      <div key={category}>
+                        <h3 className="text-sm font-semibold text-gray-700 capitalize mb-2 flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs">{category}</Badge>
+                          <span className="text-gray-400">({items.length})</span>
+                        </h3>
+                        <div className="space-y-2">
+                          {items.map((item: GroceryItem) => (
+                            <div key={item.id} className="flex items-center space-x-3 p-3 bg-white border rounded-lg ml-2">
+                              <Checkbox
+                                checked={false}
+                                onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
+                              />
+                              <div className="flex-1">
+                                <p className="font-medium">{item.item}</p>
+                                <p className="text-sm text-gray-600">{item.quantity}</p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteGroceryMutation.mutate(item.id)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <Badge variant="outline" className="text-xs">
-                        {item.category}
-                      </Badge>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteGroceryMutation.mutate(item.id)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {getPendingGroceries().length === 0 && (
-                    <p className="text-gray-500 text-center py-8">No items in your grocery list yet. Add some items above!</p>
-                  )}
-                </div>
+                    ))}
+                    {getPendingGroceries().length === 0 && (
+                      <p className="text-gray-500 text-center py-8">No items in your grocery list yet. Add some items above!</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {getPendingGroceries().map((item: GroceryItem) => (
+                      <div key={item.id} className="flex items-center space-x-3 p-3 bg-white border rounded-lg">
+                        <Checkbox
+                          checked={false}
+                          onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium">{item.item}</p>
+                          <p className="text-sm text-gray-600">{item.quantity}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {item.category}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteGroceryMutation.mutate(item.id)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    {getPendingGroceries().length === 0 && (
+                      <p className="text-gray-500 text-center py-8">No items in your grocery list yet. Add some items above!</p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
