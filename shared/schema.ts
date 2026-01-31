@@ -769,3 +769,25 @@ export const insertReferralShareSchema = createInsertSchema(referralShares).omit
 
 export type ReferralShare = typeof referralShares.$inferSelect;
 export type InsertReferralShare = z.infer<typeof insertReferralShareSchema>;
+
+export const userSatisfactionPrompts = pgTable("user_satisfaction_prompts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  promptType: varchar("prompt_type", { length: 50 }).notNull().default("7_day_review"),
+  response: varchar("response", { length: 50 }), // "yes", "no", "dismissed", null if not responded
+  feedbackText: text("feedback_text"),
+  reviewRequested: boolean("review_requested").default(false),
+  remindLater: boolean("remind_later").default(false),
+  remindAt: timestamp("remind_at"),
+  shownAt: timestamp("shown_at").defaultNow(),
+  respondedAt: timestamp("responded_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUserSatisfactionPromptSchema = createInsertSchema(userSatisfactionPrompts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type UserSatisfactionPrompt = typeof userSatisfactionPrompts.$inferSelect;
+export type InsertUserSatisfactionPrompt = z.infer<typeof insertUserSatisfactionPromptSchema>;

@@ -64,7 +64,7 @@ export function TrialBanner() {
           </div>
           <div className="flex items-center gap-2">
             <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Link href="/subscription">
+              <Link href="/upgrade">
                 Upgrade Now
               </Link>
             </Button>
