@@ -3033,7 +3033,7 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Invalid interval" });
       }
 
-      const user = await storage.getUser(req.session.userId);
+      const user = await storage.getUserById(req.session.userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
