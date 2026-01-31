@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils, ChevronDown } from "lucide-react";
+import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils, ChevronDown, RotateCcw } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -391,24 +391,34 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
             {!isRecording ? (
               <>
                 {smartActions.length > 0 ? (
-                  <>
+                  <div className="flex flex-col w-full space-y-2">
+                    <div className="flex space-x-3">
+                      <Button
+                        variant="outline"
+                        className="flex-1"
+                        onClick={handleSaveNote}
+                        disabled={createVoiceNoteMutation.isPending}
+                      >
+                        Save Note Only
+                      </Button>
+                      <Button
+                        className="flex-1 bg-green-600 hover:bg-green-700"
+                        onClick={handleCreateAll}
+                        disabled={createTaskMutation.isPending || createEventMutation.isPending}
+                      >
+                        <Bot className="mr-2 h-4 w-4" />
+                        Create All
+                      </Button>
+                    </div>
                     <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={handleSaveNote}
-                      disabled={createVoiceNoteMutation.isPending}
+                      variant="ghost"
+                      className="w-full text-gray-600 hover:text-gray-800"
+                      onClick={handleStartRecording}
                     >
-                      Save Note Only
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      Re-record
                     </Button>
-                    <Button
-                      className="flex-1 bg-green-600 hover:bg-green-700"
-                      onClick={handleCreateAll}
-                      disabled={createTaskMutation.isPending || createEventMutation.isPending}
-                    >
-                      <Bot className="mr-2 h-4 w-4" />
-                      Create All
-                    </Button>
-                  </>
+                  </div>
                 ) : (
                   <>
                     <Button
