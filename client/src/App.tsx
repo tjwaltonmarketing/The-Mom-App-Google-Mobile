@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Switch, Route } from "wouter";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/useAuth";
 import { SplashScreen } from "@/components/splash-screen";
@@ -35,18 +36,6 @@ import AIAssistant from "@/pages/ai-assistant";
 import Upgrade from "@/pages/upgrade";
 import UpgradeSuccess from "@/pages/upgrade-success";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: (failureCount, error: any) => {
-        if (error?.message?.includes('401')) return false;
-        return failureCount < 3;
-      },
-    },
-  },
-});
-
 interface SubscriptionData {
   id: number;
   subscriptionPlan: string;
@@ -60,7 +49,7 @@ function Router() {
   const [initialLoad, setInitialLoad] = useState(true);
 
   // Check subscription status for authenticated users
-  const { data: subscriptionData, isLoading: subscriptionLoading } = useQuery<SubscriptionData>({
+  const { data: subscriptionData, isLoading: subscriptionLoading, error: subscriptionError } = useQuery<SubscriptionData>({
     queryKey: ["/api/subscription"],
     enabled: isAuthenticated,
     retry: false,

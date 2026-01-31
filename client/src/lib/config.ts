@@ -1,7 +1,16 @@
-// Configuration for API endpoints  
+// Configuration for API endpoints
+
+// More robust check for Capacitor native environment
+function isNativeApp(): boolean {
+  if (typeof window === 'undefined') return false;
+  const capacitor = (window as any).Capacitor;
+  // Must have Capacitor AND be native (not just web with Capacitor installed)
+  return capacitor && capacitor.isNativePlatform && capacitor.isNativePlatform();
+}
+
 export const API_CONFIG = {
   // Use deployed URL for stable mobile connectivity
-  baseUrl: typeof window !== 'undefined' && (window as any).Capacitor 
+  baseUrl: isNativeApp() 
     ? 'https://the-mom-app.replit.app'
     : '', // Empty string for relative URLs in web browsers
   
@@ -16,15 +25,15 @@ export const API_CONFIG = {
 let currentServerIndex = 0;
 
 export function getApiUrl(endpoint: string): string {
-  if (typeof window !== 'undefined' && (window as any).Capacitor) {
+  if (isNativeApp()) {
     // Mobile app - use current server from fallback list
     return API_CONFIG.fallbackUrls[currentServerIndex] + endpoint;
   }
-  return API_CONFIG.baseUrl + endpoint;
+  return endpoint; // Use relative URL for web browsers
 }
 
 export function switchToNextServer(): boolean {
-  if (typeof window !== 'undefined' && (window as any).Capacitor) {
+  if (isNativeApp()) {
     currentServerIndex = (currentServerIndex + 1) % API_CONFIG.fallbackUrls.length;
     return currentServerIndex !== 0; // Return true if we have more servers to try
   }
