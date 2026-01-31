@@ -189,8 +189,13 @@ interface RichTextDisplayProps {
 }
 
 function stripHtml(html: string): string {
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  return doc.body.textContent || '';
+  let text = html
+    .replace(/<\/li>/gi, ' ')
+    .replace(/<\/p>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/div>/gi, ' ');
+  const doc = new DOMParser().parseFromString(text, 'text/html');
+  return (doc.body.textContent || '').replace(/\s+/g, ' ').trim();
 }
 
 export function RichTextDisplay({ content, className, truncate = false, maxLength = 100 }: RichTextDisplayProps) {
