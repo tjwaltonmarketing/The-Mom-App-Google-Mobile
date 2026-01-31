@@ -2911,6 +2911,49 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Start Trial Endpoint
+  app.post("/api/subscription/start-trial", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { plan } = req.body;
+      
+      if (!plan || !["individual", "family"].includes(plan)) {
+        return res.status(400).json({ error: "Valid plan (individual or family) is required" });
+      }
+
+      // Check if subscription already exists
+      const existingSubscription = await storage.getUserSubscription(req.session.userId);
+      
+      if (existingSubscription) {
+        // Update existing subscription with new plan
+        const updated = await storage.updateUserSubscription(req.session.userId, {
+          subscriptionPlan: plan,
+          subscriptionStatus: "active",
+          trialStartDate: new Date(),
+          trialEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        });
+        return res.json(updated);
+      }
+
+      // Create new trial subscription
+      const newSubscription = await storage.createUserSubscription({
+        userId: req.session.userId,
+        subscriptionPlan: plan,
+        subscriptionStatus: "active",
+        trialStartDate: new Date(),
+        trialEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
+      });
+
+      res.json(newSubscription);
+    } catch (error) {
+      console.error("Start trial error:", error);
+      res.status(500).json({ error: "Failed to start trial" });
+    }
+  });
+
   // AI Chat Endpoint with Event/Task Creation
   app.post("/api/ai/chat", async (req, res) => {
     try {

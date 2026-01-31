@@ -12,6 +12,7 @@ import Register from "@/pages/register";
 import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import Dashboard from "@/pages/dashboard";
+import Onboarding from "@/pages/onboarding";
 import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 import Calendar from "@/pages/calendar";
@@ -44,10 +45,31 @@ const queryClient = new QueryClient({
   },
 });
 
+interface SubscriptionData {
+  id: number;
+  subscriptionPlan: string;
+  subscriptionStatus: string;
+  trialDaysLeft?: number;
+}
+
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [splashCompleted, setSplashCompleted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
+
+  // Check subscription status for authenticated users
+  const { data: subscriptionData, isLoading: subscriptionLoading } = useQuery<SubscriptionData>({
+    queryKey: ["/api/subscription"],
+    enabled: isAuthenticated,
+    retry: false,
+  });
+
+  // Determine if user needs onboarding (no subscription or expired)
+  const needsOnboarding = isAuthenticated && !subscriptionLoading && (
+    !subscriptionData || 
+    subscriptionData.subscriptionStatus === "expired" ||
+    (subscriptionData.subscriptionPlan === "trial" && subscriptionData.trialDaysLeft === 0)
+  );
 
   // Only check teen auth if parent auth is not authenticated or loading
   const { data: teenData, isLoading: teenLoading, error: teenError } = useQuery({
@@ -97,7 +119,7 @@ function Router() {
   if (!splashCompleted && initialLoad) {
     return (
       <SplashScreen 
-        isLoading={isLoading || teenLoading} 
+        isLoading={isLoading || teenLoading || (isAuthenticated && subscriptionLoading)} 
         onComplete={() => {
           setSplashCompleted(true);
           setInitialLoad(false);
@@ -119,6 +141,7 @@ function Router() {
       <Route path="/teen-join" component={TeenOnboarding} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
+      <Route path="/onboarding" component={Onboarding} />
 
       {/* Teen dashboard route - only render if teen is authenticated */}
       <Route path="/teen-dashboard">
@@ -161,6 +184,9 @@ function Router() {
         <>
           {!isAuthenticated ? (
             <Route path="/" component={Login} />
+          ) : needsOnboarding ? (
+            // Show onboarding for users without active subscription
+            <Route path="/" component={Onboarding} />
           ) : (
             <>
               <Route path="/" component={Dashboard} />
