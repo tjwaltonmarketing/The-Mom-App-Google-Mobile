@@ -19,16 +19,24 @@ export function ShareModal({ onShare, onSkip, isLoading = false }: ShareModalPro
     setHasOpened(true);
     
     const shareUrl = "https://themom.app";
-    const shareText = "I just discovered The Mom App - it's like having a personal assistant for all the family chaos! Check it out:";
     
     if (platform === "facebook") {
+      const shareText = "I just discovered The Mom App - it's like having a personal assistant for all the family chaos! Check it out:";
       window.open(
         `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
         "_blank",
         "width=600,height=400"
       );
     } else if (platform === "instagram") {
-      navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+      const instagramCaption = `I just discovered The Mom App and it's a game changer! 🙌
+
+Finally, an app that actually helps with the mental load of running a family. Smart calendar, task management, meal planning - all in one place.
+
+Try it FREE for 14 days! Link in bio 👆
+themom.app
+
+#momlife #momhacks #familyorganizer #busymom #parentingtips #momapproved #TheMomApp`;
+      navigator.clipboard.writeText(instagramCaption);
     }
   };
 
@@ -94,8 +102,8 @@ export function ShareModal({ onShare, onSkip, isLoading = false }: ShareModalPro
 
         <p className="text-xs text-gray-500">
           {selectedPlatform === "instagram" 
-            ? "Link copied! Paste it on Instagram to share."
-            : "(Instagram will copy the share link to your clipboard)"}
+            ? "Caption copied! Paste it in your Instagram post or story."
+            : "(Instagram copies a ready-to-post caption with hashtags)"}
         </p>
 
         <Button
