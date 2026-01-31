@@ -98,7 +98,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex flex-col" style={{ fontFamily: "'Poppins', sans-serif" }}>
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-md mx-auto w-full">
         <div className="w-full max-h-[300px] mb-6 flex items-center justify-center">
           <img
@@ -255,7 +255,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
             disabled={isLoading}
             className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg"
           >
-            {isLoading ? "Starting your trial..." : isLastSlide ? "Start my 14-day free trial" : slide.cta}
+            {isLoading ? "STARTING YOUR TRIAL..." : isLastSlide ? "START MY 14-DAY FREE TRIAL" : slide.cta}
             {!isLoading && <ChevronRight className="ml-2 h-5 w-5" />}
           </Button>
 
