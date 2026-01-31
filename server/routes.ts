@@ -2941,6 +2941,73 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Track referral share and optionally extend trial
+  app.post("/api/referral/share", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { platform } = req.body; // "facebook", "instagram", or "skip"
+      
+      if (!platform) {
+        return res.status(400).json({ error: "Platform is required" });
+      }
+
+      // Create the referral share record
+      const bonusAwarded = platform !== "skip";
+      const bonusDays = bonusAwarded ? 7 : 0;
+
+      const share = await storage.createReferralShare({
+        userId: req.session.userId,
+        platform,
+        bonusAwarded,
+        bonusDays,
+      });
+
+      // If they shared (not skipped), extend their trial by 7 days
+      if (bonusAwarded) {
+        const subscription = await storage.getUserSubscription(req.session.userId);
+        if (subscription && subscription.trialEndDate) {
+          const newTrialEndDate = new Date(subscription.trialEndDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+          await storage.updateUserSubscription(req.session.userId, {
+            trialEndDate: newTrialEndDate,
+          });
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        bonusAwarded,
+        bonusDays,
+        message: bonusAwarded ? "Your trial has been extended by 7 days!" : "No problem, enjoy your trial!"
+      });
+    } catch (error) {
+      console.error("Referral share error:", error);
+      res.status(500).json({ error: "Failed to track share" });
+    }
+  });
+
+  // Get referral share analytics (admin only - for now any authenticated user)
+  app.get("/api/referral/stats", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const stats = await storage.getReferralShareStats();
+      const shareRate = stats.total > 0 ? Math.round((stats.shared / stats.total) * 100) : 0;
+
+      res.json({
+        ...stats,
+        shareRate,
+      });
+    } catch (error) {
+      console.error("Referral stats error:", error);
+      res.status(500).json({ error: "Failed to get stats" });
+    }
+  });
+
   // AI Chat Endpoint with Event/Task Creation
   app.post("/api/ai/chat", async (req, res) => {
     try {

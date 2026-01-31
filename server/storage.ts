@@ -8,6 +8,7 @@ import {
   notifications,
   pushTokens,
   userSubscriptions,
+  referralShares,
   passwords,
   passwordResetTokens,
   groceryItems,
@@ -42,6 +43,8 @@ import {
   type InsertPushToken,
   type UserSubscription,
   type InsertUserSubscription,
+  type ReferralShare,
+  type InsertReferralShare,
   type Password,
   type InsertPassword,
   type PasswordResetToken,
@@ -223,6 +226,11 @@ export interface IStorage {
   getUserSubscription(userId: number): Promise<UserSubscription | undefined>;
   createUserSubscription(subscription: InsertUserSubscription): Promise<UserSubscription>;
   updateUserSubscription(userId: number, updates: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined>;
+
+  // Referral Shares (for analytics)
+  createReferralShare(share: InsertReferralShare): Promise<ReferralShare>;
+  getReferralSharesByUser(userId: number): Promise<ReferralShare[]>;
+  getReferralShareStats(): Promise<{ total: number; shared: number; skipped: number }>;
 
   // Passwords
   getPasswords(): Promise<Password[]>;
@@ -1380,6 +1388,24 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userSubscriptions.userId, userId))
       .returning();
     return updatedSubscription;
+  }
+
+  // Referral Shares
+  async createReferralShare(share: InsertReferralShare): Promise<ReferralShare> {
+    const [newShare] = await db.insert(referralShares).values(share).returning();
+    return newShare;
+  }
+
+  async getReferralSharesByUser(userId: number): Promise<ReferralShare[]> {
+    return await db.select().from(referralShares).where(eq(referralShares.userId, userId));
+  }
+
+  async getReferralShareStats(): Promise<{ total: number; shared: number; skipped: number }> {
+    const allShares = await db.select().from(referralShares);
+    const total = allShares.length;
+    const shared = allShares.filter(s => s.platform !== 'skip').length;
+    const skipped = allShares.filter(s => s.platform === 'skip').length;
+    return { total, shared, skipped };
   }
 
   // Helper method to automatically create notifications when tasks are assigned
