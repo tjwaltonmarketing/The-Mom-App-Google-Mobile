@@ -65,7 +65,8 @@ export default function Upgrade() {
   const checkoutMutation = useMutation({
     mutationFn: async ({ plan, interval }: { plan: string; interval: string }) => {
       const response = await apiRequest("POST", "/api/checkout/create-session", { plan, interval });
-      return response as { url: string };
+      const data = await response.json();
+      return data as { url: string };
     },
     onSuccess: (data) => {
       if (data.url) {
