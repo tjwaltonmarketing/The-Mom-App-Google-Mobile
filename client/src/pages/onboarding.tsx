@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { OnboardingFlow } from "@/components/onboarding-flow";
+import { ShareModal } from "@/components/share-modal";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Onboarding() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const startTrialMutation = useMutation({
     mutationFn: async (plan: "individual" | "family") => {
@@ -14,11 +17,7 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-      toast({
-        title: "Welcome to The Mom App!",
-        description: "Your 14-day free trial has started.",
-      });
-      setLocation("/");
+      setShowShareModal(true);
     },
     onError: (error: any) => {
       toast({
@@ -29,13 +28,59 @@ export default function Onboarding() {
     },
   });
 
+  const shareMutation = useMutation({
+    mutationFn: async (platform: "facebook" | "instagram" | "skip") => {
+      return apiRequest("POST", "/api/referral/share", { platform });
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+      if (data.bonusAwarded) {
+        toast({
+          title: "Bonus Week Added!",
+          description: "Your trial is now 21 days. Thanks for sharing!",
+        });
+      } else {
+        toast({
+          title: "Welcome to The Mom App!",
+          description: "Your 14-day free trial has started.",
+        });
+      }
+      setLocation("/");
+    },
+    onError: () => {
+      toast({
+        title: "Welcome to The Mom App!",
+        description: "Your 14-day free trial has started.",
+      });
+      setLocation("/");
+    },
+  });
+
   const handleStartTrial = (plan: "individual" | "family") => {
     startTrialMutation.mutate(plan);
+  };
+
+  const handleShare = (platform: "facebook" | "instagram") => {
+    shareMutation.mutate(platform);
+  };
+
+  const handleSkip = () => {
+    shareMutation.mutate("skip");
   };
 
   const handleComplete = () => {
     setLocation("/");
   };
+
+  if (showShareModal) {
+    return (
+      <ShareModal
+        onShare={handleShare}
+        onSkip={handleSkip}
+        isLoading={shareMutation.isPending}
+      />
+    );
+  }
 
   return (
     <OnboardingFlow 
