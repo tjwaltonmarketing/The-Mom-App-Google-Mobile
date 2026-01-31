@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, ChevronRight, ChevronLeft } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Mic } from "lucide-react";
 import onboardingSlide1 from "@/assets/images/onboarding-slide-1.png";
 import onboardingSlide2 from "@/assets/images/onboarding-slide-2.png";
 import onboardingSlide3 from "@/assets/images/onboarding-slide-3.png";
@@ -45,6 +45,7 @@ const slides = [
       '"Add milk, eggs, and snacks to the grocery list."',
       '"Put soccer practice on the calendar."',
     ],
+    micTip: "Just tap the microphone icon to get started:",
     tagline: "We turn your words into tasks, lists, and plans instantly.",
     subtagline: "No typing. No digging. No mental clutter.",
     trust: "Built for real moms with real chaos.",
@@ -132,6 +133,15 @@ export function OnboardingFlow({ onComplete, onStartTrial }: OnboardingFlowProps
               {slide.examples.map((example, idx) => (
                 <p key={idx} className="text-gray-600 italic text-sm">{example}</p>
               ))}
+            </div>
+          )}
+
+          {slide.micTip && (
+            <div className="flex items-center justify-center gap-2 bg-pink-50 rounded-full px-4 py-2 mt-2">
+              <span className="text-gray-700 text-sm">{slide.micTip}</span>
+              <div className="bg-pink-500 rounded-full p-2">
+                <Mic className="h-4 w-4 text-white" />
+              </div>
             </div>
           )}
 
