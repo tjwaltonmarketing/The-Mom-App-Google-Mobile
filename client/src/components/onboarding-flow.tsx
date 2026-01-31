@@ -10,6 +10,7 @@ import onboardingSlide4 from "@/assets/images/onboarding-slide-4.png";
 interface OnboardingFlowProps {
   onComplete: (plan?: "individual" | "family") => void;
   onStartTrial: (plan: "individual" | "family") => void;
+  isLoading?: boolean;
 }
 
 const slides = [
@@ -54,15 +55,16 @@ const slides = [
   {
     id: 4,
     image: onboardingSlide4,
-    headline: "Keep mom life easier every day",
+    headline: "Start your 14-day free trial",
+    trialBadge: "No credit card required",
     body: "You've unlocked a simpler way to manage:",
     features: ["Tasks", "Schedules", "Meals", "Family life"],
-    tagline: "Keep full access to everything The Mom App offers.",
+    tagline: "Try everything free for 14 days, then choose a plan.",
     isPricing: true,
   },
 ];
 
-export function OnboardingFlow({ onComplete, onStartTrial }: OnboardingFlowProps) {
+export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: OnboardingFlowProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState<"individual" | "family">("family");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
@@ -163,6 +165,11 @@ export function OnboardingFlow({ onComplete, onStartTrial }: OnboardingFlowProps
 
           {slide.isPricing && (
             <div className="space-y-4">
+              {slide.trialBadge && (
+                <div className="inline-block bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-medium">
+                  {slide.trialBadge}
+                </div>
+              )}
               <p className="text-gray-600">{slide.body}</p>
               
               {slide.features && (
@@ -245,10 +252,11 @@ export function OnboardingFlow({ onComplete, onStartTrial }: OnboardingFlowProps
 
           <Button
             onClick={handleNext}
+            disabled={isLoading}
             className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg"
           >
-            {isLastSlide ? "Start my free trial" : slide.cta}
-            <ChevronRight className="ml-2 h-5 w-5" />
+            {isLoading ? "Starting your trial..." : isLastSlide ? "Start my 14-day free trial" : slide.cta}
+            {!isLoading && <ChevronRight className="ml-2 h-5 w-5" />}
           </Button>
 
           {currentSlide > 0 && (

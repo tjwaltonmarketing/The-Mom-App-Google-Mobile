@@ -41,6 +41,7 @@ export default function Onboarding() {
     <OnboardingFlow 
       onComplete={handleComplete}
       onStartTrial={handleStartTrial}
+      isLoading={startTrialMutation.isPending}
     />
   );
 }
