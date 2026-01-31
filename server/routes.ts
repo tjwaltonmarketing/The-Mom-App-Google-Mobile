@@ -2878,21 +2878,8 @@ export async function registerRoutes(app: Express) {
       const subscription = await storage.getUserSubscription(req.session.userId);
       
       if (!subscription) {
-        // Create a new trial subscription if none exists
-        const newSubscription = await storage.createUserSubscription({
-          userId: req.session.userId,
-          subscriptionPlan: "trial",
-          subscriptionStatus: "active",
-          trialStartDate: new Date(),
-          trialEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
-        });
-        
-        const trialDaysLeft = Math.max(0, Math.ceil((newSubscription.trialEndDate!.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
-        
-        return res.json({
-          ...newSubscription,
-          trialDaysLeft
-        });
+        // No subscription exists - user needs to complete onboarding first
+        return res.json(null);
       }
 
       // Calculate trial days remaining
