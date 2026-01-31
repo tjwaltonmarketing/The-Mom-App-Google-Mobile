@@ -1,13 +1,14 @@
 import { useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2, PartyPopper } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function UpgradeSuccess() {
   const [, setLocation] = useLocation();
   const search = useSearch();
+  const queryClient = useQueryClient();
   const sessionId = new URLSearchParams(search).get("session_id");
 
   const verifyMutation = useMutation({

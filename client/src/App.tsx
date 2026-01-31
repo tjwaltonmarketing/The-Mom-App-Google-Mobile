@@ -66,10 +66,13 @@ function Router() {
     retry: false,
   });
 
-  // Determine if user needs onboarding (no subscription or expired)
-  const needsOnboarding = isAuthenticated && !subscriptionLoading && (
-    !subscriptionData || 
+  // Determine if user needs onboarding (never had a subscription)
+  const needsOnboarding = isAuthenticated && !subscriptionLoading && !subscriptionData;
+
+  // Determine if user needs to upgrade (expired trial or cancelled subscription)
+  const needsUpgrade = isAuthenticated && !subscriptionLoading && subscriptionData && (
     subscriptionData.subscriptionStatus === "expired" ||
+    subscriptionData.subscriptionStatus === "cancelled" ||
     (subscriptionData.subscriptionPlan === "trial" && subscriptionData.trialDaysLeft === 0)
   );
 
@@ -189,8 +192,11 @@ function Router() {
           {!isAuthenticated ? (
             <Route path="/" component={Login} />
           ) : needsOnboarding ? (
-            // Show onboarding for users without active subscription
+            // Show onboarding for users who never had a subscription
             <Route path="/" component={Onboarding} />
+          ) : needsUpgrade ? (
+            // Show upgrade page for users with expired trial or cancelled subscription
+            <Route path="/" component={Upgrade} />
           ) : (
             <>
               <Route path="/" component={Dashboard} />
