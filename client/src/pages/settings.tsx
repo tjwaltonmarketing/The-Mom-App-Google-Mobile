@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star, Mail, KeyRound, CheckSquare } from "lucide-react";
+import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star, Mail, KeyRound, CheckSquare, Crown, CreditCard } from "lucide-react";
 import { Link } from "wouter";
 // import { CalendarSync } from "@/components/calendar-sync"; // Disabled until Google OAuth verification
 import { ImportExportModal } from "@/components/import-export-modal";
@@ -556,9 +556,10 @@ export default function SettingsPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="family">Family</TabsTrigger>
+            <TabsTrigger value="plans">Plans</TabsTrigger>
             <TabsTrigger value="account">Account</TabsTrigger>
           </TabsList>
 
@@ -1143,6 +1144,39 @@ export default function SettingsPage() {
                 <Button variant="outline" className="w-full justify-start" onClick={handleDeleteAccount}>
                   Delete Account
                 </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="plans" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-primary" />
+                  Your Subscription
+                </CardTitle>
+                <CardDescription>
+                  Manage your plan and billing details
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div>
+                    <p className="font-medium">Current Plan</p>
+                    <p className="text-sm text-muted-foreground">
+                      Your subscription details
+                    </p>
+                  </div>
+                  <Link href="/upgrade">
+                    <Button>
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      View Plans & Upgrade
+                    </Button>
+                  </Link>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  <p>Need help with billing? Contact our support team.</p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

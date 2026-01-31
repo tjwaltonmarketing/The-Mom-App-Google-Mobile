@@ -135,8 +135,8 @@ export default function CalendarPage() {
           const dateLabel = format(eventDate, 'EEEE, MMMM d, yyyy');
 
           return (
-            <div key={date} className={`rounded-lg border p-4 ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-white'}`}>
-              <h3 className="font-semibold text-lg mb-3 text-gray-800">{dateLabel}</h3>
+            <div key={date} className={`rounded-lg border p-4 ${isToday ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800' : 'bg-white dark:bg-gray-800 dark:border-gray-700'}`}>
+              <h3 className="font-semibold text-lg mb-3 text-gray-800 dark:text-gray-100">{dateLabel}</h3>
               <div className="space-y-2">
                 {dayEvents.map(event => {
                   const eventStart = new Date(event.startTime);
@@ -148,18 +148,18 @@ export default function CalendarPage() {
                   return (
                     <div 
                       key={event.id} 
-                      className="flex items-center justify-between p-3 bg-white rounded border border-gray-200 hover:border-gray-300 transition-colors"
+                      className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                         <div className="flex-1">
-                          <div className="font-medium text-gray-900">{event.title}</div>
-                          <div className="text-sm text-gray-600 flex items-center gap-1">
+                          <div className="font-medium text-gray-900 dark:text-gray-100">{event.title}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
                             <Clock size={14} />
                             {timeDisplay}
                           </div>
                           {event.description && (
-                            <div className="text-sm text-gray-500 mt-1">{event.description}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">{event.description}</div>
                           )}
                           {event.location && (
                             <div className="mt-2">

@@ -64,7 +64,7 @@ export function FamilyProgress() {
           teens.map((teen) => (
             <div 
               key={teen.id} 
-              className="flex items-center justify-between p-2 rounded-lg bg-gray-50"
+              className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800"
             >
               <div className="flex items-center gap-2">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${getColorClass(teen.favoriteColor)}`}>

@@ -50,15 +50,13 @@ export function WeatherWidget() {
         location: "Current Location"
       });
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Weather fetch error:', error);
-      setError('Weather data unavailable');
-      // Set reasonable default data
-      setWeatherData({
-        temperature: 72,
-        description: "Weather information unavailable",
-        outfitSuggestion: "Check local forecast for outfit suggestions"
-      });
+      const errorMessage = error?.message?.includes('Location') 
+        ? 'Enable location for weather' 
+        : 'Weather data unavailable';
+      setError(errorMessage);
+      setWeatherData(null);
     } finally {
       setLoading(false);
     }
@@ -67,22 +65,19 @@ export function WeatherWidget() {
   const getCurrentLocation = (): Promise<GeolocationPosition> => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
-        // Default to San Francisco coordinates
-        resolve({
-          coords: { latitude: 37.7749, longitude: -122.4194 }
-        } as GeolocationPosition);
+        // Reject with helpful message when geolocation is not available
+        reject(new Error('Location services are not available on this device. Enable location in your browser settings.'));
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
         resolve,
-        () => {
-          // Default location if geolocation fails
-          resolve({
-            coords: { latitude: 37.7749, longitude: -122.4194 }
-          } as GeolocationPosition);
+        (error) => {
+          console.warn('Geolocation error:', error.message);
+          // Reject to show error message instead of wrong location
+          reject(new Error('Location access denied or unavailable. Enable location permissions in your device settings for accurate weather.'));
         },
-        { timeout: 5000 }
+        { timeout: 10000, enableHighAccuracy: false }
       );
     });
   };
@@ -135,7 +130,7 @@ export function WeatherWidget() {
         </CardHeader>
         <CardContent>
           <div className="text-center text-gray-100">
-            <p className="mb-2">Weather unavailable</p>
+            <p className="mb-2 text-sm">{error}</p>
             <button 
               onClick={fetchWeatherData}
               className="text-sm underline hover:text-white"

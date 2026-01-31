@@ -55,12 +55,12 @@ export function VoiceNotes({ onStartRecording }: VoiceNotesProps) {
           </div>
         ) : (
           <>
-            <div className="bg-gray-50 rounded-lg p-3">
-              <div className="flex items-center justify-center gap-3 text-gray-500">
-                <Mic className="h-6 w-6 text-gray-300" />
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+              <div className="flex items-center justify-center gap-3 text-gray-500 dark:text-gray-400">
+                <Mic className="h-6 w-6 text-gray-300 dark:text-gray-500" />
                 <div>
-                  <p className="text-sm">Tap the microphone to start a voice note</p>
-                  <p className="text-xs text-gray-400">Auto-converts to text & creates tasks!</p>
+                  <p className="text-sm dark:text-gray-300">Tap the microphone to start a voice note</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">Auto-converts to text & creates tasks!</p>
                 </div>
               </div>
             </div>

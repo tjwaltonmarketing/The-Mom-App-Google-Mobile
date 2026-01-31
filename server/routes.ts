@@ -1229,6 +1229,124 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Parent endpoint to get teen points (for point management in settings)
+  app.get("/api/teen/points/:teenId", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated as parent" });
+      }
+
+      const teenId = parseInt(req.params.teenId);
+      if (isNaN(teenId)) {
+        return res.status(400).json({ error: "Invalid teen ID" });
+      }
+
+      // Get family member by ID (teenId is actually familyMemberId)
+      const familyMember = await storage.getFamilyMemberById(teenId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Verify parent belongs to same family
+      const parentMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!parentMembership || parentMembership.familyId !== familyMember.familyId) {
+        return res.status(403).json({ error: "Not authorized to view this teen's points" });
+      }
+
+      res.json({
+        teenId: familyMember.id,
+        name: familyMember.name,
+        username: familyMember.name,
+        points: familyMember.points || 0,
+        streak: 0,
+        lastActivity: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Get teen points error:", error);
+      res.status(500).json({ error: "Failed to get teen points" });
+    }
+  });
+
+  // Parent endpoint to deduct teen points
+  app.post("/api/teen/points/:teenId/deduct", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated as parent" });
+      }
+
+      const teenId = parseInt(req.params.teenId);
+      const { amount, reason } = req.body;
+
+      if (isNaN(teenId) || !amount || amount <= 0) {
+        return res.status(400).json({ error: "Invalid request" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Verify parent belongs to same family
+      const parentMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!parentMembership || parentMembership.familyId !== familyMember.familyId) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      const currentPoints = familyMember.points || 0;
+      const newPoints = Math.max(0, currentPoints - amount);
+      
+      await storage.updateFamilyMember(teenId, { points: newPoints });
+
+      res.json({
+        deducted: currentPoints - newPoints,
+        newPoints,
+        reason
+      });
+    } catch (error) {
+      console.error("Deduct teen points error:", error);
+      res.status(500).json({ error: "Failed to deduct points" });
+    }
+  });
+
+  // Parent endpoint to reset teen points
+  app.post("/api/teen/points/:teenId/reset", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated as parent" });
+      }
+
+      const teenId = parseInt(req.params.teenId);
+      const { reason } = req.body;
+
+      if (isNaN(teenId)) {
+        return res.status(400).json({ error: "Invalid teen ID" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Verify parent belongs to same family
+      const parentMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!parentMembership || parentMembership.familyId !== familyMember.familyId) {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      const previousPoints = familyMember.points || 0;
+      await storage.updateFamilyMember(teenId, { points: 0 });
+
+      res.json({
+        previousPoints,
+        newPoints: 0,
+        reason
+      });
+    } catch (error) {
+      console.error("Reset teen points error:", error);
+      res.status(500).json({ error: "Failed to reset points" });
+    }
+  });
+
   // Parent Household Settings Endpoints
   app.get("/api/household-settings", async (req, res) => {
     try {

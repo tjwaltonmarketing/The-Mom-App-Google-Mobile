@@ -166,8 +166,8 @@ export function QuickTasks() {
                   key={task.id} 
                   className={`flex items-center space-x-3 p-3 rounded-lg transition-colors cursor-pointer ${
                     task.isCompleted 
-                      ? 'bg-gray-50 opacity-75' 
-                      : 'bg-gray-50 hover:bg-gray-100'
+                      ? 'bg-gray-50 dark:bg-gray-800 opacity-75' 
+                      : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                   onClick={() => setEditingTask(task)}
                 >
