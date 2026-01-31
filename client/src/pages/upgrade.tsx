@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -52,8 +52,14 @@ export default function Upgrade() {
 
   const cancelled = search.includes("cancelled=true");
 
+  const { data: authUser, isLoading: authLoading } = useQuery({
+    queryKey: ["/api/auth/user"],
+    retry: false,
+  });
+
   const { data: subscription } = useQuery<UserSubscription>({
     queryKey: ["/api/subscription"],
+    enabled: !!authUser,
   });
 
   const checkoutMutation = useMutation({
@@ -74,6 +80,23 @@ export default function Upgrade() {
       });
     },
   });
+
+  useEffect(() => {
+    if (!authLoading && !authUser) {
+      setLocation("/");
+    }
+  }, [authLoading, authUser, setLocation]);
+
+  if (authLoading || !authUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleUpgrade = () => {
     checkoutMutation.mutate({ plan: selectedPlan, interval: billingInterval });
