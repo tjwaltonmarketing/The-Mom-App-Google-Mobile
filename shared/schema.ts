@@ -28,6 +28,7 @@ export const userSubscriptions = pgTable("user_subscriptions", {
   subscriptionStatus: varchar("subscription_status", { length: 50 }).default("active"), // "active", "cancelled", "past_due", "expired"
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
   stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
+  billingInterval: varchar("billing_interval", { length: 20 }), // "monthly", "yearly"
   lastPaymentDate: timestamp("last_payment_date"),
   nextBillingDate: timestamp("next_billing_date"),
   createdAt: timestamp("created_at").defaultNow(),

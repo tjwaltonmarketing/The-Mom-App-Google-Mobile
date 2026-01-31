@@ -32,6 +32,8 @@ import GroceryList from "@/pages/grocery-list";
 import Notes from "@/pages/notes";
 import Tutorials from "@/pages/tutorials";
 import AIAssistant from "@/pages/ai-assistant";
+import Upgrade from "@/pages/upgrade";
+import UpgradeSuccess from "@/pages/upgrade-success";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -142,6 +144,8 @@ function Router() {
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/onboarding" component={Onboarding} />
+      <Route path="/upgrade" component={Upgrade} />
+      <Route path="/upgrade/success" component={UpgradeSuccess} />
 
       {/* Teen dashboard route - only render if teen is authenticated */}
       <Route path="/teen-dashboard">

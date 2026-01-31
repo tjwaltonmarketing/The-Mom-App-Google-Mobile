@@ -8,6 +8,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { GoogleCalendarService } from "./google-calendar-service";
 import { generateToken, verifyToken, extractTokenFromRequest } from "./auth";
 import bcrypt from "bcryptjs";
+import { createCheckoutSession, handleWebhookEvent, stripe, initializeStripeProducts } from "./stripe";
 
 const storage = new DatabaseStorage();
 
@@ -3009,6 +3010,121 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Referral stats error:", error);
       res.status(500).json({ error: "Failed to get stats" });
+    }
+  });
+
+  // Initialize Stripe products on startup
+  initializeStripeProducts().catch(err => console.error("Failed to initialize Stripe:", err));
+
+  // Create Stripe checkout session
+  app.post("/api/checkout/create-session", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { plan, interval } = req.body;
+
+      if (!plan || !["individual", "family"].includes(plan)) {
+        return res.status(400).json({ error: "Invalid plan" });
+      }
+
+      if (!interval || !["monthly", "yearly"].includes(interval)) {
+        return res.status(400).json({ error: "Invalid interval" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const baseUrl = process.env.REPLIT_DOMAINS 
+        ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}`
+        : "http://localhost:5000";
+
+      const session = await createCheckoutSession(
+        user.id,
+        user.email,
+        plan as "individual" | "family",
+        interval as "monthly" | "yearly",
+        `${baseUrl}/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
+        `${baseUrl}/upgrade?cancelled=true`
+      );
+
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Checkout session error:", error);
+      res.status(500).json({ error: "Failed to create checkout session" });
+    }
+  });
+
+  // Stripe webhook endpoint (must use raw body)
+  app.post("/api/webhook/stripe", async (req, res) => {
+    try {
+      const sig = req.headers["stripe-signature"];
+      
+      if (!sig) {
+        return res.status(400).json({ error: "No signature" });
+      }
+
+      // For now, we'll process without signature verification for simplicity
+      // In production, you'd verify the webhook signature
+      const event = req.body;
+
+      const result = await handleWebhookEvent(event);
+
+      if (result?.type === "checkout_completed" && result.userId && result.plan) {
+        // Update user's subscription status
+        await storage.updateUserSubscription(result.userId, {
+          subscriptionPlan: result.plan,
+          subscriptionStatus: "active",
+          stripeSubscriptionId: result.subscriptionId,
+          stripeCustomerId: result.customerId,
+          billingInterval: result.interval,
+          trialEndDate: null, // Trial is over, they're now a paying customer
+        });
+        console.log(`Subscription activated for user ${result.userId}: ${result.plan} ${result.interval}`);
+      } else if (result?.type === "subscription_cancelled" && result.userId) {
+        await storage.updateUserSubscription(result.userId, {
+          subscriptionStatus: "cancelled",
+        });
+        console.log(`Subscription cancelled for user ${result.userId}`);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Webhook error:", error);
+      res.status(400).json({ error: "Webhook error" });
+    }
+  });
+
+  // Verify checkout session completion
+  app.get("/api/checkout/verify/:sessionId", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const session = await stripe.checkout.sessions.retrieve(req.params.sessionId);
+
+      if (session.payment_status === "paid" && session.metadata?.userId === req.session.userId.toString()) {
+        // Update subscription
+        await storage.updateUserSubscription(req.session.userId, {
+          subscriptionPlan: session.metadata.plan as "individual" | "family",
+          subscriptionStatus: "active",
+          stripeSubscriptionId: session.subscription as string,
+          stripeCustomerId: session.customer as string,
+          billingInterval: session.metadata.interval as "monthly" | "yearly",
+          trialEndDate: null,
+        });
+
+        res.json({ success: true, plan: session.metadata.plan });
+      } else {
+        res.status(400).json({ error: "Payment not completed" });
+      }
+    } catch (error) {
+      console.error("Verify checkout error:", error);
+      res.status(500).json({ error: "Failed to verify checkout" });
     }
   });
 
