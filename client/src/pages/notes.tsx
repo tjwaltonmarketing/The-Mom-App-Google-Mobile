@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { RichTextEditor, RichTextDisplay } from "@/components/ui/rich-text-editor";
@@ -24,6 +25,7 @@ export default function Notes() {
   const [editingNote, setEditingNote] = useState<TextNote | null>(null);
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const [newNoteContent, setNewNoteContent] = useState("");
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -613,6 +615,14 @@ export default function Notes() {
           </TabsContent>
 
           <TabsContent value="voice" className="mt-6">
+            <Button
+              onClick={() => setIsVoiceModalOpen(true)}
+              className="w-full mb-6 bg-primary hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create New Voice Note
+            </Button>
+            
             {voiceNotesLoading ? (
               <div className="flex items-center justify-center py-12">
                 <LoadingSpinner variant="mom" size="lg" />
@@ -628,7 +638,7 @@ export default function Notes() {
                     <p className="text-gray-500 dark:text-gray-400">
                       {searchTerm 
                         ? "Try adjusting your search terms" 
-                        : "Start recording voice notes from the dashboard to see them here"
+                        : "Tap the button above to record your first voice note"
                       }
                     </p>
                   </div>
@@ -676,6 +686,11 @@ export default function Notes() {
       </main>
 
       <MobileNav />
+      
+      <VoiceNoteModal 
+        isOpen={isVoiceModalOpen} 
+        onClose={() => setIsVoiceModalOpen(false)} 
+      />
     </div>
   );
 }
