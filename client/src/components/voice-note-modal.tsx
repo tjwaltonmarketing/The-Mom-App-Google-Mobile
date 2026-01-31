@@ -26,6 +26,8 @@ interface SmartAction {
   description?: string;
   dueDate?: Date;
   assignedTo?: number;
+  assigneeName?: string;
+  points?: number;
   priority?: string;
 }
 
@@ -102,6 +104,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
         description: task.description,
         priority: task.priority || "medium",
         assignedTo: task.assignedTo,
+        points: task.points || 10,
         dueDate: task.dueDate,
       });
     },
@@ -306,7 +309,22 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
                           </Badge>
                         </div>
                         {action.description && (
-                          <p className="text-xs text-gray-600 mb-3">{action.description}</p>
+                          <p className="text-xs text-gray-600 mb-2">{action.description}</p>
+                        )}
+                        
+                        {action.type === "task" && (action.assigneeName || action.points) && (
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {action.assigneeName && (
+                              <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-700">
+                                Assigned to: {action.assigneeName}
+                              </Badge>
+                            )}
+                            {action.points && (
+                              <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-700">
+                                {action.points} points
+                              </Badge>
+                            )}
+                          </div>
                         )}
                         
                         {action.type === "event" && (

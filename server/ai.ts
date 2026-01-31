@@ -647,25 +647,37 @@ IMPORTANT:
   const prompt = `Parse this voice input from a parent and extract actionable tasks:
 "${voiceInput}"
 
-Family members available for assignment: ${familyMembers.map(m => `${m.name} (ID: ${m.id})`).join(", ")}
+FAMILY MEMBERS (use these exact IDs for assignment):
+${familyMembers.map(m => `- ${m.name} (ID: ${m.id}, role: ${m.role})`).join("\n")}
 
-Extract specific tasks with:
-- Clear task titles
-- IMPORTANT: Always include "type": "task" for each task
-- Assign to family members when mentioned by name (use their ID number)
-- Set due dates if time references are mentioned (use ISO format)
-- Set priority (low/medium/high) based on urgency
+EXTRACTION RULES:
+1. ALWAYS include "type": "task" for each task
+2. FAMILY MEMBER ASSIGNMENT: When a name is mentioned (e.g., "assign Everlie", "give Emily", "for TJ"), match it to a family member above and use their ID
+   - Match partial names: "Everlie" matches "Everlie", "Em" matches "Emily"  
+   - Set "assignedTo" to the family member's ID number
+   - Set "assigneeName" to their full name for display
+3. POINTS: If points are mentioned (e.g., "assign 5 points", "worth 10 points", "5 points"), extract the number
+   - Default to 10 points if not specified
+4. Set due dates if time references are mentioned (use ISO format)
+5. Set priority (low/medium/high) based on urgency words
+
+EXAMPLES:
+- "assign Everlie task to clean her room and assign 5 points" → assignedTo: [Everlie's ID], points: 5
+- "give Emily a task to do homework worth 15 points" → assignedTo: [Emily's ID], points: 15
+- "create a task for TJ to take out trash" → assignedTo: [TJ's ID], points: 10
 
 Respond with JSON: { 
   "tasks": [
     {
-      "title": "Clean the kitchen",
+      "title": "Clean the room",
       "type": "task",
-      "assignedTo": 1,
+      "assignedTo": 38,
+      "assigneeName": "Everlie",
+      "points": 5,
       "priority": "medium"
     }
   ], 
-  "interpretation": "friendly summary of what I understood" 
+  "interpretation": "I'll assign Everlie the task to clean her room with 5 points" 
 }`;
 
   try {
@@ -676,10 +688,12 @@ Respond with JSON: {
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
-    // Ensure all tasks have type "task"
+    // Ensure all tasks have type "task" and include points/assignee
     const tasks = (result.tasks || []).map((task: any) => ({
       ...task,
-      type: task.type || "task"
+      type: task.type || "task",
+      points: task.points || 10,
+      assigneeName: task.assigneeName || null
     }));
     return {
       tasks,
