@@ -1,14 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
+function getAuthToken(): string | null {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    return localStorage.getItem('auth_token');
+  }
+  return null;
+}
+
 export function useAuth() {
   const queryClient = useQueryClient();
 
   const { data: user, isLoading, error } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
+      const headers: Record<string, string> = {};
+      
+      // Include JWT token for mobile/cross-origin compatibility
+      const token = getAuthToken();
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      
       const response = await fetch("/api/auth/user", {
         credentials: "include",
+        headers,
       });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
