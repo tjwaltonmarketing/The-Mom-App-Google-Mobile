@@ -750,3 +750,21 @@ export type InsertHouseholdSettings = z.infer<typeof insertHouseholdSettingsSche
 
 export type PushToken = typeof pushTokens.$inferSelect;
 export type InsertPushToken = z.infer<typeof insertPushTokenSchema>;
+
+// Referral sharing tracking for analytics
+export const referralShares = pgTable("referral_shares", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  platform: varchar("platform", { length: 50 }).notNull(), // "facebook", "instagram", "skip"
+  bonusAwarded: boolean("bonus_awarded").default(false), // Whether bonus week was given
+  bonusDays: integer("bonus_days").default(0), // Number of bonus days awarded
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertReferralShareSchema = createInsertSchema(referralShares).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type ReferralShare = typeof referralShares.$inferSelect;
+export type InsertReferralShare = z.infer<typeof insertReferralShareSchema>;
