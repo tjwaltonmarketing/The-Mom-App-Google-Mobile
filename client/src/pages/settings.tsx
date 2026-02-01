@@ -952,25 +952,25 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Teen Point Management Section - Only show if there are teen family members */}
-            {familyMembers.some(member => member.role === 'teen') && (
+            {/* Kids Point Management Section - Show for all child/teen family members */}
+            {familyMembers.some(member => member.role === 'teen' || member.role === 'child') && (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <Star className="h-5 w-5 text-yellow-500" />
-                  Teen Reward Management
+                  Kids Reward Management
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Manage points and rewards for teen family members
+                  Manage points and rewards for your kids
                 </p>
                 
-                {/* Show Teen Point Manager for each teen family member */}
+                {/* Show Point Manager for each child/teen family member */}
                 {familyMembers
-                  .filter(member => member.role === 'teen')
-                  .map(teenMember => (
+                  .filter(member => member.role === 'teen' || member.role === 'child')
+                  .map(kidMember => (
                     <TeenPointManager 
-                      key={teenMember.id} 
-                      teenId={teenMember.id} 
-                      teenName={teenMember.name} 
+                      key={kidMember.id} 
+                      teenId={kidMember.id} 
+                      teenName={kidMember.name} 
                     />
                   ))
                 }

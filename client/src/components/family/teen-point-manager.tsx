@@ -137,19 +137,17 @@ export function TeenPointManager({ teenId, teenName }: TeenPointManagerProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5" />
-            {teenName} - Point Management
+            <Star className="h-5 w-5 text-yellow-500" />
+            {teenName} - Points
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-gray-500">
-            {error ? `Error loading teen data: ${error.message}` : "Teen not found or no points data available."}
+            {error?.message?.includes("404") || !error 
+              ? `${teenName} doesn't have a points account set up yet. Set up a teen account for them to start earning points by completing tasks!`
+              : `Unable to load points data. Please try again.`
+            }
           </p>
-          {error && (
-            <div className="mt-2 text-sm text-red-600 dark:text-red-400">
-              Please ensure you're logged in as a parent to manage teen points.
-            </div>
-          )}
         </CardContent>
       </Card>
     );
