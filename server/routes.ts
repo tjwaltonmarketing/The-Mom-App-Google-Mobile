@@ -4108,7 +4108,7 @@ export async function registerRoutes(app: Express) {
       }
 
       // Get user info for the email
-      const user = await storage.getUser(req.session.userId);
+      const user = await storage.getUserById(req.session.userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
