@@ -792,3 +792,22 @@ export const insertUserSatisfactionPromptSchema = createInsertSchema(userSatisfa
 
 export type UserSatisfactionPrompt = typeof userSatisfactionPrompts.$inferSelect;
 export type InsertUserSatisfactionPrompt = z.infer<typeof insertUserSatisfactionPromptSchema>;
+
+export const featureRequests = pgTable("feature_requests", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // "feedback", "feature_request", "bug_report"
+  subject: varchar("subject", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  status: varchar("status", { length: 50 }).default("pending"), // "pending", "reviewed", "implemented", "closed"
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertFeatureRequestSchema = createInsertSchema(featureRequests).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+});
+
+export type FeatureRequest = typeof featureRequests.$inferSelect;
+export type InsertFeatureRequest = z.infer<typeof insertFeatureRequestSchema>;
