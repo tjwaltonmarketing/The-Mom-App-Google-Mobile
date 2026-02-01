@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star, Mail, KeyRound, CheckSquare } from "lucide-react";
+import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star, Mail, KeyRound, CheckSquare, Crown, Check } from "lucide-react";
 import { Link } from "wouter";
 // import { CalendarSync } from "@/components/calendar-sync"; // Disabled until Google OAuth verification
 import { ImportExportModal } from "@/components/import-export-modal";
@@ -197,6 +197,11 @@ export default function SettingsPage() {
   // Fetch trial status
   const { data: trialStatus } = useQuery<any>({
     queryKey: ["/api/trial/status"],
+  });
+
+  // Fetch subscription data for Plans tab
+  const { data: subscriptionData } = useQuery<any>({
+    queryKey: ["/api/subscription"],
   });
 
   // Form for adding family member
@@ -614,9 +619,10 @@ export default function SettingsPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="family">Family</TabsTrigger>
+            <TabsTrigger value="plans">Plans</TabsTrigger>
             <TabsTrigger value="account">Account</TabsTrigger>
           </TabsList>
 
@@ -1063,6 +1069,100 @@ export default function SettingsPage() {
                 >
                   Import/Export Passwords
                 </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Plans & Pricing Tab */}
+          <TabsContent value="plans" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-primary" />
+                  Your Subscription
+                </CardTitle>
+                <CardDescription>
+                  Manage your subscription and billing
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {subscriptionData && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                      <div>
+                        <p className="font-medium capitalize">{subscriptionData.subscriptionPlan || "Free Trial"}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {subscriptionData.subscriptionPlan === "trial" 
+                            ? `${subscriptionData.trialDaysLeft || 0} days remaining in trial`
+                            : subscriptionData.subscriptionStatus === "active" 
+                              ? `${subscriptionData.billingInterval || "Monthly"} billing`
+                              : "Inactive"
+                          }
+                        </p>
+                      </div>
+                      {subscriptionData.subscriptionPlan === "trial" && (
+                        <Badge variant="secondary" className="bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">
+                          Trial Active
+                        </Badge>
+                      )}
+                      {subscriptionData.subscriptionStatus === "active" && subscriptionData.subscriptionPlan !== "trial" && (
+                        <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                          Active
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer" onClick={() => window.location.href = '/upgrade'}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center">
+                              <Crown className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <p className="font-semibold">Individual Plan</p>
+                              <p className="text-sm text-muted-foreground">$5.99/mo or $59.99/yr</p>
+                            </div>
+                          </div>
+                          <ul className="text-sm text-muted-foreground space-y-1 mt-3">
+                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> AI Voice Assistant</li>
+                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Smart Calendar</li>
+                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Task & Meal Planning</li>
+                          </ul>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-2 border-primary/30 hover:border-primary transition-colors cursor-pointer relative" onClick={() => window.location.href = '/upgrade'}>
+                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                          <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white">Most Popular</Badge>
+                        </div>
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center">
+                              <Users className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <p className="font-semibold">Family Plan</p>
+                              <p className="text-sm text-muted-foreground">$9.99/mo or $99.99/yr</p>
+                            </div>
+                          </div>
+                          <ul className="text-sm text-muted-foreground space-y-1 mt-3">
+                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Everything in Individual</li>
+                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Up to 6 Family Members</li>
+                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Teen Accounts & Points</li>
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <Button 
+                      onClick={() => window.location.href = '/upgrade'}
+                      className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
+                    >
+                      {subscriptionData.subscriptionPlan === "trial" ? "Upgrade Now" : "Change Plan"}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
