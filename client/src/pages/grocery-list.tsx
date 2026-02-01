@@ -279,7 +279,7 @@ export default function GroceryListPage() {
                         </h3>
                         <div className="space-y-2">
                           {items.map((item: GroceryItem) => (
-                            <div key={item.id} className="flex items-center space-x-3 p-3 bg-white border rounded-lg ml-2">
+                            <div key={item.id} className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg ml-2">
                               <Checkbox
                                 checked={false}
                                 onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
@@ -308,7 +308,7 @@ export default function GroceryListPage() {
                 ) : (
                   <div className="space-y-2">
                     {getPendingGroceries().map((item: GroceryItem) => (
-                      <div key={item.id} className="flex items-center space-x-3 p-3 bg-white border rounded-lg">
+                      <div key={item.id} className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg">
                         <Checkbox
                           checked={false}
                           onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
@@ -350,7 +350,7 @@ export default function GroceryListPage() {
                 <CardContent>
                   <div className="space-y-2">
                     {getCompletedGroceries().map((item: GroceryItem) => (
-                      <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 border rounded-lg opacity-75">
+                      <div key={item.id} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 border dark:border-gray-700 rounded-lg opacity-75">
                         <Checkbox
                           checked={true}
                           onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: false })}
@@ -441,7 +441,7 @@ export default function GroceryListPage() {
               <label className="text-sm font-medium mb-2 block">
                 Items to share ({getPendingGroceries().length} items):
               </label>
-              <div className="max-h-32 overflow-y-auto bg-gray-50 rounded-md p-3">
+              <div className="max-h-32 overflow-y-auto bg-gray-50 dark:bg-gray-800 rounded-md p-3">
                 {getPendingGroceries().length > 0 ? (
                   <ul className="space-y-1 text-sm">
                     {getPendingGroceries().map((item: GroceryItem) => (
