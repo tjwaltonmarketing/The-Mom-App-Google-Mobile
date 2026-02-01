@@ -969,7 +969,10 @@ export default function SettingsPage() {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("Import Tasks clicked, setting modal open");
                     setImportType("tasks");
                     setShowImportModal(true);
                   }}
@@ -979,7 +982,10 @@ export default function SettingsPage() {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("Import Notes clicked, setting modal open");
                     setImportType("notes");
                     setShowImportModal(true);
                   }}
@@ -989,7 +995,10 @@ export default function SettingsPage() {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("Import Passwords clicked, setting modal open");
                     setImportType("passwords");
                     setShowImportModal(true);
                   }}
@@ -1125,12 +1134,6 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
         </Tabs>
-
-        <ImportExportModal 
-          isOpen={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          type={importType}
-        />
 
         {/* Add Family Member Dialog */}
         <Dialog open={showAddMemberDialog} onOpenChange={setShowAddMemberDialog}>
