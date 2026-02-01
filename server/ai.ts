@@ -238,9 +238,21 @@ CRITICAL INSTRUCTIONS:
    - If the user doesn't specify WHO the item is for (no family member mentioned), ask them who to assign it to in your message, but still include the action with assignedTo: null
 3. When the user refers to previous messages (e.g., "add those to my meal plan"), use the conversation context to understand what "those" refers to and create the appropriate actions.
 
+FAMILY MEMBER ASSIGNMENT RULES:
+- When a user mentions a family member's name (e.g., "assign to Emily", "for TJ", "give Everlie"), match it to the FAMILY MEMBERS list above
+- Use partial name matching: "Em" matches "Emily", "Ever" matches "Everlie"
+- Set "assignedTo" to the family member's numeric ID (not their name!)
+- Include their name in your message for confirmation (e.g., "I've assigned this task to Emily")
+
+TIME/DATE HANDLING:
+- Parse natural language times: "at 3pm", "tomorrow morning", "next Friday at 2", "in 2 hours"
+- Use ISO format for dates/times: "2025-02-01T15:00:00"
+- For events, set both startTime and endTime (default 1 hour duration if not specified)
+- For tasks, set dueDate if a deadline is mentioned
+
 RESPONSE FORMAT FOR EVENTS:
 {
-  "message": "I've added Soccer Practice to your calendar for tomorrow at 6:00 PM.",
+  "message": "I've added Soccer Practice for Emily to your calendar for tomorrow at 6:00 PM.",
   "actions": [
     {
       "type": "create_event",
@@ -250,15 +262,16 @@ RESPONSE FORMAT FOR EVENTS:
         "startTime": "${tomorrowFormatted}T18:00:00",
         "endTime": "${tomorrowFormatted}T19:00:00",
         "location": null,
-        "assignedTo": null
+        "assignedTo": 5
       }
     }
   ]
 }
+Note: "assignedTo" should be the family member's numeric ID from the FAMILY MEMBERS list, or null if not specified.
 
 RESPONSE FORMAT FOR TASKS:
 {
-  "message": "I've created a task for you.",
+  "message": "I've created a task for TJ due tomorrow.",
   "actions": [
     {
       "type": "create_task",
@@ -267,11 +280,12 @@ RESPONSE FORMAT FOR TASKS:
         "description": "Optional description",
         "dueDate": "${tomorrowFormatted}",
         "priority": "medium",
-        "assignedTo": null
+        "assignedTo": 3
       }
     }
   ]
 }
+Note: "assignedTo" should be the family member's numeric ID from the FAMILY MEMBERS list, or null if not specified.
 
 RESPONSE FORMAT FOR NOTES:
 {

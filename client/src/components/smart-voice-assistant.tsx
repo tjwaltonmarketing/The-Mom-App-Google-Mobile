@@ -195,11 +195,11 @@ export function SmartVoiceAssistant() {
           <div className="grid grid-cols-1 gap-2 text-sm">
             <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
               <Calendar className="h-4 w-4 text-blue-500" />
-              <span>"Schedule dentist appointment tomorrow at 2 PM"</span>
+              <span>"Schedule Emily's dentist appointment tomorrow at 2 PM"</span>
             </div>
             <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
               <CheckSquare className="h-4 w-4 text-green-500" />
-              <span>"Add buy groceries to my task list"</span>
+              <span>"Assign TJ a task to clean his room by Friday"</span>
             </div>
             <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
               <Utensils className="h-4 w-4 text-orange-500" />
