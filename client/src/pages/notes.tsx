@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
@@ -22,10 +21,8 @@ import { formatDistanceToNow, format, isToday, isYesterday, startOfDay } from "d
 export default function Notes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showFullScreenNewNote, setShowFullScreenNewNote] = useState(false);
   const [fullScreenEditNote, setFullScreenEditNote] = useState<TextNote | null>(null);
-  const [newNoteTitle, setNewNoteTitle] = useState("");
-  const [newNoteContent, setNewNoteContent] = useState("");
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   
   const { toast } = useToast();
@@ -95,9 +92,7 @@ export default function Notes() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/text-notes"] });
-      setShowCreateDialog(false);
-      setNewNoteTitle("");
-      setNewNoteContent("");
+      setShowFullScreenNewNote(false);
       toast({
         title: "Note Created",
         description: "Your text note has been saved successfully.",
@@ -176,19 +171,19 @@ export default function Notes() {
   };
 
   // Handle form submissions
-  const handleCreateNote = () => {
-    if (!newNoteTitle.trim() || !newNoteContent.trim()) {
+  const handleCreateNote = (noteData: { title: string; content: string }) => {
+    if (!noteData.title.trim()) {
       toast({
         title: "Error",
-        description: "Please fill in both title and content.",
+        description: "Please enter a title.",
         variant: "destructive",
       });
       return;
     }
     
     createTextNoteMutation.mutate({
-      title: newNoteTitle.trim(),
-      content: newNoteContent.trim(),
+      title: noteData.title.trim(),
+      content: noteData.content.trim(),
     });
   };
 
@@ -454,48 +449,14 @@ export default function Notes() {
 
           <TabsContent value="text" className="mt-6">
             <div className="mb-4">
-              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-                <DialogTrigger asChild>
-                  <Button className="w-full" data-testid="create-text-note">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create New Text Note
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Create New Text Note</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Input
-                      placeholder="Note title..."
-                      value={newNoteTitle}
-                      onChange={(e) => setNewNoteTitle(e.target.value)}
-                      data-testid="new-note-title"
-                    />
-                    <RichTextEditor
-                      content={newNoteContent}
-                      onChange={setNewNoteContent}
-                      placeholder="Note content..."
-                    />
-                    <div className="flex justify-end space-x-2">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setShowCreateDialog(false)}
-                        data-testid="cancel-create-note"
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        onClick={handleCreateNote}
-                        disabled={createTextNoteMutation.isPending}
-                        data-testid="save-new-note"
-                      >
-                        {createTextNoteMutation.isPending ? "Creating..." : "Create Note"}
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button 
+                className="w-full" 
+                data-testid="create-text-note"
+                onClick={() => setShowFullScreenNewNote(true)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create New Text Note
+              </Button>
             </div>
 
             {textNotesLoading ? (
@@ -636,15 +597,25 @@ export default function Notes() {
         onClose={() => setIsVoiceModalOpen(false)} 
       />
 
-      {/* Full Screen Note Editor */}
+      {/* Full Screen Note Editor - Edit Mode */}
       {fullScreenEditNote && (
         <FullScreenNoteEditor
           note={fullScreenEditNote}
           onSave={(noteData) => {
-            updateTextNoteMutation.mutate(noteData);
+            updateTextNoteMutation.mutate(noteData as { id: number; title: string; content: string });
           }}
           onClose={() => setFullScreenEditNote(null)}
           isSaving={updateTextNoteMutation.isPending}
+        />
+      )}
+
+      {/* Full Screen Note Editor - Create Mode */}
+      {showFullScreenNewNote && (
+        <FullScreenNoteEditor
+          isNewNote
+          onSave={handleCreateNote}
+          onClose={() => setShowFullScreenNewNote(false)}
+          isSaving={createTextNoteMutation.isPending}
         />
       )}
     </div>

@@ -6,43 +6,50 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { TextNote } from "@shared/schema";
 
 interface FullScreenNoteEditorProps {
-  note: TextNote;
-  onSave: (note: { id: number; title: string; content: string }) => void;
+  note?: TextNote | null;
+  onSave: (note: { id?: number; title: string; content: string }) => void;
   onClose: () => void;
   isSaving?: boolean;
+  isNewNote?: boolean;
 }
 
 export function FullScreenNoteEditor({ 
   note, 
   onSave, 
   onClose,
-  isSaving = false 
+  isSaving = false,
+  isNewNote = false
 }: FullScreenNoteEditorProps) {
-  const [title, setTitle] = useState(note.title);
-  const [content, setContent] = useState(note.content);
+  const [title, setTitle] = useState(note?.title || "");
+  const [content, setContent] = useState(note?.content || "");
   const [hasChanges, setHasChanges] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Track changes
   useEffect(() => {
-    const titleChanged = title !== note.title;
-    const contentChanged = content !== note.content;
-    setHasChanges(titleChanged || contentChanged);
-  }, [title, content, note.title, note.content]);
+    if (isNewNote) {
+      // For new notes, has changes if there's any content
+      setHasChanges(title.trim().length > 0 || content.trim().length > 0);
+    } else if (note) {
+      const titleChanged = title !== note.title;
+      const contentChanged = content !== note.content;
+      setHasChanges(titleChanged || contentChanged);
+    }
+  }, [title, content, note, isNewNote]);
 
-  // Auto-save function
+  // Auto-save function (only for existing notes)
   const doAutoSave = useCallback(() => {
-    if (title.trim()) {
+    if (!isNewNote && note && title.trim()) {
       onSave({ id: note.id, title, content });
       setLastSaved(new Date());
       setHasChanges(false);
     }
-  }, [note.id, title, content, onSave]);
+  }, [note, title, content, onSave, isNewNote]);
 
-  // Trigger auto-save after 2 seconds of inactivity
+  // Trigger auto-save after 2 seconds of inactivity (only for existing notes)
   useEffect(() => {
-    if (hasChanges && title.trim()) {
+    if (!isNewNote && hasChanges && title.trim()) {
       // Clear existing timer
       if (autoSaveTimerRef.current) {
         clearTimeout(autoSaveTimerRef.current);
@@ -60,32 +67,37 @@ export function FullScreenNoteEditor({
         clearTimeout(autoSaveTimerRef.current);
       }
     };
-  }, [title, content, hasChanges, doAutoSave]);
+  }, [title, content, hasChanges, doAutoSave, isNewNote]);
 
-  // Save before closing
+  // Save before closing (for existing notes)
   const handleClose = () => {
     // Clear any pending auto-save
     if (autoSaveTimerRef.current) {
       clearTimeout(autoSaveTimerRef.current);
     }
     
-    // Save if there are changes
-    if (hasChanges && title.trim()) {
+    // Save if there are changes (only for existing notes)
+    if (!isNewNote && hasChanges && title.trim() && note) {
       onSave({ id: note.id, title, content });
     }
     onClose();
   };
 
-  // Manual save
-  const handleManualSave = () => {
+  // Manual save / Create
+  const handleSave = () => {
     if (title.trim()) {
       // Clear any pending auto-save
       if (autoSaveTimerRef.current) {
         clearTimeout(autoSaveTimerRef.current);
       }
-      onSave({ id: note.id, title, content });
-      setLastSaved(new Date());
-      setHasChanges(false);
+      
+      if (isNewNote) {
+        onSave({ title, content });
+      } else if (note) {
+        onSave({ id: note.id, title, content });
+        setLastSaved(new Date());
+        setHasChanges(false);
+      }
     }
   };
 
@@ -104,26 +116,28 @@ export function FullScreenNoteEditor({
         </Button>
         
         <div className="flex items-center gap-3">
-          {lastSaved && !hasChanges && (
+          {!isNewNote && lastSaved && !hasChanges && (
             <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
               <CheckCircle className="h-3 w-3" />
               <span>Saved</span>
             </div>
           )}
           {hasChanges && !isSaving && (
-            <span className="text-xs text-gray-500 dark:text-gray-400">Unsaved changes</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              {isNewNote ? "" : "Unsaved changes"}
+            </span>
           )}
           {isSaving && (
             <span className="text-xs text-gray-500 dark:text-gray-400">Saving...</span>
           )}
           <Button 
             size="sm" 
-            onClick={handleManualSave}
-            disabled={!hasChanges || isSaving || !title.trim()}
+            onClick={handleSave}
+            disabled={isSaving || !title.trim()}
             className="flex items-center gap-2"
           >
             <Save className="h-4 w-4" />
-            Save
+            {isNewNote ? "Create Note" : "Save"}
           </Button>
         </div>
       </div>
@@ -136,6 +150,7 @@ export function FullScreenNoteEditor({
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Note title..."
             className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 bg-transparent"
+            autoFocus={isNewNote}
           />
           
           <div className="min-h-[60vh]">
