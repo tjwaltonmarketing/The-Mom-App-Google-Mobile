@@ -4033,10 +4033,10 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const teenId = parseInt(req.params.teenId);
+      const familyMemberId = parseInt(req.params.teenId);
       const { newPassword } = req.body;
       
-      if (isNaN(teenId)) {
+      if (isNaN(familyMemberId)) {
         return res.status(400).json({ error: "Invalid teen ID" });
       }
 
@@ -4044,14 +4044,14 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Password must be at least 6 characters long" });
       }
 
-      // Get the teen profile
-      const teenProfile = await storage.getTeenProfile(teenId);
+      // Get the teen profile by family member ID (frontend passes family member ID, not teen profile ID)
+      const teenProfile = await storage.getTeenProfileByFamilyMemberId(familyMemberId);
       if (!teenProfile) {
         return res.status(404).json({ error: "Teen profile not found" });
       }
 
       // Get the teen's family member record
-      const teenFamilyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      const teenFamilyMember = await storage.getFamilyMemberById(familyMemberId);
       if (!teenFamilyMember) {
         return res.status(404).json({ error: "Teen family member not found" });
       }
