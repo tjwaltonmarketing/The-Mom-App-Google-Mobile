@@ -22,7 +22,8 @@ export function TeenDishwasherStatus() {
       return data;
     },
     retry: 1,
-    staleTime: 30000, // Cache for 30 seconds
+    staleTime: 10000, // Cache for 10 seconds
+    refetchInterval: 30000, // Auto-refresh every 30 seconds to stay in sync with family
   });
 
   const updateDishwasherMutation = useMutation({

@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { TeenTaskDetailModal } from "@/components/teen-task-detail-modal";
 import { TeenEventDetailModal } from "@/components/teen-event-detail-modal";
 import { FamilyDishwasher } from "@/components/family-dishwasher";
+import { WeatherWidget } from "@/components/dashboard/weather-widget";
 import { 
   Calendar, 
   CheckCircle2, 
@@ -140,15 +141,6 @@ export default function TeenDashboard() {
     enabled: authData !== undefined, // Run query once we have auth state
   });
 
-  // Achievement examples - what teens can earn
-  const achievementExamples = [
-    { name: "Week Warrior", description: "Complete tasks for 7 days straight", icon: "🔥" },
-    { name: "Task Master", description: "Complete 100 tasks total", icon: "⭐" },
-    { name: "Early Bird", description: "Complete 5 morning tasks", icon: "🌅" },
-    { name: "Team Player", description: "Help with 10 family events", icon: "🤝" },
-    { name: "Organized", description: "Keep calendar updated for a month", icon: "📅" },
-    { name: "Helper", description: "Complete 25 chores", icon: "💪" }
-  ];
 
   const completedTasks = (todayTasks as any[]).filter((task: any) => task.isCompleted);
   const pendingTasks = (todayTasks as any[]).filter((task: any) => !task.isCompleted);
@@ -180,6 +172,11 @@ export default function TeenDashboard() {
       <TeenNavigation currentPath="/teen-dashboard" teenProfile={teenProfile} />
 
       <div className="max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-6">
+        {/* Weather Widget at Top */}
+        <div className="mb-6">
+          <WeatherWidget />
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           
           {/* Points & Streak Card */}
@@ -366,28 +363,6 @@ export default function TeenDashboard() {
                   <Calendar className="h-3 w-3 mr-1" />
                   View Family Calendar
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Achievement Examples */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-yellow-500" />
-                Achievement Goals
-              </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">Complete tasks and activities to unlock these achievements!</p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {achievementExamples.slice(0, 6).map((achievement, index) => (
-                  <div key={index} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 text-center opacity-75">
-                    <div className="text-2xl mb-2 grayscale">{achievement.icon}</div>
-                    <p className="font-medium text-sm text-gray-700 dark:text-gray-300">{achievement.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{achievement.description}</p>
-                  </div>
-                ))}
               </div>
             </CardContent>
           </Card>
