@@ -141,6 +141,38 @@ const tutorials: Tutorial[] = [
     ]
   },
   {
+    id: "web-and-mobile-access",
+    title: "Access From Any Device",
+    description: "Use The Mom App on your phone or computer - your data syncs everywhere",
+    duration: "2 min",
+    difficulty: "beginner",
+    icon: Download,
+    category: "getting-started",
+    steps: [
+      {
+        title: "Web Version Available",
+        description: "Log in at https://themom.app from any computer to manage your family. Great for when you're at your desk or need a bigger screen.",
+        action: "Visit https://themom.app in your browser",
+        tips: ["Same login works on web and mobile", "All your data syncs automatically", "Perfect for detailed planning sessions"]
+      },
+      {
+        title: "Easier Printing from Computer",
+        description: "The web version makes it easy to print child task lists, calendars, and other family documents. Just use your browser's print function.",
+        tips: ["Print colorful task lists for kids without devices", "Great for posting chore charts on bedroom doors", "Print weekly calendars for the fridge"]
+      },
+      {
+        title: "Mobile App for On-the-Go",
+        description: "Use the mobile app for quick access, voice notes, and notifications while you're out running errands or at activities.",
+        tips: ["Voice notes capture ideas instantly", "Push notifications keep you updated", "Quick task completion with one tap"]
+      },
+      {
+        title: "Data Syncs Everywhere",
+        description: "Changes you make on any device appear instantly on all others. Add a task on your phone, see it on your computer right away.",
+        tips: ["Real-time sync across all devices", "Never lose your data", "Family members see updates immediately"]
+      }
+    ]
+  },
+  {
     id: "dashboard-overview",
     title: "Dashboard Overview",
     description: "Learn how to navigate your family command center",

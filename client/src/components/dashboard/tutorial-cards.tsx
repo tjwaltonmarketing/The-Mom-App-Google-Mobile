@@ -12,7 +12,8 @@ import {
   Calendar,
   ChevronRight,
   ChevronDown,
-  Shield
+  Shield,
+  Monitor
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -45,12 +46,12 @@ const quickTutorials = [
     color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
   },
   {
-    id: "trial-and-billing",
-    title: "Trial & Bonus Days",
-    description: "Extend your trial to 21 days with Facebook share",
-    duration: "4 min",
+    id: "web-and-mobile-access",
+    title: "Web Version Available",
+    description: "Log in at themom.app from your computer",
+    duration: "2 min",
     difficulty: "beginner" as const,
-    icon: Clock,
+    icon: Monitor,
     color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
   }
 ];
