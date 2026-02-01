@@ -1113,54 +1113,62 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
-                      <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer" onClick={() => window.location.href = '/upgrade'}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center">
-                              <Crown className="h-5 w-5 text-white" />
+                      <Link href="/upgrade">
+                        <Card className="border-2 hover:border-primary/50 transition-colors cursor-pointer h-full">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 flex items-center justify-center">
+                                <Crown className="h-5 w-5 text-white" />
+                              </div>
+                              <div>
+                                <p className="font-semibold">Individual Plan</p>
+                                <p className="text-sm text-muted-foreground">$5.99/mo or $59.99/yr</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-semibold">Individual Plan</p>
-                              <p className="text-sm text-muted-foreground">$5.99/mo or $59.99/yr</p>
-                            </div>
-                          </div>
-                          <ul className="text-sm text-muted-foreground space-y-1 mt-3">
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> AI Voice Assistant</li>
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Smart Calendar</li>
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Task & Meal Planning</li>
-                          </ul>
-                        </CardContent>
-                      </Card>
+                            <ul className="text-sm text-muted-foreground space-y-1 mt-3">
+                              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> AI Voice Assistant</li>
+                              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Smart Calendar</li>
+                              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Task & Meal Planning</li>
+                            </ul>
+                          </CardContent>
+                        </Card>
+                      </Link>
 
-                      <Card className="border-2 border-primary/30 hover:border-primary transition-colors cursor-pointer relative" onClick={() => window.location.href = '/upgrade'}>
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                          <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white">Most Popular</Badge>
-                        </div>
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center">
-                              <Users className="h-5 w-5 text-white" />
-                            </div>
-                            <div>
-                              <p className="font-semibold">Family Plan</p>
-                              <p className="text-sm text-muted-foreground">$9.99/mo or $99.99/yr</p>
-                            </div>
+                      <Link href="/upgrade">
+                        <Card className="border-2 border-primary/30 hover:border-primary transition-colors cursor-pointer relative h-full">
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                            <Badge className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white">Most Popular</Badge>
                           </div>
-                          <ul className="text-sm text-muted-foreground space-y-1 mt-3">
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Everything in Individual</li>
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Up to 6 Family Members</li>
-                            <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Teen Accounts & Points</li>
-                          </ul>
-                        </CardContent>
-                      </Card>
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center">
+                                <Users className="h-5 w-5 text-white" />
+                              </div>
+                              <div>
+                                <p className="font-semibold">Family Plan</p>
+                                <p className="text-sm text-muted-foreground">$9.99/mo or $99.99/yr</p>
+                              </div>
+                            </div>
+                            <ul className="text-sm text-muted-foreground space-y-1 mt-3">
+                              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Everything in Individual</li>
+                              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Up to 6 Family Members</li>
+                              <li className="flex items-center gap-2"><Check className="h-4 w-4 text-green-500" /> Teen Accounts & Points</li>
+                            </ul>
+                          </CardContent>
+                        </Card>
+                      </Link>
                     </div>
 
-                    <Button 
-                      onClick={() => window.location.href = '/upgrade'}
-                      className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
-                    >
-                      {subscriptionData.subscriptionPlan === "trial" ? "Upgrade Now" : "Change Plan"}
+                    <Button asChild className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white">
+                      <Link href="/upgrade">
+                        {subscriptionData.subscriptionPlan === "trial" ? "Upgrade Now" : "Change Plan"}
+                      </Link>
                     </Button>
+                  </div>
+                )}
+                {!subscriptionData && (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                   </div>
                 )}
               </CardContent>
