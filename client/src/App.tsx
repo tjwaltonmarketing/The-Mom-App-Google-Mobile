@@ -60,15 +60,50 @@ function Router() {
   const [initialLoad, setInitialLoad] = useState(true);
 
   // Check subscription status for authenticated users
-  const { data: subscriptionData, isLoading: subscriptionLoading, isFetching: subscriptionFetching } = useQuery<SubscriptionData>({
+  const { data: subscriptionData, isLoading: subscriptionLoading, isFetching: subscriptionFetching, status: subscriptionStatus, refetch: refetchSubscription } = useQuery<SubscriptionData>({
     queryKey: ["/api/subscription"],
+    queryFn: async () => {
+      console.log("Fetching subscription data...");
+      const response = await fetch("/api/subscription", {
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Subscription response status:", response.status);
+      if (response.status === 401) {
+        console.log("Subscription: not authenticated, returning null");
+        return null;
+      }
+      if (!response.ok) {
+        const text = await response.text();
+        console.log("Subscription error:", text);
+        throw new Error(`${response.status}: ${text}`);
+      }
+      const data = await response.json();
+      console.log("Subscription data:", data);
+      return data;
+    },
     enabled: isAuthenticated,
-    retry: false,
+    retry: 2, // Retry a couple times in case of timing issues
+    retryDelay: 500, // Wait 500ms between retries
+    staleTime: 0, // Always refetch subscription data
+  });
+
+  // Debug logging for subscription state
+  console.log("Subscription query state:", {
+    isAuthenticated,
+    subscriptionLoading,
+    subscriptionFetching,
+    subscriptionStatus,
+    hasData: !!subscriptionData,
+    data: subscriptionData,
   });
 
   // Wait for subscription query to complete before deciding on routing
   // subscriptionLoading is true during initial fetch, but we also check isFetching for refetches
-  const subscriptionReady = !subscriptionLoading && !subscriptionFetching;
+  // Also check if query is pending (hasn't started yet) when enabled changes
+  const subscriptionReady = isAuthenticated ? (subscriptionStatus === 'success' || subscriptionStatus === 'error') : true;
   
   // Determine if user needs onboarding (never had a subscription)
   // Only show onboarding if subscription query completed and returned no data

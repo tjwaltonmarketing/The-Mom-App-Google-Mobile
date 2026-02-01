@@ -62,6 +62,9 @@ export default function Login() {
       if (data.user) {
         queryClient.setQueryData(["/api/auth/user"], data.user);
         
+        // Invalidate subscription query to force refetch with new auth
+        queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+        
         // Show splash screen while app loads
         setShowSplash(true);
         setIsLoggingIn(false);
