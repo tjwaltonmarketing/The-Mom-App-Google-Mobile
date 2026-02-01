@@ -25,6 +25,7 @@ import {
   childProfiles,
   parentTaskCompletions,
   feedbackPrompts,
+  featureRequests,
   type FamilyMember, 
   type InsertFamilyMember,
   type Event,
@@ -77,6 +78,8 @@ import {
   type InsertParentTaskCompletion,
   type FeedbackPrompt,
   type InsertFeedbackPrompt,
+  type FeatureRequest,
+  type InsertFeatureRequest,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, gte, lt, desc, isNull, or, inArray } from "drizzle-orm";
@@ -320,6 +323,9 @@ export interface IStorage {
   createFeedbackPrompt(userId: number, promptType: string): Promise<FeedbackPrompt>;
   updateFeedbackPromptResponse(userId: number, response: string, feedbackText?: string, reviewRequested?: boolean, remindLater?: boolean): Promise<FeedbackPrompt | undefined>;
   getPendingFeedbackPrompt(userId: number): Promise<FeedbackPrompt | undefined>;
+
+  // Feature Requests / User Feedback
+  createFeatureRequest(request: InsertFeatureRequest): Promise<FeatureRequest>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2528,6 +2534,11 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
     
     return prompt || undefined;
+  }
+
+  async createFeatureRequest(request: InsertFeatureRequest): Promise<FeatureRequest> {
+    const [featureRequest] = await db.insert(featureRequests).values(request).returning();
+    return featureRequest;
   }
 }
 

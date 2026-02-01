@@ -9,6 +9,7 @@ import { GoogleCalendarService } from "./google-calendar-service";
 import { generateToken, verifyToken, extractTokenFromRequest } from "./auth";
 import bcrypt from "bcryptjs";
 import { createCheckoutSession, handleWebhookEvent, stripe, initializeStripeProducts } from "./stripe";
+import { emailService } from "./email-service";
 
 const storage = new DatabaseStorage();
 
@@ -4090,6 +4091,68 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Teen password reset error:", error);
       res.status(500).json({ error: "Failed to reset teen password" });
+    }
+  });
+
+  // Submit feedback or feature request
+  app.post("/api/feedback", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ error: "Not authenticated" });
+    }
+
+    try {
+      const { type, subject, message } = req.body;
+
+      if (!type || !subject || !message) {
+        return res.status(400).json({ error: "Type, subject, and message are required" });
+      }
+
+      // Get user info for the email
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Store in database
+      const feedbackRequest = await storage.createFeatureRequest({
+        userId: req.session.userId,
+        type,
+        subject,
+        message,
+      });
+
+      // Send email notification
+      const typeLabel = type === "feature_request" ? "Feature Request" : type === "bug_report" ? "Bug Report" : "Feedback";
+      const emailHtml = `
+        <h2>New ${typeLabel} from The Mom App</h2>
+        <p><strong>From:</strong> ${user.firstName} ${user.lastName} (${user.email})</p>
+        <p><strong>Type:</strong> ${typeLabel}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <hr>
+        <p><strong>Message:</strong></p>
+        <p>${message.replace(/\n/g, '<br>')}</p>
+        <hr>
+        <p><small>User ID: ${user.id} | Submitted: ${new Date().toLocaleString()}</small></p>
+      `;
+
+      const emailResult = await emailService.sendEmail(
+        "themomapp.us@gmail.com",
+        `[The Mom App] ${typeLabel}: ${subject}`,
+        emailHtml
+      );
+
+      if (!emailResult.success) {
+        console.warn("Failed to send feedback email:", emailResult.error);
+      }
+
+      res.json({
+        success: true,
+        message: "Thank you for your feedback! We'll review it soon.",
+        id: feedbackRequest.id,
+      });
+    } catch (error) {
+      console.error("Feedback submission error:", error);
+      res.status(500).json({ error: "Failed to submit feedback" });
     }
   });
 
