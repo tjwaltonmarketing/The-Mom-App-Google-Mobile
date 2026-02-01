@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
+import { FullScreenNoteEditor } from "@/components/full-screen-note-editor";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { RichTextEditor, RichTextDisplay } from "@/components/ui/rich-text-editor";
@@ -22,7 +23,7 @@ export default function Notes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [editingNote, setEditingNote] = useState<TextNote | null>(null);
+  const [fullScreenEditNote, setFullScreenEditNote] = useState<TextNote | null>(null);
   const [newNoteTitle, setNewNoteTitle] = useState("");
   const [newNoteContent, setNewNoteContent] = useState("");
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
@@ -128,7 +129,7 @@ export default function Notes() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/text-notes"] });
-      setEditingNote(null);
+      // Don't close full screen editor - just show success (auto-save behavior)
       toast({
         title: "Note Updated",
         description: "Your text note has been updated successfully.",
@@ -351,123 +352,66 @@ export default function Notes() {
 
   const TextNoteCard = ({ note }: { note: TextNote }) => {
     const member = getMemberById(note.createdBy);
-    const [isEditing, setIsEditing] = useState(false);
-    const [editTitle, setEditTitle] = useState(note.title);
-    const [editContent, setEditContent] = useState(note.content);
-
-    const handleSave = () => {
-      handleUpdateNote({
-        ...note,
-        title: editTitle,
-        content: editContent,
-      });
-      setIsEditing(false);
-    };
-
-    const handleCancel = () => {
-      setEditTitle(note.title);
-      setEditContent(note.content);
-      setIsEditing(false);
-    };
 
     return (
-      <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-4 hover:shadow-md transition-shadow">
-        {isEditing ? (
-          <div className="space-y-3">
-            <Input
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              placeholder="Note title..."
-              className="font-medium"
-              data-testid="edit-note-title"
-            />
-            <RichTextEditor
-              content={editContent}
-              onChange={setEditContent}
-              placeholder="Note content..."
-            />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {note.updatedAt && formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
-                </span>
-                <span className="text-xs text-gray-400">•</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {member?.name || 'Unknown'}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  onClick={handleCancel}
-                  className="h-7 px-2"
-                  data-testid="cancel-edit-note"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  onClick={handleSave}
-                  className="h-7 px-2"
-                  disabled={updateTextNoteMutation.isPending}
-                  data-testid="save-note"
-                >
-                  <Save className="h-3 w-3" />
-                </Button>
-              </div>
+      <div 
+        className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+        onClick={() => setFullScreenEditNote(note)}
+      >
+        <div className="space-y-3">
+          <div className="flex items-start space-x-3">
+            <FileText className="text-primary text-sm mt-1 h-4 w-4 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+                {note.title}
+              </h3>
+              <RichTextDisplay 
+                content={note.content} 
+                className="text-sm text-gray-700 dark:text-gray-300"
+                truncate={true}
+                maxLength={80}
+              />
             </div>
           </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-start space-x-3">
-              <FileText className="text-primary text-sm mt-1 h-4 w-4 flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-gray-900 dark:text-white mb-2">
-                  {note.title}
-                </h3>
-                <RichTextDisplay 
-                  content={note.content} 
-                  className="text-sm text-gray-700 dark:text-gray-300"
-                  truncate={true}
-                  maxLength={80}
-                />
-              </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {note.updatedAt && formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
+              </span>
+              <span className="text-xs text-gray-400">•</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {member?.name || 'Unknown'}
+              </span>
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {note.updatedAt && formatDistanceToNow(new Date(note.updatedAt), { addSuffix: true })}
-                </span>
-                <span className="text-xs text-gray-400">•</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {member?.name || 'Unknown'}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  onClick={() => setIsEditing(true)}
-                  className="h-7 px-2"
-                  data-testid="edit-note"
-                >
-                  <Edit className="h-3 w-3" />
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  onClick={() => handleDeleteNote(note.id)}
-                  className="h-7 px-2 text-red-600 hover:text-red-700"
-                  disabled={deleteTextNoteMutation.isPending}
-                  data-testid="delete-note"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
+            <div className="flex items-center space-x-2">
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFullScreenEditNote(note);
+                }}
+                className="h-7 px-2"
+                data-testid="edit-note"
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteNote(note.id);
+                }}
+                className="h-7 px-2 text-red-600 hover:text-red-700"
+                disabled={deleteTextNoteMutation.isPending}
+                data-testid="delete-note"
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
             </div>
           </div>
-        )}
+        </div>
       </div>
     );
   };
@@ -691,6 +635,18 @@ export default function Notes() {
         isOpen={isVoiceModalOpen} 
         onClose={() => setIsVoiceModalOpen(false)} 
       />
+
+      {/* Full Screen Note Editor */}
+      {fullScreenEditNote && (
+        <FullScreenNoteEditor
+          note={fullScreenEditNote}
+          onSave={(noteData) => {
+            updateTextNoteMutation.mutate(noteData);
+          }}
+          onClose={() => setFullScreenEditNote(null)}
+          isSaving={updateTextNoteMutation.isPending}
+        />
+      )}
     </div>
   );
 }
