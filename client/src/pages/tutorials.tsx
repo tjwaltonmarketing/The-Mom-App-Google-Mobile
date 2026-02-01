@@ -310,8 +310,8 @@ const tutorials: Tutorial[] = [
   {
     id: "trial-and-billing",
     title: "14-Day Trial & Subscription Management",
-    description: "Understand your trial period and billing options for The Mom App",
-    duration: "3 min",
+    description: "Understand your trial period, bonus days, and billing options for The Mom App",
+    duration: "4 min",
     difficulty: "beginner",
     icon: Star,
     category: "getting-started",
@@ -322,6 +322,17 @@ const tutorials: Tutorial[] = [
         tips: ["Trial starts when you create your account", "Full access to all features", "No credit card required to start"]
       },
       {
+        title: "Get 7 Bonus Days - Extend to 21 Days",
+        description: "Share The Mom App on Facebook during onboarding to extend your trial from 14 to 21 days. Click 'Share on Facebook' then 'Claim Your 7 Bonus Days' to activate.",
+        action: "Share during onboarding or from Settings > Account to claim bonus days",
+        tips: ["Share opens Facebook with a pre-filled post", "Click 'Claim Your 7 Bonus Days' button after sharing", "Trial extends immediately - no waiting", "Works only once per account"]
+      },
+      {
+        title: "Smart Trial Reminders",
+        description: "A friendly reminder banner appears at key moments: when your trial starts, at 7 days remaining, and at 3 days remaining to help you decide before time runs out.",
+        tips: ["Dismiss reminders and they'll reappear at the next milestone", "7-day reminder has amber styling", "3-day reminder is more urgent with orange styling", "Quick upgrade button in each reminder"]
+      },
+      {
         title: "Billing Plans",
         description: "Choose between Individual Plan ($9.99/month for 1 user) or Family Plan ($19.99/month for up to 4 users including teens).",
         tips: ["Family plan includes teen accounts", "Monthly billing only", "Cancel anytime"]
@@ -330,6 +341,37 @@ const tutorials: Tutorial[] = [
         title: "Upgrade Options",
         description: "Upgrade directly from Settings > Account or during family merge process. Billing automatically adjusts for your needs.",
         tips: ["Trial time remaining is preserved", "Immediate access after upgrade", "Billing cycle starts from upgrade date"]
+      }
+    ]
+  },
+  {
+    id: "feedback-and-feature-requests",
+    title: "Submitting Feedback & Feature Requests",
+    description: "Share your ideas, report bugs, and help improve The Mom App",
+    duration: "2 min",
+    difficulty: "beginner",
+    icon: MessageSquare,
+    category: "getting-started",
+    steps: [
+      {
+        title: "Access the Feedback Tab",
+        description: "Go to Settings and click the 'Feedback' tab to find the submission form.",
+        action: "Navigate to Settings > Feedback"
+      },
+      {
+        title: "Choose Your Feedback Type",
+        description: "Select from three types: General Feedback (share thoughts), Feature Request (suggest new features), or Bug Report (report issues).",
+        tips: ["Each type helps us categorize and prioritize", "Feature requests get reviewed for future updates", "Bug reports help us fix problems quickly"]
+      },
+      {
+        title: "Write Your Message",
+        description: "Add a subject line and detailed message. The more detail you provide, the better we can understand and act on your feedback.",
+        tips: ["Be specific about what you'd like to see", "For bugs, describe what happened vs what you expected", "Include any relevant details like which page you were on"]
+      },
+      {
+        title: "Submit and We'll Respond",
+        description: "Click 'Submit Feedback' and your message goes directly to our team. We review every submission and use your input to improve the app.",
+        tips: ["You'll see a confirmation when submitted", "Our team receives email notifications", "Your feedback helps shape future updates"]
       }
     ]
   },
@@ -367,8 +409,8 @@ const tutorials: Tutorial[] = [
   {
     id: "ai-assistant",
     title: "AI Family Assistant & Voice Commands",
-    description: "Create calendar events, tasks, notes, and meal plans using voice commands or chat",
-    duration: "5 min",
+    description: "Create calendar events, tasks, notes, meal plans, and grocery items using voice commands or chat",
+    duration: "6 min",
     difficulty: "beginner",
     icon: Brain,
     category: "getting-started",
@@ -401,6 +443,12 @@ const tutorials: Tutorial[] = [
         description: "Add meals to your weekly meal plan by voice command.",
         action: "Example: 'Add spaghetti and meatballs to Monday dinner'",
         tips: ["Specify the day and meal type (breakfast, lunch, dinner)", "Meal plans appear in your meal planning section"]
+      },
+      {
+        title: "Add Grocery Items",
+        description: "Build your shopping list by telling the AI what you need to buy.",
+        action: "Examples: 'Add milk to the grocery list' or 'We need eggs, bread, and cheese'",
+        tips: ["Items are added to your grocery list immediately", "Specify quantities like '2 gallons of milk'", "Works with both text and voice commands"]
       },
       {
         title: "Assignment Prompts",

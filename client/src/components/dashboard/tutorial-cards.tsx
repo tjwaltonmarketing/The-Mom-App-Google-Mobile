@@ -38,20 +38,20 @@ const quickTutorials = [
   {
     id: "ai-assistant",
     title: "AI Family Assistant", 
-    description: "Get smart suggestions for family planning",
-    duration: "5 min",
-    difficulty: "intermediate" as const,
+    description: "Create events, tasks, meal plans & grocery items by voice",
+    duration: "6 min",
+    difficulty: "beginner" as const,
     icon: Brain,
     color: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
   },
   {
-    id: "password-vault",
-    title: "Password Vault",
-    description: "Securely store family passwords",
+    id: "trial-and-billing",
+    title: "Trial & Bonus Days",
+    description: "Extend your trial to 21 days with Facebook share",
     duration: "4 min",
-    difficulty: "intermediate" as const,
-    icon: Shield,
-    color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+    difficulty: "beginner" as const,
+    icon: Clock,
+    color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
   }
 ];
 
