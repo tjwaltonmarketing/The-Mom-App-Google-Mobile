@@ -1,4 +1,4 @@
-import { CloudSun, Loader2, AlertCircle } from "lucide-react";
+import { CloudSun, Loader2, AlertCircle, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 
@@ -7,6 +7,7 @@ interface WeatherData {
   description: string;
   outfitSuggestion: string;
   location?: string;
+  isDefaultLocation?: boolean;
 }
 
 export function WeatherWidget() {
@@ -24,11 +25,12 @@ export function WeatherWidget() {
       setError(null);
 
       // Try to get user's location
-      const position = await getCurrentLocation();
+      const locationResult = await getCurrentLocation();
+      const { latitude, longitude, isDefault } = locationResult;
       
       // Fetch weather data from a free weather service
       const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${position.coords.latitude}&longitude=${position.coords.longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto`
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto`
       );
       
       if (!response.ok) {
@@ -43,11 +45,15 @@ export function WeatherWidget() {
       const description = getWeatherDescription(weatherCode);
       const outfitSuggestion = getOutfitSuggestion(temp, weatherCode);
       
+      // Get city name from coordinates using reverse geocoding
+      const cityName = await getCityFromCoordinates(latitude, longitude, isDefault);
+      
       setWeatherData({
         temperature: temp,
         description,
         outfitSuggestion,
-        location: "Current Location"
+        location: cityName,
+        isDefaultLocation: isDefault
       });
       
     } catch (error) {
@@ -57,34 +63,95 @@ export function WeatherWidget() {
       setWeatherData({
         temperature: 72,
         description: "Weather information unavailable",
-        outfitSuggestion: "Check local forecast for outfit suggestions"
+        outfitSuggestion: "Check local forecast for outfit suggestions",
+        location: "Unknown",
+        isDefaultLocation: true
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const getCurrentLocation = (): Promise<GeolocationPosition> => {
-    return new Promise((resolve, reject) => {
+  const getCurrentLocation = (): Promise<{ latitude: number; longitude: number; isDefault: boolean }> => {
+    return new Promise((resolve) => {
       if (!navigator.geolocation) {
-        // Default to San Francisco coordinates
-        resolve({
-          coords: { latitude: 37.7749, longitude: -122.4194 }
-        } as GeolocationPosition);
+        // Default to New York coordinates (more neutral default)
+        resolve({ latitude: 40.7128, longitude: -74.0060, isDefault: true });
         return;
       }
 
       navigator.geolocation.getCurrentPosition(
-        resolve,
-        () => {
-          // Default location if geolocation fails
+        (position) => {
           resolve({
-            coords: { latitude: 37.7749, longitude: -122.4194 }
-          } as GeolocationPosition);
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            isDefault: false
+          });
         },
-        { timeout: 5000 }
+        () => {
+          // Default location if geolocation fails - use New York as neutral default
+          resolve({ latitude: 40.7128, longitude: -74.0060, isDefault: true });
+        },
+        { timeout: 10000, enableHighAccuracy: true }
       );
     });
+  };
+
+  const getCityFromCoordinates = async (lat: number, lon: number, isDefault: boolean): Promise<string> => {
+    if (isDefault) {
+      return "New York, NY (default)";
+    }
+    
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`,
+        {
+          headers: {
+            'User-Agent': 'MomApp/1.0'
+          }
+        }
+      );
+      
+      if (!response.ok) {
+        return "Your Location";
+      }
+      
+      const data = await response.json();
+      const address = data.address;
+      
+      // Try to get city, town, or village name
+      const city = address.city || address.town || address.village || address.municipality || address.county;
+      const state = address.state;
+      
+      if (city && state) {
+        // Abbreviate common US states
+        const stateAbbrev = getStateAbbreviation(state);
+        return `${city}, ${stateAbbrev}`;
+      } else if (city) {
+        return city;
+      }
+      
+      return "Your Location";
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      return "Your Location";
+    }
+  };
+
+  const getStateAbbreviation = (state: string): string => {
+    const stateMap: { [key: string]: string } = {
+      'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA',
+      'Colorado': 'CO', 'Connecticut': 'CT', 'Delaware': 'DE', 'Florida': 'FL', 'Georgia': 'GA',
+      'Hawaii': 'HI', 'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA',
+      'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME', 'Maryland': 'MD',
+      'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO',
+      'Montana': 'MT', 'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ',
+      'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
+      'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
+      'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
+      'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
+    };
+    return stateMap[state] || state;
   };
 
   const getWeatherDescription = (code: number): string => {
@@ -155,8 +222,23 @@ export function WeatherWidget() {
           <div className="flex items-center gap-3">
             <CloudSun className="h-6 w-6" />
             <div>
-              <span className="text-2xl font-bold">{weatherData?.temperature}°F</span>
-              <span className="text-blue-100 text-sm ml-2">{weatherData?.description}</span>
+              <div className="flex items-center gap-1">
+                <span className="text-2xl font-bold">{weatherData?.temperature}°F</span>
+                <span className="text-blue-100 text-sm ml-2">{weatherData?.description}</span>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-blue-200">
+                <MapPin className="h-3 w-3" />
+                <span>{weatherData?.location}</span>
+                {weatherData?.isDefaultLocation && (
+                  <button 
+                    onClick={fetchWeatherData}
+                    className="ml-1 underline hover:text-white"
+                    title="Click to retry getting your location"
+                  >
+                    (retry)
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           <div className="text-right text-xs text-blue-100 max-w-[140px]">
