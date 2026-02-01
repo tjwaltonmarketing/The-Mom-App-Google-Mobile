@@ -15,7 +15,7 @@ export interface AIRequest {
 export interface AIResponse {
   message: string;
   actions?: Array<{
-    type: "create_task" | "create_event" | "create_reminder" | "add_to_meal_plan" | "create_grocery";
+    type: "create_task" | "create_event" | "create_reminder" | "create_note" | "create_meal" | "create_grocery";
     data: any;
   }>;
 }

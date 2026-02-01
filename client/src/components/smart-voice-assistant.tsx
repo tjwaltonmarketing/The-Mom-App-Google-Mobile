@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Mic, MicOff, Calendar, CheckSquare, MessageSquare, Loader2 } from "lucide-react";
+import { Mic, MicOff, Calendar, CheckSquare, MessageSquare, Loader2, Utensils, ShoppingCart, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
 interface VoiceAction {
-  type: "create_event" | "create_task" | "create_reminder";
+  type: "create_event" | "create_task" | "create_reminder" | "create_note" | "create_meal" | "create_grocery";
   data: any;
 }
 
@@ -61,10 +61,22 @@ export function SmartVoiceAssistant() {
       if (data.actions?.some(a => a.type === "create_event")) {
         queryClient.invalidateQueries({ queryKey: ["/api/events"] });
         queryClient.invalidateQueries({ queryKey: ["/api/events/today"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
       }
       if (data.actions?.some(a => a.type === "create_task")) {
         queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
         queryClient.invalidateQueries({ queryKey: ["/api/tasks/pending"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      }
+      if (data.actions?.some(a => a.type === "create_note")) {
+        queryClient.invalidateQueries({ queryKey: ["/api/voice-notes"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/voice-notes/recent"] });
+      }
+      if (data.actions?.some(a => a.type === "create_meal")) {
+        queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+      }
+      if (data.actions?.some(a => a.type === "create_grocery")) {
+        queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
       }
     },
     onError: () => {
@@ -190,8 +202,16 @@ export function SmartVoiceAssistant() {
               <span>"Add buy groceries to my task list"</span>
             </div>
             <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
-              <Calendar className="h-4 w-4 text-purple-500" />
-              <span>"Create family movie night event for Friday at 7 PM"</span>
+              <Utensils className="h-4 w-4 text-orange-500" />
+              <span>"Add tacos to Monday dinner"</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+              <ShoppingCart className="h-4 w-4 text-purple-500" />
+              <span>"Add milk and eggs to my grocery list"</span>
+            </div>
+            <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+              <FileText className="h-4 w-4 text-teal-500" />
+              <span>"Save a note about the school meeting"</span>
             </div>
           </div>
         </div>

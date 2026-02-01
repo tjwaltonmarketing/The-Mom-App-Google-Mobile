@@ -3616,28 +3616,30 @@ export async function registerRoutes(app: Express) {
               await storage.createVoiceNote(noteData);
               action.executed = true;
             } else if (action.type === "create_meal" && action.data) {
+              // Normalize day to lowercase for consistency with meal planning component
+              const normalizedDay = (action.data.day || "monday").toLowerCase();
               const mealData = {
                 meal: action.data.meal,
-                day: action.data.day,
+                day: normalizedDay.charAt(0).toUpperCase() + normalizedDay.slice(1), // Capitalize first letter
                 mealType: action.data.mealType || "dinner",
-                familyId: familyId,
                 ingredients: action.data.ingredients || [],
                 notes: action.data.notes || "",
-                createdAt: new Date(),
+                createdBy: familyMember?.id || null,
               };
               await storage.createMealPlan(mealData);
               action.executed = true;
+              console.log("AI created meal plan:", mealData);
             } else if (action.type === "create_grocery" && action.data) {
               const groceryData = {
-                name: action.data.name,
-                category: action.data.category || "Other",
+                item: action.data.name || action.data.item,
+                category: action.data.category || "other",
                 quantity: action.data.quantity || "1",
-                familyId: familyId,
-                purchased: false,
-                createdAt: new Date(),
+                isCompleted: false,
+                addedBy: familyMember?.id || null,
               };
               await storage.createGroceryItem(groceryData);
               action.executed = true;
+              console.log("AI created grocery item:", groceryData);
             }
           } catch (actionError) {
             console.error("Failed to execute action:", action.type, actionError);
@@ -3651,6 +3653,125 @@ export async function registerRoutes(app: Express) {
       console.error("AI chat error:", error);
       res.status(500).json({ 
         message: "I'm having trouble processing your request right now. Please try again.",
+        actions: []
+      });
+    }
+  });
+
+  // AI Voice Command Endpoint - used by SmartVoiceAssistant component
+  // Supports creating events, tasks, notes, meal plans, and grocery items
+  app.post("/api/ai/voice-command", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { message } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+
+      // Get user's family context
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      let familyMembers: any[] = [];
+      let familyId: number | null = null;
+      
+      if (familyMember) {
+        familyId = familyMember.familyId;
+        familyMembers = await storage.getFamilyMembersByFamilyId(familyMember.familyId);
+      }
+
+      // Process with AI including action detection (same as chat endpoint)
+      const { processAIChatWithActions } = await import("./ai");
+      const result = await processAIChatWithActions(message, familyMembers, familyId, req.session.userId!);
+
+      // Execute any detected actions
+      if (result.actions && result.actions.length > 0 && familyId) {
+        for (const action of result.actions) {
+          try {
+            if (action.type === "create_event" && action.data) {
+              const eventData = {
+                title: action.data.title,
+                description: action.data.description || "",
+                startTime: new Date(action.data.startTime),
+                endTime: action.data.endTime ? new Date(action.data.endTime) : new Date(new Date(action.data.startTime).getTime() + 60 * 60 * 1000),
+                allDay: action.data.allDay || false,
+                privacyType: "shared" as const,
+                familyId: familyId,
+                createdBy: req.session.userId!,
+                createdAt: new Date(),
+                assignedTo: action.data.assignedTo || null,
+                recurrence: null,
+                location: action.data.location || null,
+                color: "#EC4899",
+                reminders: null,
+              };
+              await storage.createEvent(eventData);
+              action.executed = true;
+            } else if (action.type === "create_task" && action.data) {
+              const taskData = {
+                title: action.data.title,
+                description: action.data.description || "",
+                priority: action.data.priority || "medium",
+                dueDate: action.data.dueDate ? new Date(action.data.dueDate) : null,
+                familyId: familyId,
+                createdBy: req.session.userId!,
+                assignedTo: action.data.assignedTo || null,
+                isRecurring: false,
+                recurrencePattern: null,
+                points: 10,
+                createdAt: new Date(),
+              };
+              await storage.createTask(taskData);
+              action.executed = true;
+            } else if (action.type === "create_note" && action.data) {
+              const noteData = {
+                content: action.data.content,
+                transcription: action.data.content,
+                familyId: familyId,
+                createdBy: req.session.userId!,
+                createdAt: new Date(),
+              };
+              await storage.createVoiceNote(noteData);
+              action.executed = true;
+            } else if (action.type === "create_meal" && action.data) {
+              const normalizedDay = (action.data.day || "monday").toLowerCase();
+              const mealData = {
+                meal: action.data.meal,
+                day: normalizedDay.charAt(0).toUpperCase() + normalizedDay.slice(1),
+                mealType: action.data.mealType || "dinner",
+                ingredients: action.data.ingredients || [],
+                notes: action.data.notes || "",
+                createdBy: familyMember?.id || null,
+              };
+              await storage.createMealPlan(mealData);
+              action.executed = true;
+              console.log("Voice AI created meal plan:", mealData);
+            } else if (action.type === "create_grocery" && action.data) {
+              const groceryData = {
+                item: action.data.name || action.data.item,
+                category: action.data.category || "other",
+                quantity: action.data.quantity || "1",
+                isCompleted: false,
+                addedBy: familyMember?.id || null,
+              };
+              await storage.createGroceryItem(groceryData);
+              action.executed = true;
+              console.log("Voice AI created grocery item:", groceryData);
+            }
+          } catch (actionError) {
+            console.error("Voice command failed to execute action:", action.type, actionError);
+            action.executed = false;
+          }
+        }
+      }
+
+      res.json(result);
+    } catch (error) {
+      console.error("AI voice command error:", error);
+      res.status(500).json({ 
+        message: "I'm having trouble processing your voice command right now. Please try again.",
         actions: []
       });
     }

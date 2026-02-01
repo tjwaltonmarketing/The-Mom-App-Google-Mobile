@@ -3,7 +3,15 @@
 ## Overview
 The Mom App is a comprehensive family coordination platform designed to reduce mental load for busy parents. It is a full-stack web application with mobile support, featuring AI-powered assistance, smart calendar management with granular privacy controls, advanced task organization, and secure family data management. The project's vision is to streamline family logistics, enhance communication, and foster collaboration among family members, ultimately improving daily life for busy households.
 
-## Recent Changes (October 3, 2025)
+## Recent Changes (February 1, 2026)
+- **🤖 AI Assistant Alignment**: Fixed text AI and voice AI to both support all 5 action types: calendar events, tasks, notes, meal plans, and grocery items
+- **🔧 Fixed Meal Plan Creation via AI**: Corrected field mappings (createdBy uses familyMember.id, proper day capitalization)
+- **🛒 Fixed Grocery Item Creation via AI**: Corrected field mappings (item instead of name, addedBy instead of familyId, isCompleted instead of purchased)
+- **🎤 Added /api/ai/voice-command Endpoint**: New endpoint for voice assistant with full action execution support
+- **📱 Voice Assistant Enhanced**: Updated SmartVoiceAssistant component with examples for meal plans, grocery items, and notes
+- **📦 Sort by Category in Meal Planning Grocery List**: Added toggle button to sort shopping list items by category in meal planning section
+
+## Previous Changes (October 3, 2025)
 - **📅 Google Calendar Import Feature**: Implemented full one-way import functionality with OAuth authentication, calendar selection, and event import (commented out in UI)
 - **🔒 Google OAuth Limitations**: Feature requires Google OAuth verification to work for all users - currently only works for test users added in Google Cloud Console
 - **🚀 Launch Decision**: Hidden Google Calendar import feature from Settings and Calendar pages until Google OAuth verification is complete (can take 2-8 weeks)
