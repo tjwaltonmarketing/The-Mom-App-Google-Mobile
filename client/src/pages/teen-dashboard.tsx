@@ -146,6 +146,14 @@ export default function TeenDashboard() {
   const pendingTasks = (todayTasks as any[]).filter((task: any) => !task.isCompleted);
   const taskProgress = todayTasks.length > 0 ? (completedTasks.length / (todayTasks as any[]).length) * 100 : 0;
 
+  // Get time-based greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
   // Filter upcoming events to show events from today and future
   const futureEvents = (upcomingEvents as any[])
     .filter((event: any) => {
@@ -172,6 +180,11 @@ export default function TeenDashboard() {
       <TeenNavigation currentPath="/teen-dashboard" teenProfile={teenProfile} />
 
       <div className="max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-6">
+        {/* Personalized Greeting */}
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+          {getGreeting()}, {teenProfile?.displayName || teenProfile?.username || 'there'}!
+        </h1>
+
         {/* Weather Widget at Top */}
         <div className="mb-6">
           <WeatherWidget />
