@@ -74,6 +74,7 @@ export const familyMembers = pgTable("family_members", {
   familyId: integer("family_id").references(() => families.id).notNull(), // Which family this member belongs to
   canLogin: boolean("can_login").default(false), // Whether this member can log into the app
   isActive: boolean("is_active").default(true), // For soft deletion/deactivation
+  points: integer("points").default(0), // Reward points for kids (child and teen roles)
 });
 
 

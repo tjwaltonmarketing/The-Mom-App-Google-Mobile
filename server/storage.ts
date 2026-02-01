@@ -156,6 +156,12 @@ export interface IStorage {
   linkFamilyMemberToUser(familyMemberId: number, userId: number): Promise<FamilyMember | undefined>;
   createParentInvite(email: string, familyId: number, role: "mom" | "dad" | "parent"): Promise<string>;
   
+  // Kid Points Management (for child and teen roles)
+  getKidsWithPoints(familyId: number): Promise<FamilyMember[]>;
+  addKidPoints(familyMemberId: number, points: number): Promise<FamilyMember | undefined>;
+  deductKidPoints(familyMemberId: number, points: number): Promise<FamilyMember | undefined>;
+  resetKidPoints(familyMemberId: number): Promise<FamilyMember | undefined>;
+  
   // Events
   getEvents(): Promise<Event[]>;
   getEventsByFamily(familyId: number, expandRecurrences?: boolean): Promise<Event[]>;
@@ -699,6 +705,55 @@ export class DatabaseStorage implements IStorage {
     }
     
     return inviteCode;
+  }
+
+  // Kid Points Management (for child and teen roles)
+  async getKidsWithPoints(familyId: number): Promise<FamilyMember[]> {
+    return await db.select().from(familyMembers)
+      .where(and(
+        eq(familyMembers.familyId, familyId),
+        eq(familyMembers.isActive, true),
+        or(
+          eq(familyMembers.role, 'child'),
+          eq(familyMembers.role, 'teen')
+        )
+      ));
+  }
+
+  async addKidPoints(familyMemberId: number, points: number): Promise<FamilyMember | undefined> {
+    const member = await this.getFamilyMemberById(familyMemberId);
+    if (!member) return undefined;
+    
+    const currentPoints = member.points || 0;
+    const [updated] = await db
+      .update(familyMembers)
+      .set({ points: currentPoints + points })
+      .where(eq(familyMembers.id, familyMemberId))
+      .returning();
+    return updated;
+  }
+
+  async deductKidPoints(familyMemberId: number, points: number): Promise<FamilyMember | undefined> {
+    const member = await this.getFamilyMemberById(familyMemberId);
+    if (!member) return undefined;
+    
+    const currentPoints = member.points || 0;
+    const newPoints = Math.max(0, currentPoints - points); // Don't go negative
+    const [updated] = await db
+      .update(familyMembers)
+      .set({ points: newPoints })
+      .where(eq(familyMembers.id, familyMemberId))
+      .returning();
+    return updated;
+  }
+
+  async resetKidPoints(familyMemberId: number): Promise<FamilyMember | undefined> {
+    const [updated] = await db
+      .update(familyMembers)
+      .set({ points: 0 })
+      .where(eq(familyMembers.id, familyMemberId))
+      .returning();
+    return updated;
   }
 
   async getEvents(): Promise<Event[]> {

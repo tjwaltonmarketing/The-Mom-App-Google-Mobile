@@ -26,7 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { FamilyMember } from "@shared/schema";
 import { InviteTeenModal } from "@/components/family/invite-teen-modal";
 import { ParentInviteModal } from "@/components/parent-invite-modal";
-import { TeenPointManager } from "@/components/family/teen-point-manager";
+import { KidPointManager } from "@/components/family/kid-point-manager";
 
 const addFamilyMemberSchema = z.object({
   name: z.string().min(1, "Name is required").max(50, "Name too long"),
@@ -952,30 +952,8 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
 
-            {/* Kids Point Management Section - Show for all child/teen family members */}
-            {familyMembers.some(member => member.role === 'teen' || member.role === 'child') && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Star className="h-5 w-5 text-yellow-500" />
-                  Kids Reward Management
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Manage points and rewards for your kids
-                </p>
-                
-                {/* Show Point Manager for each child/teen family member */}
-                {familyMembers
-                  .filter(member => member.role === 'teen' || member.role === 'child')
-                  .map(kidMember => (
-                    <TeenPointManager 
-                      key={kidMember.id} 
-                      teenId={kidMember.id} 
-                      teenName={kidMember.name} 
-                    />
-                  ))
-                }
-              </div>
-            )}
+            {/* Kids Point Management Section - Works for all child/teen family members */}
+            <KidPointManager />
 
             <Card>
               <CardHeader>

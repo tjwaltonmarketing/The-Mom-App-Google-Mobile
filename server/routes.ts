@@ -1398,6 +1398,196 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // ============== FAMILY POINTS SYSTEM (for all kids - child and teen roles) ==============
+  
+  // Get all kids with their points for a family
+  app.get("/api/family-points", async (req, res) => {
+    try {
+      let userId = req.session.userId;
+      const token = extractTokenFromRequest(req);
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) userId = decoded.userId;
+      }
+      
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const membership = await storage.getUserFamilyMembership(userId);
+      if (!membership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const kids = await storage.getKidsWithPoints(membership.familyId);
+      res.json(kids);
+    } catch (error) {
+      console.error("Get family points error:", error);
+      res.status(500).json({ error: "Failed to get family points" });
+    }
+  });
+
+  // Add points to a kid
+  app.post("/api/family-points/:familyMemberId/add", async (req, res) => {
+    try {
+      let userId = req.session.userId;
+      const token = extractTokenFromRequest(req);
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) userId = decoded.userId;
+      }
+      
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMemberId = parseInt(req.params.familyMemberId);
+      const { amount } = req.body;
+
+      // Validate amount is a positive integer
+      const parsedAmount = parseInt(amount);
+      if (isNaN(parsedAmount) || parsedAmount <= 0 || parsedAmount > 10000) {
+        return res.status(400).json({ error: "Invalid amount. Must be a positive number up to 10000." });
+      }
+
+      const member = await storage.getFamilyMemberById(familyMemberId);
+      if (!member) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Verify target is a child or teen
+      if (member.role !== 'child' && member.role !== 'teen') {
+        return res.status(400).json({ error: "Can only manage points for children and teens" });
+      }
+
+      // Verify caller is in the same family
+      const callerMembership = await storage.getUserFamilyMembership(userId);
+      if (!callerMembership || callerMembership.familyId !== member.familyId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // Verify caller is a parent (mom, dad, or parent role)
+      const callerFamilyMembers = await storage.getFamilyMembersByFamilyId(callerMembership.familyId);
+      const callerMember = callerFamilyMembers.find(m => m.userId === userId);
+      if (!callerMember || !['mom', 'dad', 'parent'].includes(callerMember.role)) {
+        return res.status(403).json({ error: "Only parents can manage kids' points" });
+      }
+
+      const updated = await storage.addKidPoints(familyMemberId, parsedAmount);
+      res.json({ success: true, member: updated });
+    } catch (error) {
+      console.error("Add kid points error:", error);
+      res.status(500).json({ error: "Failed to add points" });
+    }
+  });
+
+  // Deduct points from a kid
+  app.post("/api/family-points/:familyMemberId/deduct", async (req, res) => {
+    try {
+      let userId = req.session.userId;
+      const token = extractTokenFromRequest(req);
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) userId = decoded.userId;
+      }
+      
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMemberId = parseInt(req.params.familyMemberId);
+      const { amount } = req.body;
+
+      // Validate amount is a positive integer
+      const parsedAmount = parseInt(amount);
+      if (isNaN(parsedAmount) || parsedAmount <= 0 || parsedAmount > 10000) {
+        return res.status(400).json({ error: "Invalid amount. Must be a positive number up to 10000." });
+      }
+
+      const member = await storage.getFamilyMemberById(familyMemberId);
+      if (!member) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Verify target is a child or teen
+      if (member.role !== 'child' && member.role !== 'teen') {
+        return res.status(400).json({ error: "Can only manage points for children and teens" });
+      }
+
+      // Verify caller is in the same family
+      const callerMembership = await storage.getUserFamilyMembership(userId);
+      if (!callerMembership || callerMembership.familyId !== member.familyId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // Verify caller is a parent (mom, dad, or parent role)
+      const callerFamilyMembers = await storage.getFamilyMembersByFamilyId(callerMembership.familyId);
+      const callerMember = callerFamilyMembers.find(m => m.userId === userId);
+      if (!callerMember || !['mom', 'dad', 'parent'].includes(callerMember.role)) {
+        return res.status(403).json({ error: "Only parents can manage kids' points" });
+      }
+
+      const updated = await storage.deductKidPoints(familyMemberId, parsedAmount);
+      res.json({ success: true, member: updated });
+    } catch (error) {
+      console.error("Deduct kid points error:", error);
+      res.status(500).json({ error: "Failed to deduct points" });
+    }
+  });
+
+  // Reset a kid's points to zero
+  app.post("/api/family-points/:familyMemberId/reset", async (req, res) => {
+    try {
+      let userId = req.session.userId;
+      const token = extractTokenFromRequest(req);
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) userId = decoded.userId;
+      }
+      
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMemberId = parseInt(req.params.familyMemberId);
+
+      const member = await storage.getFamilyMemberById(familyMemberId);
+      if (!member) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Verify target is a child or teen
+      if (member.role !== 'child' && member.role !== 'teen') {
+        return res.status(400).json({ error: "Can only reset points for children and teens" });
+      }
+
+      // Verify caller is in the same family
+      const callerMembership = await storage.getUserFamilyMembership(userId);
+      if (!callerMembership || callerMembership.familyId !== member.familyId) {
+        return res.status(403).json({ error: "Access denied" });
+      }
+
+      // Verify caller is a parent (mom, dad, or parent role)
+      const callerFamilyMembers = await storage.getFamilyMembersByFamilyId(callerMembership.familyId);
+      const callerMember = callerFamilyMembers.find(m => m.userId === userId);
+      if (!callerMember || !['mom', 'dad', 'parent'].includes(callerMember.role)) {
+        return res.status(403).json({ error: "Only parents can manage kids' points" });
+      }
+
+      const previousPoints = member.points || 0;
+      const updated = await storage.resetKidPoints(familyMemberId);
+      
+      res.json({ 
+        success: true, 
+        member: updated,
+        previousPoints
+      });
+    } catch (error) {
+      console.error("Reset kid points error:", error);
+      res.status(500).json({ error: "Failed to reset points" });
+    }
+  });
+
   // Parent Household Settings Endpoints
   app.get("/api/household-settings", async (req, res) => {
     try {

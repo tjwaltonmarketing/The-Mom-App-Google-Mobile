@@ -6,6 +6,7 @@ import { QuickTasks } from "@/components/dashboard/quick-tasks";
 import { VoiceNotes } from "@/components/dashboard/voice-notes";
 import { WeatherWidget } from "@/components/dashboard/weather-widget";
 import { FamilyProgress } from "@/components/dashboard/family-progress";
+import { FamilyPoints } from "@/components/dashboard/family-points";
 import { PasswordVault } from "@/components/dashboard/password-vault";
 import { TrialBanner } from "@/components/dashboard/trial-banner";
 import { FamilyDishwasher } from "@/components/family-dishwasher";
@@ -78,6 +79,7 @@ export default function Dashboard() {
 
               {/* Right Column */}
               <div className="space-y-6">
+                <FamilyPoints />
                 <FamilyDishwasher 
                   apiEndpoint="/api/household-settings" 
                   updateEndpoint="/api/household-settings/dishwasher" 
