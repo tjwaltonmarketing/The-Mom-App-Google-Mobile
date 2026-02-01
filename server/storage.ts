@@ -272,6 +272,7 @@ export interface IStorage {
   getTeenProfile(teenId: number): Promise<TeenProfile | undefined>;
   getTeenProfileByUserId(userId: number): Promise<TeenProfile | undefined>;
   getTeenProfileByUsername(username: string): Promise<TeenProfile | undefined>;
+  getTeenProfileByFamilyMemberId(familyMemberId: number): Promise<TeenProfile | undefined>;
   updateTeenPoints(teenProfileId: number, points: number): Promise<void>;
   updateTeenStreak(teenProfileId: number, streak: number): Promise<void>;
   updateTeenProfile(teenId: number, updates: Partial<InsertTeenProfile>): Promise<TeenProfile | undefined>;
@@ -1928,6 +1929,13 @@ export class DatabaseStorage implements IStorage {
     const [profile] = await db.select()
       .from(teenProfiles)
       .where(eq(teenProfiles.username, username));
+    return profile || undefined;
+  }
+
+  async getTeenProfileByFamilyMemberId(familyMemberId: number): Promise<TeenProfile | undefined> {
+    const [profile] = await db.select()
+      .from(teenProfiles)
+      .where(eq(teenProfiles.familyMemberId, familyMemberId));
     return profile || undefined;
   }
 
