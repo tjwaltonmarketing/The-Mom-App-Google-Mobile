@@ -30,7 +30,8 @@ export default function Onboarding() {
 
   const shareMutation = useMutation({
     mutationFn: async (platform: "facebook" | "instagram" | "skip") => {
-      return apiRequest("POST", "/api/referral/share", { platform });
+      const response = await apiRequest("POST", "/api/referral/share", { platform });
+      return response.json();
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
