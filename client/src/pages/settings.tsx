@@ -93,6 +93,47 @@ export default function SettingsPage() {
   const [billingPreference, setBillingPreference] = useState<string>("keep_mine");
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
   const [selectedTeenForReset, setSelectedTeenForReset] = useState<{id: number, name: string, username?: string} | null>(null);
+  
+  // Profile settings state
+  const [profileFirstName, setProfileFirstName] = useState("");
+  const [profileLastName, setProfileLastName] = useState("");
+
+  // Fetch current user data
+  const { data: userData } = useQuery<{ id: number; email: string; firstName: string; lastName: string }>({
+    queryKey: ["/api/auth/user"],
+  });
+
+  // Update profile state when user data loads
+  useEffect(() => {
+    if (userData) {
+      setProfileFirstName(userData.firstName || "");
+      setProfileLastName(userData.lastName || "");
+    }
+  }, [userData]);
+
+  // Profile update mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (data: { firstName: string; lastName: string }) => {
+      const response = await apiRequest("PUT", "/api/auth/profile", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
+      toast({
+        title: "Profile Updated",
+        description: "Your profile settings have been saved successfully.",
+      });
+      setShowProfileDialog(false);
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Fetch existing family members
   const { data: familyMembers = [], isLoading: isFamilyMembersLoading, error: familyMembersError } = useQuery<FamilyMember[]>({
@@ -470,21 +511,36 @@ export default function SettingsPage() {
 
   const handleDownloadData = async () => {
     try {
-      // Fetch all family data from the API
+      // Helper to safely fetch data, returning empty array on error
+      const safeFetch = async (url: string) => {
+        try {
+          const res = await fetch(url, { credentials: 'include' });
+          if (!res.ok) return [];
+          return res.json();
+        } catch {
+          return [];
+        }
+      };
+
+      // Fetch all family data from the API (gracefully handle missing endpoints)
       const [
         familyMembersData,
         tasksData, 
         eventsData,
         voiceNotesData,
-        deadlinesData,
-        notificationsData
+        notificationsData,
+        groceryItemsData,
+        mealPlansData,
+        notesData
       ] = await Promise.all([
-        fetch('/api/family-members').then(res => res.json()),
-        fetch('/api/tasks/pending').then(res => res.json()),
-        fetch('/api/events/today').then(res => res.json()),
-        fetch('/api/voice-notes/recent').then(res => res.json()),
-        fetch('/api/deadlines/upcoming').then(res => res.json()),
-        fetch('/api/notifications/pending').then(res => res.json())
+        safeFetch('/api/family-members'),
+        safeFetch('/api/tasks/pending'),
+        safeFetch('/api/events'),
+        safeFetch('/api/voice-notes/recent'),
+        safeFetch('/api/notifications/pending'),
+        safeFetch('/api/grocery-items'),
+        safeFetch('/api/meal-plans'),
+        safeFetch('/api/notes')
       ]);
 
       // Generate comprehensive family data export
@@ -493,8 +549,10 @@ export default function SettingsPage() {
         tasks: tasksData,
         events: eventsData,
         voiceNotes: voiceNotesData,
-        deadlines: deadlinesData,
         notifications: notificationsData,
+        groceryItems: groceryItemsData,
+        mealPlans: mealPlansData,
+        notes: notesData,
         exportDate: new Date().toISOString(),
         version: "1.0",
         appName: "The Mom App"
@@ -1548,13 +1606,27 @@ export default function SettingsPage() {
             </DialogHeader>
             <div className="space-y-6">
               <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium">Display Name</Label>
-                  <Input defaultValue="Mom" className="mt-1" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-sm font-medium">First Name</Label>
+                    <Input 
+                      value={profileFirstName}
+                      onChange={(e) => setProfileFirstName(e.target.value)}
+                      className="mt-1" 
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Last Name</Label>
+                    <Input 
+                      value={profileLastName}
+                      onChange={(e) => setProfileLastName(e.target.value)}
+                      className="mt-1" 
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">App Theme</Label>
-                  <Select defaultValue={theme}>
+                  <Select value={theme} onValueChange={(value: "light" | "dark" | "system") => setTheme(value)}>
                     <SelectTrigger className="mt-1">
                       <SelectValue />
                     </SelectTrigger>
@@ -1562,31 +1634,6 @@ export default function SettingsPage() {
                       <SelectItem value="light">Light</SelectItem>
                       <SelectItem value="dark">Dark</SelectItem>
                       <SelectItem value="system">System</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Time Format</Label>
-                  <Select defaultValue="12h">
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="12h">12-hour (AM/PM)</SelectItem>
-                      <SelectItem value="24h">24-hour</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Language</Label>
-                  <Select defaultValue="en">
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="fr">French</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1600,14 +1647,16 @@ export default function SettingsPage() {
               >
                 Cancel
               </Button>
-              <Button onClick={() => {
-                toast({
-                  title: "Profile Updated",
-                  description: "Your profile settings have been saved successfully.",
-                });
-                setShowProfileDialog(false);
-              }}>
-                Save Changes
+              <Button 
+                onClick={() => {
+                  updateProfileMutation.mutate({
+                    firstName: profileFirstName,
+                    lastName: profileLastName,
+                  });
+                }}
+                disabled={updateProfileMutation.isPending}
+              >
+                {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
             </DialogFooter>
           </DialogContent>

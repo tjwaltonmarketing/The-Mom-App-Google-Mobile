@@ -87,6 +87,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserPassword(userId: number, passwordHash: string): Promise<User | undefined>;
+  updateUserProfile(userId: number, updates: { firstName?: string; lastName?: string }): Promise<User | undefined>;
   
   // Replit Auth Methods
   getUserByReplitId(replitUserId: string): Promise<User | undefined>;
@@ -342,6 +343,15 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .update(users)
       .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserProfile(userId: number, updates: { firstName?: string; lastName?: string }): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ ...updates, updatedAt: new Date() })
       .where(eq(users.id, userId))
       .returning();
     return user;

@@ -290,6 +290,58 @@ export async function registerRoutes(app: Express) {
     });
   });
 
+  // Update user profile
+  app.put("/api/auth/profile", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { firstName, lastName } = req.body;
+      
+      // Validate input
+      if (!firstName || typeof firstName !== 'string' || firstName.trim().length === 0) {
+        return res.status(400).json({ error: "First name is required" });
+      }
+      if (!lastName || typeof lastName !== 'string' || lastName.trim().length === 0) {
+        return res.status(400).json({ error: "Last name is required" });
+      }
+      
+      const user = await storage.getUserById(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Update user profile
+      const updatedUser = await storage.updateUserProfile(req.session.userId, {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+      });
+
+      // Also update the corresponding family member display name
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (familyMember) {
+        await storage.updateFamilyMember(familyMember.id, {
+          name: `${firstName.trim()} ${lastName.trim()}`,
+          avatar: firstName.trim().charAt(0).toUpperCase(),
+        });
+      }
+
+      res.json({
+        success: true,
+        user: {
+          id: updatedUser?.id,
+          email: updatedUser?.email,
+          firstName: updatedUser?.firstName,
+          lastName: updatedUser?.lastName,
+        }
+      });
+    } catch (error) {
+      console.error("Profile update error:", error);
+      res.status(500).json({ error: "Failed to update profile" });
+    }
+  });
+
   // Teen Authentication Endpoints
   app.get("/api/teen/auth/user", async (req, res) => {
     try {
