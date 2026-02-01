@@ -60,14 +60,19 @@ function Router() {
   const [initialLoad, setInitialLoad] = useState(true);
 
   // Check subscription status for authenticated users
-  const { data: subscriptionData, isLoading: subscriptionLoading } = useQuery<SubscriptionData>({
+  const { data: subscriptionData, isLoading: subscriptionLoading, isFetching: subscriptionFetching } = useQuery<SubscriptionData>({
     queryKey: ["/api/subscription"],
     enabled: isAuthenticated,
     retry: false,
   });
 
+  // Wait for subscription query to complete before deciding on routing
+  // subscriptionLoading is true during initial fetch, but we also check isFetching for refetches
+  const subscriptionReady = !subscriptionLoading && !subscriptionFetching;
+  
   // Determine if user needs onboarding (never had a subscription)
-  const needsOnboarding = isAuthenticated && !subscriptionLoading && !subscriptionData;
+  // Only show onboarding if subscription query completed and returned no data
+  const needsOnboarding = isAuthenticated && subscriptionReady && !subscriptionData;
 
   // Determine if user needs to upgrade (expired trial or cancelled subscription)
   const needsUpgrade = isAuthenticated && !subscriptionLoading && subscriptionData && (
@@ -191,6 +196,16 @@ function Router() {
         <>
           {!isAuthenticated ? (
             <Route path="/" component={Login} />
+          ) : !subscriptionReady ? (
+            // Wait for subscription check to complete before routing
+            <Route path="/" component={() => (
+              <div className="min-h-screen flex items-center justify-center bg-neutral">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading...</p>
+                </div>
+              </div>
+            )} />
           ) : needsOnboarding ? (
             // Show onboarding for users who never had a subscription
             <Route path="/" component={Onboarding} />
