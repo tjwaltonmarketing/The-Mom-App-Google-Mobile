@@ -68,8 +68,7 @@ export function FamilyPoints() {
         {kids.map((kid) => (
           <div 
             key={kid.id} 
-            className="flex items-center justify-between p-3 rounded-lg"
-            style={{ backgroundColor: `${kid.color}15` }}
+            className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800"
           >
             <div className="flex items-center gap-3">
               <div 

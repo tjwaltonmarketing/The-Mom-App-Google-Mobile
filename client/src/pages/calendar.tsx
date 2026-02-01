@@ -135,8 +135,8 @@ export default function CalendarPage() {
           const dateLabel = format(eventDate, 'EEEE, MMMM d, yyyy');
 
           return (
-            <div key={date} className={`rounded-lg border p-4 ${isToday ? 'bg-blue-50 border-blue-200' : 'bg-white'}`}>
-              <h3 className="font-semibold text-lg mb-3 text-gray-800">{dateLabel}</h3>
+            <div key={date} className={`rounded-lg border p-4 ${isToday ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' : 'bg-white dark:bg-gray-900 dark:border-gray-700'}`}>
+              <h3 className="font-semibold text-lg mb-3 text-gray-800 dark:text-gray-100">{dateLabel}</h3>
               <div className="space-y-2">
                 {dayEvents.map(event => {
                   const eventStart = new Date(event.startTime);
