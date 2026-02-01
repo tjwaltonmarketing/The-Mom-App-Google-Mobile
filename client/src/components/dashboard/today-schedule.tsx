@@ -78,7 +78,7 @@ export function TodaySchedule() {
               return (
                 <div 
                   key={event.id} 
-                  className="flex items-start space-x-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 p-2 rounded-lg transition-colors"
+                  className="flex items-start space-x-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors"
                   onClick={() => setEditingEvent(event)}
                 >
                   <div className="flex-shrink-0">

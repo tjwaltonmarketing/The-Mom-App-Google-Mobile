@@ -283,8 +283,8 @@ export function AdvancedTaskManagement() {
     <div 
       className={`p-3 border rounded-lg transition-colors overflow-hidden ${
         task.isCompleted 
-          ? 'bg-gray-50 dark:bg-gray-800 opacity-75 border-gray-200 dark:border-gray-700' 
-          : 'bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 border-gray-200 dark:border-gray-700'
+          ? 'bg-gray-50 opacity-75 border-gray-200' 
+          : 'bg-white hover:bg-gray-50 border-gray-200'
       }`}
     >
       <div className="flex items-start gap-3">
@@ -764,7 +764,7 @@ export function AdvancedTaskManagement() {
                   <Collapsible key={member.id} open={!isCollapsed} onOpenChange={() => toggleSection(sectionKey)}>
                     <Card>
                       <CollapsibleTrigger asChild>
-                        <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-testid={`section-${member.name.toLowerCase()}-tasks`}>
+                        <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors" data-testid={`section-${member.name.toLowerCase()}-tasks`}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div 
@@ -829,7 +829,7 @@ export function AdvancedTaskManagement() {
                   <Collapsible key="unassigned" open={!isCollapsed} onOpenChange={() => toggleSection(sectionKey)}>
                     <Card>
                       <CollapsibleTrigger asChild>
-                        <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-testid="section-unassigned-tasks">
+                        <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors" data-testid="section-unassigned-tasks">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center text-white text-sm">
