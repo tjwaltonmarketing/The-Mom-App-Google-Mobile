@@ -11,9 +11,10 @@ import { useAuth } from "@/hooks/useAuth";
 interface FamilyDishwasherProps {
   apiEndpoint: string;
   updateEndpoint: string;
+  isTeenView?: boolean; // For teen dashboard, skip parent auth check
 }
 
-export function FamilyDishwasher({ apiEndpoint, updateEndpoint }: FamilyDishwasherProps) {
+export function FamilyDishwasher({ apiEndpoint, updateEndpoint, isTeenView = false }: FamilyDishwasherProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -33,7 +34,7 @@ export function FamilyDishwasher({ apiEndpoint, updateEndpoint }: FamilyDishwash
       console.log("FamilyDishwasher: API success data:", data);
       return data;
     },
-    enabled: !!user, // Only fetch when user is authenticated
+    enabled: isTeenView || !!user, // For teens, always enabled; for parents, check user auth
     retry: 1,
     staleTime: 5000, // Cache for 5 seconds
     refetchInterval: 10000, // Auto-refresh every 10 seconds to stay in sync with family

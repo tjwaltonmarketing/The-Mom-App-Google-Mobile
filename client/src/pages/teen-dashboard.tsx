@@ -450,7 +450,8 @@ export default function TeenDashboard() {
           <div className="md:col-span-2 lg:col-span-3">
             <FamilyDishwasher 
               apiEndpoint="/api/teen/household-settings" 
-              updateEndpoint="/api/teen/household-settings/dishwasher" 
+              updateEndpoint="/api/teen/household-settings/dishwasher"
+              isTeenView={true}
             />
           </div>
         </div>
