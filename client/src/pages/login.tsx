@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -29,6 +29,12 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showSplash, setShowSplash] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Force light mode on login page
+  useEffect(() => {
+    document.documentElement.classList.remove('dark', 'blue-light-filter');
+    localStorage.setItem('mom-app-theme', 'light');
+  }, []);
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
