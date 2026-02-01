@@ -182,7 +182,7 @@ export default function TeenDashboard() {
       <div className="max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-6">
         {/* Personalized Greeting */}
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-          {getGreeting()}, {teenProfile?.displayName || teenProfile?.username || 'there'}!
+          {getGreeting()}, {teenProfile?.firstName || 'there'}!
         </h1>
 
         {/* Weather Widget at Top */}
