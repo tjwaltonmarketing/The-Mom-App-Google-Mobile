@@ -260,10 +260,13 @@ export function MealPlanning() {
     setIsMealModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsMealModalOpen(false);
-    setEditingMeal(null);
-    setNewMeal({ day: "", mealType: "", meal: "", ingredients: "", notes: "" });
+  const handleModalOpenChange = (open: boolean) => {
+    setIsMealModalOpen(open);
+    if (!open) {
+      // Reset form when closing
+      setEditingMeal(null);
+      setNewMeal({ day: "", mealType: "", meal: "", ingredients: "", notes: "" });
+    }
   };
 
   const handleSaveMeal = () => {
@@ -462,7 +465,7 @@ export function MealPlanning() {
           <TabsContent value="meals" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">Weekly Meal Plan</h3>
-              <Dialog open={isMealModalOpen} onOpenChange={handleCloseModal}>
+              <Dialog open={isMealModalOpen} onOpenChange={handleModalOpenChange}>
                 <DialogTrigger asChild>
                   <Button className="gap-2">
                     <Plus className="h-4 w-4" />
