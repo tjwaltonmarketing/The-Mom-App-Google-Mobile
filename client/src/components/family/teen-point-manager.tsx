@@ -133,6 +133,10 @@ export function TeenPointManager({ teenId, teenName }: TeenPointManagerProps) {
   }
 
   if (!teenPoints) {
+    // If no teen profile exists, show a friendly message (404 or no data means no account)
+    const errorMessage = error?.message || "";
+    const isNotFound = errorMessage.includes("404") || errorMessage.includes("not found") || !error;
+    
     return (
       <Card>
         <CardHeader>
@@ -143,7 +147,7 @@ export function TeenPointManager({ teenId, teenName }: TeenPointManagerProps) {
         </CardHeader>
         <CardContent>
           <p className="text-gray-500">
-            {error?.message?.includes("404") || !error 
+            {isNotFound 
               ? `${teenName} doesn't have a points account set up yet. Set up a teen account for them to start earning points by completing tasks!`
               : `Unable to load points data. Please try again.`
             }

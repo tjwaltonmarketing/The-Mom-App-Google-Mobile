@@ -1233,7 +1233,17 @@ export async function registerRoutes(app: Express) {
   // Get teen points data (for parent dashboard) - uses family member ID
   app.get("/api/teen/points/:familyMemberId", async (req, res) => {
     try {
-      if (!req.session.userId) {
+      // Check JWT token authentication first (for mobile/cross-domain)
+      let userId = req.session.userId;
+      const token = extractTokenFromRequest(req);
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) {
+          userId = decoded.userId;
+        }
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
@@ -1246,7 +1256,7 @@ export async function registerRoutes(app: Express) {
       }
 
       // Verify parent has access to this teen (same family)
-      const parentMembership = await storage.getUserFamilyMembership(req.session.userId);
+      const parentMembership = await storage.getUserFamilyMembership(userId);
       if (!parentMembership || parentMembership.familyId !== teenFamilyMember.familyId) {
         return res.status(403).json({ error: "Access denied" });
       }
@@ -1275,7 +1285,17 @@ export async function registerRoutes(app: Express) {
   // Deduct points from teen (for parents when redeeming rewards) - uses family member ID
   app.post("/api/teen/points/:familyMemberId/deduct", async (req, res) => {
     try {
-      if (!req.session.userId) {
+      // Check JWT token authentication first (for mobile/cross-domain)
+      let userId = req.session.userId;
+      const token = extractTokenFromRequest(req);
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) {
+          userId = decoded.userId;
+        }
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
@@ -1293,7 +1313,7 @@ export async function registerRoutes(app: Express) {
       }
 
       // Verify parent has access to this teen (same family)
-      const parentMembership = await storage.getUserFamilyMembership(req.session.userId);
+      const parentMembership = await storage.getUserFamilyMembership(userId);
       if (!parentMembership || parentMembership.familyId !== teenFamilyMember.familyId) {
         return res.status(403).json({ error: "Access denied" });
       }
@@ -1327,7 +1347,17 @@ export async function registerRoutes(app: Express) {
   // Reset teen points to zero (for parents) - uses family member ID
   app.post("/api/teen/points/:familyMemberId/reset", async (req, res) => {
     try {
-      if (!req.session.userId) {
+      // Check JWT token authentication first (for mobile/cross-domain)
+      let userId = req.session.userId;
+      const token = extractTokenFromRequest(req);
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) {
+          userId = decoded.userId;
+        }
+      }
+      
+      if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
@@ -1341,7 +1371,7 @@ export async function registerRoutes(app: Express) {
       }
 
       // Verify parent has access to this teen (same family)
-      const parentMembership = await storage.getUserFamilyMembership(req.session.userId);
+      const parentMembership = await storage.getUserFamilyMembership(userId);
       if (!parentMembership || parentMembership.familyId !== teenFamilyMember.familyId) {
         return res.status(403).json({ error: "Access denied" });
       }
