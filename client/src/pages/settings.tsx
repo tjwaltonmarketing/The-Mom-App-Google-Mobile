@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
-import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star, Mail, KeyRound, CheckSquare, Crown, Check } from "lucide-react";
+import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star, Mail, KeyRound, CheckSquare, Crown, Check, MessageSquare, Send, Lightbulb, Bug } from "lucide-react";
 import { Link } from "wouter";
 // import { CalendarSync } from "@/components/calendar-sync"; // Disabled until Google OAuth verification
 import { ImportExportModal } from "@/components/import-export-modal";
@@ -97,6 +97,11 @@ export default function SettingsPage() {
   // Profile settings state
   const [profileFirstName, setProfileFirstName] = useState("");
   const [profileLastName, setProfileLastName] = useState("");
+
+  // Feedback form state
+  const [feedbackType, setFeedbackType] = useState<"feedback" | "feature_request" | "bug_report">("feedback");
+  const [feedbackSubject, setFeedbackSubject] = useState("");
+  const [feedbackMessage, setFeedbackMessage] = useState("");
 
   // Fetch current user data
   const { data: userData } = useQuery<{ id: number; email: string; firstName: string; lastName: string }>({
@@ -421,6 +426,29 @@ export default function SettingsPage() {
     },
   });
 
+  const feedbackMutation = useMutation({
+    mutationFn: async (data: { type: string; subject: string; message: string }) => {
+      const response = await apiRequest("POST", "/api/feedback", data);
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Feedback Submitted",
+        description: data.message || "Thank you for your feedback!",
+      });
+      setFeedbackType("feedback");
+      setFeedbackSubject("");
+      setFeedbackMessage("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Submission Failed",
+        description: error.message || "Failed to submit feedback. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -619,10 +647,11 @@ export default function SettingsPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="family">Family</TabsTrigger>
             <TabsTrigger value="plans">Plans</TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
             <TabsTrigger value="account">Account</TabsTrigger>
           </TabsList>
 
@@ -1171,6 +1200,106 @@ export default function SettingsPage() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="feedback" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                  Send Us Feedback
+                </CardTitle>
+                <CardDescription>
+                  Have a feature idea, found a bug, or just want to share your thoughts? We'd love to hear from you!
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>What type of feedback is this?</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      type="button"
+                      variant={feedbackType === "feedback" ? "default" : "outline"}
+                      onClick={() => setFeedbackType("feedback")}
+                      className="flex items-center gap-2"
+                    >
+                      <Heart className="h-4 w-4" />
+                      Feedback
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={feedbackType === "feature_request" ? "default" : "outline"}
+                      onClick={() => setFeedbackType("feature_request")}
+                      className="flex items-center gap-2"
+                    >
+                      <Lightbulb className="h-4 w-4" />
+                      Feature
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={feedbackType === "bug_report" ? "default" : "outline"}
+                      onClick={() => setFeedbackType("bug_report")}
+                      className="flex items-center gap-2"
+                    >
+                      <Bug className="h-4 w-4" />
+                      Bug
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="feedback-subject">Subject</Label>
+                  <Input
+                    id="feedback-subject"
+                    placeholder={
+                      feedbackType === "feature_request" 
+                        ? "What feature would you like to see?" 
+                        : feedbackType === "bug_report"
+                        ? "What's not working?"
+                        : "What's on your mind?"
+                    }
+                    value={feedbackSubject}
+                    onChange={(e) => setFeedbackSubject(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="feedback-message">Message</Label>
+                  <textarea
+                    id="feedback-message"
+                    className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder={
+                      feedbackType === "feature_request"
+                        ? "Describe the feature you'd like and how it would help you..."
+                        : feedbackType === "bug_report"
+                        ? "What happened? What did you expect to happen?"
+                        : "Share your thoughts, suggestions, or experience..."
+                    }
+                    value={feedbackMessage}
+                    onChange={(e) => setFeedbackMessage(e.target.value)}
+                  />
+                </div>
+
+                <Button
+                  onClick={() => feedbackMutation.mutate({
+                    type: feedbackType,
+                    subject: feedbackSubject,
+                    message: feedbackMessage,
+                  })}
+                  disabled={!feedbackSubject.trim() || !feedbackMessage.trim() || feedbackMutation.isPending}
+                  className="w-full"
+                >
+                  {feedbackMutation.isPending ? (
+                    <>Sending...</>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Submit Feedback
+                    </>
+                  )}
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
