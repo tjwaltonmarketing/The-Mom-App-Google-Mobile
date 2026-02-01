@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send } from "lucide-react";
+import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send, ArrowUpDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,7 @@ export function MealPlanning() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState("");
   const [expandedMeal, setExpandedMeal] = useState<number | null>(null);
+  const [sortByCategory, setSortByCategory] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -446,6 +447,33 @@ export function MealPlanning() {
     return groceryList.filter((item: GroceryItem) => item.isCompleted);
   };
 
+  // Group pending items by category for sorted view
+  const groupedPendingItems = useMemo(() => {
+    const pending = getPendingGroceries();
+    const grouped: Record<string, GroceryItem[]> = {};
+    const categoryOrder = ['produce', 'dairy', 'meat', 'pantry', 'frozen', 'other'];
+    
+    // Initialize all categories
+    categoryOrder.forEach(cat => {
+      grouped[cat] = [];
+    });
+    
+    // Group items
+    pending.forEach(item => {
+      const category = (item.category || 'other').toLowerCase();
+      if (grouped[category]) {
+        grouped[category].push(item);
+      } else {
+        grouped['other'].push(item);
+      }
+    });
+    
+    // Return only categories with items, in order
+    return categoryOrder
+      .map(cat => [cat, grouped[cat]] as [string, GroceryItem[]])
+      .filter(([_, items]) => items.length > 0);
+  }, [groceryList]);
+
   return (
     <Card>
       <CardHeader>
@@ -686,39 +714,90 @@ export function MealPlanning() {
 
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium mb-2 flex items-center gap-2">
-                  <ShoppingCart className="h-4 w-4" />
-                  Shopping List ({getPendingGroceries().length} items)
-                </h4>
-                <div className="space-y-2">
-                  {getPendingGroceries().map((item: GroceryItem) => (
-                    <div key={item.id} className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg">
-                      <Checkbox
-                        checked={false}
-                        onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
-                      />
-                      <div className="flex-1">
-                        <p className="font-medium">{item.item}</p>
-                        <p className="text-sm text-gray-600">{item.quantity}</p>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {item.category}
-                      </Badge>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteGroceryMutation.mutate(item.id)}
-                        disabled={deleteGroceryMutation.isPending}
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                  {getPendingGroceries().length === 0 && (
-                    <p className="text-gray-500 text-center py-4">All items completed!</p>
-                  )}
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-medium flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    Shopping List ({getPendingGroceries().length} items)
+                  </h4>
+                  <Button 
+                    variant={sortByCategory ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => setSortByCategory(!sortByCategory)} 
+                    className="gap-1 text-xs"
+                  >
+                    <ArrowUpDown className="h-3 w-3" />
+                    {sortByCategory ? "Sorted" : "Sort by Category"}
+                  </Button>
                 </div>
+                
+                {sortByCategory ? (
+                  <div className="space-y-3">
+                    {groupedPendingItems.map(([category, items]) => (
+                      <div key={category}>
+                        <h5 className="text-xs font-semibold text-gray-500 uppercase mb-1 flex items-center gap-2">
+                          {category}
+                          <span className="text-gray-400">({items.length})</span>
+                        </h5>
+                        <div className="space-y-2">
+                          {items.map((item: GroceryItem) => (
+                            <div key={item.id} className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg ml-2">
+                              <Checkbox
+                                checked={false}
+                                onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
+                              />
+                              <div className="flex-1">
+                                <p className="font-medium">{item.item}</p>
+                                <p className="text-sm text-gray-600">{item.quantity}</p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteGroceryMutation.mutate(item.id)}
+                                disabled={deleteGroceryMutation.isPending}
+                                className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    {getPendingGroceries().length === 0 && (
+                      <p className="text-gray-500 text-center py-4">All items completed!</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {getPendingGroceries().map((item: GroceryItem) => (
+                      <div key={item.id} className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg">
+                        <Checkbox
+                          checked={false}
+                          onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium">{item.item}</p>
+                          <p className="text-sm text-gray-600">{item.quantity}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {item.category}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteGroceryMutation.mutate(item.id)}
+                          disabled={deleteGroceryMutation.isPending}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                    {getPendingGroceries().length === 0 && (
+                      <p className="text-gray-500 text-center py-4">All items completed!</p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {getCompletedGroceries().length > 0 && (
