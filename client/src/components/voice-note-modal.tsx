@@ -44,8 +44,17 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
   const [isProcessingAI, setIsProcessingAI] = useState(false);
   const [mealScheduling, setMealScheduling] = useState<{[key: number]: {day: string, mealType: string}}>({});
   const [eventScheduling, setEventScheduling] = useState<{[key: number]: {date: string, time: string}}>({});
+  const { toast } = useToast();
+  
   const { isRecording, startRecording, stopRecording } = useVoiceRecording({
     onTranscript: setTranscript,
+    onError: (error) => {
+      toast({
+        title: "Microphone Error",
+        description: error,
+        variant: "destructive",
+      });
+    },
   });
 
   // Fetch family members from API
@@ -153,8 +162,6 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
       handleClose();
     },
   });
-
-  const { toast } = useToast();
 
   const createGroceryMutation = useMutation({
     mutationFn: async (groceryItem: SmartAction) => {
