@@ -18,9 +18,13 @@ export function KidPointManager() {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [amount, setAmount] = useState("");
 
-  const { data: kids = [], isLoading } = useQuery<FamilyMember[]>({
-    queryKey: ['/api/family-points'],
+  // Use family-members query and filter for kids - this works reliably with auth
+  const { data: familyMembers = [], isLoading } = useQuery<FamilyMember[]>({
+    queryKey: ['/api/family-members'],
   });
+  
+  // Filter to only children and teens for point management
+  const kids = familyMembers.filter(m => m.role === 'child' || m.role === 'teen');
 
   const addMutation = useMutation({
     mutationFn: async ({ kidId, amount }: { kidId: number; amount: number }) => {
@@ -29,7 +33,7 @@ export function KidPointManager() {
     },
     onSuccess: () => {
       toast({ title: "Points Added", description: `Added ${amount} points to ${selectedKid?.name}` });
-      queryClient.invalidateQueries({ queryKey: ['/api/family-points'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/family-members'] });
       closeDialogs();
     },
     onError: (error: Error) => {
@@ -44,7 +48,7 @@ export function KidPointManager() {
     },
     onSuccess: () => {
       toast({ title: "Points Deducted", description: `Deducted ${amount} points from ${selectedKid?.name}` });
-      queryClient.invalidateQueries({ queryKey: ['/api/family-points'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/family-members'] });
       closeDialogs();
     },
     onError: (error: Error) => {
@@ -62,7 +66,7 @@ export function KidPointManager() {
         title: "Points Reset", 
         description: `Reset ${selectedKid?.name}'s points from ${data.previousPoints} to 0` 
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/family-points'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/family-members'] });
       closeDialogs();
     },
     onError: (error: Error) => {

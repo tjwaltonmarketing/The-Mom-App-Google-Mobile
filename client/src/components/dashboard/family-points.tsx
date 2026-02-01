@@ -4,9 +4,13 @@ import { Star, Trophy } from "lucide-react";
 import { type FamilyMember } from "@shared/schema";
 
 export function FamilyPoints() {
-  const { data: kids = [], isLoading } = useQuery<FamilyMember[]>({
-    queryKey: ['/api/family-points'],
+  // Use family-members query and filter for kids - this works reliably with auth
+  const { data: familyMembers = [], isLoading } = useQuery<FamilyMember[]>({
+    queryKey: ['/api/family-members'],
   });
+  
+  // Filter to only children and teens for point display
+  const kids = familyMembers.filter(m => m.role === 'child' || m.role === 'teen');
 
   if (isLoading) {
     return (
