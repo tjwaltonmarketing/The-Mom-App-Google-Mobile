@@ -90,16 +90,6 @@ function Router() {
     staleTime: 0, // Always refetch subscription data
   });
 
-  // Debug logging for subscription state
-  console.log("Subscription query state:", {
-    isAuthenticated,
-    subscriptionLoading,
-    subscriptionFetching,
-    subscriptionStatus,
-    hasData: !!subscriptionData,
-    data: subscriptionData,
-  });
-
   // Wait for subscription query to complete before deciding on routing
   // subscriptionLoading is true during initial fetch, but we also check isFetching for refetches
   // Also check if query is pending (hasn't started yet) when enabled changes
