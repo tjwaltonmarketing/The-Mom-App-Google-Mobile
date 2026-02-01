@@ -79,13 +79,17 @@ export default function Dashboard() {
 
               {/* Right Column */}
               <div className="space-y-6">
-                <FamilyPoints />
                 <FamilyDishwasher 
                   apiEndpoint="/api/household-settings" 
                   updateEndpoint="/api/household-settings/dishwasher" 
                 />
                 <FamilyProgress />
               </div>
+            </div>
+            
+            {/* Family Points at Bottom */}
+            <div className="mt-6">
+              <FamilyPoints />
             </div>
           </TabsContent>
           
