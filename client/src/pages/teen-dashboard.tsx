@@ -109,6 +109,21 @@ export default function TeenDashboard() {
   });
   
 
+  // Fetch teen stats (points, streak) from the family member record
+  const { data: teenStats } = useQuery({
+    queryKey: ["/api/teen/stats"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/teen/stats");
+      const data = await response.json();
+      console.log("Dashboard: Teen stats:", data);
+      return data;
+    },
+    retry: false,
+    staleTime: 0,
+    gcTime: 0,
+    enabled: authData !== undefined,
+  });
+
   // Fetch teen's real tasks from API with custom query function like the tasks page
   const { data: todayTasks = [], isLoading: tasksLoading, error: tasksError } = useQuery({
     queryKey: ["/api/teen/tasks"],  
@@ -203,13 +218,13 @@ export default function TeenDashboard() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{teenProfile?.points || 0}</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{(teenStats as any)?.totalPoints || 0}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Total Points</p>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center gap-1">
                     <Flame className="h-4 w-4 text-orange-500" />
-                    <span className="text-lg font-semibold">{teenProfile?.streak || 0}</span>
+                    <span className="text-lg font-semibold">{(teenStats as any)?.streak || 0}</span>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Day Streak</p>
                 </div>
