@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,7 +112,13 @@ export default function TeenDashboard() {
   const { data: teenStats } = useQuery({
     queryKey: ["/api/teen/stats"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/teen/stats");
+      console.log("Dashboard: Fetching stats...");
+      const response = await fetch("/api/teen/stats", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
       const data = await response.json();
       console.log("Dashboard: Teen stats:", data);
       return data;
@@ -124,36 +129,46 @@ export default function TeenDashboard() {
     enabled: authData !== undefined,
   });
 
-  // Fetch teen's real tasks from API with custom query function like the tasks page
+  // Fetch teen's real tasks from API
   const { data: todayTasks = [], isLoading: tasksLoading, error: tasksError } = useQuery({
     queryKey: ["/api/teen/tasks"],  
     queryFn: async () => {
       console.log("Dashboard: Fetching tasks...");
-      const response = await apiRequest("GET", "/api/teen/tasks");
+      const response = await fetch("/api/teen/tasks", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
       const data = await response.json();
       console.log("Dashboard: Tasks data:", data);
       return data;
     },
     retry: false,
-    staleTime: 0, // Always fetch fresh data
-    gcTime: 0, // Don't cache the data (v5 uses gcTime instead of cacheTime)
-    enabled: authData !== undefined, // Run query once we have auth state
+    staleTime: 0,
+    gcTime: 0,
+    enabled: authData !== undefined,
   });
 
-  // Fetch teen's upcoming events from API with custom query function
+  // Fetch teen's upcoming events from API
   const { data: upcomingEvents = [], isLoading: eventsLoading, error: eventsError } = useQuery({
     queryKey: ["/api/teen/events"],
     queryFn: async () => {
       console.log("Dashboard: Fetching events...");
-      const response = await apiRequest("GET", "/api/teen/events");
+      const response = await fetch("/api/teen/events", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
       const data = await response.json();
       console.log("Dashboard: Events data:", data);
       return data;
     },
     retry: false,
-    staleTime: 0, // Always fetch fresh data
-    gcTime: 0, // Don't cache the data
-    enabled: authData !== undefined, // Run query once we have auth state
+    staleTime: 0,
+    gcTime: 0,
+    enabled: authData !== undefined,
   });
 
 
