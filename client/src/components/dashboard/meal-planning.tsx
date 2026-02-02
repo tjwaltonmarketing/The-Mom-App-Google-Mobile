@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -215,6 +216,28 @@ export function MealPlanning() {
       toast({
         title: "Meal deleted",
         description: "Meal has been removed from your plan",
+      });
+    },
+  });
+
+  const clearAllMealsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("DELETE", "/api/meal-plans");
+      return response.json();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/meal-plans"] });
+      await refetchMeals();
+      toast({
+        title: "All meals cleared",
+        description: "Your meal plan has been cleared for the new week",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to clear meal plans",
+        variant: "destructive",
       });
     },
   });
@@ -493,13 +516,39 @@ export function MealPlanning() {
           <TabsContent value="meals" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">Weekly Meal Plan</h3>
-              <Dialog open={isMealModalOpen} onOpenChange={handleModalOpenChange}>
-                <DialogTrigger asChild>
-                  <Button className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Add Meal
-                  </Button>
-                </DialogTrigger>
+              <div className="flex gap-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="gap-2 text-destructive hover:text-destructive" disabled={mealPlans.length === 0}>
+                      <Trash2 className="h-4 w-4" />
+                      Clear All
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Clear all meals?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will remove all meals from your weekly plan. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={() => clearAllMealsMutation.mutate()}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Clear All
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Dialog open={isMealModalOpen} onOpenChange={handleModalOpenChange}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add Meal
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>{editingMeal ? "Edit Meal" : "Add New Meal"}</DialogTitle>
@@ -559,6 +608,7 @@ export function MealPlanning() {
                   </div>
                 </DialogContent>
               </Dialog>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

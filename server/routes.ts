@@ -2351,6 +2351,21 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Clear all meal plans for the week
+  app.delete("/api/meal-plans", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const count = await storage.deleteAllMealPlans();
+      res.json({ success: true, deleted: count });
+    } catch (error) {
+      console.error("Clear all meal plans error:", error);
+      res.status(500).json({ error: "Failed to clear meal plans" });
+    }
+  });
+
   app.get("/api/grocery-items", async (req, res) => {
     try {
       if (!req.session.userId) {

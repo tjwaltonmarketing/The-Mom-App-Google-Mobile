@@ -267,6 +267,7 @@ export interface IStorage {
   getMealPlansByFamily(familyId: number): Promise<MealPlan[]>;
   updateMealPlan(id: number, updates: Partial<InsertMealPlan>): Promise<MealPlan | undefined>;
   deleteMealPlan(id: number): Promise<boolean>;
+  deleteAllMealPlans(): Promise<number>;
 
   // Household Settings
   getHouseholdSettings(familyId: number): Promise<HouseholdSettings | undefined>;
@@ -1824,6 +1825,11 @@ export class DatabaseStorage implements IStorage {
   async deleteMealPlan(id: number): Promise<boolean> {
     const result = await db.delete(mealPlans).where(eq(mealPlans.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  async deleteAllMealPlans(): Promise<number> {
+    const result = await db.delete(mealPlans);
+    return result.rowCount ?? 0;
   }
 
   // Family Merge Request Implementation
