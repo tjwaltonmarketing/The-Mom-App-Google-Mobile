@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -258,6 +258,14 @@ function Router() {
 }
 
 export default function App() {
+  // Add capacitor-app class to body when running as native app
+  // This enables iOS safe area padding only for actual native apps, not web previews
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      document.body.classList.add('capacitor-app');
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>

@@ -18,8 +18,9 @@
 }
 
 /* Add padding for iOS home indicator on bottom navigation */
-/* Only applies safe area padding when there's actually a safe area (iOS devices) */
-.ios-safe-bottom {
+/* Only applies safe area padding when running as actual native Capacitor app */
+/* This prevents web previews (like Replit app) from incorrectly adding padding */
+.capacitor-app .ios-safe-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
