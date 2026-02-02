@@ -310,7 +310,8 @@ RESPONSE FORMAT FOR MEAL PLANS (can add multiple meals at once):
         "meal": "Grilled Salmon with Roasted Vegetables",
         "day": "monday",
         "mealType": "dinner",
-        "notes": "Gluten-free"
+        "notes": "Gluten-free. Recipe: 1. Season salmon fillets with salt, pepper, and lemon. 2. Preheat oven to 400°F. 3. Toss vegetables (broccoli, carrots, bell peppers) in olive oil. 4. Roast vegetables for 15 min, add salmon and roast 12-15 min more until salmon flakes easily.",
+        "ingredients": "salmon fillets, salt, pepper, lemon, broccoli, carrots, bell peppers, olive oil"
       }
     },
     {
@@ -319,12 +320,16 @@ RESPONSE FORMAT FOR MEAL PLANS (can add multiple meals at once):
         "meal": "Chicken Stir Fry with Rice",
         "day": "tuesday",
         "mealType": "dinner",
-        "notes": "Gluten-free, use tamari instead of soy sauce"
+        "notes": "Gluten-free, use tamari instead of soy sauce. Recipe: 1. Cook rice according to package directions. 2. Slice chicken breast into strips, season with salt and pepper. 3. Stir-fry chicken in sesame oil until cooked through. 4. Add vegetables (snap peas, bell peppers, broccoli) and stir-fry 3-4 min. 5. Add tamari sauce and serve over rice.",
+        "ingredients": "chicken breast, rice, salt, pepper, sesame oil, snap peas, bell peppers, broccoli, tamari sauce"
       }
     }
   ]
 }
-IMPORTANT: When the user asks to add multiple meals (e.g., "add those dinners to my meal plan"), create separate create_meal actions for EACH meal - one per day (monday, tuesday, wednesday, thursday, friday, saturday, sunday). Always include all meals the user wants added.
+CRITICAL MEAL PLAN RULES:
+1. ALWAYS include the full recipe/cooking instructions in the "notes" field - step by step directions for how to prepare the meal
+2. ALWAYS include ALL individual ingredients in the "ingredients" field as a comma-separated string - this allows users to easily import them into their grocery list
+3. When the user asks to add multiple meals (e.g., "add those dinners to my meal plan"), create separate create_meal actions for EACH meal - one per day (monday, tuesday, wednesday, thursday, friday, saturday, sunday). Always include all meals the user wants added.
 
 RESPONSE FORMAT FOR GROCERY ITEMS:
 {

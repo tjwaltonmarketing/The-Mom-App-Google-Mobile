@@ -3627,11 +3627,20 @@ export async function registerRoutes(app: Express) {
             } else if (action.type === "create_meal" && action.data) {
               // Normalize day to lowercase for consistency with meal planning component
               const normalizedDay = (action.data.day || "monday").toLowerCase();
+              // Parse ingredients - can be comma-separated string or array
+              let ingredients: string[] = [];
+              if (action.data.ingredients) {
+                if (typeof action.data.ingredients === 'string') {
+                  ingredients = action.data.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i);
+                } else if (Array.isArray(action.data.ingredients)) {
+                  ingredients = action.data.ingredients;
+                }
+              }
               const mealData = {
                 meal: action.data.meal,
                 day: normalizedDay.charAt(0).toUpperCase() + normalizedDay.slice(1), // Capitalize first letter
                 mealType: action.data.mealType || "dinner",
-                ingredients: action.data.ingredients || [],
+                ingredients: ingredients,
                 notes: action.data.notes || "",
                 createdBy: familyMember?.id || null,
               };
@@ -3746,11 +3755,20 @@ export async function registerRoutes(app: Express) {
               action.executed = true;
             } else if (action.type === "create_meal" && action.data) {
               const normalizedDay = (action.data.day || "monday").toLowerCase();
+              // Parse ingredients - can be comma-separated string or array
+              let ingredients: string[] = [];
+              if (action.data.ingredients) {
+                if (typeof action.data.ingredients === 'string') {
+                  ingredients = action.data.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i);
+                } else if (Array.isArray(action.data.ingredients)) {
+                  ingredients = action.data.ingredients;
+                }
+              }
               const mealData = {
                 meal: action.data.meal,
                 day: normalizedDay.charAt(0).toUpperCase() + normalizedDay.slice(1),
                 mealType: action.data.mealType || "dinner",
-                ingredients: action.data.ingredients || [],
+                ingredients: ingredients,
                 notes: action.data.notes || "",
                 createdBy: familyMember?.id || null,
               };
