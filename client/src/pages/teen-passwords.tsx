@@ -506,7 +506,7 @@ export default function TeenPasswords() {
                         <Input 
                           value={password.username} 
                           readOnly 
-                          className="flex-1 bg-white"
+                          className="flex-1 bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
                         />
                         <Button
                           size="sm"
@@ -525,7 +525,7 @@ export default function TeenPasswords() {
                           type={showPasswords[password.id] ? "text" : "password"}
                           value={password.password} 
                           readOnly 
-                          className="flex-1 bg-white"
+                          className="flex-1 bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
                         />
                         <Button
                           size="sm"

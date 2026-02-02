@@ -698,11 +698,19 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Teen profile not found" });
       }
 
+      // Get the task to check points before updating
+      const task = await storage.getTask(taskId);
+      
       const updatedTask = await storage.updateTask(taskId, { 
         isCompleted: completed,
         completedAt: completed ? new Date() : null,
         completedBy: completed ? teenProfile.familyMemberId : null // Use family member ID, not teen ID
       });
+
+      // If task was just completed, add points to the family member
+      if (completed && task && task.points && !task.isCompleted) {
+        await storage.addPointsToFamilyMember(teenProfile.familyMemberId, task.points);
+      }
 
       res.json(updatedTask);
     } catch (error) {
@@ -744,6 +752,67 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Teen task delete error:", error);
       res.status(500).json({ error: "Failed to delete task" });
+    }
+  });
+
+  // Teen stats endpoint - returns points and streak information
+  app.get("/api/teen/stats", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      // Get the family member to access points
+      const familyMember = await storage.getFamilyMember(teenProfile.familyMemberId);
+      const totalPoints = familyMember?.points || 0;
+
+      // Calculate weekly points from completed tasks this week
+      const tasks = await storage.getTasksByFamilyMember(teenProfile.familyMemberId);
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      
+      const weeklyPoints = tasks
+        .filter(task => task.isCompleted && task.completedAt && new Date(task.completedAt) >= oneWeekAgo)
+        .reduce((sum, task) => sum + (task.points || 0), 0);
+
+      // Calculate streak (consecutive days with completed tasks)
+      const completedDates = tasks
+        .filter(task => task.isCompleted && task.completedAt)
+        .map(task => new Date(task.completedAt!).toDateString())
+        .filter((date, index, self) => self.indexOf(date) === index)
+        .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+      let streak = 0;
+      const today = new Date().toDateString();
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      
+      // Check if there's activity today or yesterday to start the streak
+      if (completedDates.includes(today) || completedDates.includes(yesterday)) {
+        let currentDate = completedDates.includes(today) ? new Date() : new Date(Date.now() - 86400000);
+        
+        for (const dateStr of completedDates) {
+          if (new Date(dateStr).toDateString() === currentDate.toDateString()) {
+            streak++;
+            currentDate = new Date(currentDate.getTime() - 86400000);
+          } else {
+            break;
+          }
+        }
+      }
+
+      res.json({
+        totalPoints,
+        weeklyPoints,
+        streak
+      });
+    } catch (error) {
+      console.error("Teen stats error:", error);
+      res.status(500).json({ error: "Failed to fetch stats" });
     }
   });
 

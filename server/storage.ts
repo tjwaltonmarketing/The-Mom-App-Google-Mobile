@@ -1241,6 +1241,23 @@ export class DatabaseStorage implements IStorage {
     return task;
   }
 
+  async getTasksByFamilyMember(familyMemberId: number): Promise<Task[]> {
+    return await db.select().from(tasks).where(eq(tasks.assignedTo, familyMemberId));
+  }
+
+  async addPointsToFamilyMember(familyMemberId: number, points: number): Promise<FamilyMember | undefined> {
+    const member = await this.getFamilyMember(familyMemberId);
+    if (!member) return undefined;
+    
+    const newPoints = (member.points || 0) + points;
+    const [updated] = await db
+      .update(familyMembers)
+      .set({ points: newPoints })
+      .where(eq(familyMembers.id, familyMemberId))
+      .returning();
+    return updated;
+  }
+
   async getVoiceNotes(): Promise<VoiceNote[]> {
     return await db.select().from(voiceNotes);
   }

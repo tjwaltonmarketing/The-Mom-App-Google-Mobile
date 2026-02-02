@@ -131,8 +131,8 @@ export default function TeenNotifications() {
                   key={notification.id}
                   className={`p-3 rounded-lg border transition-colors ${
                     notification.isRead 
-                      ? "bg-gray-50 border-gray-200" 
-                      : "bg-white border-primary/20 shadow-sm"
+                      ? "bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600" 
+                      : "bg-white dark:bg-gray-800 border-primary/20 shadow-sm"
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -141,7 +141,7 @@ export default function TeenNotifications() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {notification.title}
                         </p>
                         <Badge 
@@ -151,10 +151,10 @@ export default function TeenNotifications() {
                           {notification.priority}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                         {notification.message}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
                         {formatTimestamp(notification.timestamp)}
                       </p>
                     </div>

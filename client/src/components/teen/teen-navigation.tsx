@@ -12,7 +12,6 @@ import {
   LogOut,
   Moon,
   Sun,
-  Eye,
   CheckSquare
 } from "lucide-react";
 import { useState } from "react";
@@ -126,16 +125,6 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
                 className="h-8 w-8 p-0"
               >
                 {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-              </Button>
-              
-              <Button 
-                variant={theme === "blue-light-filter" ? "default" : "ghost"} 
-                size="sm"
-                onClick={() => setTheme(theme === "blue-light-filter" ? "light" : "blue-light-filter")}
-                title={theme === "blue-light-filter" ? "Turn Off Blue Light Filter" : "Turn On Blue Light Filter"}
-                className="h-8 w-8 p-0"
-              >
-                <Eye className="h-3.5 w-3.5" />
               </Button>
               
               <TeenNotifications />

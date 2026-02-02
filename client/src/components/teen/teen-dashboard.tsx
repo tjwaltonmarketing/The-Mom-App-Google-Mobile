@@ -102,42 +102,42 @@ export function TeenDashboard() {
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">Your Dashboard</h1>
-        <p className="text-gray-600">Stay on top of your tasks and earn points!</p>
+        <h1 className="text-2xl font-bold dark:text-white">Your Dashboard</h1>
+        <p className="text-gray-600 dark:text-gray-400">Stay on top of your tasks and earn points!</p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Tasks Today</p>
-                <p className="text-2xl font-bold">{pendingTasks.filter(t => new Date(t.dueDate).toDateString() === new Date().toDateString()).length}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Tasks Today</p>
+                <p className="text-2xl font-bold dark:text-white">{pendingTasks.filter(t => new Date(t.dueDate).toDateString() === new Date().toDateString()).length}</p>
               </div>
               <CheckCircle className="h-8 w-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Points This Week</p>
-                <p className="text-2xl font-bold">{stats?.weeklyPoints || 0}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Points This Week</p>
+                <p className="text-2xl font-bold dark:text-white">{stats?.weeklyPoints || 0}</p>
               </div>
               <Trophy className="h-8 w-8 text-yellow-600" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Streak</p>
-                <p className="text-2xl font-bold">{stats?.streak || 0} days</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Streak</p>
+                <p className="text-2xl font-bold dark:text-white">{stats?.streak || 0} days</p>
               </div>
               <Flame className="h-8 w-8 text-orange-600" />
             </div>
@@ -147,9 +147,9 @@ export function TeenDashboard() {
 
       {/* Today's Schedule */}
       {todayEvents.length > 0 && (
-        <Card>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 dark:text-white">
               <Calendar className="h-5 w-5" />
               Today's Schedule
             </CardTitle>
@@ -157,13 +157,13 @@ export function TeenDashboard() {
           <CardContent>
             <div className="space-y-3">
               {todayEvents.map((event) => (
-                <div key={event.id} className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                  <div className="text-sm font-medium text-blue-900">
+                <div key={event.id} className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                  <div className="text-sm font-medium text-blue-900 dark:text-blue-200">
                     {new Date(event.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium">{event.title}</div>
-                    <Badge variant="outline" className="text-xs">
+                    <div className="font-medium dark:text-white">{event.title}</div>
+                    <Badge variant="outline" className="text-xs dark:border-gray-600 dark:text-gray-300">
                       {event.type}
                     </Badge>
                   </div>
@@ -176,9 +176,9 @@ export function TeenDashboard() {
 
       {/* Urgent Tasks */}
       {overdueTasks.length > 0 && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-800">
+            <CardTitle className="flex items-center gap-2 text-red-800 dark:text-red-300">
               <Bell className="h-5 w-5" />
               Urgent: Overdue Tasks
             </CardTitle>
@@ -186,18 +186,18 @@ export function TeenDashboard() {
           <CardContent>
             <div className="space-y-3">
               {overdueTasks.map((task) => (
-                <div key={task.id} className="bg-white p-4 rounded-lg border border-red-200">
+                <div key={task.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-red-200 dark:border-red-800">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h4 className="font-medium">{task.title}</h4>
+                      <h4 className="font-medium dark:text-white">{task.title}</h4>
                       {task.description && (
-                        <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{task.description}</p>
                       )}
                       <div className="flex items-center gap-2 mt-2">
                         <Badge className={getPriorityColor(task.priority)}>
                           {task.priority} priority
                         </Badge>
-                        <span className="text-xs text-red-600 font-medium">
+                        <span className="text-xs text-red-600 dark:text-red-400 font-medium">
                           Overdue since {new Date(task.dueDate).toLocaleDateString()}
                         </span>
                       </div>
@@ -205,7 +205,7 @@ export function TeenDashboard() {
                     <div className="text-right">
                       <div className="text-sm font-medium text-yellow-600">+{task.points} pts</div>
                       {task.reminderCount > 0 && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
                           {task.reminderCount} reminder{task.reminderCount !== 1 ? 's' : ''}
                         </div>
                       )}
@@ -236,14 +236,14 @@ export function TeenDashboard() {
       )}
 
       {/* Regular Tasks */}
-      <Card>
+      <Card className="dark:bg-gray-800 dark:border-gray-700">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between dark:text-white">
             <span className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
               Your Tasks
             </span>
-            <Badge variant="outline">
+            <Badge variant="outline" className="dark:border-gray-600 dark:text-gray-300">
               {completedTasks.length}/{tasks.length} complete
             </Badge>
           </CardTitle>
@@ -261,12 +261,12 @@ export function TeenDashboard() {
             {pendingTasks.filter(task => new Date(task.dueDate) >= new Date()).map((task) => {
               const urgency = getTaskUrgency(task.dueDate);
               return (
-                <div key={task.id} className="p-4 bg-gray-50 rounded-lg">
+                <div key={task.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h4 className="font-medium">{task.title}</h4>
+                      <h4 className="font-medium dark:text-white">{task.title}</h4>
                       {task.description && (
-                        <p className="text-sm text-gray-600 mt-1">{task.description}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{task.description}</p>
                       )}
                       <div className="flex items-center gap-2 mt-2">
                         <Badge className={getPriorityColor(task.priority)}>
@@ -275,14 +275,14 @@ export function TeenDashboard() {
                         <span className={`text-xs font-medium ${urgency.color}`}>
                           {urgency.label}
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           Assigned by {task.assignedBy}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-medium text-yellow-600">+{task.points} pts</div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         Due {new Date(task.dueDate).toLocaleDateString()}
                       </div>
                     </div>
@@ -311,8 +311,8 @@ export function TeenDashboard() {
             {pendingTasks.filter(task => new Date(task.dueDate) >= new Date()).length === 0 && (
               <div className="text-center py-8">
                 <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                <h3 className="font-semibold text-lg mb-2">All caught up! 🎉</h3>
-                <p className="text-gray-600">
+                <h3 className="font-semibold text-lg mb-2 dark:text-white">All caught up! 🎉</h3>
+                <p className="text-gray-600 dark:text-gray-400">
                   No pending tasks. You're doing great!
                 </p>
               </div>
@@ -323,19 +323,19 @@ export function TeenDashboard() {
 
       {/* Completed Tasks */}
       {completedTasks.length > 0 && (
-        <Card>
+        <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader>
-            <CardTitle className="text-green-800">Recently Completed</CardTitle>
+            <CardTitle className="text-green-800 dark:text-green-400">Recently Completed</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {completedTasks.slice(0, 3).map((task) => (
-                <div key={task.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                <div key={task.id} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/30 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    <span className="line-through text-gray-600">{task.title}</span>
+                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <span className="line-through text-gray-600 dark:text-gray-400">{task.title}</span>
                   </div>
-                  <span className="text-sm font-medium text-green-600">+{task.points} pts</span>
+                  <span className="text-sm font-medium text-green-600 dark:text-green-400">+{task.points} pts</span>
                 </div>
               ))}
             </div>
