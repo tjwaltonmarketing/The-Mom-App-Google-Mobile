@@ -21,10 +21,11 @@ export function TeenTaskDetailModal({ task, isOpen, onClose }: TeenTaskDetailMod
 
   const completeTaskMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("PATCH", `/api/tasks/${task.id}/complete`, { completedBy: 123 });
+      return apiRequest("PUT", `/api/teen/tasks/${task.id}`, { completed: true });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/stats"] });
       toast({
         title: "Task completed!",
         description: `Great job! You earned ${task.points} points.`,
