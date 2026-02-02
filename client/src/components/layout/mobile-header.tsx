@@ -17,7 +17,7 @@ interface MobileHeaderProps {
 
 export function MobileHeader({ onStartVoiceNote }: MobileHeaderProps) {
   return (
-    <header className="md:hidden bg-white dark:bg-card shadow-sm border-b border-gray-200 dark:border-border sticky top-0 z-50 mobile-container ios-safe-top">
+    <header className="lg:hidden bg-white dark:bg-card shadow-sm border-b border-gray-200 dark:border-border sticky top-0 z-50 mobile-container ios-safe-top">
       <div className="px-3 py-3">
         <div className="flex justify-between items-center max-w-full min-w-0">
           <Link href="/" className="flex items-center space-x-2 min-w-0 flex-1">

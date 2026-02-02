@@ -14,7 +14,7 @@ export default function AIAssistantPage() {
       <Header onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
       <MobileNav />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6">
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
