@@ -83,7 +83,7 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
   return (
     <>
       {/* Top Header - Simplified */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 ios-safe-top">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between px-3 sm:px-4 py-3 sm:py-4">
             {/* App Branding + Profile Section */}
@@ -189,7 +189,7 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
       </div>
 
       {/* Bottom Navigation - Mobile/Tablet */}
-      <nav className="md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 fixed bottom-0 left-0 right-0 z-50">
+      <nav className="md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 fixed bottom-0 left-0 right-0 z-50 ios-safe-bottom">
         <div className="flex justify-around py-2 px-2">
           {navItems.map((item) => {
             const isActive = currentPath === item.path;
