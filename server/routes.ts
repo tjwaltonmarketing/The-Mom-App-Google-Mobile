@@ -3568,8 +3568,16 @@ export async function registerRoutes(app: Express) {
       const result = await processAIChatWithActions(message, familyMembers, familyId, req.session.userId!, conversationHistory);
 
       // Execute any detected actions
+      console.log("AI Chat - Actions detected:", result.actions?.length || 0, "familyId:", familyId);
+      
+      if (result.actions && result.actions.length > 0 && !familyId) {
+        console.log("AI Chat - Cannot execute actions: User has no family");
+        result.message = result.message + "\n\n(Note: Actions could not be saved because your account is not connected to a family. Please complete your profile setup first.)";
+      }
+      
       if (result.actions && result.actions.length > 0 && familyId) {
         for (const action of result.actions) {
+          console.log("AI Chat - Executing action:", action.type, action.data?.title || action.data?.meal || "");
           try {
             if (action.type === "create_event" && action.data) {
               const eventData = {
