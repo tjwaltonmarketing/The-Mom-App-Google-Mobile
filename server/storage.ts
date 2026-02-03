@@ -1952,10 +1952,15 @@ export class DatabaseStorage implements IStorage {
         return { success: false, message: "Partner doesn't have a family account to merge with." };
       }
 
-      // Get requester's family
+      // Get requester's family and info
       const requesterFamily = await this.getFamilyByUserId(requesterId);
       if (!requesterFamily) {
         return { success: false, message: "You must have a family account to request a merge." };
+      }
+      
+      const requester = await this.getUser(requesterId);
+      if (!requester) {
+        return { success: false, message: "Could not find your account." };
       }
 
       // Check if they're already in the same family
@@ -1963,12 +1968,12 @@ export class DatabaseStorage implements IStorage {
         return { success: false, message: "You're already in the same family." };
       }
 
-      // Store the merge request in notifications table temporarily
+      // Store the merge request in notifications table
       const notification: InsertNotification = {
         type: "family_merge_request",
         title: "Family Merge Request",
-        message: `${partnerUser.email} has requested to merge families with you.`,
-        recipientId: partnerUser.id, // Store as user ID for now
+        message: `${requester.firstName} ${requester.lastName} has requested to merge families with you.`,
+        recipientId: partnerUser.id,
         relatedTaskId: null,
         relatedEventId: null,
         scheduledFor: new Date(),
@@ -1978,7 +1983,23 @@ export class DatabaseStorage implements IStorage {
 
       await this.createNotification(notification);
 
-      return { success: true, message: "Merge request sent successfully. Your partner will receive a notification to approve or reject the request." };
+      // Send actual email
+      const { sendEmail } = await import('./email-service');
+      const appUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+        : 'https://themomapp.com';
+      
+      const emailHtml = `
+        <h2>Family Merge Request</h2>
+        <p><strong>${requester.firstName} ${requester.lastName}</strong> wants to merge families with you on The Mom App!</p>
+        <p>When you merge families, all your tasks, events, and family members will be combined into one unified family account.</p>
+        <p><a href="${appUrl}/login" style="background-color: #EC4899; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Log In to Respond</a></p>
+        <p>Once logged in, go to Settings to approve or reject this request.</p>
+      `;
+      
+      await sendEmail(partnerEmail, `${requester.firstName} wants to merge families with you!`, emailHtml);
+
+      return { success: true, message: "Merge request sent! Your partner will receive an email to approve or reject." };
     } catch (error) {
       console.error("Error creating family merge request:", error);
       return { success: false, message: "Failed to send merge request. Please try again." };

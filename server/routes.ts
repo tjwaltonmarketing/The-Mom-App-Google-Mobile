@@ -2363,12 +2363,12 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const { partnerPhone } = req.body;
-      if (!partnerPhone) {
-        return res.status(400).json({ error: "Partner phone number is required" });
+      const { partnerEmail } = req.body;
+      if (!partnerEmail) {
+        return res.status(400).json({ error: "Partner email is required" });
       }
 
-      const result = await storage.createFamilyMergeRequestByPhone(partnerPhone, req.session.userId);
+      const result = await storage.createFamilyMergeRequest(partnerEmail, req.session.userId);
       
       if (!result.success) {
         return res.status(400).json({ error: result.message });

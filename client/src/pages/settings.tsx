@@ -50,7 +50,7 @@ const editMemberSchema = z.object({
 });
 
 const familyMergeSchema = z.object({
-  partnerPhone: z.string().min(10, "Please enter a valid phone number"),
+  partnerEmail: z.string().email("Please enter a valid email address"),
 });
 
 const resetPasswordSchema = z.object({
@@ -242,7 +242,7 @@ export default function SettingsPage() {
   const mergeForm = useForm<FamilyMergeForm>({
     resolver: zodResolver(familyMergeSchema),
     defaultValues: {
-      partnerPhone: "",
+      partnerEmail: "",
     },
   });
 
@@ -2095,14 +2095,14 @@ export default function SettingsPage() {
               <form onSubmit={mergeForm.handleSubmit(onSubmitFamilyMerge)} className="space-y-4">
                 <FormField
                   control={mergeForm.control}
-                  name="partnerPhone"
+                  name="partnerEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Partner's Phone Number</FormLabel>
+                      <FormLabel>Partner's Email Address</FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="(555) 123-4567" 
-                          type="tel" 
+                          placeholder="partner@example.com" 
+                          type="email" 
                           {...field} 
                         />
                       </FormControl>
@@ -2112,7 +2112,7 @@ export default function SettingsPage() {
                 />
                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
                   <p className="text-sm text-blue-800 dark:text-blue-200">
-                    <strong>How it works:</strong> Your partner will receive a text message with a link to approve or reject the merge request. If approved, their family data will be combined with yours.
+                    <strong>How it works:</strong> Your partner will receive an email with a link to approve or reject the merge request. If approved, their family data will be combined with yours.
                   </p>
                 </div>
                 <DialogFooter>
