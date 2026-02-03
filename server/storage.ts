@@ -98,6 +98,7 @@ export interface IStorage {
   // User Preferences
   getUserPreferences(userId: number): Promise<UserPreferences | undefined>;
   updateUserPreferences(userId: number, prefs: { marketingEmails?: boolean; usageAnalytics?: boolean }): Promise<UserPreferences>;
+  getAllUserPreferences(): Promise<UserPreferences[]>;
   
   // Replit Auth Methods
   getUserByReplitId(replitUserId: string): Promise<User | undefined>;
@@ -456,6 +457,11 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return created;
     }
+  }
+
+  async getAllUserPreferences(): Promise<UserPreferences[]> {
+    const allPrefs = await db.select().from(userPreferences);
+    return allPrefs;
   }
 
   // Replit Auth Methods

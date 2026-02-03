@@ -121,42 +121,39 @@ export class NotificationService {
   }) {
     const { taskId, teenId, message, type } = notification;
     
-    // Get teen's contact information
-    const teenProfile = await storage.getTeenProfile(teenId);
-    const notificationSettings = await storage.getTeenNotificationSettings(teenProfile?.id || 0);
+    // Get user preferences to determine delivery method
+    const prefs = await storage.getUserPreferences(teenId);
+    const notificationMethod = prefs?.notificationMethod || "both";
     
-    if (!notificationSettings?.taskReminders) return;
+    // Get user info for SMS
+    const user = await storage.getUser(teenId);
+    const phoneNumber = user?.phoneNumber;
     
-    // Create notification record
-    const notificationRecord: InsertNotification = {
-      title: "Task Notification",
-      message,
-      recipientId: teenId,
-      relatedTaskId: taskId,
-      deliveryMethod: "in_app",
-      scheduledFor: new Date(),
-      status: type === "task_past_due" ? "urgent" : "pending"
-    };
-    
-    await storage.createNotification(notificationRecord);
-    
-    // Send via preferred method
-    try {
-      // For now, just log the notification since SMS/email may not be configured
-      console.log(`📧 Teen notification: ${message}`);
-      // TODO: Add actual SMS/email sending when teen contact info is available
-      
-      // Log the notification (using available schema fields)
-      await storage.logTeenNotification({
-        teenProfileId: teenProfile?.id || 0,
-        notificationType: type,
-        message: message,
-        title: `Task ${type}`,
+    // Create in-app notification if method includes in_app
+    if (notificationMethod === "in_app" || notificationMethod === "both") {
+      const notificationRecord: InsertNotification = {
+        title: "Task Notification",
+        message,
+        recipientId: teenId,
+        relatedTaskId: taskId,
+        deliveryMethod: "in_app",
         scheduledFor: new Date(),
-        templateId: type
-      });
-    } catch (error) {
-      console.error("Failed to send notification:", error);
+        status: type === "task_past_due" ? "urgent" : "pending"
+      };
+      await storage.createNotification(notificationRecord);
+      console.log(`📱 In-app notification: ${message}`);
+    }
+    
+    // Send SMS if method includes sms and phone number is available
+    if ((notificationMethod === "sms" || notificationMethod === "both") && phoneNumber) {
+      try {
+        const smsSent = await sendSMS(phoneNumber, message);
+        if (smsSent) {
+          console.log(`📲 SMS sent to ${phoneNumber}: ${message}`);
+        }
+      } catch (error) {
+        console.error("Failed to send SMS:", error);
+      }
     }
   }
   
@@ -250,20 +247,39 @@ export class NotificationService {
   }) {
     const { eventId, userId, message } = notification;
     
-    // Create notification record
-    const notificationRecord: InsertNotification = {
-      title: "Event Reminder",
-      message,
-      recipientId: userId,
-      deliveryMethod: "in_app",
-      scheduledFor: new Date(),
-      status: "pending"
-    };
+    // Get user preferences to determine delivery method
+    const prefs = await storage.getUserPreferences(userId);
+    const notificationMethod = prefs?.notificationMethod || "both";
     
-    await storage.createNotification(notificationRecord);
+    // Get user info for SMS
+    const user = await storage.getUser(userId);
+    const phoneNumber = user?.phoneNumber;
     
-    // Log the notification for now
-    console.log(`📅 Event notification: ${message}`);
+    // Create in-app notification if method includes in_app
+    if (notificationMethod === "in_app" || notificationMethod === "both") {
+      const notificationRecord: InsertNotification = {
+        title: "Event Reminder",
+        message,
+        recipientId: userId,
+        deliveryMethod: "in_app",
+        scheduledFor: new Date(),
+        status: "pending"
+      };
+      await storage.createNotification(notificationRecord);
+      console.log(`📱 In-app event notification: ${message}`);
+    }
+    
+    // Send SMS if method includes sms and phone number is available
+    if ((notificationMethod === "sms" || notificationMethod === "both") && phoneNumber) {
+      try {
+        const smsSent = await sendSMS(phoneNumber, message);
+        if (smsSent) {
+          console.log(`📲 SMS event reminder sent to ${phoneNumber}: ${message}`);
+        }
+      } catch (error) {
+        console.error("Failed to send event SMS:", error);
+      }
+    }
   }
   
   async cancelEventReminders(eventId: number) {
@@ -278,6 +294,91 @@ export class NotificationService {
         this.notificationQueue.delete(key);
       }
     });
+  }
+  
+  // Daily digest - sends summary of open tasks
+  async sendDailyDigest(userId: number) {
+    const prefs = await storage.getUserPreferences(userId);
+    
+    // Check if daily digest is enabled
+    if (prefs?.dailyDigest === false) {
+      return;
+    }
+    
+    const notificationMethod = prefs?.notificationMethod || "both";
+    
+    // Get user info
+    const user = await storage.getUser(userId);
+    if (!user) return;
+    
+    // Get user's family membership
+    const familyMembership = await storage.getUserFamilyMembership(userId);
+    if (!familyMembership) return;
+    
+    // Get all open tasks for this user
+    const tasks = await storage.getTasksByFamily(familyMembership.familyId);
+    const openTasks = tasks.filter(t => !t.isCompleted);
+    
+    if (openTasks.length === 0) {
+      return; // No open tasks, skip digest
+    }
+    
+    // Categorize tasks
+    const today = new Date();
+    const tasksWithDueDate = openTasks.filter(t => t.dueDate);
+    const tasksWithoutDueDate = openTasks.filter(t => !t.dueDate);
+    const overdueTasks = tasksWithDueDate.filter(t => new Date(t.dueDate!) < today);
+    const dueTodayTasks = tasksWithDueDate.filter(t => {
+      const dueDate = new Date(t.dueDate!);
+      return dueDate.toDateString() === today.toDateString();
+    });
+    
+    // Build digest message
+    let message = `📋 Daily Task Summary:\n`;
+    
+    if (overdueTasks.length > 0) {
+      message += `🚨 ${overdueTasks.length} overdue task${overdueTasks.length > 1 ? 's' : ''}\n`;
+    }
+    if (dueTodayTasks.length > 0) {
+      message += `⏰ ${dueTodayTasks.length} due today\n`;
+    }
+    if (tasksWithoutDueDate.length > 0) {
+      message += `📌 ${tasksWithoutDueDate.length} task${tasksWithoutDueDate.length > 1 ? 's' : ''} with no deadline\n`;
+    }
+    
+    message += `Total open: ${openTasks.length}`;
+    
+    // Send via preferred method
+    if (notificationMethod === "in_app" || notificationMethod === "both") {
+      const notificationRecord: InsertNotification = {
+        title: "Daily Task Summary",
+        message,
+        recipientId: userId,
+        deliveryMethod: "in_app",
+        scheduledFor: new Date(),
+        status: "pending"
+      };
+      await storage.createNotification(notificationRecord);
+      console.log(`📱 Daily digest in-app notification sent to user ${userId}`);
+    }
+    
+    if ((notificationMethod === "sms" || notificationMethod === "both") && user.phoneNumber) {
+      try {
+        const smsSent = await sendSMS(user.phoneNumber, message);
+        if (smsSent) {
+          console.log(`📲 Daily digest SMS sent to ${user.phoneNumber}`);
+        }
+      } catch (error) {
+        console.error("Failed to send daily digest SMS:", error);
+      }
+    }
+  }
+  
+  // Schedule daily digest for all users who have it enabled
+  async scheduleDailyDigests() {
+    // This would be called by a cron job or scheduler
+    // For now, we'll just log that it's available
+    console.log("📅 Daily digest scheduler is ready");
   }
 }
 

@@ -4899,6 +4899,33 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Daily Digest Scheduler - runs every hour to check which users need their digest
+  const runDailyDigestCheck = async () => {
+    try {
+      const now = new Date();
+      const currentHour = now.getHours().toString().padStart(2, '0') + ':00';
+      
+      // Get all users and their preferences
+      const allPreferences = await storage.getAllUserPreferences();
+      
+      for (const pref of allPreferences) {
+        // Check if this user's digest time matches current hour
+        if (pref.dailyDigest && pref.dailyDigestTime === currentHour) {
+          try {
+            await notificationService.sendDailyDigest(pref.userId);
+          } catch (error) {
+            console.error(`Failed to send daily digest to user ${pref.userId}:`, error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Daily digest check error:", error);
+    }
+  };
+  
+  // Run daily digest check every hour
+  setInterval(runDailyDigestCheck, 60 * 60 * 1000); // Every hour
+  console.log("📅 Daily digest scheduler initialized");
 
   return server;
 }
