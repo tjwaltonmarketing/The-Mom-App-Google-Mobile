@@ -495,7 +495,9 @@ export async function registerRoutes(app: Express) {
       // New teen needs setup - get family name
       req.session.inviteCode = inviteCode;
       
-      const family = await storage.getFamily(invite.familyId);
+      // Get family name directly
+      const familyResult = await db.execute(sql`SELECT name FROM families WHERE id = ${invite.familyId}`);
+      const familyName = familyResult.rows[0]?.name || 'Your Family';
       
       res.json({
         success: true,
@@ -503,7 +505,7 @@ export async function registerRoutes(app: Express) {
         inviteData: {
           teenName: invite.teenName,
           familyId: invite.familyId,
-          familyName: family?.name || 'Your Family'
+          familyName
         }
       });
     } catch (error) {
