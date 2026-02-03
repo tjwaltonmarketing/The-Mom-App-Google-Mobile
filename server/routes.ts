@@ -1792,8 +1792,9 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family member not found" });
       }
 
-      // Get family info
-      const family = await storage.getFamilyById(familyMember.familyId);
+      // Get family info directly from database
+      const familyResult = await db.execute(sql`SELECT id, name FROM families WHERE id = ${familyMember.familyId}`);
+      const family = familyResult.rows[0];
       if (!family) {
         return res.status(404).json({ error: "Family not found" });
       }
