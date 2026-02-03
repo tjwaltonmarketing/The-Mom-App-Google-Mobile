@@ -30,10 +30,18 @@ export default function TeenLogin() {
     },
     onSuccess: (data) => {
       if (data.needsSetup) {
+        // Pass invite data to onboarding page so they don't need to enter code again
+        const params = new URLSearchParams({
+          inviteCode: inviteCode.toUpperCase(),
+          familyName: data.inviteData?.familyName || '',
+          teenName: data.inviteData?.teenName || '',
+          familyId: String(data.inviteData?.familyId || ''),
+        });
+        const url = `/teen-onboarding?${params.toString()}`;
         if (typeof window !== 'undefined') {
-          window.location.href = '/teen-onboarding';
+          window.location.href = url;
         } else {
-          setLocation("/teen-onboarding");
+          setLocation(url);
         }
       } else {
         if (typeof window !== 'undefined') {
@@ -41,11 +49,11 @@ export default function TeenLogin() {
         } else {
           setLocation("/teen-dashboard");
         }
+        toast({
+          title: "Welcome back!",
+          description: `Logged in as ${data.teenProfile?.firstName || 'Teen'}`,
+        });
       }
-      toast({
-        title: "Welcome back!",
-        description: `Logged in as ${data.teenProfile.firstName}`,
-      });
     },
     onError: () => {
       toast({

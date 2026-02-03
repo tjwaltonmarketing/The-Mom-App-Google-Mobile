@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,21 +12,52 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
 export default function TeenOnboarding() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [inviteCode, setInviteCode] = useState("");
+  // Check for URL params from teen-login redirect
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlInviteCode = urlParams.get('inviteCode');
+  const urlFamilyName = urlParams.get('familyName');
+  const urlTeenName = urlParams.get('teenName');
+  const urlFamilyId = urlParams.get('familyId');
+  
+  // Start at step 1 if invite data is already provided
+  const hasInviteData = urlInviteCode && urlFamilyName && urlFamilyId;
+  
+  const [currentStep, setCurrentStep] = useState(hasInviteData ? 1 : 0);
+  const [inviteCode, setInviteCode] = useState(urlInviteCode || "");
   const [familyData, setFamilyData] = useState<{
     familyName: string;
     teenName: string;
     familyId: number;
-  } | null>(null);
-  const [profile, setProfile] = useState({
-    firstName: "",
-    lastName: "",
-    username: "",
-    password: "",
-    age: "",
-    favoriteColor: "blue",
-  });
+  } | null>(hasInviteData ? {
+    familyName: urlFamilyName || '',
+    teenName: urlTeenName || '',
+    familyId: parseInt(urlFamilyId || '0'),
+  } : null);
+  
+  // Parse teen name from URL if available
+  const getInitialProfile = () => {
+    if (urlTeenName) {
+      const nameParts = urlTeenName.split(' ');
+      return {
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        username: "",
+        password: "",
+        age: "",
+        favoriteColor: "blue",
+      };
+    }
+    return {
+      firstName: "",
+      lastName: "",
+      username: "",
+      password: "",
+      age: "",
+      favoriteColor: "blue",
+    };
+  };
+  
+  const [profile, setProfile] = useState(getInitialProfile());
   const [notificationSettings, setNotificationSettings] = useState({
     taskReminders: true,
     eventNotifications: true,
