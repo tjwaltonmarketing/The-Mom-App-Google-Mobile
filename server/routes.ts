@@ -2371,31 +2371,29 @@ export async function registerRoutes(app: Express) {
       // Schedule task notifications if assignee has reminders enabled and task has due date
       if (task.dueDate && (finalAssignedTo || finalChildProfileId)) {
         try {
-          // Get assignee's user ID for preferences lookup
-          let assigneeUserId: number | null = null;
-          
           if (finalAssignedTo) {
+            // Parent/family member assignment - get their user ID
             const assigneeMember = await storage.getFamilyMember(finalAssignedTo);
-            assigneeUserId = assigneeMember?.userId || null;
-          } else if (finalChildProfileId) {
-            // For teen/child profiles, get the teen profile and their associated user
-            const teenProfile = await storage.getTeenProfile(finalChildProfileId);
-            assigneeUserId = teenProfile?.userId || null;
-          }
-          
-          if (assigneeUserId) {
-            const prefs = await storage.getUserPreferences(assigneeUserId);
-            
-            // Only schedule if task reminders are enabled (default true)
-            if (prefs?.taskReminders !== false) {
-              await notificationService.scheduleTaskNotifications({
-                taskId: task.id,
-                teenId: assigneeUserId,
-                taskTitle: task.title,
-                dueDate: new Date(task.dueDate),
-                points: task.points || 0,
-              });
+            if (assigneeMember?.userId) {
+              const prefs = await storage.getUserPreferences(assigneeMember.userId);
+              if (prefs?.taskReminders !== false) {
+                await notificationService.scheduleParentTaskNotifications({
+                  taskId: task.id,
+                  userId: assigneeMember.userId,
+                  taskTitle: task.title,
+                  dueDate: new Date(task.dueDate),
+                });
+              }
             }
+          } else if (finalChildProfileId) {
+            // Teen/child profile assignment - use teen notification system
+            await notificationService.scheduleTaskNotifications({
+              taskId: task.id,
+              teenId: finalChildProfileId,
+              taskTitle: task.title,
+              dueDate: new Date(task.dueDate),
+              points: task.points || 0,
+            });
           }
         } catch (notifError) {
           console.error("Failed to schedule task notifications:", notifError);

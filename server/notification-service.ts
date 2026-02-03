@@ -12,6 +12,13 @@ export interface TaskNotificationConfig {
   points: number;
 }
 
+export interface ParentTaskNotificationConfig {
+  taskId: number;
+  userId: number;
+  taskTitle: string;
+  dueDate: Date;
+}
+
 export class NotificationService {
   private notificationQueue: Map<string, NodeJS.Timeout> = new Map();
   
@@ -91,6 +98,139 @@ export class NotificationService {
     }
   }
   
+  // Parent/User task notifications
+  async scheduleParentTaskNotifications(config: ParentTaskNotificationConfig) {
+    const { taskId, userId, taskTitle, dueDate } = config;
+    
+    // Get user's notification preferences
+    const prefs = await storage.getUserPreferences(userId);
+    
+    if (prefs?.taskReminders === false) {
+      return; // User has disabled task notifications
+    }
+    
+    const now = new Date();
+    
+    // 1. Initial notification - immediate
+    await this.sendParentTaskNotification({
+      type: "task_assigned",
+      taskId,
+      userId,
+      taskTitle,
+      dueDate,
+      message: `📋 New task: "${taskTitle}" - Due ${format(dueDate, "MMM d 'at' h:mm a")}`
+    });
+    
+    // 2. Reminder 2 hours before due date
+    const reminderTime = addHours(dueDate, -2);
+    if (isAfter(reminderTime, now)) {
+      this.scheduleNotification(`parent_reminder_${taskId}_${userId}`, reminderTime, async () => {
+        await this.sendParentTaskNotification({
+          type: "task_reminder",
+          taskId,
+          userId,
+          taskTitle,
+          dueDate,
+          message: `⏰ Reminder: "${taskTitle}" is due in 2 hours`
+        });
+      });
+    }
+    
+    // 3. Past due notification
+    const pastDueTime = addMinutes(dueDate, 15);
+    
+    if (isBefore(dueDate, now)) {
+      // Task is already overdue
+      await this.sendParentTaskNotification({
+        type: "task_past_due",
+        taskId,
+        userId,
+        taskTitle,
+        dueDate,
+        message: `🚨 Task overdue: "${taskTitle}" - Please complete soon!`
+      });
+      this.scheduleParentRecurringReminders(taskId, userId, taskTitle);
+    } else {
+      this.scheduleNotification(`parent_past_due_${taskId}_${userId}`, pastDueTime, async () => {
+        await this.sendParentTaskNotification({
+          type: "task_past_due",
+          taskId,
+          userId,
+          taskTitle,
+          dueDate,
+          message: `🚨 Task overdue: "${taskTitle}" - Please complete soon!`
+        });
+        this.scheduleParentRecurringReminders(taskId, userId, taskTitle);
+      });
+    }
+  }
+  
+  private scheduleParentRecurringReminders(taskId: number, userId: number, taskTitle: string) {
+    const intervalId = setInterval(async () => {
+      const task = await storage.getTask(taskId);
+      if (!task || task.isCompleted) {
+        clearInterval(intervalId);
+        return;
+      }
+      
+      await this.sendParentTaskNotification({
+        type: "task_recurring_reminder",
+        taskId,
+        userId,
+        taskTitle,
+        message: `🔔 Still pending: "${taskTitle}"`
+      });
+    }, 4 * 60 * 60 * 1000); // 4 hours
+    
+    this.notificationQueue.set(`parent_recurring_${taskId}_${userId}`, intervalId);
+  }
+  
+  private async sendParentTaskNotification(notification: {
+    type: string;
+    taskId: number;
+    userId: number;
+    taskTitle: string;
+    dueDate?: Date;
+    message: string;
+  }) {
+    const { taskId, userId, message, type } = notification;
+    
+    // Get user preferences
+    const prefs = await storage.getUserPreferences(userId);
+    const notificationMethod = prefs?.notificationMethod || "both";
+    
+    // Get user info for SMS
+    const user = await storage.getUser(userId);
+    const phoneNumber = user?.phoneNumber;
+    
+    // Create in-app notification
+    if (notificationMethod === "in_app" || notificationMethod === "both") {
+      const notificationRecord: InsertNotification = {
+        title: "Task Notification",
+        message,
+        recipientId: userId,
+        relatedTaskId: taskId,
+        deliveryMethod: "in_app",
+        scheduledFor: new Date(),
+        status: type === "task_past_due" ? "urgent" : "pending"
+      };
+      await storage.createNotification(notificationRecord);
+      console.log(`📱 Parent in-app notification: ${message}`);
+    }
+    
+    // Send SMS if enabled and phone number available
+    if ((notificationMethod === "sms" || notificationMethod === "both") && phoneNumber) {
+      try {
+        const smsSent = await sendSMS(phoneNumber, message);
+        if (smsSent) {
+          console.log(`📲 Parent SMS sent to ${phoneNumber}: ${message}`);
+        }
+      } catch (error) {
+        console.error("Failed to send parent SMS:", error);
+      }
+    }
+  }
+
   private scheduleRecurringReminders(taskId: number, teenId: number, taskTitle: string, points: number) {
     const intervalId = setInterval(async () => {
       // Check if task is still pending
