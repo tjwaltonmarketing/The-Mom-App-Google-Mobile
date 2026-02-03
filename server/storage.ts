@@ -2106,16 +2106,25 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFamilyInvite(inviteCode: string): Promise<FamilyInvite | undefined> {
-    const [invite] = await db.select().from(familyInvites).where(eq(familyInvites.inviteCode, inviteCode));
-    return invite || undefined;
+    // Use direct SQL since DB column is 'code' not 'invite_code'
+    const result = await db.execute(sql`
+      SELECT id, code as "inviteCode", family_id as "familyId", teen_name as "teenName", 
+             invited_by as "invitedBy", expires_at as "expiresAt", status, 
+             accepted_by as "acceptedBy", accepted_at as "acceptedAt"
+      FROM family_invites WHERE code = ${inviteCode}
+    `);
+    return result.rows[0] as FamilyInvite | undefined;
   }
 
   async updateFamilyInvite(inviteCode: string, updates: Partial<FamilyInvite>): Promise<FamilyInvite | undefined> {
-    const [updatedInvite] = await db.update(familyInvites)
-      .set(updates)
-      .where(eq(familyInvites.inviteCode, inviteCode))
-      .returning();
-    return updatedInvite || undefined;
+    // Use direct SQL since DB column is 'code' not 'invite_code'
+    const result = await db.execute(sql`
+      UPDATE family_invites SET status = ${updates.status || 'pending'}
+      WHERE code = ${inviteCode}
+      RETURNING id, code as "inviteCode", family_id as "familyId", teen_name as "teenName", 
+                invited_by as "invitedBy", expires_at as "expiresAt", status
+    `);
+    return result.rows[0] as FamilyInvite | undefined;
   }
 
   async getTeenTasks(teenProfileId: number): Promise<Task[]> {
@@ -2374,16 +2383,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async acceptFamilyInvite(inviteCode: string, acceptedBy: number): Promise<FamilyInvite | undefined> {
-    const [invite] = await db
-      .update(familyInvites)
-      .set({ 
-        status: 'accepted',
-        acceptedAt: new Date(),
-        acceptedBy 
-      })
-      .where(eq(familyInvites.inviteCode, inviteCode))
-      .returning();
-    return invite;
+    // Use direct SQL since DB column is 'code' not 'invite_code'
+    const result = await db.execute(sql`
+      UPDATE family_invites 
+      SET status = 'accepted', accepted_at = NOW(), accepted_by = ${acceptedBy}
+      WHERE code = ${inviteCode}
+      RETURNING id, code as "inviteCode", family_id as "familyId", teen_name as "teenName", 
+                invited_by as "invitedBy", expires_at as "expiresAt", status,
+                accepted_by as "acceptedBy", accepted_at as "acceptedAt"
+    `);
+    return result.rows[0] as FamilyInvite | undefined;
   }
 
   async getFamilyInvites(familyId: number): Promise<FamilyInvite[]> {

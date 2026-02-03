@@ -65,9 +65,11 @@ export function ParentInviteModal({ isOpen, onClose }: ParentInviteModalProps) {
 
   const inviteParentMutation = useMutation({
     mutationFn: async (data: ParentInviteForm) => {
-      return apiRequest("POST", "/api/family/invite-parent", data);
+      const response = await apiRequest("POST", "/api/family/invite-parent", data);
+      return response.json();
     },
     onSuccess: (data) => {
+      console.log("Invite response:", data);
       setInviteResult({
         inviteCode: data.inviteCode,
         phone: data.invitedPhone,
