@@ -136,17 +136,16 @@ export default function TeenOnboarding() {
         description: "Welcome to your family coordination hub",
       });
       
-      // Refetch auth queries and wait for completion before navigating
-      console.log("Refetching teen auth...");
-      try {
-        const result = await queryClient.refetchQueries({ queryKey: ["/api/teen/auth/user"] });
-        console.log("Refetch complete, result:", result);
-      } catch (error) {
-        console.error("Refetch error:", error);
-      }
+      // Set auth data directly in the cache since complete-setup returns the profile
+      queryClient.setQueryData(["/api/teen/auth/user"], {
+        isAuthenticated: true,
+        teenId: data.teenProfile.id,
+        teenProfile: data.teenProfile
+      });
+      
+      console.log("Auth cache updated, navigating to teen-dashboard...");
       
       // Navigate to dashboard
-      console.log("Navigating to teen-dashboard...");
       setLocation("/teen-dashboard");
     },
     onError: () => {
