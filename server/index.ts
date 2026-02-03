@@ -21,6 +21,7 @@ app.use((req, res, next) => {
   const allowedOrigins = [
     'https://the-mom-app.replit.app',
     'https://themom.app',
+    'https://login.themom.app',
     'http://localhost:5000',
     'http://localhost:5173',
     'capacitor://localhost',
