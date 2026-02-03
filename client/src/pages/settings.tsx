@@ -67,11 +67,25 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isIndividualPlan, canAddFamilyMembers, canAccessPasswordVault } = useSubscription();
-  const [mindfulUsageEnabled, setMindfulUsageEnabled] = useState(true);
-  const [reminderInterval, setReminderInterval] = useState("20");
-  const [breakDuration, setBreakDuration] = useState([5]);
-  const [dailyLimit, setDailyLimit] = useState([120]);
-  const [notifications, setNotifications] = useState(true);
+  // Load mindful usage settings from localStorage
+  const loadMindfulSettings = () => {
+    const saved = localStorage.getItem('mindfulUsageSettings');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  };
+  
+  const savedSettings = loadMindfulSettings();
+  const [mindfulUsageEnabled, setMindfulUsageEnabled] = useState(savedSettings?.enabled ?? true);
+  const [reminderInterval, setReminderInterval] = useState(savedSettings?.reminderInterval?.toString() ?? "20");
+  const [breakDuration, setBreakDuration] = useState([savedSettings?.breakDuration ?? 5]);
+  const [dailyLimit, setDailyLimit] = useState([savedSettings?.dailyLimit ?? 120]);
+  const [notifications, setNotifications] = useState(savedSettings?.notifications ?? true);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importType, setImportType] = useState<"tasks" | "notes" | "passwords" | "events">("tasks");
   const [activeTab, setActiveTab] = useState("general");
@@ -458,7 +472,10 @@ export default function SettingsPage() {
       notifications
     }));
     // Theme is automatically saved by the theme provider
-    alert('Settings saved successfully!');
+    toast({
+      title: "Settings Saved",
+      description: "Your preferences have been saved to this device.",
+    });
   };
 
   const handleAddFamilyMember = () => {
