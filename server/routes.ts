@@ -675,6 +675,16 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family member not found" });
       }
 
+      // Check family member limit (max 6 for Family plan)
+      const familyMembers = await storage.getFamilyMembers(familyMembership.familyId);
+      const activeMembers = familyMembers.filter(m => m.isActive);
+      if (activeMembers.length >= 6) {
+        return res.status(403).json({ 
+          error: "Family member limit reached", 
+          message: "Your Family plan allows up to 6 members. Please remove a member or upgrade your plan to add more." 
+        });
+      }
+
       // Generate unique invite code
       const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
