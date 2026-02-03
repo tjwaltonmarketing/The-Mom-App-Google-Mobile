@@ -246,18 +246,15 @@ export const householdSettings = pgTable("household_settings", {
 // Teen account system tables
 export const familyInvites = pgTable("family_invites", {
   id: serial("id").primaryKey(),
-  inviteCode: varchar("invite_code", { length: 50 }).notNull().unique(),
+  inviteCode: varchar("code", { length: 50 }).notNull().unique(),
   familyId: integer("family_id").references(() => families.id).notNull(),
-  invitedBy: integer("invited_by").references(() => users.id).notNull(),
-  invitedContact: varchar("invited_contact", { length: 255 }).notNull(), // email or phone
-  contactType: text("contact_type").notNull(), // "email" or "phone"
-  invitedRole: text("invited_role").notNull().default("teen"), // "teen", "child", "young-adult"
+  invitedBy: integer("invited_by").notNull(),
   teenName: varchar("teen_name", { length: 100 }).notNull(),
-  status: text("status").notNull().default("pending"), // "pending", "accepted", "expired"
+  status: varchar("status", { length: 50 }).notNull().default("pending"),
   expiresAt: timestamp("expires_at").notNull(),
   acceptedAt: timestamp("accepted_at"),
-  acceptedBy: integer("accepted_by").references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow(),
+  acceptedBy: integer("accepted_by"),
+  invitedAt: timestamp("invited_at").defaultNow(),
 });
 
 export const teenProfiles = pgTable("teen_profiles", {
