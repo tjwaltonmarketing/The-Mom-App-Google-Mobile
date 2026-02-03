@@ -3499,7 +3499,20 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const subscription = await storage.getUserSubscription(req.session.userId);
+      let subscription = await storage.getUserSubscription(req.session.userId);
+      
+      if (!subscription) {
+        // Check if user is part of a family (joined via invite)
+        // In that case, use the family owner's subscription
+        const family = await storage.getFamilyByUserId(req.session.userId);
+        if (family && family.ownerId !== req.session.userId) {
+          // User is a family member (not owner) - get owner's subscription
+          const ownerSubscription = await storage.getUserSubscription(family.ownerId);
+          if (ownerSubscription) {
+            subscription = ownerSubscription;
+          }
+        }
+      }
       
       if (!subscription) {
         // No subscription exists - user needs to complete onboarding first
