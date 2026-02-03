@@ -719,6 +719,42 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Teen clear all tasks endpoint - deletes all tasks assigned to teen
+  // MUST be before :taskId route to prevent "clear-all" from being matched as a taskId
+  app.delete("/api/teen/tasks/clear-all", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's profile and family member info
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      // Get family member to access familyId
+      const familyMember = await storage.getFamilyMember(teenProfile.familyMemberId!);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get all tasks for this teen (assigned to them)
+      const allTasks = await storage.getTasks(familyMember.familyId);
+      const teenTasks = allTasks.filter(task => task.assignedTo === teenProfile.familyMemberId);
+
+      // Delete each task
+      for (const task of teenTasks) {
+        await storage.deleteTask(task.id);
+      }
+
+      res.json({ success: true, deletedCount: teenTasks.length });
+    } catch (error) {
+      console.error("Teen clear all tasks error:", error);
+      res.status(500).json({ error: "Failed to clear tasks" });
+    }
+  });
+
   // Teen task delete endpoint (only for tasks they created)
   app.delete("/api/teen/tasks/:taskId", async (req, res) => {
     try {
