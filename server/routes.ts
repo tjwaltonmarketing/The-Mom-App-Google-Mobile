@@ -448,6 +448,7 @@ export async function registerRoutes(app: Express) {
   app.post("/api/teen/login-with-invite", async (req, res) => {
     try {
       const { inviteCode } = req.body;
+      console.log("Login with invite code:", inviteCode);
       
       if (!inviteCode) {
         return res.status(400).json({ error: "Invite code is required" });
@@ -455,12 +456,14 @@ export async function registerRoutes(app: Express) {
 
       // Find and validate invite
       const invite = await storage.getFamilyInvite(inviteCode);
+      console.log("Found invite:", invite);
       if (!invite || invite.status !== 'pending') {
         return res.status(401).json({ error: "Invalid or expired invite code" });
       }
 
-      // Check if invite has expired
-      if (new Date() > invite.expiresAt) {
+      // Check if invite has expired (handle both Date and string formats)
+      const expiresAt = typeof invite.expiresAt === 'string' ? new Date(invite.expiresAt) : invite.expiresAt;
+      if (new Date() > expiresAt) {
         return res.status(401).json({ error: "Invite code has expired" });
       }
 
