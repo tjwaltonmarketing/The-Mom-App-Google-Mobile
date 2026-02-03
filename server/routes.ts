@@ -675,13 +675,13 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family member not found" });
       }
 
-      // Check family member limit (max 6 for Family plan)
+      // Check family member limit (max 6 members with login accounts - children are unlimited)
       const familyMembers = await storage.getFamilyMembersByFamily(familyMembership.familyId);
-      const activeMembers = familyMembers.filter(m => m.isActive);
-      if (activeMembers.length >= 6) {
+      const membersWithLogin = familyMembers.filter(m => m.isActive && m.role !== 'child');
+      if (membersWithLogin.length >= 6) {
         return res.status(403).json({ 
           error: "Family member limit reached", 
-          message: "Your plan allows up to 6 family members. Please remove a member to add someone new." 
+          message: "Your plan allows up to 6 members with login accounts. Child accounts are unlimited." 
         });
       }
 
