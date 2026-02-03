@@ -29,10 +29,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, UserPlus, Copy } from "lucide-react";
+import { Phone, UserPlus, Copy } from "lucide-react";
 
 const parentInviteSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  phone: z.string().min(10, "Please enter a valid phone number"),
   role: z.enum(["mom", "dad", "parent"], {
     required_error: "Please select a parent role",
   }),
@@ -48,8 +48,9 @@ interface ParentInviteModalProps {
 export function ParentInviteModal({ isOpen, onClose }: ParentInviteModalProps) {
   const [inviteResult, setInviteResult] = useState<{
     inviteCode: string;
-    email: string;
+    phone: string;
     role: string;
+    smsSent: boolean;
   } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -57,7 +58,7 @@ export function ParentInviteModal({ isOpen, onClose }: ParentInviteModalProps) {
   const form = useForm<ParentInviteForm>({
     resolver: zodResolver(parentInviteSchema),
     defaultValues: {
-      email: "",
+      phone: "",
       role: "parent",
     },
   });
@@ -69,13 +70,16 @@ export function ParentInviteModal({ isOpen, onClose }: ParentInviteModalProps) {
     onSuccess: (data) => {
       setInviteResult({
         inviteCode: data.inviteCode,
-        email: data.invitedEmail,
+        phone: data.invitedPhone,
         role: data.role,
+        smsSent: data.smsSent,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
       toast({
-        title: "Invitation Sent",
-        description: `Parent invite sent to ${data.invitedEmail}`,
+        title: data.smsSent ? "Invitation Sent" : "Invite Created",
+        description: data.smsSent 
+          ? `Text message sent to ${data.invitedPhone}` 
+          : `Invite code created. Share it with the parent.`,
       });
     },
     onError: (error: any) => {
@@ -163,15 +167,16 @@ export function ParentInviteModal({ isOpen, onClose }: ParentInviteModalProps) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-4">
               <FormField
                 control={form.control}
-                name="email"
+                name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Parent's Email</FormLabel>
+                    <FormLabel>Parent's Phone Number</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                         <Input
-                          placeholder="parent@example.com"
+                          placeholder="+1 (555) 123-4567"
+                          type="tel"
                           className="pl-10"
                           {...field}
                           onFocus={(e) => {
@@ -232,13 +237,15 @@ export function ParentInviteModal({ isOpen, onClose }: ParentInviteModalProps) {
           <div className="space-y-4">
             <div className="text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="w-8 h-8 text-green-600" />
+                <Phone className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">
-                Invitation Sent Successfully!
+                {inviteResult.smsSent ? "Invitation Sent!" : "Invite Created!"}
               </h3>
               <p className="text-sm text-gray-600 mt-2">
-                Parent invitation sent to {inviteResult.email}
+                {inviteResult.smsSent 
+                  ? `Text message sent to ${inviteResult.phone}`
+                  : "Share the invite code below with the parent"}
               </p>
             </div>
 

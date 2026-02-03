@@ -2265,6 +2265,63 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Parent invite via SMS
+  app.post("/api/family/invite-parent", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { phone, role } = req.body;
+
+      if (!phone || !role) {
+        return res.status(400).json({ error: "Phone number and role are required" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const family = await storage.getFamily(familyMembership.familyId);
+      const user = await storage.getUser(req.session.userId);
+
+      // Generate invite code
+      const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
+
+      // Create the invite in database
+      await storage.createFamilyInvite({
+        familyId: familyMembership.familyId,
+        inviteCode,
+        inviteType: 'parent',
+        teenName: role, // Store role in teenName field for parent invites
+        phone,
+        status: 'pending',
+        expiresAt,
+      });
+
+      // Send SMS
+      const inviterName = user?.firstName || 'A family member';
+      const familyName = family?.name || 'the family';
+      const message = `${inviterName} has invited you to join ${familyName} on The Mom App! Your invite code is: ${inviteCode}. Download the app and use this code to join.`;
+      
+      const smsSent = await sendSMS(phone, message);
+
+      res.json({
+        success: true,
+        inviteCode,
+        invitedPhone: phone,
+        role,
+        smsSent
+      });
+    } catch (error) {
+      console.error("Parent invite error:", error);
+      res.status(500).json({ error: "Failed to send parent invitation" });
+    }
+  });
+
   app.post("/api/family-members", async (req, res) => {
     try {
       if (!req.session.userId) {
