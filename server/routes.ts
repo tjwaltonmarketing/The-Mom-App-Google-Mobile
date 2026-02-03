@@ -475,12 +475,22 @@ export async function registerRoutes(app: Express) {
         return res.json({
           marketingEmails: false,
           usageAnalytics: true,
+          notificationMethod: "both",
+          taskReminders: true,
+          eventReminders: true,
+          dailyDigest: true,
+          dailyDigestTime: "09:00",
         });
       }
 
       res.json({
         marketingEmails: prefs.marketingEmails,
         usageAnalytics: prefs.usageAnalytics,
+        notificationMethod: prefs.notificationMethod || "both",
+        taskReminders: prefs.taskReminders ?? true,
+        eventReminders: prefs.eventReminders ?? true,
+        dailyDigest: prefs.dailyDigest ?? true,
+        dailyDigestTime: prefs.dailyDigestTime || "09:00",
       });
     } catch (error) {
       console.error("Get preferences error:", error);
@@ -494,11 +504,24 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const { marketingEmails, usageAnalytics } = req.body;
+      const { 
+        marketingEmails, 
+        usageAnalytics,
+        notificationMethod,
+        taskReminders,
+        eventReminders,
+        dailyDigest,
+        dailyDigestTime,
+      } = req.body;
       
       const prefs = await storage.updateUserPreferences(req.session.userId, {
         marketingEmails,
         usageAnalytics,
+        notificationMethod,
+        taskReminders,
+        eventReminders,
+        dailyDigest,
+        dailyDigestTime,
       });
 
       res.json({
@@ -506,6 +529,11 @@ export async function registerRoutes(app: Express) {
         preferences: {
           marketingEmails: prefs.marketingEmails,
           usageAnalytics: prefs.usageAnalytics,
+          notificationMethod: prefs.notificationMethod,
+          taskReminders: prefs.taskReminders,
+          eventReminders: prefs.eventReminders,
+          dailyDigest: prefs.dailyDigest,
+          dailyDigestTime: prefs.dailyDigestTime,
         }
       });
     } catch (error) {

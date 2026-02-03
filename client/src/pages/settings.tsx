@@ -114,6 +114,14 @@ export default function SettingsPage() {
   const [marketingEmails, setMarketingEmails] = useState(false);
   const [usageAnalytics, setUsageAnalytics] = useState(true);
 
+  // Notification preferences state
+  const [showNotificationDialog, setShowNotificationDialog] = useState(false);
+  const [notificationMethod, setNotificationMethod] = useState<"in_app" | "sms" | "both">("both");
+  const [taskReminders, setTaskReminders] = useState(true);
+  const [eventReminders, setEventReminders] = useState(true);
+  const [dailyDigest, setDailyDigest] = useState(true);
+  const [dailyDigestTime, setDailyDigestTime] = useState("09:00");
+
   // Feedback form state
   const [feedbackType, setFeedbackType] = useState<"feedback" | "feature_request" | "bug_report">("feedback");
   const [feedbackSubject, setFeedbackSubject] = useState("");
@@ -419,18 +427,31 @@ export default function SettingsPage() {
     },
   });
 
-  // Privacy preferences query
-  const { data: privacyPrefs } = useQuery<{ marketingEmails: boolean; usageAnalytics: boolean }>({
+  // User preferences query (includes privacy and notification settings)
+  const { data: userPrefs } = useQuery<{ 
+    marketingEmails: boolean; 
+    usageAnalytics: boolean;
+    notificationMethod: "in_app" | "sms" | "both";
+    taskReminders: boolean;
+    eventReminders: boolean;
+    dailyDigest: boolean;
+    dailyDigestTime: string;
+  }>({
     queryKey: ["/api/auth/preferences"],
   });
 
-  // Update privacy state when data loads
+  // Update privacy and notification state when data loads
   useEffect(() => {
-    if (privacyPrefs) {
-      setMarketingEmails(privacyPrefs.marketingEmails);
-      setUsageAnalytics(privacyPrefs.usageAnalytics);
+    if (userPrefs) {
+      setMarketingEmails(userPrefs.marketingEmails);
+      setUsageAnalytics(userPrefs.usageAnalytics);
+      setNotificationMethod(userPrefs.notificationMethod || "both");
+      setTaskReminders(userPrefs.taskReminders ?? true);
+      setEventReminders(userPrefs.eventReminders ?? true);
+      setDailyDigest(userPrefs.dailyDigest ?? true);
+      setDailyDigestTime(userPrefs.dailyDigestTime || "09:00");
     }
-  }, [privacyPrefs]);
+  }, [userPrefs]);
 
   // Privacy preferences mutation
   const updatePrivacyMutation = useMutation({
@@ -450,6 +471,35 @@ export default function SettingsPage() {
       toast({
         title: "Update Failed",
         description: error.message || "Failed to save preferences.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Notification preferences mutation
+  const updateNotificationMutation = useMutation({
+    mutationFn: async (prefs: { 
+      notificationMethod: string;
+      taskReminders: boolean;
+      eventReminders: boolean;
+      dailyDigest: boolean;
+      dailyDigestTime: string;
+    }) => {
+      const response = await apiRequest("PUT", "/api/auth/preferences", prefs);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/preferences"] });
+      toast({
+        title: "Notification Settings Updated",
+        description: "Your notification preferences have been saved.",
+      });
+      setShowNotificationDialog(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to save notification preferences.",
         variant: "destructive",
       });
     },
@@ -1381,6 +1431,9 @@ export default function SettingsPage() {
                 <Button variant="outline" className="w-full justify-start" onClick={handleSecuritySettings}>
                   Security Settings
                 </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => setShowNotificationDialog(true)}>
+                  Notification Preferences
+                </Button>
               </CardContent>
             </Card>
 
@@ -1917,9 +1970,9 @@ export default function SettingsPage() {
                 variant="outline"
                 onClick={() => {
                   // Reset to saved values
-                  if (privacyPrefs) {
-                    setMarketingEmails(privacyPrefs.marketingEmails);
-                    setUsageAnalytics(privacyPrefs.usageAnalytics);
+                  if (userPrefs) {
+                    setMarketingEmails(userPrefs.marketingEmails);
+                    setUsageAnalytics(userPrefs.usageAnalytics);
                   }
                   setShowPrivacyDialog(false);
                 }}
@@ -2071,6 +2124,122 @@ export default function SettingsPage() {
                 disabled={changePasswordMutation.isPending}
               >
                 {changePasswordMutation.isPending ? "Saving..." : "Save Security Settings"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Notification Preferences Dialog */}
+        <Dialog open={showNotificationDialog} onOpenChange={setShowNotificationDialog}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-primary" />
+                Notification Preferences
+              </DialogTitle>
+              <DialogDescription>
+                Choose how you'd like to receive task and event reminders.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Notification Method</Label>
+                  <p className="text-xs text-muted-foreground mb-2">How would you like to receive reminders?</p>
+                  <Select value={notificationMethod} onValueChange={(value: "in_app" | "sms" | "both") => setNotificationMethod(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="in_app">In-App Only (Push Notifications)</SelectItem>
+                      <SelectItem value="sms">Text Messages Only</SelectItem>
+                      <SelectItem value="both">Both In-App and Text</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Task Reminders</Label>
+                    <p className="text-xs text-muted-foreground">Get notified about task deadlines</p>
+                  </div>
+                  <Switch 
+                    checked={taskReminders} 
+                    onCheckedChange={setTaskReminders}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Event Reminders</Label>
+                    <p className="text-xs text-muted-foreground">Get reminded before calendar events</p>
+                  </div>
+                  <Switch 
+                    checked={eventReminders} 
+                    onCheckedChange={setEventReminders}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Daily Digest</Label>
+                    <p className="text-xs text-muted-foreground">Daily summary of open tasks</p>
+                  </div>
+                  <Switch 
+                    checked={dailyDigest} 
+                    onCheckedChange={setDailyDigest}
+                  />
+                </div>
+                {dailyDigest && (
+                  <div>
+                    <Label className="text-sm font-medium">Daily Digest Time</Label>
+                    <p className="text-xs text-muted-foreground mb-2">When should we send your daily summary?</p>
+                    <Select value={dailyDigestTime} onValueChange={setDailyDigestTime}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="07:00">7:00 AM</SelectItem>
+                        <SelectItem value="08:00">8:00 AM</SelectItem>
+                        <SelectItem value="09:00">9:00 AM</SelectItem>
+                        <SelectItem value="10:00">10:00 AM</SelectItem>
+                        <SelectItem value="18:00">6:00 PM</SelectItem>
+                        <SelectItem value="19:00">7:00 PM</SelectItem>
+                        <SelectItem value="20:00">8:00 PM</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  // Reset to saved values
+                  if (userPrefs) {
+                    setNotificationMethod(userPrefs.notificationMethod || "both");
+                    setTaskReminders(userPrefs.taskReminders ?? true);
+                    setEventReminders(userPrefs.eventReminders ?? true);
+                    setDailyDigest(userPrefs.dailyDigest ?? true);
+                    setDailyDigestTime(userPrefs.dailyDigestTime || "09:00");
+                  }
+                  setShowNotificationDialog(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={() => {
+                  updateNotificationMutation.mutate({ 
+                    notificationMethod, 
+                    taskReminders, 
+                    eventReminders,
+                    dailyDigest,
+                    dailyDigestTime,
+                  });
+                }}
+                disabled={updateNotificationMutation.isPending}
+              >
+                {updateNotificationMutation.isPending ? "Saving..." : "Save Preferences"}
               </Button>
             </DialogFooter>
           </DialogContent>
