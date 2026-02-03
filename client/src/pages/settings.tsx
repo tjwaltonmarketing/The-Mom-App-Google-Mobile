@@ -49,10 +49,6 @@ const editMemberSchema = z.object({
   notificationPreference: z.string().optional(),
 });
 
-const familyMergeSchema = z.object({
-  partnerEmail: z.string().email("Please enter a valid email address"),
-});
-
 const resetPasswordSchema = z.object({
   newPassword: z.string().min(6, "Password must be at least 6 characters long"),
   confirmPassword: z.string(),
@@ -63,7 +59,6 @@ const resetPasswordSchema = z.object({
 
 type AddFamilyMemberForm = z.infer<typeof addFamilyMemberSchema>;
 type EditMemberForm = z.infer<typeof editMemberSchema>;
-type FamilyMergeForm = z.infer<typeof familyMergeSchema>;
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
 export default function SettingsPage() {
@@ -86,11 +81,7 @@ export default function SettingsPage() {
   const [showSecurityDialog, setShowSecurityDialog] = useState(false);
   const [showInviteTeenModal, setShowInviteTeenModal] = useState(false);
   const [showParentInviteModal, setShowParentInviteModal] = useState(false);
-  const [showFamilyMergeDialog, setShowFamilyMergeDialog] = useState(false);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
-  const [showBillingDecisionDialog, setShowBillingDecisionDialog] = useState(false);
-  const [pendingMergeRequestId, setPendingMergeRequestId] = useState<number | null>(null);
-  const [billingPreference, setBillingPreference] = useState<string>("keep_mine");
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
   const [selectedTeenForReset, setSelectedTeenForReset] = useState<{id: number, name: string, username?: string} | null>(null);
   
@@ -194,11 +185,6 @@ export default function SettingsPage() {
     }
   });
 
-  // Fetch pending merge requests
-  const { data: mergeRequests = [] } = useQuery<any[]>({
-    queryKey: ["/api/family/merge-requests"],
-  });
-
   // Fetch trial status
   const { data: trialStatus } = useQuery<any>({
     queryKey: ["/api/trial/status"],
@@ -235,14 +221,6 @@ export default function SettingsPage() {
       phone: "",
       email: "",
       notificationPreference: "sms",
-    },
-  });
-
-  // Form for family merge
-  const mergeForm = useForm<FamilyMergeForm>({
-    resolver: zodResolver(familyMergeSchema),
-    defaultValues: {
-      partnerEmail: "",
     },
   });
 
@@ -317,86 +295,6 @@ export default function SettingsPage() {
       toast({
         title: "Error",
         description: error.message || "Failed to remove family member",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Mutation for merging families
-  const mergeFamilyMutation = useMutation({
-    mutationFn: async (data: FamilyMergeForm) => {
-      return apiRequest("POST", "/api/family/merge", data);
-    },
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
-      toast({
-        title: "Merge Request Sent!",
-        description: data.message || "Your partner will receive a notification to approve the merge request.",
-      });
-      setShowFamilyMergeDialog(false);
-      mergeForm.reset();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Merge Failed",
-        description: error.message || "Failed to merge families",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Mutation for approving merge requests
-  const approveMergeRequestMutation = useMutation({
-    mutationFn: async ({ requestId, billingPreference }: { requestId: number; billingPreference: string }) => {
-      return apiRequest("POST", `/api/family/merge-requests/${requestId}/approve`, { billingPreference });
-    },
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/family/merge-requests"] });
-      setShowBillingDecisionDialog(false);
-      setPendingMergeRequestId(null);
-      
-      const billingInfo = data.billingInfo;
-      let billingMessage = "Families have been successfully merged.";
-      
-      if (billingInfo) {
-        if (billingInfo.strategy === 'trial') {
-          billingMessage += " Trial billing will be managed by the designated account.";
-        } else {
-          billingMessage += ` Billing will be handled by the ${billingInfo.primaryBiller === data.currentUserId ? 'primary' : 'secondary'} account.`;
-        }
-      }
-      
-      toast({
-        title: "Merge Request Approved!",
-        description: billingMessage,
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Approval Failed",
-        description: error.message || "Failed to approve merge request",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Mutation for rejecting merge requests
-  const rejectMergeRequestMutation = useMutation({
-    mutationFn: async (requestId: number) => {
-      return apiRequest("POST", `/api/family/merge-requests/${requestId}/reject`);
-    },
-    onSuccess: (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/family/merge-requests"] });
-      toast({
-        title: "Merge Request Rejected",
-        description: data.message || "Merge request has been rejected.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Rejection Failed",
-        description: error.message || "Failed to reject merge request",
         variant: "destructive",
       });
     },
@@ -524,10 +422,6 @@ export default function SettingsPage() {
 
   const onSubmitEditMember = (data: EditMemberForm) => {
     editMemberMutation.mutate(data);
-  };
-
-  const onSubmitFamilyMerge = (data: FamilyMergeForm) => {
-    mergeFamilyMutation.mutate(data);
   };
 
   const handleProfileSettings = () => {
@@ -915,47 +809,6 @@ export default function SettingsPage() {
                   </div>
                 )}
 
-                {/* Pending Merge Requests */}
-                {mergeRequests.length > 0 && (
-                  <div className="space-y-2 mb-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                    <h4 className="font-medium text-sm text-amber-800 dark:text-amber-200">Pending Family Merge Requests:</h4>
-                    <div className="space-y-3">
-                      {mergeRequests.map((request) => (
-                        <div key={request.id} className="flex items-center justify-between p-3 bg-background rounded-lg border">
-                          <div className="flex-1">
-                            <div className="font-medium text-sm">{request.title}</div>
-                            <div className="text-xs text-muted-foreground">{request.message}</div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setPendingMergeRequestId(request.id);
-                                setShowBillingDecisionDialog(true);
-                              }}
-                              disabled={approveMergeRequestMutation.isPending}
-                              className="text-green-600 hover:text-green-700"
-                            >
-                              {approveMergeRequestMutation.isPending ? "Approving..." : "Approve"}
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => rejectMergeRequestMutation.mutate(request.id)}
-                              disabled={rejectMergeRequestMutation.isPending}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              {rejectMergeRequestMutation.isPending ? "Rejecting..." : "Reject"}
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                
                 {/* Add Family Member Options */}
                 <div className="space-y-4">
                   <h4 className="font-medium text-sm text-muted-foreground">Add New Family Members</h4>
@@ -993,25 +846,6 @@ export default function SettingsPage() {
                         <Button variant="outline" size="sm" onClick={() => setShowParentInviteModal(true)}>
                           <Mail className="h-3 w-3 mr-2" />
                           Send Invitation
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Option 3: Connect Existing Parent */}
-                  <div className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                        <Heart className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <div className="flex-1">
-                        <h5 className="font-medium">Connect Existing Parent Account</h5>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          If your partner already has a Mom App account, merge your families together. This combines all your family data into one unified system.
-                        </p>
-                        <Button variant="outline" size="sm" onClick={() => setShowFamilyMergeDialog(true)}>
-                          <Heart className="h-3 w-3 mr-2" />
-                          Merge Families
                         </Button>
                       </div>
                     </div>
@@ -2078,173 +1912,6 @@ export default function SettingsPage() {
           isOpen={showParentInviteModal}
           onClose={() => setShowParentInviteModal(false)}
         />
-
-        {/* Family Merge Dialog */}
-        <Dialog open={showFamilyMergeDialog} onOpenChange={setShowFamilyMergeDialog}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-primary" />
-                Merge with Partner's Family
-              </DialogTitle>
-              <DialogDescription>
-                Send a merge request to your partner. They will receive a notification and can approve or reject the request. This will combine all family members, tasks, and events into one unified family.
-              </DialogDescription>
-            </DialogHeader>
-            <Form {...mergeForm}>
-              <form onSubmit={mergeForm.handleSubmit(onSubmitFamilyMerge)} className="space-y-4">
-                <FormField
-                  control={mergeForm.control}
-                  name="partnerEmail"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Partner's Email Address</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="partner@example.com" 
-                          type="email" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    <strong>How it works:</strong> Your partner will receive an email with a link to approve or reject the merge request. If approved, their family data will be combined with yours.
-                  </p>
-                </div>
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowFamilyMergeDialog(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={mergeFamilyMutation.isPending}>
-                    {mergeFamilyMutation.isPending ? "Sending Request..." : "Send Merge Request"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-
-        {/* Billing Decision Dialog */}
-        <Dialog open={showBillingDecisionDialog} onOpenChange={setShowBillingDecisionDialog}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Star className="h-5 w-5 text-primary" />
-                Choose Billing Plan
-              </DialogTitle>
-              <DialogDescription>
-                When merging families, you need to decide how billing will be handled. This affects who pays for the subscription and what plan you'll use.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="grid gap-3">
-                <div 
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                    billingPreference === 'keep_mine' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  onClick={() => setBillingPreference('keep_mine')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      billingPreference === 'keep_mine' ? 'border-primary' : 'border-gray-300'
-                    }`}>
-                      {billingPreference === 'keep_mine' && <div className="w-2 h-2 bg-primary rounded-full" />}
-                    </div>
-                    <div>
-                      <div className="font-medium">Keep My Billing</div>
-                      <div className="text-sm text-muted-foreground">
-                        Your trial/subscription continues and covers both families
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div 
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                    billingPreference === 'keep_theirs' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  onClick={() => setBillingPreference('keep_theirs')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      billingPreference === 'keep_theirs' ? 'border-primary' : 'border-gray-300'
-                    }`}>
-                      {billingPreference === 'keep_theirs' && <div className="w-2 h-2 bg-primary rounded-full" />}
-                    </div>
-                    <div>
-                      <div className="font-medium">Keep Their Billing</div>
-                      <div className="text-sm text-muted-foreground">
-                        Their trial/subscription continues and covers both families
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div 
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
-                    billingPreference === 'upgrade_to_family' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  onClick={() => setBillingPreference('upgrade_to_family')}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      billingPreference === 'upgrade_to_family' ? 'border-primary' : 'border-gray-300'
-                    }`}>
-                      {billingPreference === 'upgrade_to_family' && <div className="w-2 h-2 bg-primary rounded-full" />}
-                    </div>
-                    <div>
-                      <div className="font-medium">Upgrade to Family Plan</div>
-                      <div className="text-sm text-muted-foreground">
-                        $19.99/month for up to 4 users with enhanced features
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                <h4 className="font-medium text-blue-800 dark:text-blue-200 mb-2">Important:</h4>
-                <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
-                  <li>• The merged family will share all events, tasks, and data</li>
-                  <li>• Only one subscription will remain active</li>
-                  <li>• You can change your plan later in Account Settings</li>
-                </ul>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowBillingDecisionDialog(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={() => {
-                  if (pendingMergeRequestId) {
-                    approveMergeRequestMutation.mutate({
-                      requestId: pendingMergeRequestId,
-                      billingPreference
-                    });
-                  }
-                }}
-                disabled={approveMergeRequestMutation.isPending}
-              >
-                {approveMergeRequestMutation.isPending ? "Approving..." : "Approve & Merge"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         {/* Password Reset Modal */}
         <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
