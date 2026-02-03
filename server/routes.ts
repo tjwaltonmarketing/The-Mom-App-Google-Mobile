@@ -705,9 +705,7 @@ export async function registerRoutes(app: Express) {
 
       // Attempt to send invite via SMS or email
       let inviteResult = { success: false, method: preferredContact, error: "" };
-      const appUrl = process.env.REPLIT_DOMAINS 
-        ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}`
-        : "http://localhost:5000";
+      const appUrl = "https://themom.app";
 
       if (preferredContact === "sms" && phone) {
         try {
