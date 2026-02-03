@@ -2283,7 +2283,7 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family not found" });
       }
 
-      const family = await storage.getFamily(familyMembership.familyId);
+      const family = await storage.getFamilyByUserId(req.session.userId);
       const user = await storage.getUser(req.session.userId);
 
       // Generate invite code
