@@ -2295,9 +2295,11 @@ export async function registerRoutes(app: Express) {
       await storage.createFamilyInvite({
         familyId: familyMembership.familyId,
         inviteCode,
-        inviteType: 'parent',
-        teenName: role, // Store role in teenName field for parent invites
-        phone,
+        invitedBy: req.session.userId,
+        invitedContact: phone,
+        contactType: 'phone',
+        invitedRole: role,
+        teenName: `Parent (${role})`,
         status: 'pending',
         expiresAt,
       });
