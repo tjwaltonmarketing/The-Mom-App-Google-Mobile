@@ -3004,14 +3004,6 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      // Check if user is on Individual plan - cannot access password vault
-      if (await isUserOnIndividualPlan(req.session.userId)) {
-        return res.status(403).json({ 
-          error: "Family Plan Required", 
-          message: "Password Vault requires a Family Plan subscription." 
-        });
-      }
-
       const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
       if (!familyMembership) {
         return res.status(404).json({ error: "Family not found" });
@@ -3029,14 +3021,6 @@ export async function registerRoutes(app: Express) {
     try {
       if (!req.session.userId) {
         return res.status(401).json({ error: "Not authenticated" });
-      }
-
-      // Check if user is on Individual plan - cannot access password vault
-      if (await isUserOnIndividualPlan(req.session.userId)) {
-        return res.status(403).json({ 
-          error: "Family Plan Required", 
-          message: "Password Vault requires a Family Plan subscription." 
-        });
       }
 
       const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
@@ -3084,14 +3068,6 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      // Check if user is on Individual plan - cannot access password vault
-      if (await isUserOnIndividualPlan(req.session.userId)) {
-        return res.status(403).json({ 
-          error: "Family Plan Required", 
-          message: "Password Vault requires a Family Plan subscription." 
-        });
-      }
-
       const passwordId = parseInt(req.params.id);
       const { isFavorite } = req.body;
 
@@ -3127,14 +3103,6 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      // Check if user is on Individual plan - cannot access password vault
-      if (await isUserOnIndividualPlan(req.session.userId)) {
-        return res.status(403).json({ 
-          error: "Family Plan Required", 
-          message: "Password Vault requires a Family Plan subscription." 
-        });
-      }
-
       const passwordId = parseInt(req.params.id);
       
       // Get the parent's family member record
@@ -3166,14 +3134,6 @@ export async function registerRoutes(app: Express) {
     try {
       if (!req.session.userId) {
         return res.status(401).json({ error: "Not authenticated" });
-      }
-
-      // Check if user is on Individual plan - cannot access password vault
-      if (await isUserOnIndividualPlan(req.session.userId)) {
-        return res.status(403).json({ 
-          error: "Family Plan Required", 
-          message: "Password Vault requires a Family Plan subscription." 
-        });
       }
 
       const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);

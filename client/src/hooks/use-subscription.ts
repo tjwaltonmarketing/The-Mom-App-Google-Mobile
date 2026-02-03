@@ -20,7 +20,8 @@ export function useSubscription() {
   const canAddFamilyMembers = isFamilyPlan || isTrial;
   const canAssignTasks = isFamilyPlan || isTrial;
   const canShareCalendar = isFamilyPlan || isTrial;
-  const canAccessPasswordVault = isFamilyPlan || isTrial;
+  const canAccessPasswordVault = isFamilyPlan || isTrial || isIndividualPlan; // Individual can use vault, just not share
+  const canSharePasswords = isFamilyPlan || isTrial; // Only Family/Trial can share passwords
   const canInviteTeens = isFamilyPlan || isTrial;
   const canInviteParents = isFamilyPlan || isTrial;
 
@@ -35,6 +36,7 @@ export function useSubscription() {
     canAssignTasks,
     canShareCalendar,
     canAccessPasswordVault,
+    canSharePasswords,
     canInviteTeens,
     canInviteParents,
   };

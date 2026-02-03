@@ -12,7 +12,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { useMobileScroll } from "@/hooks/use-mobile-scroll";
-import { Plus, Eye, EyeOff } from "lucide-react";
+import { useSubscription } from "@/hooks/use-subscription";
+import { Plus, Eye, EyeOff, Crown } from "lucide-react";
+import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { insertPasswordSchema } from "@shared/schema";
 import type { z } from "zod";
@@ -43,6 +45,7 @@ export function PasswordModal({ trigger, onPasswordAdded }: PasswordModalProps) 
   const scrollRef = useMobileScroll({ offset: 100, delay: 200 });
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { canSharePasswords } = useSubscription();
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
@@ -77,7 +80,7 @@ export function PasswordModal({ trigger, onPasswordAdded }: PasswordModalProps) 
         credentials: 'include',
         body: JSON.stringify({
           ...data,
-          sharedWith: JSON.stringify(selectedMembers)
+          sharedWith: canSharePasswords ? JSON.stringify(selectedMembers) : JSON.stringify([])
         })
       });
 
@@ -285,34 +288,46 @@ export function PasswordModal({ trigger, onPasswordAdded }: PasswordModalProps) 
               )}
             />
 
-            <div className="space-y-3">
-              <FormLabel>Share With Family Members</FormLabel>
-              <div className="space-y-2">
-                {familyMembers.map((member) => (
-                  <div key={member.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`member-${member.id}`}
-                      checked={selectedMembers.includes(member.id)}
-                      onCheckedChange={() => handleMemberToggle(member.id)}
-                    />
-                    <label
-                      htmlFor={`member-${member.id}`}
-                      className="flex items-center space-x-2 cursor-pointer"
-                    >
-                      <div
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: member.color }}
+            {canSharePasswords ? (
+              <div className="space-y-3">
+                <FormLabel>Share With Family Members</FormLabel>
+                <div className="space-y-2">
+                  {familyMembers.map((member) => (
+                    <div key={member.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`member-${member.id}`}
+                        checked={selectedMembers.includes(member.id)}
+                        onCheckedChange={() => handleMemberToggle(member.id)}
                       />
-                      <span className="text-sm">{member.name}</span>
-                      <span className="text-xs text-muted-foreground">({member.role})</span>
-                    </label>
-                  </div>
-                ))}
+                      <label
+                        htmlFor={`member-${member.id}`}
+                        className="flex items-center space-x-2 cursor-pointer"
+                      >
+                        <div
+                          className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: member.color }}
+                        />
+                        <span className="text-sm">{member.name}</span>
+                        <span className="text-xs text-muted-foreground">({member.role})</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Select which family members can view this password
+                </div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                Select which family members can view this password
+            ) : (
+              <div className="space-y-3 p-3 bg-muted/50 rounded-lg border">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Crown className="h-4 w-4 text-amber-500" />
+                  <span>Password sharing requires a Family Plan</span>
+                </div>
+                <Link href="/plans" className="text-xs text-pink-500 hover:underline">
+                  Upgrade to share passwords with family members
+                </Link>
               </div>
-            </div>
+            )}
 
             <FormField
               control={form.control}
