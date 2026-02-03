@@ -461,6 +461,59 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // User Preferences
+  app.get("/api/auth/preferences", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const prefs = await storage.getUserPreferences(req.session.userId);
+      
+      // Return default preferences if none exist
+      if (!prefs) {
+        return res.json({
+          marketingEmails: false,
+          usageAnalytics: true,
+        });
+      }
+
+      res.json({
+        marketingEmails: prefs.marketingEmails,
+        usageAnalytics: prefs.usageAnalytics,
+      });
+    } catch (error) {
+      console.error("Get preferences error:", error);
+      res.status(500).json({ error: "Failed to get preferences" });
+    }
+  });
+
+  app.put("/api/auth/preferences", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { marketingEmails, usageAnalytics } = req.body;
+      
+      const prefs = await storage.updateUserPreferences(req.session.userId, {
+        marketingEmails,
+        usageAnalytics,
+      });
+
+      res.json({
+        success: true,
+        preferences: {
+          marketingEmails: prefs.marketingEmails,
+          usageAnalytics: prefs.usageAnalytics,
+        }
+      });
+    } catch (error) {
+      console.error("Update preferences error:", error);
+      res.status(500).json({ error: "Failed to update preferences" });
+    }
+  });
+
   // Teen Authentication Endpoints
   app.get("/api/teen/auth/user", async (req, res) => {
     try {

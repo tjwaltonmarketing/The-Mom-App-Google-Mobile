@@ -96,6 +96,10 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
+  // Privacy settings state
+  const [marketingEmails, setMarketingEmails] = useState(false);
+  const [usageAnalytics, setUsageAnalytics] = useState(true);
+
   // Feedback form state
   const [feedbackType, setFeedbackType] = useState<"feedback" | "feature_request" | "bug_report">("feedback");
   const [feedbackSubject, setFeedbackSubject] = useState("");
@@ -396,6 +400,42 @@ export default function SettingsPage() {
       toast({
         title: "Deletion Failed",
         description: error.message || "Failed to delete account. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Privacy preferences query
+  const { data: privacyPrefs } = useQuery<{ marketingEmails: boolean; usageAnalytics: boolean }>({
+    queryKey: ["/api/auth/preferences"],
+  });
+
+  // Update privacy state when data loads
+  useEffect(() => {
+    if (privacyPrefs) {
+      setMarketingEmails(privacyPrefs.marketingEmails);
+      setUsageAnalytics(privacyPrefs.usageAnalytics);
+    }
+  }, [privacyPrefs]);
+
+  // Privacy preferences mutation
+  const updatePrivacyMutation = useMutation({
+    mutationFn: async (prefs: { marketingEmails: boolean; usageAnalytics: boolean }) => {
+      const response = await apiRequest("PUT", "/api/auth/preferences", prefs);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/preferences"] });
+      toast({
+        title: "Privacy Settings Updated",
+        description: "Your privacy preferences have been saved.",
+      });
+      setShowPrivacyDialog(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to save preferences.",
         variant: "destructive",
       });
     },
@@ -1827,45 +1867,30 @@ export default function SettingsPage() {
                 Privacy Settings
               </DialogTitle>
               <DialogDescription>
-                Control your privacy and data sharing preferences.
+                Control your privacy and communication preferences.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label className="text-sm font-medium">Share Activity Status</Label>
-                    <p className="text-xs text-muted-foreground">Let family members see when you're active</p>
-                  </div>
-                  <Switch defaultChecked={true} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-medium">Location Sharing</Label>
-                    <p className="text-xs text-muted-foreground">Share your location for family coordination</p>
-                  </div>
-                  <Switch defaultChecked={false} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
                     <Label className="text-sm font-medium">Usage Analytics</Label>
-                    <p className="text-xs text-muted-foreground">Help improve the app by sharing usage data</p>
+                    <p className="text-xs text-muted-foreground">Help improve the app by sharing anonymous usage data</p>
                   </div>
-                  <Switch defaultChecked={true} />
+                  <Switch 
+                    checked={usageAnalytics} 
+                    onCheckedChange={setUsageAnalytics}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
                     <Label className="text-sm font-medium">Marketing Communications</Label>
-                    <p className="text-xs text-muted-foreground">Receive updates about new features</p>
+                    <p className="text-xs text-muted-foreground">Receive emails about new features and updates</p>
                   </div>
-                  <Switch defaultChecked={false} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-medium">Data Backup to Cloud</Label>
-                    <p className="text-xs text-muted-foreground">Automatically backup your family data</p>
-                  </div>
-                  <Switch defaultChecked={true} />
+                  <Switch 
+                    checked={marketingEmails} 
+                    onCheckedChange={setMarketingEmails}
+                  />
                 </div>
               </div>
             </div>
@@ -1873,18 +1898,24 @@ export default function SettingsPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setShowPrivacyDialog(false)}
+                onClick={() => {
+                  // Reset to saved values
+                  if (privacyPrefs) {
+                    setMarketingEmails(privacyPrefs.marketingEmails);
+                    setUsageAnalytics(privacyPrefs.usageAnalytics);
+                  }
+                  setShowPrivacyDialog(false);
+                }}
               >
                 Cancel
               </Button>
-              <Button onClick={() => {
-                toast({
-                  title: "Privacy Settings Updated",
-                  description: "Your privacy preferences have been saved successfully.",
-                });
-                setShowPrivacyDialog(false);
-              }}>
-                Save Preferences
+              <Button 
+                onClick={() => {
+                  updatePrivacyMutation.mutate({ marketingEmails, usageAnalytics });
+                }}
+                disabled={updatePrivacyMutation.isPending}
+              >
+                {updatePrivacyMutation.isPending ? "Saving..." : "Save Preferences"}
               </Button>
             </DialogFooter>
           </DialogContent>

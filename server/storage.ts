@@ -8,6 +8,7 @@ import {
   notifications,
   pushTokens,
   userSubscriptions,
+  userPreferences,
   referralShares,
   passwords,
   passwordResetTokens,
@@ -28,6 +29,7 @@ import {
   featureRequests,
   type FamilyMember, 
   type InsertFamilyMember,
+  type UserPreferences,
   type Event,
   type InsertEvent,
   type Task,
@@ -92,6 +94,10 @@ export interface IStorage {
   updateUserPassword(userId: number, passwordHash: string): Promise<User | undefined>;
   updateUserProfile(userId: number, updates: { firstName?: string; lastName?: string }): Promise<User | undefined>;
   deleteUserAccount(userId: number): Promise<void>;
+  
+  // User Preferences
+  getUserPreferences(userId: number): Promise<UserPreferences | undefined>;
+  updateUserPreferences(userId: number, prefs: { marketingEmails?: boolean; usageAnalytics?: boolean }): Promise<UserPreferences>;
   
   // Replit Auth Methods
   getUserByReplitId(replitUserId: string): Promise<User | undefined>;
@@ -414,8 +420,42 @@ export class DatabaseStorage implements IStorage {
     // Delete user subscription
     await db.delete(userSubscriptions).where(eq(userSubscriptions.userId, userId));
     
+    // Delete user preferences
+    await db.delete(userPreferences).where(eq(userPreferences.userId, userId));
+    
     // Delete the user
     await db.delete(users).where(eq(users.id, userId));
+  }
+
+  // User Preferences
+  async getUserPreferences(userId: number): Promise<UserPreferences | undefined> {
+    const [prefs] = await db.select().from(userPreferences).where(eq(userPreferences.userId, userId));
+    return prefs || undefined;
+  }
+
+  async updateUserPreferences(userId: number, prefs: { marketingEmails?: boolean; usageAnalytics?: boolean }): Promise<UserPreferences> {
+    // Try to update existing preferences
+    const existing = await this.getUserPreferences(userId);
+    
+    if (existing) {
+      const [updated] = await db
+        .update(userPreferences)
+        .set({ ...prefs, updatedAt: new Date() })
+        .where(eq(userPreferences.userId, userId))
+        .returning();
+      return updated;
+    } else {
+      // Create new preferences if they don't exist
+      const [created] = await db
+        .insert(userPreferences)
+        .values({
+          userId,
+          marketingEmails: prefs.marketingEmails ?? false,
+          usageAnalytics: prefs.usageAnalytics ?? true,
+        })
+        .returning();
+      return created;
+    }
   }
 
   // Replit Auth Methods

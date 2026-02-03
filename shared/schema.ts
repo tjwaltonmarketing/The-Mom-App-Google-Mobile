@@ -46,6 +46,15 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const userPreferences = pgTable("user_preferences", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull().unique(),
+  marketingEmails: boolean("marketing_emails").default(false),
+  usageAnalytics: boolean("usage_analytics").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const families = pgTable("families", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),
@@ -483,6 +492,14 @@ export const insertUserSubscriptionSchema = createInsertSchema(userSubscriptions
   createdAt: true,
   updatedAt: true,
 });
+
+export const insertUserPreferencesSchema = createInsertSchema(userPreferences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertUserPreferences = z.infer<typeof insertUserPreferencesSchema>;
+export type UserPreferences = typeof userPreferences.$inferSelect;
 
 // Sessions table for authentication (Replit Auth compatible)
 export const sessions = pgTable(
