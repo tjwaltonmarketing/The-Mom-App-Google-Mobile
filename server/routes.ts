@@ -679,20 +679,27 @@ export async function registerRoutes(app: Express) {
         req.session.teenId = existingTeen.id;
         delete req.session.userId; // Clear parent session
         
-        return res.json({
-          success: true,
-          needsSetup: false,
-          teenProfile: {
-            id: existingTeen.id,
-            firstName: existingTeen.firstName,
-            lastName: existingTeen.lastName,
-            username: existingTeen.username,
-            avatar: existingTeen.avatar,
-            points: existingTeen.points,
-            streak: existingTeen.streak,
-            favoriteColor: existingTeen.favoriteColor,
-            familyMemberId: existingTeen.familyMemberId
+        return req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            return res.status(500).json({ error: "Failed to save session" });
           }
+          
+          return res.json({
+            success: true,
+            needsSetup: false,
+            teenProfile: {
+              id: existingTeen.id,
+              firstName: existingTeen.firstName,
+              lastName: existingTeen.lastName,
+              username: existingTeen.username,
+              avatar: existingTeen.avatar,
+              points: existingTeen.points,
+              streak: existingTeen.streak,
+              favoriteColor: existingTeen.favoriteColor,
+              familyMemberId: existingTeen.familyMemberId
+            }
+          });
         });
       }
 
@@ -706,16 +713,29 @@ export async function registerRoutes(app: Express) {
       // Detect if this is a parent invite (teenName contains "Parent")
       const isParentInvite = invite.teenName?.toLowerCase().includes('parent');
       
-      res.json({
-        success: true,
-        needsSetup: true,
-        isParentInvite,
-        inviteData: {
-          teenName: invite.teenName,
-          familyId: invite.familyId,
-          familyName,
-          inviteCode
+      // Save session before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ error: "Failed to save session" });
         }
+        
+        console.log("Invite session saved:", { 
+          inviteCode, 
+          sessionId: req.sessionID 
+        });
+        
+        res.json({
+          success: true,
+          needsSetup: true,
+          isParentInvite,
+          inviteData: {
+            teenName: invite.teenName,
+            familyId: invite.familyId,
+            familyName,
+            inviteCode
+          }
+        });
       });
     } catch (error) {
       console.error("Teen invite login error:", error);
