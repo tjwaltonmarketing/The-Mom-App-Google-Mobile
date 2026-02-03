@@ -712,8 +712,12 @@ export async function registerRoutes(app: Express) {
       if (preferredContact === "sms" && phone) {
         try {
           const message = `You've been invited to join your family on The Mom App! Your invite code is: ${inviteCode}. Download the app and enter this code to get started: ${appUrl}/teen/invite`;
-          await emailService.sendSMS(phone, message);
-          inviteResult = { success: true, method: "sms", error: "" };
+          const smsSuccess = await sendSMS(phone, message);
+          if (smsSuccess) {
+            inviteResult = { success: true, method: "sms", error: "" };
+          } else {
+            inviteResult = { success: false, method: "sms", error: "SMS service not configured or unavailable" };
+          }
         } catch (smsError: any) {
           console.error("SMS send error:", smsError);
           inviteResult = { success: false, method: "sms", error: smsError.message || "Failed to send SMS" };
