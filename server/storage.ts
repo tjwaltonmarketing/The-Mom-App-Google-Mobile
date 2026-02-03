@@ -139,6 +139,7 @@ export interface IStorage {
   
   // Family Merge Requests
   createFamilyMergeRequest(partnerEmail: string, requesterId: number): Promise<{ success: boolean; message: string }>;
+  createFamilyMergeRequestByPhone(partnerPhone: string, requesterId: number): Promise<{ success: boolean; message: string }>;
   getFamilyMergeRequestsForUser(userEmail: string): Promise<any[]>;
   approveFamilyMergeRequest(requestId: number, partnerId: number): Promise<{ success: boolean; message: string }>;
   rejectFamilyMergeRequest(requestId: number): Promise<{ success: boolean; message: string }>;
@@ -1850,6 +1851,93 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Family Merge Request Implementation
+  async createFamilyMergeRequestByPhone(partnerPhone: string, requesterId: number): Promise<{ success: boolean; message: string }> {
+    try {
+      // Normalize phone number - strip non-digits
+      const normalizedPhone = partnerPhone.replace(/\D/g, '');
+      
+      // Find user by phone number (check both users.phoneNumber and familyMembers.phone)
+      const [userResult] = await db.select()
+        .from(users)
+        .where(sql`REPLACE(REPLACE(REPLACE(REPLACE(${users.phoneNumber}, ' ', ''), '-', ''), '(', ''), ')', '') LIKE ${'%' + normalizedPhone.slice(-10)}`);
+      
+      let partnerUser = userResult;
+      
+      // If not found in users table, check family_members linked to users
+      if (!partnerUser) {
+        const [memberResult] = await db.select({
+          user: users
+        })
+        .from(familyMembers)
+        .innerJoin(users, eq(familyMembers.userId, users.id))
+        .where(sql`REPLACE(REPLACE(REPLACE(REPLACE(${familyMembers.phone}, ' ', ''), '-', ''), '(', ''), ')', '') LIKE ${'%' + normalizedPhone.slice(-10)}`);
+        
+        if (memberResult) {
+          partnerUser = memberResult.user;
+        }
+      }
+      
+      if (!partnerUser) {
+        return { success: false, message: "No account found with that phone number. Make sure your partner has registered and added their phone number." };
+      }
+
+      // Check if partner has a family
+      const partnerFamily = await this.getFamilyByUserId(partnerUser.id);
+      if (!partnerFamily) {
+        return { success: false, message: "Partner doesn't have a family account to merge with." };
+      }
+
+      // Get requester's family and info
+      const requesterFamily = await this.getFamilyByUserId(requesterId);
+      if (!requesterFamily) {
+        return { success: false, message: "You must have a family account to request a merge." };
+      }
+      
+      const requester = await this.getUser(requesterId);
+      if (!requester) {
+        return { success: false, message: "Could not find your account." };
+      }
+
+      // Check if they're already in the same family
+      if (partnerFamily.id === requesterFamily.id) {
+        return { success: false, message: "You're already in the same family." };
+      }
+
+      // Store the merge request in notifications table
+      const notification: InsertNotification = {
+        type: "family_merge_request",
+        title: "Family Merge Request",
+        message: `${requester.firstName} ${requester.lastName} has requested to merge families with you.`,
+        recipientId: partnerUser.id,
+        relatedTaskId: null,
+        relatedEventId: null,
+        scheduledFor: new Date(),
+        deliveryMethod: "sms",
+        status: "pending"
+      };
+
+      await this.createNotification(notification);
+
+      // Send SMS to partner
+      const { sendSMS } = await import('./sms-service');
+      const appUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+        : 'https://themomapp.com';
+      
+      const smsMessage = `${requester.firstName} wants to merge families with you on The Mom App! Log in to approve or reject: ${appUrl}/login`;
+      
+      const phoneToSend = partnerUser.phoneNumber || partnerPhone;
+      if (phoneToSend) {
+        await sendSMS(phoneToSend, smsMessage);
+      }
+
+      return { success: true, message: "Merge request sent! Your partner will receive a text message to approve or reject." };
+    } catch (error) {
+      console.error("Error creating family merge request:", error);
+      return { success: false, message: "Failed to send merge request. Please try again." };
+    }
+  }
+
   async createFamilyMergeRequest(partnerEmail: string, requesterId: number): Promise<{ success: boolean; message: string }> {
     try {
       // Check if partner exists
