@@ -676,7 +676,7 @@ export async function registerRoutes(app: Express) {
       }
 
       // Check family member limit (max 6 for Family plan)
-      const familyMembers = await storage.getFamilyMembers(familyMembership.familyId);
+      const familyMembers = await storage.getFamilyMembersByFamily(familyMembership.familyId);
       const activeMembers = familyMembers.filter(m => m.isActive);
       if (activeMembers.length >= 6) {
         return res.status(403).json({ 
