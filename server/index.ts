@@ -1,12 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
-import path from "path";
-import fs from "fs";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupSession } from "./auth";
-
-// Marketing/landing page routes that should serve from public folder
-const MARKETING_ROUTES = ['/', '/index.html', '/privacy-policy.html', '/terms-of-service.html', '/cookie-policy.html'];
 
 // Set LeadConnector environment variables for testing
 if (!process.env.LEADCONNECTOR_API_KEY) {
@@ -19,25 +14,6 @@ const app = express();
 
 // Setup session middleware first
 setupSession(app);
-
-// Serve marketing site static assets (css, js, images, fonts) from public folder
-const publicPath = path.resolve(import.meta.dirname, "..", "public");
-if (fs.existsSync(publicPath)) {
-  app.use('/css', express.static(path.join(publicPath, 'css')));
-  app.use('/js', express.static(path.join(publicPath, 'js')));
-  app.use('/fonts', express.static(path.join(publicPath, 'fonts')));
-  app.use('/images', express.static(path.join(publicPath, 'images')));
-  
-  // Serve marketing HTML pages
-  app.get(MARKETING_ROUTES, (req, res, next) => {
-    const fileName = req.path === '/' ? 'index.html' : req.path.slice(1);
-    const filePath = path.join(publicPath, fileName);
-    if (fs.existsSync(filePath)) {
-      return res.sendFile(filePath);
-    }
-    next();
-  });
-}
 
 // CORS middleware for mobile app compatibility
 app.use((req, res, next) => {
