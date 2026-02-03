@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CheckCircle, Users, Bell, ArrowRight, UserCircle, KeyRound, Loader2, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function TeenOnboarding() {
   // Check for URL params from teen-login redirect
@@ -128,12 +128,20 @@ export default function TeenOnboarding() {
       });
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "Setup Complete!",
         description: "Welcome to your family coordination hub",
       });
-      setLocation("/teen-dashboard");
+      
+      // Invalidate and refetch auth queries before navigating
+      await queryClient.invalidateQueries({ queryKey: ["/api/teen/auth/user"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
+      // Small delay to ensure session is properly set
+      setTimeout(() => {
+        setLocation("/teen-dashboard");
+      }, 100);
     },
     onError: () => {
       toast({
