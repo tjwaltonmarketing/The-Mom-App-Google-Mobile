@@ -178,6 +178,107 @@ export class NotificationService {
   async markTaskCompleted(taskId: number) {
     await this.cancelTaskNotifications(taskId);
   }
+  
+  // Event reminder methods
+  async scheduleEventReminders(config: {
+    eventId: number;
+    userId: number;
+    eventTitle: string;
+    startTime: Date;
+    location?: string;
+  }) {
+    const { eventId, userId, eventTitle, startTime, location } = config;
+    
+    // Get user's notification preferences
+    const prefs = await storage.getUserPreferences(userId);
+    if (prefs?.eventReminders === false) {
+      return; // User has disabled event reminders
+    }
+    
+    const now = new Date();
+    const locationText = location ? ` at ${location}` : "";
+    
+    // 1. Reminder 1 day before (for events more than 1 day away)
+    const oneDayBefore = addHours(startTime, -24);
+    if (isAfter(oneDayBefore, now)) {
+      this.scheduleNotification(`event_day_${eventId}`, oneDayBefore, async () => {
+        await this.sendEventNotification({
+          eventId,
+          userId,
+          eventTitle,
+          startTime,
+          message: `📅 Tomorrow: "${eventTitle}"${locationText} at ${format(startTime, "h:mm a")}`
+        });
+      });
+    }
+    
+    // 2. Reminder 1 hour before
+    const oneHourBefore = addHours(startTime, -1);
+    if (isAfter(oneHourBefore, now)) {
+      this.scheduleNotification(`event_hour_${eventId}`, oneHourBefore, async () => {
+        await this.sendEventNotification({
+          eventId,
+          userId,
+          eventTitle,
+          startTime,
+          message: `⏰ Starting in 1 hour: "${eventTitle}"${locationText}`
+        });
+      });
+    }
+    
+    // 3. Reminder 15 minutes before
+    const fifteenMinBefore = addMinutes(startTime, -15);
+    if (isAfter(fifteenMinBefore, now)) {
+      this.scheduleNotification(`event_soon_${eventId}`, fifteenMinBefore, async () => {
+        await this.sendEventNotification({
+          eventId,
+          userId,
+          eventTitle,
+          startTime,
+          message: `🔔 Starting in 15 minutes: "${eventTitle}"${locationText}`
+        });
+      });
+    }
+  }
+  
+  private async sendEventNotification(notification: {
+    eventId: number;
+    userId: number;
+    eventTitle: string;
+    startTime: Date;
+    message: string;
+  }) {
+    const { eventId, userId, message } = notification;
+    
+    // Create notification record
+    const notificationRecord: InsertNotification = {
+      title: "Event Reminder",
+      message,
+      recipientId: userId,
+      deliveryMethod: "in_app",
+      scheduledFor: new Date(),
+      status: "pending"
+    };
+    
+    await storage.createNotification(notificationRecord);
+    
+    // Log the notification for now
+    console.log(`📅 Event notification: ${message}`);
+  }
+  
+  async cancelEventReminders(eventId: number) {
+    const keys = Array.from(this.notificationQueue.keys()).filter(key => 
+      key.startsWith(`event_`) && key.includes(`_${eventId}`)
+    );
+    
+    keys.forEach(key => {
+      const timeoutId = this.notificationQueue.get(key);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        this.notificationQueue.delete(key);
+      }
+    });
+  }
 }
 
 export const notificationService = new NotificationService();

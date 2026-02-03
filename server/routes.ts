@@ -3190,6 +3190,42 @@ export async function registerRoutes(app: Express) {
       };
 
       const newEvent = await storage.createEvent(eventData);
+      
+      // Schedule event reminders for the creator
+      try {
+        const prefs = await storage.getUserPreferences(req.session.userId);
+        if (prefs?.eventReminders !== false) {
+          await notificationService.scheduleEventReminders({
+            eventId: newEvent.id,
+            userId: req.session.userId,
+            eventTitle: newEvent.title,
+            startTime: new Date(newEvent.startTime),
+            location: newEvent.location || undefined,
+          });
+        }
+        
+        // Also schedule reminders for assigned family members
+        if (assignedTo && assignedTo.length > 0) {
+          for (const memberId of assignedTo) {
+            const member = await storage.getFamilyMember(memberId);
+            if (member?.userId && member.userId !== req.session.userId) {
+              const memberPrefs = await storage.getUserPreferences(member.userId);
+              if (memberPrefs?.eventReminders !== false) {
+                await notificationService.scheduleEventReminders({
+                  eventId: newEvent.id,
+                  userId: member.userId,
+                  eventTitle: newEvent.title,
+                  startTime: new Date(newEvent.startTime),
+                  location: newEvent.location || undefined,
+                });
+              }
+            }
+          }
+        }
+      } catch (notifError) {
+        console.error("Failed to schedule event reminders:", notifError);
+      }
+      
       res.json(newEvent);
     } catch (error) {
       console.error("Parent event creation error:", error);
@@ -3292,6 +3328,14 @@ export async function registerRoutes(app: Express) {
 
       // Delete the event
       await storage.deleteEvent(eventId);
+      
+      // Cancel any pending event reminders
+      try {
+        await notificationService.cancelEventReminders(eventId);
+      } catch (notifError) {
+        console.error("Failed to cancel event reminders:", notifError);
+      }
+      
       res.json({ success: true });
     } catch (error) {
       console.error("Parent event delete error:", error);
