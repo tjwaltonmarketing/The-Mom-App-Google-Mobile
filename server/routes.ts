@@ -546,12 +546,6 @@ export async function registerRoutes(app: Express) {
   // Teen Authentication Endpoints
   app.get("/api/teen/auth/user", async (req, res) => {
     try {
-      console.log("Teen auth check - session:", { 
-        teenId: req.session.teenId,
-        sessionId: req.sessionID,
-        hasCookie: !!req.headers.cookie
-      });
-      
       // Check if teen is authenticated via session
       if (req.session.teenId) {
         const teenProfile = await storage.getTeenProfile(req.session.teenId);
@@ -720,11 +714,6 @@ export async function registerRoutes(app: Express) {
           return res.status(500).json({ error: "Failed to save session" });
         }
         
-        console.log("Invite session saved:", { 
-          inviteCode, 
-          sessionId: req.sessionID 
-        });
-        
         res.json({
           success: true,
           needsSetup: true,
@@ -767,7 +756,6 @@ export async function registerRoutes(app: Express) {
 
       if (existingUser) {
         // Teen already exists - just log them in
-        console.log("Teen already exists, logging in:", existingUser.id);
         user = existingUser;
         
         // Find their teen profile
@@ -786,11 +774,6 @@ export async function registerRoutes(app: Express) {
               console.error("Session save error:", err);
               return res.status(500).json({ error: "Failed to save session" });
             }
-            
-            console.log("Existing teen session saved:", {
-              teenId: req.session.teenId,
-              sessionId: req.sessionID
-            });
             
             return res.json({
               success: true,
@@ -861,11 +844,6 @@ export async function registerRoutes(app: Express) {
           console.error("Session save error:", err);
           return res.status(500).json({ error: "Failed to save session" });
         }
-        
-        console.log("Teen setup complete - session saved:", {
-          teenId: req.session.teenId,
-          sessionId: req.sessionID
-        });
         
         res.json({
           success: true,

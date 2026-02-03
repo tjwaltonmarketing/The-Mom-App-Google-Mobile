@@ -128,16 +128,13 @@ export default function TeenOnboarding() {
       });
       return response.json();
     },
-    onSuccess: async (data) => {
-      console.log("Complete-setup success, response:", data);
-      
+    onSuccess: async () => {
       toast({
         title: "Setup Complete!",
         description: "Welcome to your family coordination hub",
       });
       
       // Force a hard navigation to use the server session
-      // This ensures the cookie is properly sent with the next request
       window.location.href = "/teen-dashboard";
     },
     onError: () => {
