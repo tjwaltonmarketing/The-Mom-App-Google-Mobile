@@ -4,6 +4,8 @@ import { DatabaseStorage } from "./storage";
 import { smartTaskCreation } from "./ai";
 import { WeatherService } from "./weather-service";
 import { sendSMS } from "./sms-service";
+import { db } from "./db";
+import { sql } from "drizzle-orm";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { GoogleCalendarService } from "./google-calendar-service";
 import { generateToken, verifyToken, extractTokenFromRequest } from "./auth";
@@ -2291,18 +2293,11 @@ export async function registerRoutes(app: Express) {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
 
-      // Create the invite in database
-      await storage.createFamilyInvite({
-        familyId: familyMembership.familyId,
-        inviteCode,
-        invitedBy: req.session.userId,
-        invitedContact: phone,
-        contactType: 'phone',
-        invitedRole: role,
-        teenName: `Parent (${role})`,
-        status: 'pending',
-        expiresAt,
-      });
+      // Store invite using direct SQL since schema differs from DB
+      await db.execute(sql`
+        INSERT INTO family_invites (code, family_id, teen_name, invited_by, expires_at, status)
+        VALUES (${inviteCode}, ${familyMembership.familyId}, ${`Parent (${role})`}, ${req.session.userId}, ${expiresAt}, 'pending')
+      `);
 
       // Send SMS
       const inviterName = user?.firstName || 'A family member';
