@@ -3503,13 +3503,21 @@ export async function registerRoutes(app: Express) {
       
       if (!subscription) {
         // Check if user is part of a family (joined via invite)
-        // In that case, use the family owner's subscription
         const family = await storage.getFamilyByUserId(req.session.userId);
         if (family && family.ownerId !== req.session.userId) {
           // User is a family member (not owner) - get owner's subscription
           const ownerSubscription = await storage.getUserSubscription(family.ownerId);
           if (ownerSubscription) {
             subscription = ownerSubscription;
+          } else {
+            // Family member joined but owner hasn't set up trial yet
+            // Return a "pending" status so they can access the dashboard
+            return res.json({
+              subscriptionPlan: "family",
+              subscriptionStatus: "pending_owner_setup",
+              trialDaysLeft: 14,
+              isFamilyMember: true
+            });
           }
         }
       }
