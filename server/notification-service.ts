@@ -57,7 +57,10 @@ export class NotificationService {
     
     // 3. Past due notification
     const pastDueTime = addMinutes(dueDate, 15); // 15 minutes after due
-    this.scheduleNotification(`past_due_${taskId}`, pastDueTime, async () => {
+    
+    // Check if task is already overdue (dueDate is in the past)
+    if (isBefore(dueDate, now)) {
+      // Task is already overdue at creation - send immediate notification
       await this.sendTaskNotification({
         type: "task_past_due",
         taskId,
@@ -67,10 +70,25 @@ export class NotificationService {
         points,
         message: `🚨 Task overdue: "${taskTitle}" - Complete soon to earn ${points} points!`
       });
-      
-      // Start recurring reminders every 4 hours
+      // Start recurring reminders immediately
       this.scheduleRecurringReminders(taskId, teenId, taskTitle, points);
-    });
+    } else {
+      // Schedule past-due notification for 15 minutes after due date
+      this.scheduleNotification(`past_due_${taskId}`, pastDueTime, async () => {
+        await this.sendTaskNotification({
+          type: "task_past_due",
+          taskId,
+          teenId,
+          taskTitle,
+          dueDate,
+          points,
+          message: `🚨 Task overdue: "${taskTitle}" - Complete soon to earn ${points} points!`
+        });
+        
+        // Start recurring reminders every 4 hours
+        this.scheduleRecurringReminders(taskId, teenId, taskTitle, points);
+      });
+    }
   }
   
   private scheduleRecurringReminders(taskId: number, teenId: number, taskTitle: string, points: number) {
@@ -121,16 +139,25 @@ export class NotificationService {
   }) {
     const { taskId, teenId, message, type } = notification;
     
-    // Get user preferences to determine delivery method
-    const prefs = await storage.getUserPreferences(teenId);
-    const notificationMethod = prefs?.notificationMethod || "both";
+    // For teen tasks, get teen profile and their notification settings
+    const teenProfile = await storage.getTeenProfile(teenId);
+    if (!teenProfile) {
+      console.warn(`Teen profile ${teenId} not found`);
+      return;
+    }
     
-    // Get user info for SMS
-    const user = await storage.getUser(teenId);
-    const phoneNumber = user?.phoneNumber;
+    const teenSettings = await storage.getTeenNotificationSettings(teenProfile.id);
     
-    // Create in-app notification if method includes in_app
-    if (notificationMethod === "in_app" || notificationMethod === "both") {
+    // Determine notification method from teen settings
+    // Default to "both" if not specified
+    const preferSms = teenSettings?.preferSms !== false;
+    const preferInApp = true; // Always send in-app for teens
+    
+    // Get phone number from teen profile
+    const phoneNumber = teenProfile.phoneNumber;
+    
+    // Create in-app notification (always for teens)
+    if (preferInApp) {
       const notificationRecord: InsertNotification = {
         title: "Task Notification",
         message,
@@ -141,18 +168,18 @@ export class NotificationService {
         status: type === "task_past_due" ? "urgent" : "pending"
       };
       await storage.createNotification(notificationRecord);
-      console.log(`📱 In-app notification: ${message}`);
+      console.log(`📱 Teen in-app notification: ${message}`);
     }
     
-    // Send SMS if method includes sms and phone number is available
-    if ((notificationMethod === "sms" || notificationMethod === "both") && phoneNumber) {
+    // Send SMS if teen has phone number and settings allow it
+    if (preferSms && phoneNumber) {
       try {
         const smsSent = await sendSMS(phoneNumber, message);
         if (smsSent) {
-          console.log(`📲 SMS sent to ${phoneNumber}: ${message}`);
+          console.log(`📲 Teen SMS sent to ${phoneNumber}: ${message}`);
         }
       } catch (error) {
-        console.error("Failed to send SMS:", error);
+        console.error("Failed to send teen SMS:", error);
       }
     }
   }
@@ -164,9 +191,14 @@ export class NotificationService {
     );
     
     keys.forEach(key => {
-      const timeoutId = this.notificationQueue.get(key);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
+      const id = this.notificationQueue.get(key);
+      if (id) {
+        // Use clearInterval for recurring reminders, clearTimeout for others
+        if (key.startsWith('recurring_')) {
+          clearInterval(id);
+        } else {
+          clearTimeout(id);
+        }
         this.notificationQueue.delete(key);
       }
     });
