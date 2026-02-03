@@ -3,14 +3,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Users } from "lucide-react";
 import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
 
 const registerSchema = z.object({
@@ -19,7 +19,7 @@ const registerSchema = z.object({
   confirmPassword: z.string().min(1, "Please confirm your password"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  familyName: z.string().min(1, "Family name is required"),
+  familyName: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -33,6 +33,14 @@ export default function Register() {
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Get invite params from URL
+  const searchString = useSearch();
+  const searchParams = new URLSearchParams(searchString);
+  const inviteCode = searchParams.get('inviteCode');
+  const familyId = searchParams.get('familyId');
+  const familyName = searchParams.get('familyName');
+  const isJoiningFamily = !!inviteCode && !!familyId;
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -42,7 +50,7 @@ export default function Register() {
       confirmPassword: "",
       firstName: "",
       lastName: "",
-      familyName: "",
+      familyName: familyName || "",
     },
   });
 
@@ -51,7 +59,13 @@ export default function Register() {
     mutationFn: async (data: RegisterForm) => {
       // Remove confirmPassword before sending to server
       const { confirmPassword, ...registerData } = data;
-      const response = await apiRequest("POST", "/api/register", registerData);
+      
+      // Add invite info if joining an existing family
+      const payload = isJoiningFamily 
+        ? { ...registerData, inviteCode, familyId: parseInt(familyId!) }
+        : registerData;
+      
+      const response = await apiRequest("POST", "/api/register", payload);
       return await response.json();
     },
     onSuccess: (data: any) => {
@@ -61,8 +75,10 @@ export default function Register() {
       }
       
       toast({
-        title: "Account Created!",
-        description: "Welcome to your family command center!",
+        title: isJoiningFamily ? "Welcome to the Family!" : "Account Created!",
+        description: isJoiningFamily 
+          ? `You've joined ${familyName || 'the family'}!`
+          : "Welcome to your family command center!",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       setLocation("/");
@@ -92,11 +108,21 @@ export default function Register() {
             />
           </div>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-pink-500 bg-clip-text text-transparent">
-            Join The Mom App
+            {isJoiningFamily ? `Join ${familyName}` : "Join The Mom App"}
           </CardTitle>
           <CardDescription>
-            Create your family command center
+            {isJoiningFamily 
+              ? "Create your account to join your family" 
+              : "Create your family command center"}
           </CardDescription>
+          {isJoiningFamily && (
+            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+              <Users className="h-5 w-5 text-green-600" />
+              <span className="text-sm text-green-700">
+                You're joining <strong>{familyName}</strong> as a parent
+              </span>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -215,22 +241,24 @@ export default function Register() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="familyName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Family Name</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="e.g., Smith Family"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {!isJoiningFamily && (
+                <FormField
+                  control={form.control}
+                  name="familyName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Family Name</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="e.g., Smith Family"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <Button 
                 type="submit" 

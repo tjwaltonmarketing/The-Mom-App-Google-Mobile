@@ -46,6 +46,16 @@ export default function TeenOnboarding() {
       return response.json();
     },
     onSuccess: (data) => {
+      if (data.isParentInvite) {
+        // Redirect parent invites to registration with the invite code
+        toast({
+          title: "Parent Invite Detected",
+          description: "Redirecting you to create your parent account...",
+        });
+        setLocation(`/register?inviteCode=${data.inviteData.inviteCode}&familyId=${data.inviteData.familyId}&familyName=${encodeURIComponent(data.inviteData.familyName)}`);
+        return;
+      }
+      
       if (data.needsSetup) {
         setFamilyData({
           familyName: data.inviteData.familyName,

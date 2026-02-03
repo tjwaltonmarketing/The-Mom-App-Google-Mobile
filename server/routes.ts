@@ -58,16 +58,33 @@ export async function registerRoutes(app: Express) {
   // Parent Authentication Endpoints
   app.post("/api/register", async (req, res) => {
     try {
-      const { email, password, firstName, lastName, familyName } = req.body;
+      const { email, password, firstName, lastName, familyName, inviteCode, familyId } = req.body;
       
-      if (!email || !password || !firstName || !lastName || !familyName) {
-        return res.status(400).json({ error: "All fields are required" });
+      // If joining via invite, familyName is optional
+      const isJoiningFamily = inviteCode && familyId;
+      
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).json({ error: "Name, email, and password are required" });
+      }
+      
+      if (!isJoiningFamily && !familyName) {
+        return res.status(400).json({ error: "Family name is required" });
       }
 
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email.toLowerCase());
       if (existingUser) {
         return res.status(400).json({ error: "An account with this email already exists" });
+      }
+
+      // If joining via invite, validate the invite
+      let targetFamilyId = familyId;
+      if (isJoiningFamily) {
+        const invite = await storage.getFamilyInvite(inviteCode);
+        if (!invite || invite.status !== 'pending') {
+          return res.status(400).json({ error: "Invalid or expired invite code" });
+        }
+        targetFamilyId = invite.familyId;
       }
 
       // Hash password
@@ -83,11 +100,21 @@ export async function registerRoutes(app: Express) {
         isVerified: false
       });
 
-      // Create family
-      const family = await storage.createFamily({
-        name: familyName,
-        ownerId: newUser.id
-      });
+      let family;
+      if (isJoiningFamily) {
+        // Get existing family
+        const familyResult = await db.execute(sql`SELECT * FROM families WHERE id = ${targetFamilyId}`);
+        family = familyResult.rows[0];
+        
+        // Mark invite as accepted
+        await storage.acceptFamilyInvite(inviteCode, newUser.id);
+      } else {
+        // Create new family
+        family = await storage.createFamily({
+          name: familyName,
+          ownerId: newUser.id
+        });
+      }
 
       // Create family member linking user to family
       await storage.createFamilyMember({
@@ -95,7 +122,7 @@ export async function registerRoutes(app: Express) {
         familyId: family.id,
         name: `${firstName} ${lastName}`,
         role: 'parent',
-        color: '#EC4899', // Default pink color
+        color: isJoiningFamily ? '#3B82F6' : '#EC4899', // Blue for invited parent, pink for owner
         avatar: firstName.charAt(0).toUpperCase(),
         notificationPreference: 'sms',
         canLogin: true,
@@ -106,7 +133,7 @@ export async function registerRoutes(app: Express) {
       await storage.createFamilyMembership({
         userId: newUser.id,
         familyId: family.id,
-        role: 'owner'
+        role: isJoiningFamily ? 'member' : 'owner'
       });
 
       // Set session to auto-login
@@ -499,13 +526,18 @@ export async function registerRoutes(app: Express) {
       const familyResult = await db.execute(sql`SELECT name FROM families WHERE id = ${invite.familyId}`);
       const familyName = familyResult.rows[0]?.name || 'Your Family';
       
+      // Detect if this is a parent invite (teenName contains "Parent")
+      const isParentInvite = invite.teenName?.toLowerCase().includes('parent');
+      
       res.json({
         success: true,
         needsSetup: true,
+        isParentInvite,
         inviteData: {
           teenName: invite.teenName,
           familyId: invite.familyId,
-          familyName
+          familyName,
+          inviteCode
         }
       });
     } catch (error) {
