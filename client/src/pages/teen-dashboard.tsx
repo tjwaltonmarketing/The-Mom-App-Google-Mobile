@@ -21,20 +21,8 @@ import {
   Users,
   Lock,
   ChefHat,
-  Utensils,
-  Trash2
+  Utensils
 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import TeenNavigation from "@/components/teen/teen-navigation";
 import type { Task, Event } from "@shared/schema";
 import { setupPushNotifications } from "@/services/push-notifications";
@@ -185,24 +173,6 @@ export default function TeenDashboard() {
   });
 
 
-  // Clear all tasks mutation
-  const clearAllTasksMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/teen/tasks/clear-all", {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/teen/tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/teen/stats"] });
-    },
-  });
-
   const completedTasks = (todayTasks as any[]).filter((task: any) => task.isCompleted);
   const pendingTasks = (todayTasks as any[]).filter((task: any) => !task.isCompleted);
   const taskProgress = todayTasks.length > 0 ? (completedTasks.length / (todayTasks as any[]).length) * 100 : 0;
@@ -294,8 +264,7 @@ export default function TeenDashboard() {
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
                   Today's Tasks
                 </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button 
+                <Button 
                     variant="outline" 
                     size="sm"
                     onClick={() => setLocation("/teen/tasks")}
@@ -304,37 +273,6 @@ export default function TeenDashboard() {
                     <Plus className="h-4 w-4" />
                     Add Task
                   </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
-                        disabled={todayTasks.length === 0 || clearAllTasksMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Clear All
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Clear All Tasks?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will remove all {todayTasks.length} task{todayTasks.length !== 1 ? 's' : ''} from your list. This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => clearAllTasksMutation.mutate()}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          Clear All Tasks
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
               </div>
             </CardHeader>
             <CardContent>
