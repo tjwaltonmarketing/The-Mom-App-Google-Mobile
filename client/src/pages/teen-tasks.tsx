@@ -5,6 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -150,7 +161,34 @@ export default function TeenTasks() {
     },
   });
 
-
+  // Clear all tasks mutation
+  const clearAllTasksMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/teen/tasks/clear-all", {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/stats"] });
+      toast({
+        title: "Tasks Cleared",
+        description: `${data.deletedCount || 'All'} tasks have been removed`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Clearing Tasks",
+        description: error.message || "Failed to clear tasks",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Filter and process tasks based on current filters
   const filteredTasks = tasks.filter((task: Task) => {
@@ -224,13 +262,14 @@ export default function TeenTasks() {
             <h1 className="text-2xl font-bold">My Tasks</h1>
             <p className="text-gray-600">Manage all your tasks and assignments</p>
           </div>
-          <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Add Task
-              </Button>
-            </DialogTrigger>
+          <div className="flex items-center gap-2">
+            <Dialog open={isAddTaskOpen} onOpenChange={setIsAddTaskOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Task
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Create New Task</DialogTitle>
@@ -326,7 +365,37 @@ export default function TeenTasks() {
                 </div>
               </form>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20"
+                  disabled={tasks.length === 0 || clearAllTasksMutation.isPending}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Clear All
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Clear All Tasks?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will remove all {tasks.length} task{tasks.length !== 1 ? 's' : ''} from your list. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => clearAllTasksMutation.mutate()}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Clear All Tasks
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
 
         {/* Stats Cards */}
