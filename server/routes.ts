@@ -12,6 +12,7 @@ import { generateToken, verifyToken, extractTokenFromRequest } from "./auth";
 import bcrypt from "bcryptjs";
 import { createCheckoutSession, handleWebhookEvent, stripe, initializeStripeProducts } from "./stripe";
 import { emailService } from "./email-service";
+import { notificationService } from "./notification-service";
 
 const storage = new DatabaseStorage();
 
@@ -2367,6 +2368,41 @@ export async function registerRoutes(app: Express) {
         isPrivate: isPrivate || false
       });
 
+      // Schedule task notifications if assignee has reminders enabled and task has due date
+      if (task.dueDate && (finalAssignedTo || finalChildProfileId)) {
+        try {
+          // Get assignee's user ID for preferences lookup
+          let assigneeUserId: number | null = null;
+          
+          if (finalAssignedTo) {
+            const assigneeMember = await storage.getFamilyMember(finalAssignedTo);
+            assigneeUserId = assigneeMember?.userId || null;
+          } else if (finalChildProfileId) {
+            // For teen/child profiles, get the teen profile and their associated user
+            const teenProfile = await storage.getTeenProfile(finalChildProfileId);
+            assigneeUserId = teenProfile?.userId || null;
+          }
+          
+          if (assigneeUserId) {
+            const prefs = await storage.getUserPreferences(assigneeUserId);
+            
+            // Only schedule if task reminders are enabled (default true)
+            if (prefs?.taskReminders !== false) {
+              await notificationService.scheduleTaskNotifications({
+                taskId: task.id,
+                teenId: assigneeUserId,
+                taskTitle: task.title,
+                dueDate: new Date(task.dueDate),
+                points: task.points || 0,
+              });
+            }
+          }
+        } catch (notifError) {
+          console.error("Failed to schedule task notifications:", notifError);
+          // Don't fail task creation if notification scheduling fails
+        }
+      }
+
       res.json(task);
     } catch (error) {
       console.error("Create task error:", error);
@@ -2439,6 +2475,14 @@ export async function registerRoutes(app: Express) {
 
       // Mark task as completed
       const completedTask = await storage.completeTask(taskId, currentMember.id);
+      
+      // Cancel any pending notifications for this task
+      try {
+        await notificationService.markTaskCompleted(taskId);
+      } catch (notifError) {
+        console.error("Failed to cancel task notifications:", notifError);
+      }
+      
       res.json(completedTask);
     } catch (error) {
       console.error("Complete task error:", error);
@@ -2475,6 +2519,13 @@ export async function registerRoutes(app: Express) {
       const success = await storage.deleteTask(taskId);
       if (!success) {
         return res.status(404).json({ error: "Task not found" });
+      }
+      
+      // Cancel any pending notifications for this task
+      try {
+        await notificationService.cancelTaskNotifications(taskId);
+      } catch (notifError) {
+        console.error("Failed to cancel task notifications:", notifError);
       }
 
       res.json({ success: true });
