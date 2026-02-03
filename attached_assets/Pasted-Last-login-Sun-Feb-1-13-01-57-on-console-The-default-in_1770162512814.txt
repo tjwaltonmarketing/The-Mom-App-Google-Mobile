@@ -1,0 +1,142 @@
+Last login: Sun Feb  1 13:01:57 on console
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+#242:~ user289897$ cd ~/Desktop/The-Mom-App-Google-Mobile
+#242:The-Mom-App-Google-Mobile user289897$ npm install
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+
+added 797 packages, and audited 798 packages in 7s
+
+114 packages are looking for funding
+  run `npm fund` for details
+
+36 vulnerabilities (4 low, 8 moderate, 23 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm notice
+npm notice New major version of npm available! 10.8.3 -> 11.8.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.8.0
+npm notice To update run: npm install -g npm@11.8.0
+npm notice
+#242:The-Mom-App-Google-Mobile user289897$ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (1) index.htmlBrowserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3171 modules transformed.
+../dist/public/index.html                                                              2.18 kB │ gzip:   0.79 kB
+../dist/public/assets/The Mom app_20250607_125224_0000_1749573727197-CXHC4Cic.png     25.37 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                          27.04 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                      82.76 kB
+../dist/public/assets/onboarding-slide-4-D4JYpSLI.png                                475.61 kB
+../dist/public/assets/onboarding-slide-1-BTbL-SY9.png                                584.12 kB
+../dist/public/assets/onboarding-slide-2-C9Wg53EH.png                                624.02 kB
+../dist/public/assets/onboarding-slide-3-BZZWjM9F.png                                833.27 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                   4,686.94 kB
+../dist/public/assets/index-1yEXCdE8.css                                             130.06 kB │ gzip:  19.94 kB
+../dist/public/assets/index-D0JVZi0U.js                                            1,652.79 kB │ gzip: 472.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.21s
+
+  dist/index.js  270.3kb
+
+⚡ Done in 10ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap sync ios
+✔ Copying web assets from public to ios/App/App/public in 15.57ms
+✔ Creating capacitor.config.json in ios/App/App in 609.17μs
+✔ copy ios in 54.67ms
+✔ Updating iOS plugins in 7.21ms
+✔ Updating iOS native dependencies with pod install in 2.23s
+[info] Found 1 Capacitor plugin for ios:
+       @capacitor/push-notifications@6.0.4
+✔ update ios in 4.15s
+[info] Sync finished in 4.511s
+[?] Would you like to help improve Capacitor by sharing anonymous usage data? 💖
+    Read more about what is being collected and why here:
+    https://capacitorjs.com/telemetry. You can change your mind at any time by
+    using the npx cap telemetry command.
+✔ Share anonymous usage data? … no
+#242:The-Mom-App-Google-Mobile user289897$ npx cap open ios
+✔ Opening the Xcode workspace... in 3.00s
+#242:The-Mom-App-Google-Mobile user289897$ git add .
+#242:The-Mom-App-Google-Mobile user289897$ git commit -m "Add iOS app icon"
+[main cf43fb3] Add iOS app icon
+ Committer: user289897 <user289897@#242.94>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 7 files changed, 59 insertions(+), 9 deletions(-)
+ create mode 100644 ios/App/App.xcworkspace/contents.xcworkspacedata
+ delete mode 100644 ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+ create mode 100644 ios/App/App/Assets.xcassets/AppIcon.appiconset/The Mom app (1024 x 1024 px)-2.png
+ create mode 100644 ios/App/Podfile.lock
+ rename ios/App/{App.xcodeproj => The Mom App (Official).xcodeproj}/project.pbxproj (94%)
+#242:The-Mom-App-Google-Mobile user289897$ git add .
+#242:The-Mom-App-Google-Mobile user289897$ git commit -m "Add iOS app icon"
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+#242:The-Mom-App-Google-Mobile user289897$ git push
+Username for 'https://github.com': tjwaltonmarketing
+Password for 'https://tjwaltonmarketing@github.com': 
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile.git/'
+#242:The-Mom-App-Google-Mobile user289897$ git add .
+#242:The-Mom-App-Google-Mobile user289897$ git push
+Username for 'https://github.com': ^C                  
+#242:The-Mom-App-Google-Mobile user289897$ git add .
+#242:The-Mom-App-Google-Mobile user289897$ git commit -m "Add iOS app icon"
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+#242:The-Mom-App-Google-Mobile user289897$ git push
+Username for 'https://github.com': tjwaltonmarketing
+Password for 'https://tjwaltonmarketing@github.com': 
+Enumerating objects: 24, done.
+Counting objects: 100% (24/24), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (14/14), done.
+Writing objects: 100% (15/15), 59.79 KiB | 19.93 MiB/s, done.
+Total 15 (delta 4), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+To https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile.git
+   a8fe2da..cf43fb3  main -> main
+#242:The-Mom-App-Google-Mobile user289897$ 
+  [Restored Feb 3, 2026 at 3:46:23 PM]
+Last login: Tue Feb  3 15:44:27 on console
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+#242:~ user289897$ 
