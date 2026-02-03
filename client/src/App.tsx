@@ -175,6 +175,7 @@ function Router() {
       <Route path="/teen/invite" component={TeenLogin} />
       <Route path="/teen/join" component={TeenOnboarding} />
       <Route path="/teen-join" component={TeenOnboarding} />
+      <Route path="/teen-onboarding" component={TeenOnboarding} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/onboarding" component={Onboarding} />
