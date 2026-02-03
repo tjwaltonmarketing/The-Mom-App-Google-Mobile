@@ -651,6 +651,108 @@ export async function registerRoutes(app: Express) {
     });
   });
 
+  // Create teen invite (called from parent dashboard)
+  app.post("/api/teens/invite", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { name, phone, email, preferredContact } = req.body;
+
+      if (!name) {
+        return res.status(400).json({ error: "Teen name is required" });
+      }
+
+      // Get parent's family
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const parentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!parentFamilyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Generate unique invite code
+      const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+      // Create family invite record
+      const invite = await storage.createFamilyInvite({
+        inviteCode,
+        familyId: familyMembership.familyId,
+        teenName: name,
+        invitedBy: parentFamilyMember.id,
+        expiresAt,
+        status: "pending"
+      });
+
+      // Create a placeholder family member for the teen
+      const teenFamilyMember = await storage.createFamilyMember({
+        name,
+        role: "teen",
+        color: "#8B5CF6",
+        avatar: name.charAt(0).toUpperCase(),
+        userId: null,
+        familyId: familyMembership.familyId,
+        canLogin: false,
+        isActive: false,
+        phone: phone || null,
+        email: email || null
+      });
+
+      // Attempt to send invite via SMS or email
+      let inviteResult = { success: false, method: preferredContact, error: "" };
+      const appUrl = process.env.REPLIT_DOMAINS 
+        ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}`
+        : "http://localhost:5000";
+
+      if (preferredContact === "sms" && phone) {
+        try {
+          const message = `You've been invited to join your family on The Mom App! Your invite code is: ${inviteCode}. Download the app and enter this code to get started: ${appUrl}/teen/invite`;
+          await emailService.sendSMS(phone, message);
+          inviteResult = { success: true, method: "sms", error: "" };
+        } catch (smsError: any) {
+          console.error("SMS send error:", smsError);
+          inviteResult = { success: false, method: "sms", error: smsError.message || "Failed to send SMS" };
+        }
+      } else if (preferredContact === "email" && email) {
+        try {
+          await emailService.sendEmail({
+            to: email,
+            subject: "You're invited to The Mom App!",
+            html: `
+              <h2>Welcome to The Mom App!</h2>
+              <p>You've been invited to join your family. Your invite code is:</p>
+              <h1 style="color: #EC4899; font-size: 32px; letter-spacing: 4px;">${inviteCode}</h1>
+              <p>Click the link below to get started:</p>
+              <a href="${appUrl}/teen/invite" style="background: #EC4899; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Join Now</a>
+            `
+          });
+          inviteResult = { success: true, method: "email", error: "" };
+        } catch (emailError: any) {
+          console.error("Email send error:", emailError);
+          inviteResult = { success: false, method: "email", error: emailError.message || "Failed to send email" };
+        }
+      }
+
+      res.json({
+        success: true,
+        teen: {
+          id: teenFamilyMember.id,
+          name: teenFamilyMember.name,
+          inviteCode: inviteCode
+        },
+        invite: inviteResult
+      });
+    } catch (error) {
+      console.error("Teen invite error:", error);
+      res.status(500).json({ error: "Failed to create teen invite" });
+    }
+  });
+
   app.put("/api/teen/profile", async (req, res) => {
     try {
       if (!req.session.teenId) {
