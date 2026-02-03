@@ -91,6 +91,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserPassword(userId: number, passwordHash: string): Promise<User | undefined>;
   updateUserProfile(userId: number, updates: { firstName?: string; lastName?: string }): Promise<User | undefined>;
+  deleteUserAccount(userId: number): Promise<void>;
   
   // Replit Auth Methods
   getUserByReplitId(replitUserId: string): Promise<User | undefined>;
@@ -363,6 +364,58 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  async deleteUserAccount(userId: number): Promise<void> {
+    // Get user's family membership
+    const membership = await this.getUserFamilyMembership(userId);
+    
+    if (membership) {
+      const familyId = membership.familyId;
+      
+      // Delete all family data
+      await db.delete(tasks).where(eq(tasks.familyId, familyId));
+      await db.delete(events).where(eq(events.familyId, familyId));
+      await db.delete(voiceNotes).where(eq(voiceNotes.familyId, familyId));
+      await db.delete(notifications).where(eq(notifications.familyId, familyId));
+      await db.delete(groceryItems).where(eq(groceryItems.familyId, familyId));
+      await db.delete(mealPlans).where(eq(mealPlans.familyId, familyId));
+      await db.delete(notes).where(eq(notes.familyId, familyId));
+      await db.delete(passwords).where(eq(passwords.familyId, familyId));
+      await db.delete(familyInvites).where(eq(familyInvites.familyId, familyId));
+      await db.delete(householdSettings).where(eq(householdSettings.familyId, familyId));
+      
+      // Delete family members and their linked data
+      const members = await this.getFamilyMembersByFamily(familyId);
+      for (const member of members) {
+        if (member.userId && member.userId !== userId) {
+          // Delete linked user accounts for teens
+          const teenProfile = await db.select().from(teenProfiles).where(eq(teenProfiles.userId, member.userId));
+          if (teenProfile.length > 0) {
+            await db.delete(teenNotificationSettings).where(eq(teenNotificationSettings.teenId, teenProfile[0].id));
+            await db.delete(teenProfiles).where(eq(teenProfiles.userId, member.userId));
+          }
+          await db.delete(familyMemberships).where(eq(familyMemberships.userId, member.userId));
+          await db.delete(userSubscriptions).where(eq(userSubscriptions.userId, member.userId));
+          await db.delete(users).where(eq(users.id, member.userId));
+        }
+      }
+      
+      // Delete family members
+      await db.delete(familyMembers).where(eq(familyMembers.familyId, familyId));
+      
+      // Delete family memberships
+      await db.delete(familyMemberships).where(eq(familyMemberships.familyId, familyId));
+      
+      // Delete family
+      await db.delete(families).where(eq(families.id, familyId));
+    }
+    
+    // Delete user subscription
+    await db.delete(userSubscriptions).where(eq(userSubscriptions.userId, userId));
+    
+    // Delete the user
+    await db.delete(users).where(eq(users.id, userId));
   }
 
   // Replit Auth Methods

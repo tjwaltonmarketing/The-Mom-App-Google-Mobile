@@ -387,6 +387,80 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Change password for logged-in user
+  app.put("/api/auth/password", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Current password and new password are required" });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: "New password must be at least 6 characters long" });
+      }
+
+      const user = await storage.getUserById(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!isValidPassword) {
+        return res.status(400).json({ error: "Current password is incorrect" });
+      }
+
+      // Hash new password and update
+      const newPasswordHash = await bcrypt.hash(newPassword, 10);
+      await storage.updateUserPassword(req.session.userId, newPasswordHash);
+
+      res.json({ success: true, message: "Password updated successfully" });
+    } catch (error) {
+      console.error("Password change error:", error);
+      res.status(500).json({ error: "Failed to change password" });
+    }
+  });
+
+  // Delete account
+  app.delete("/api/auth/account", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { confirmText } = req.body;
+      
+      if (confirmText !== "DELETE MY ACCOUNT") {
+        return res.status(400).json({ error: "Please type 'DELETE MY ACCOUNT' to confirm" });
+      }
+
+      const user = await storage.getUserById(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Delete all user data
+      await storage.deleteUserAccount(req.session.userId);
+
+      // Destroy session
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Session destroy error:", err);
+        }
+      });
+
+      res.json({ success: true, message: "Account deleted successfully" });
+    } catch (error) {
+      console.error("Account deletion error:", error);
+      res.status(500).json({ error: "Failed to delete account" });
+    }
+  });
+
   // Teen Authentication Endpoints
   app.get("/api/teen/auth/user", async (req, res) => {
     try {

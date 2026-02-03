@@ -91,6 +91,11 @@ export default function SettingsPage() {
   const [profileFirstName, setProfileFirstName] = useState("");
   const [profileLastName, setProfileLastName] = useState("");
 
+  // Security settings state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+
   // Feedback form state
   const [feedbackType, setFeedbackType] = useState<"feedback" | "feature_request" | "bug_report">("feedback");
   const [feedbackSubject, setFeedbackSubject] = useState("");
@@ -349,6 +354,52 @@ export default function SettingsPage() {
     },
   });
 
+  // Change password mutation
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+      const response = await apiRequest("PUT", "/api/auth/password", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Password Changed",
+        description: "Your password has been updated successfully.",
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+      setShowSecurityDialog(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Password Change Failed",
+        description: error.message || "Failed to change password. Please check your current password.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete account mutation
+  const deleteAccountMutation = useMutation({
+    mutationFn: async (confirmText: string) => {
+      const response = await apiRequest("DELETE", "/api/auth/account", { confirmText });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted.",
+      });
+      window.location.href = "/";
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Deletion Failed",
+        description: error.message || "Failed to delete account. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -518,11 +569,7 @@ export default function SettingsPage() {
     if (confirmed) {
       const confirmText = prompt("Type 'DELETE MY ACCOUNT' to permanently delete your account:");
       if (confirmText === "DELETE MY ACCOUNT") {
-        toast({
-          title: "Account Deletion Confirmed",
-          description: "Your account deletion request has been submitted. All data will be permanently removed within 24 hours.",
-          variant: "destructive",
-        });
+        deleteAccountMutation.mutate(confirmText);
       } else {
         toast({
           title: "Account Deletion Cancelled",
@@ -1859,15 +1906,36 @@ export default function SettingsPage() {
               <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium">Current Password</Label>
-                  <Input type="password" placeholder="Enter current password" className="mt-1" />
+                  <Input 
+                    type="password" 
+                    placeholder="Enter current password" 
+                    className="mt-1"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label className="text-sm font-medium">New Password</Label>
-                  <Input type="password" placeholder="Enter new password" className="mt-1" />
+                  <Input 
+                    type="password" 
+                    placeholder="Enter new password (min 6 characters)" 
+                    className="mt-1"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label className="text-sm font-medium">Confirm New Password</Label>
-                  <Input type="password" placeholder="Confirm new password" className="mt-1" />
+                  <Input 
+                    type="password" 
+                    placeholder="Confirm new password" 
+                    className="mt-1"
+                    value={confirmNewPassword}
+                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  />
+                  {confirmNewPassword && newPassword !== confirmNewPassword && (
+                    <p className="text-sm text-red-500 mt-1">Passwords don't match</p>
+                  )}
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
@@ -1915,18 +1983,46 @@ export default function SettingsPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setShowSecurityDialog(false)}
+                onClick={() => {
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setConfirmNewPassword("");
+                  setShowSecurityDialog(false);
+                }}
               >
                 Cancel
               </Button>
-              <Button onClick={() => {
-                toast({
-                  title: "Security Settings Updated",
-                  description: "Your security preferences have been saved successfully.",
-                });
-                setShowSecurityDialog(false);
-              }}>
-                Save Security Settings
+              <Button 
+                onClick={() => {
+                  if (currentPassword && newPassword) {
+                    if (newPassword.length < 6) {
+                      toast({
+                        title: "Invalid Password",
+                        description: "New password must be at least 6 characters long.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    if (newPassword !== confirmNewPassword) {
+                      toast({
+                        title: "Passwords Don't Match",
+                        description: "Please make sure your new passwords match.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    changePasswordMutation.mutate({ currentPassword, newPassword });
+                  } else {
+                    toast({
+                      title: "Security Settings Updated",
+                      description: "Your security preferences have been saved.",
+                    });
+                    setShowSecurityDialog(false);
+                  }
+                }}
+                disabled={changePasswordMutation.isPending}
+              >
+                {changePasswordMutation.isPending ? "Saving..." : "Save Security Settings"}
               </Button>
             </DialogFooter>
           </DialogContent>
