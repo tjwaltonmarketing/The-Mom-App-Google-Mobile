@@ -136,17 +136,9 @@ export default function TeenOnboarding() {
         description: "Welcome to your family coordination hub",
       });
       
-      // Set auth data directly in the cache since complete-setup returns the profile
-      queryClient.setQueryData(["/api/teen/auth/user"], {
-        isAuthenticated: true,
-        teenId: data.teenProfile.id,
-        teenProfile: data.teenProfile
-      });
-      
-      console.log("Auth cache updated, navigating to teen-dashboard...");
-      
-      // Navigate to dashboard
-      setLocation("/teen-dashboard");
+      // Force a hard navigation to use the server session
+      // This ensures the cookie is properly sent with the next request
+      window.location.href = "/teen-dashboard";
     },
     onError: () => {
       toast({
