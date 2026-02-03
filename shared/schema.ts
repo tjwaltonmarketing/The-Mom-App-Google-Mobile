@@ -290,14 +290,14 @@ export const teenProfiles = pgTable("teen_profiles", {
 
 export const teenNotificationSettings = pgTable("teen_notification_settings", {
   id: serial("id").primaryKey(),
-  teenProfileId: integer("teenProfileId").references(() => teenProfiles.id).notNull().unique(),
-  taskReminders: boolean("taskReminders").default(true),
-  eventNotifications: boolean("eventNotifications").default(true),
-  dailyDigest: boolean("dailyDigest").default(true),
-  quietHours: boolean("quietHours").default(true),
-  quietStart: varchar("quietStart", { length: 5 }).default("22:00"),
-  quietEnd: varchar("quietEnd", { length: 5 }).default("08:00"),
-  updatedAt: timestamp("updatedAt").defaultNow(),
+  teenProfileId: integer("teen_profile_id").references(() => teenProfiles.id).notNull().unique(),
+  taskReminders: boolean("task_reminders").default(true),
+  eventNotifications: boolean("event_notifications").default(true),
+  dailyDigest: boolean("daily_digest").default(true),
+  quietHours: boolean("quiet_hours").default(true),
+  quietStart: varchar("quiet_start", { length: 5 }).default("22:00"),
+  quietEnd: varchar("quiet_end", { length: 5 }).default("08:00"),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const teenTaskHistory = pgTable("teen_task_history", {

@@ -732,17 +732,54 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Invalid invite" });
       }
 
-      // Create user account
+      // Check if this teen already exists by username
+      const teenEmail = `${profile.username}@teen.local`;
+      let existingUser = await storage.getUserByEmail(teenEmail);
+      let user;
+      let teenProfile;
+      let familyMember;
+
+      if (existingUser) {
+        // Teen already exists - just log them in
+        user = existingUser;
+        
+        // Find their teen profile
+        const existingProfile = await storage.getTeenProfileByUserId(user.id);
+        if (existingProfile) {
+          teenProfile = existingProfile;
+          
+          // Set session and respond
+          req.session.teenId = teenProfile.id;
+          delete req.session.userId;
+          delete req.session.inviteCode;
+          
+          return res.json({
+            success: true,
+            teenProfile: {
+              id: teenProfile.id,
+              firstName: teenProfile.firstName,
+              lastName: teenProfile.lastName,
+              username: teenProfile.username,
+              avatar: teenProfile.avatar,
+              points: teenProfile.points,
+              streak: teenProfile.streak,
+              favoriteColor: teenProfile.favoriteColor
+            }
+          });
+        }
+      }
+
+      // Create new user account
       const passwordHash = await bcrypt.hash(profile.password, 10);
-      const user = await storage.createUser({
-        email: `${profile.username}@teen.local`, // Temporary email for teen accounts
+      user = await storage.createUser({
+        email: teenEmail,
         passwordHash,
         firstName: profile.firstName,
         lastName: profile.lastName
       });
 
       // Create family member record
-      const familyMember = await storage.createFamilyMember({
+      familyMember = await storage.createFamilyMember({
         name: `${profile.firstName} ${profile.lastName}`,
         role: "teen",
         color: profile.favoriteColor || "#8B5CF6",
@@ -754,7 +791,7 @@ export async function registerRoutes(app: Express) {
       });
 
       // Create teen profile
-      const teenProfile = await storage.createTeenProfile({
+      teenProfile = await storage.createTeenProfile({
         userId: user.id,
         familyMemberId: familyMember.id,
         firstName: profile.firstName,
