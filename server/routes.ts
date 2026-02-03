@@ -681,7 +681,7 @@ export async function registerRoutes(app: Express) {
       if (activeMembers.length >= 6) {
         return res.status(403).json({ 
           error: "Family member limit reached", 
-          message: "Your Family plan allows up to 6 members. Please remove a member or upgrade your plan to add more." 
+          message: "Your plan allows up to 6 family members. Please remove a member to add someone new." 
         });
       }
 
