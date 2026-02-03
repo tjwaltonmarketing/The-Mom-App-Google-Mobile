@@ -128,16 +128,25 @@ export default function TeenOnboarding() {
       });
       return response.json();
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
+      console.log("Complete-setup success, response:", data);
+      
       toast({
         title: "Setup Complete!",
         description: "Welcome to your family coordination hub",
       });
       
       // Refetch auth queries and wait for completion before navigating
-      await queryClient.refetchQueries({ queryKey: ["/api/teen/auth/user"] });
+      console.log("Refetching teen auth...");
+      try {
+        const result = await queryClient.refetchQueries({ queryKey: ["/api/teen/auth/user"] });
+        console.log("Refetch complete, result:", result);
+      } catch (error) {
+        console.error("Refetch error:", error);
+      }
       
       // Navigate to dashboard
+      console.log("Navigating to teen-dashboard...");
       setLocation("/teen-dashboard");
     },
     onError: () => {
