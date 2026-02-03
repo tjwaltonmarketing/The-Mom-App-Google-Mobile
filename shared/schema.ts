@@ -51,6 +51,11 @@ export const userPreferences = pgTable("user_preferences", {
   userId: integer("user_id").references(() => users.id).notNull().unique(),
   marketingEmails: boolean("marketing_emails").default(false),
   usageAnalytics: boolean("usage_analytics").default(true),
+  notificationMethod: text("notification_method").default("both"), // 'in_app', 'sms', 'both'
+  taskReminders: boolean("task_reminders").default(true),
+  eventReminders: boolean("event_reminders").default(true),
+  dailyDigest: boolean("daily_digest").default(true),
+  dailyDigestTime: text("daily_digest_time").default("09:00"), // HH:MM format
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
