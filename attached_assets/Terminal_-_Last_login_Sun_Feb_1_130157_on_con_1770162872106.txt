@@ -1,0 +1,457 @@
+Last login: Sun Feb  1 13:01:57 on console
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+#242:~ user289897$ cd ~/Desktop/The-Mom-App-Google-Mobile
+#242:The-Mom-App-Google-Mobile user289897$ npm install
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+
+added 797 packages, and audited 798 packages in 7s
+
+114 packages are looking for funding
+  run `npm fund` for details
+
+36 vulnerabilities (4 low, 8 moderate, 23 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm notice
+npm notice New major version of npm available! 10.8.3 -> 11.8.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.8.0
+npm notice To update run: npm install -g npm@11.8.0
+npm notice
+#242:The-Mom-App-Google-Mobile user289897$ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (1) index.htmlBrowserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3171 modules transformed.
+../dist/public/index.html                                                              2.18 kB │ gzip:   0.79 kB
+../dist/public/assets/The Mom app_20250607_125224_0000_1749573727197-CXHC4Cic.png     25.37 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                          27.04 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                      82.76 kB
+../dist/public/assets/onboarding-slide-4-D4JYpSLI.png                                475.61 kB
+../dist/public/assets/onboarding-slide-1-BTbL-SY9.png                                584.12 kB
+../dist/public/assets/onboarding-slide-2-C9Wg53EH.png                                624.02 kB
+../dist/public/assets/onboarding-slide-3-BZZWjM9F.png                                833.27 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                   4,686.94 kB
+../dist/public/assets/index-1yEXCdE8.css                                             130.06 kB │ gzip:  19.94 kB
+../dist/public/assets/index-D0JVZi0U.js                                            1,652.79 kB │ gzip: 472.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.21s
+
+  dist/index.js  270.3kb
+
+⚡ Done in 10ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap sync ios
+✔ Copying web assets from public to ios/App/App/public in 15.57ms
+✔ Creating capacitor.config.json in ios/App/App in 609.17μs
+✔ copy ios in 54.67ms
+✔ Updating iOS plugins in 7.21ms
+✔ Updating iOS native dependencies with pod install in 2.23s
+[info] Found 1 Capacitor plugin for ios:
+       @capacitor/push-notifications@6.0.4
+✔ update ios in 4.15s
+[info] Sync finished in 4.511s
+[?] Would you like to help improve Capacitor by sharing anonymous usage data? 💖
+    Read more about what is being collected and why here:
+    https://capacitorjs.com/telemetry. You can change your mind at any time by
+    using the npx cap telemetry command.
+✔ Share anonymous usage data? … no
+#242:The-Mom-App-Google-Mobile user289897$ npx cap open ios
+✔ Opening the Xcode workspace... in 3.00s
+#242:The-Mom-App-Google-Mobile user289897$ git add .
+#242:The-Mom-App-Google-Mobile user289897$ git commit -m "Add iOS app icon"
+[main cf43fb3] Add iOS app icon
+ Committer: user289897 <user289897@#242.94>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly. Run the
+following command and follow the instructions in your editor to edit
+your configuration file:
+
+    git config --global --edit
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 7 files changed, 59 insertions(+), 9 deletions(-)
+ create mode 100644 ios/App/App.xcworkspace/contents.xcworkspacedata
+ delete mode 100644 ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
+ create mode 100644 ios/App/App/Assets.xcassets/AppIcon.appiconset/The Mom app (1024 x 1024 px)-2.png
+ create mode 100644 ios/App/Podfile.lock
+ rename ios/App/{App.xcodeproj => The Mom App (Official).xcodeproj}/project.pbxproj (94%)
+#242:The-Mom-App-Google-Mobile user289897$ git add .
+#242:The-Mom-App-Google-Mobile user289897$ git commit -m "Add iOS app icon"
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+#242:The-Mom-App-Google-Mobile user289897$ git push
+Username for 'https://github.com': tjwaltonmarketing
+Password for 'https://tjwaltonmarketing@github.com': 
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile.git/'
+#242:The-Mom-App-Google-Mobile user289897$ git add .
+#242:The-Mom-App-Google-Mobile user289897$ git push
+Username for 'https://github.com': ^C                  
+#242:The-Mom-App-Google-Mobile user289897$ git add .
+#242:The-Mom-App-Google-Mobile user289897$ git commit -m "Add iOS app icon"
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+#242:The-Mom-App-Google-Mobile user289897$ git push
+Username for 'https://github.com': tjwaltonmarketing
+Password for 'https://tjwaltonmarketing@github.com': 
+Enumerating objects: 24, done.
+Counting objects: 100% (24/24), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (14/14), done.
+Writing objects: 100% (15/15), 59.79 KiB | 19.93 MiB/s, done.
+Total 15 (delta 4), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (4/4), completed with 4 local objects.
+To https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile.git
+   a8fe2da..cf43fb3  main -> main
+#242:The-Mom-App-Google-Mobile user289897$ 
+  [Restored Feb 3, 2026 at 3:46:23 PM]
+Last login: Tue Feb  3 15:44:27 on console
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+#242:~ user289897$ cd ~/Desktop/The-Mom-App-Google-Mobile
+#242:The-Mom-App-Google-Mobile user289897$ git pull
+remote: Enumerating objects: 846, done.
+remote: Counting objects: 100% (846/846), done.
+remote: Compressing objects: 100% (185/185), done.
+remote: Total 781 (delta 605), reused 767 (delta 591), pack-reused 0 (from 0)
+Receiving objects: 100% (781/781), 27.49 MiB | 31.04 MiB/s, done.
+Resolving deltas: 100% (605/605), completed with 53 local objects.
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+   cf43fb3..fc4d1a5  main       -> origin/main
+ * [new tag]         v1.0.1     -> v1.0.1
+Updating cf43fb3..fc4d1a5
+Fast-forward
+ android/app/src/main/AndroidManifest.xml                                           |   2 +
+ android/app/src/main/res/mipmap-hdpi/ic_launcher.png                               | Bin 5675 -> 6867 bytes
+ android/app/src/main/res/mipmap-hdpi/ic_launcher_foreground.png                    | Bin 11820 -> 6867 bytes
+ android/app/src/main/res/mipmap-hdpi/ic_launcher_round.png                         | Bin 5675 -> 6867 bytes
+ android/app/src/main/res/mipmap-mdpi/ic_launcher.png                               | Bin 4011 -> 4328 bytes
+ android/app/src/main/res/mipmap-mdpi/ic_launcher_foreground.png                    | Bin 8201 -> 4328 bytes
+ android/app/src/main/res/mipmap-mdpi/ic_launcher_round.png                         | Bin 4011 -> 4328 bytes
+ android/app/src/main/res/mipmap-xhdpi/ic_launcher.png                              | Bin 7308 -> 9556 bytes
+ android/app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.png                   | Bin 15871 -> 9556 bytes
+ android/app/src/main/res/mipmap-xhdpi/ic_launcher_round.png                        | Bin 7308 -> 9556 bytes
+ android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png                             | Bin 10660 -> 15160 bytes
+ android/app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.png                  | Bin 24464 -> 15160 bytes
+ android/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.png                       | Bin 10660 -> 15160 bytes
+ android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png                            | Bin 14084 -> 21269 bytes
+ android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png                 | Bin 34243 -> 21269 bytes
+ android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png                      | Bin 14084 -> 21269 bytes
+ attached_assets/20260201_224632_1770011403697.jpg                                  | Bin 0 -> 3147939 bytes
+ attached_assets/20260201_224632_1770011462917.jpg                                  | Bin 0 -> 3147939 bytes
+ attached_assets/IMG_20260201_225439_1770011728750.jpg                              | Bin 0 -> 235726 bytes
+ attached_assets/IMG_20260201_225439_1770011926673.jpg                              | Bin 0 -> 235726 bytes
+ attached_assets/Screenshot_20260201_215222_The_Mom_App_1770008073505.jpg           | Bin 0 -> 469132 bytes
+ attached_assets/Screenshot_20260201_221152_One_UI_Home_1770009138204.jpg           | Bin 0 -> 784803 bytes
+ attached_assets/Screenshot_20260201_230253_The_Mom_App_1770012255838.jpg           | Bin 0 -> 338592 bytes
+ attached_assets/Screenshot_20260201_230253_The_Mom_App_1770013292471.jpg           | Bin 0 -> 338592 bytes
+ attached_assets/Screenshot_20260201_234206_Permission_controller_1770014560480.jpg | Bin 0 -> 217677 bytes
+ attached_assets/Screenshot_20260201_234206_Permission_controller_1770014650009.jpg | Bin 0 -> 217677 bytes
+ attached_assets/Screenshot_20260202_083003_Replit_1770046244203.jpg                | Bin 0 -> 473495 bytes
+ attached_assets/Screenshot_20260202_083003_Replit_1770046500275.jpg                | Bin 0 -> 473495 bytes
+ attached_assets/Screenshot_20260202_083003_Replit_1770046603804.jpg                | Bin 0 -> 473495 bytes
+ attached_assets/Screenshot_20260202_085413_Replit_1770047695228.jpg                | Bin 0 -> 465406 bytes
+ attached_assets/Screenshot_20260202_085413_Replit_1770047743194.jpg                | Bin 0 -> 465406 bytes
+ attached_assets/Screenshot_20260202_085856_Replit_1770047988082.jpg                | Bin 0 -> 471697 bytes
+ attached_assets/Screenshot_20260202_213828_Replit_1770093551705.jpg                | Bin 0 -> 275780 bytes
+ attached_assets/image-6156053671936404358_1770015211171.jpg                        | Bin 0 -> 2056247 bytes
+ attached_assets/image-8841876340744347484_1770015398038.jpg                        | Bin 0 -> 2179463 bytes
+ attached_assets/image_1769979065555.png                                            | Bin 0 -> 235394 bytes
+ attached_assets/image_1769979190985.png                                            | Bin 0 -> 219270 bytes
+ attached_assets/image_1769982252721.png                                            | Bin 0 -> 71654 bytes
+ attached_assets/image_1769982786446.png                                            | Bin 0 -> 156848 bytes
+ attached_assets/image_1769983390018.png                                            | Bin 0 -> 247482 bytes
+ attached_assets/image_1769983691207.png                                            | Bin 0 -> 22522 bytes
+ attached_assets/image_1769984106866.png                                            | Bin 0 -> 241623 bytes
+ attached_assets/image_1769984202872.png                                            | Bin 0 -> 249908 bytes
+ attached_assets/image_1769984935062.png                                            | Bin 0 -> 66909 bytes
+ attached_assets/image_1769985242987.png                                            | Bin 0 -> 52555 bytes
+ attached_assets/image_1769985286460.png                                            | Bin 0 -> 98900 bytes
+ attached_assets/image_1769985494427.png                                            | Bin 0 -> 101341 bytes
+ attached_assets/image_1769985711220.png                                            | Bin 0 -> 55268 bytes
+ attached_assets/image_1769985924294.png                                            | Bin 0 -> 200854 bytes
+ attached_assets/image_1769985980567.png                                            | Bin 0 -> 247219 bytes
+ attached_assets/image_1769986135354.png                                            | Bin 0 -> 243998 bytes
+ attached_assets/image_1769986254242.png                                            | Bin 0 -> 85084 bytes
+ attached_assets/image_1769987129326.png                                            | Bin 0 -> 216432 bytes
+ attached_assets/image_1769987220016.png                                            | Bin 0 -> 214136 bytes
+ attached_assets/image_1769987635126.png                                            | Bin 0 -> 215592 bytes
+ attached_assets/image_1769987756677.png                                            | Bin 0 -> 127241 bytes
+ attached_assets/image_1769988218108.png                                            | Bin 0 -> 209114 bytes
+ attached_assets/image_1769988282520.png                                            | Bin 0 -> 53461 bytes
+ attached_assets/image_1769988347494.png                                            | Bin 0 -> 123187 bytes
+ attached_assets/image_1769988625678.png                                            | Bin 0 -> 164986 bytes
+ attached_assets/image_1769989421548.png                                            | Bin 0 -> 198625 bytes
+ attached_assets/image_1769989678438.png                                            | Bin 0 -> 197559 bytes
+ attached_assets/image_1769989916010.png                                            | Bin 0 -> 83252 bytes
+ attached_assets/image_1769990033272.png                                            | Bin 0 -> 71103 bytes
+ attached_assets/image_1769991016843.png                                            | Bin 0 -> 44042 bytes
+ attached_assets/image_1769995779746.png                                            | Bin 0 -> 161601 bytes
+ attached_assets/image_1770004116985.png                                            | Bin 0 -> 140897 bytes
+ attached_assets/image_1770004217294.png                                            | Bin 0 -> 276691 bytes
+ attached_assets/image_1770004386572.png                                            | Bin 0 -> 253315 bytes
+ attached_assets/image_1770004457460.png                                            | Bin 0 -> 132703 bytes
+ attached_assets/image_1770004555606.png                                            | Bin 0 -> 244581 bytes
+ attached_assets/image_1770007216539.png                                            | Bin 0 -> 61174 bytes
+ attached_assets/image_1770007339009.png                                            | Bin 0 -> 161030 bytes
+ attached_assets/image_1770067837104.png                                            | Bin 0 -> 119210 bytes
+ attached_assets/image_1770070444598.png                                            | Bin 0 -> 137758 bytes
+ attached_assets/image_1770071091645.png                                            | Bin 0 -> 122785 bytes
+ attached_assets/image_1770072500058.png                                            | Bin 0 -> 111934 bytes
+ attached_assets/image_1770075067232.png                                            | Bin 0 -> 112206 bytes
+ attached_assets/image_1770098820149.png                                            | Bin 0 -> 51519 bytes
+ attached_assets/image_1770099161470.png                                            | Bin 0 -> 54662 bytes
+ attached_assets/image_1770099298583.png                                            | Bin 0 -> 48058 bytes
+ attached_assets/image_1770099480019.png                                            | Bin 0 -> 48600 bytes
+ attached_assets/image_1770100630993.png                                            | Bin 0 -> 55371 bytes
+ attached_assets/image_1770105213602.png                                            | Bin 0 -> 42406 bytes
+ attached_assets/image_1770136579518.png                                            | Bin 0 -> 44719 bytes
+ attached_assets/image_1770137521878.png                                            | Bin 0 -> 45252 bytes
+ attached_assets/image_1770137720456.png                                            | Bin 0 -> 50009 bytes
+ attached_assets/image_1770141849254.png                                            | Bin 0 -> 66134 bytes
+ attached_assets/image_1770141883637.png                                            | Bin 0 -> 80883 bytes
+ attached_assets/image_1770141925495.png                                            | Bin 0 -> 63489 bytes
+ attached_assets/image_1770142177038.png                                            | Bin 0 -> 49498 bytes
+ attached_assets/image_1770142898541.png                                            | Bin 0 -> 47472 bytes
+ attached_assets/image_1770143234258.png                                            | Bin 0 -> 48292 bytes
+ attached_assets/image_1770143267215.png                                            | Bin 0 -> 48292 bytes
+ attached_assets/image_1770144028729.png                                            | Bin 0 -> 85285 bytes
+ attached_assets/image_1770147072354.png                                            | Bin 0 -> 47564 bytes
+ attached_assets/image_1770148149952.png                                            | Bin 0 -> 65838 bytes
+ attached_assets/image_1770148364680.png                                            | Bin 0 -> 64866 bytes
+ attached_assets/image_1770150188580.png                                            | Bin 0 -> 67684 bytes
+ attached_assets/image_1770152196391.png                                            | Bin 0 -> 75815 bytes
+ attached_assets/image_1770152372235.png                                            | Bin 0 -> 74569 bytes
+ attached_assets/image_1770153154889.png                                            | Bin 0 -> 16069 bytes
+ attached_assets/image_1770153407275.png                                            | Bin 0 -> 17119 bytes
+ client/index.html                                                                  |   2 +-
+ client/src/App.tsx                                                                 |  12 +-
+ client/src/components/dashboard/meal-planning.tsx                                  |  64 ++-
+ client/src/components/dashboard/password-vault.tsx                                 |  30 +-
+ client/src/components/event-form.tsx                                               |  42 +-
+ client/src/components/layout/mobile-header.tsx                                     |   2 +-
+ client/src/components/layout/mobile-nav.tsx                                        |   2 +-
+ client/src/components/parent-invite-modal.tsx                                      |  39 +-
+ client/src/components/password-modal.tsx                                           |  69 +--
+ client/src/components/task-modal.tsx                                               |  71 ++--
+ client/src/components/teen-task-detail-modal.tsx                                   |   5 +-
+ client/src/components/teen/teen-dashboard.tsx                                      |  80 ++--
+ client/src/components/teen/teen-navigation.tsx                                     |  15 +-
+ client/src/components/teen/teen-notifications.tsx                                  |  10 +-
+ client/src/components/web-access-tip-modal.tsx                                     |  88 ++++
+ client/src/hooks/use-subscription.ts                                               |  43 ++
+ client/src/index.css                                                               |  25 ++
+ client/src/pages/ai-assistant.tsx                                                  |   2 +-
+ client/src/pages/calendar.tsx                                                      |   2 +-
+ client/src/pages/dashboard.tsx                                                     |   4 +-
+ client/src/pages/family-chat.tsx                                                   |   2 +-
+ client/src/pages/grocery-list.tsx                                                  |   2 +-
+ client/src/pages/meal-plan.tsx                                                     |   2 +-
+ client/src/pages/notes.tsx                                                         |   2 +-
+ client/src/pages/register.tsx                                                      |  78 ++--
+ client/src/pages/settings.tsx                                                      | 772 +++++++++++++++++-----------------
+ client/src/pages/subscription.tsx                                                  |   2 +-
+ client/src/pages/tasks.tsx                                                         |   2 +-
+ client/src/pages/teen-calendar.tsx                                                 |   2 +-
+ client/src/pages/teen-dashboard.tsx                                                | 100 ++++-
+ client/src/pages/teen-login.tsx                                                    |  20 +-
+ client/src/pages/teen-onboarding.tsx                                               | 100 ++++-
+ client/src/pages/teen-passwords.tsx                                                |   4 +-
+ client/src/pages/teen-tasks.tsx                                                    |  87 +++-
+ client/src/pages/tutorials.tsx                                                     |   2 +-
+ ios/App/App/Info.plist                                                             |   6 +
+ server/ai.ts                                                                       |  11 +-
+ server/index.ts                                                                    |   1 +
+ server/notification-service.ts                                                     | 444 ++++++++++++++++++--
+ server/routes.ts                                                                   | 992 +++++++++++++++++++++++++++++++++++++++++---
+ server/storage.ts                                                                  | 286 ++++++++++++-
+ shared/schema.ts                                                                   |  51 ++-
+ 145 files changed, 2808 insertions(+), 769 deletions(-)
+ create mode 100644 attached_assets/20260201_224632_1770011403697.jpg
+ create mode 100644 attached_assets/20260201_224632_1770011462917.jpg
+ create mode 100644 attached_assets/IMG_20260201_225439_1770011728750.jpg
+ create mode 100644 attached_assets/IMG_20260201_225439_1770011926673.jpg
+ create mode 100644 attached_assets/Screenshot_20260201_215222_The_Mom_App_1770008073505.jpg
+ create mode 100644 attached_assets/Screenshot_20260201_221152_One_UI_Home_1770009138204.jpg
+ create mode 100644 attached_assets/Screenshot_20260201_230253_The_Mom_App_1770012255838.jpg
+ create mode 100644 attached_assets/Screenshot_20260201_230253_The_Mom_App_1770013292471.jpg
+ create mode 100644 attached_assets/Screenshot_20260201_234206_Permission_controller_1770014560480.jpg
+ create mode 100644 attached_assets/Screenshot_20260201_234206_Permission_controller_1770014650009.jpg
+ create mode 100644 attached_assets/Screenshot_20260202_083003_Replit_1770046244203.jpg
+ create mode 100644 attached_assets/Screenshot_20260202_083003_Replit_1770046500275.jpg
+ create mode 100644 attached_assets/Screenshot_20260202_083003_Replit_1770046603804.jpg
+ create mode 100644 attached_assets/Screenshot_20260202_085413_Replit_1770047695228.jpg
+ create mode 100644 attached_assets/Screenshot_20260202_085413_Replit_1770047743194.jpg
+ create mode 100644 attached_assets/Screenshot_20260202_085856_Replit_1770047988082.jpg
+ create mode 100644 attached_assets/Screenshot_20260202_213828_Replit_1770093551705.jpg
+ create mode 100644 attached_assets/image-6156053671936404358_1770015211171.jpg
+ create mode 100644 attached_assets/image-8841876340744347484_1770015398038.jpg
+ create mode 100644 attached_assets/image_1769979065555.png
+ create mode 100644 attached_assets/image_1769979190985.png
+ create mode 100644 attached_assets/image_1769982252721.png
+ create mode 100644 attached_assets/image_1769982786446.png
+ create mode 100644 attached_assets/image_1769983390018.png
+ create mode 100644 attached_assets/image_1769983691207.png
+ create mode 100644 attached_assets/image_1769984106866.png
+ create mode 100644 attached_assets/image_1769984202872.png
+ create mode 100644 attached_assets/image_1769984935062.png
+ create mode 100644 attached_assets/image_1769985242987.png
+ create mode 100644 attached_assets/image_1769985286460.png
+ create mode 100644 attached_assets/image_1769985494427.png
+ create mode 100644 attached_assets/image_1769985711220.png
+ create mode 100644 attached_assets/image_1769985924294.png
+ create mode 100644 attached_assets/image_1769985980567.png
+ create mode 100644 attached_assets/image_1769986135354.png
+ create mode 100644 attached_assets/image_1769986254242.png
+ create mode 100644 attached_assets/image_1769987129326.png
+ create mode 100644 attached_assets/image_1769987220016.png
+ create mode 100644 attached_assets/image_1769987635126.png
+ create mode 100644 attached_assets/image_1769987756677.png
+ create mode 100644 attached_assets/image_1769988218108.png
+ create mode 100644 attached_assets/image_1769988282520.png
+ create mode 100644 attached_assets/image_1769988347494.png
+ create mode 100644 attached_assets/image_1769988625678.png
+ create mode 100644 attached_assets/image_1769989421548.png
+ create mode 100644 attached_assets/image_1769989678438.png
+ create mode 100644 attached_assets/image_1769989916010.png
+ create mode 100644 attached_assets/image_1769990033272.png
+ create mode 100644 attached_assets/image_1769991016843.png
+ create mode 100644 attached_assets/image_1769995779746.png
+ create mode 100644 attached_assets/image_1770004116985.png
+ create mode 100644 attached_assets/image_1770004217294.png
+ create mode 100644 attached_assets/image_1770004386572.png
+ create mode 100644 attached_assets/image_1770004457460.png
+ create mode 100644 attached_assets/image_1770004555606.png
+ create mode 100644 attached_assets/image_1770007216539.png
+ create mode 100644 attached_assets/image_1770007339009.png
+ create mode 100644 attached_assets/image_1770067837104.png
+ create mode 100644 attached_assets/image_1770070444598.png
+ create mode 100644 attached_assets/image_1770071091645.png
+ create mode 100644 attached_assets/image_1770072500058.png
+ create mode 100644 attached_assets/image_1770075067232.png
+ create mode 100644 attached_assets/image_1770098820149.png
+ create mode 100644 attached_assets/image_1770099161470.png
+ create mode 100644 attached_assets/image_1770099298583.png
+ create mode 100644 attached_assets/image_1770099480019.png
+ create mode 100644 attached_assets/image_1770100630993.png
+ create mode 100644 attached_assets/image_1770105213602.png
+ create mode 100644 attached_assets/image_1770136579518.png
+ create mode 100644 attached_assets/image_1770137521878.png
+ create mode 100644 attached_assets/image_1770137720456.png
+ create mode 100644 attached_assets/image_1770141849254.png
+ create mode 100644 attached_assets/image_1770141883637.png
+ create mode 100644 attached_assets/image_1770141925495.png
+ create mode 100644 attached_assets/image_1770142177038.png
+ create mode 100644 attached_assets/image_1770142898541.png
+ create mode 100644 attached_assets/image_1770143234258.png
+ create mode 100644 attached_assets/image_1770143267215.png
+ create mode 100644 attached_assets/image_1770144028729.png
+ create mode 100644 attached_assets/image_1770147072354.png
+ create mode 100644 attached_assets/image_1770148149952.png
+ create mode 100644 attached_assets/image_1770148364680.png
+ create mode 100644 attached_assets/image_1770150188580.png
+ create mode 100644 attached_assets/image_1770152196391.png
+ create mode 100644 attached_assets/image_1770152372235.png
+ create mode 100644 attached_assets/image_1770153154889.png
+ create mode 100644 attached_assets/image_1770153407275.png
+ create mode 100644 client/src/components/web-access-tip-modal.tsx
+ create mode 100644 client/src/hooks/use-subscription.ts
+#242:The-Mom-App-Google-Mobile user289897$ npm install
+npm run build
+npx cap sync ios
+
+up to date, audited 798 packages in 3s
+
+114 packages are looking for funding
+  run `npm fund` for details
+
+36 vulnerabilities (4 low, 8 moderate, 23 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+#242:The-Mom-App-Google-Mobile user289897$ npm run build
+npx cap sync ios
+npx cap open ios
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (1) index.htmlBrowserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3173 modules transformed.
+../dist/public/index.html                                                              2.20 kB │ gzip:   0.80 kB
+../dist/public/assets/The Mom app_20250607_125224_0000_1749573727197-CXHC4Cic.png     25.37 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                          27.04 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                      82.76 kB
+../dist/public/assets/onboarding-slide-4-D4JYpSLI.png                                475.61 kB
+../dist/public/assets/onboarding-slide-1-BTbL-SY9.png                                584.12 kB
+../dist/public/assets/onboarding-slide-2-C9Wg53EH.png                                624.02 kB
+../dist/public/assets/onboarding-slide-3-BZZWjM9F.png                                833.27 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                   4,686.94 kB
+../dist/public/assets/index-Bzc_ydjV.css                                             130.69 kB │ gzip:  20.07 kB
+../dist/public/assets/index-BTNvWFEy.js                                            1,661.19 kB │ gzip: 474.75 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.32s
+
+  dist/index.js  323.5kb
+
+⚡ Done in 16ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap sync ios
+✔ Copying web assets from public to ios/App/App/public in 18.95ms
+✔ Creating capacitor.config.json in ios/App/App in 771.46μs
+✔ copy ios in 56.51ms
+✔ Updating iOS plugins in 6.92ms
+✖ Updating iOS native dependencies with pod install - failed!
+✖ update ios - failed!
+[error] Command line invocation:
+        /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project App.xcodeproj clean
+        
+        User defaults from command line:
+        IDEPackageSupportUseBuiltinSCM = YES
+        
+        2026-02-03 15:49:57.133 xcodebuild[85945:32237510] Writing error result bundle to
+        /var/folders/12/lvx2p_216230x82zmfzdgcr40000nj/T/ResultBundle_2026-03-02_15-49-0057.xcresult
+        xcodebuild: error: 'App.xcodeproj' does not exist.
+        
+#242:The-Mom-App-Google-Mobile user289897$
