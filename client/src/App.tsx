@@ -172,6 +172,7 @@ function Router() {
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/teen/login" component={TeenLogin} />
       <Route path="/teen-login" component={TeenLogin} />
+      <Route path="/teen/invite" component={TeenLogin} />
       <Route path="/teen/join" component={TeenOnboarding} />
       <Route path="/teen-join" component={TeenOnboarding} />
       <Route path="/privacy" component={Privacy} />
