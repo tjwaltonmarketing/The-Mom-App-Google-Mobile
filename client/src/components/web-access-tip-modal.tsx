@@ -8,13 +8,25 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Monitor, ExternalLink } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
 
 const STORAGE_KEY = "web_access_tip_shown";
+
+function isMobileOrApp(): boolean {
+  if (Capacitor.isNativePlatform()) {
+    return true;
+  }
+  const userAgent = navigator.userAgent || navigator.vendor;
+  return /android|iphone|ipad|ipod|mobile/i.test(userAgent);
+}
 
 export function WebAccessTipModal() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
+    if (!isMobileOrApp()) {
+      return;
+    }
     const hasSeenTip = localStorage.getItem(STORAGE_KEY);
     if (!hasSeenTip) {
       const timer = setTimeout(() => {
