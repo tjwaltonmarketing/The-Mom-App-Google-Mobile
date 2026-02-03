@@ -24,12 +24,15 @@ import {
   Globe,
   Edit,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Crown
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { apiRequest } from "@/lib/queryClient";
 import type { Password } from "@shared/schema";
+import { useSubscription } from "@/hooks/use-subscription";
+import { Link } from "wouter";
 
 interface PasswordEntry {
   id: number;
@@ -47,13 +50,15 @@ interface PasswordEntry {
 export function PasswordVault() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isIndividualPlan, canAccessPasswordVault } = useSubscription();
   const [editingPassword, setEditingPassword] = useState<Password | null>(null);
   const [deleteConfirmPassword, setDeleteConfirmPassword] = useState<Password | null>(null);
   const [showRemoveAllConfirm, setShowRemoveAllConfirm] = useState(false);
 
   const { data: passwords = [], isLoading, error } = useQuery({
     queryKey: ['/api/passwords'],
-    queryFn: () => fetch('/api/passwords', { credentials: 'include' }).then(res => res.json()) as Promise<Password[]>
+    queryFn: () => fetch('/api/passwords', { credentials: 'include' }).then(res => res.json()) as Promise<Password[]>,
+    enabled: !isIndividualPlan, // Don't fetch passwords for individual plan users
   });
 
   // Individual password deletion
@@ -163,6 +168,36 @@ export function PasswordVault() {
     
     return matchesSearch && matchesCategory;
   });
+
+  if (isIndividualPlan) {
+    return (
+      <Card className="bg-white dark:bg-gray-800 blue-light-filter:bg-amber-50">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Shield className="text-blue-600 dark:text-blue-400 blue-light-filter:text-amber-600" size={20} />
+            <CardTitle className="text-lg">Password Vault</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-pink-100 to-purple-100 dark:from-pink-900/30 dark:to-purple-900/30 flex items-center justify-center">
+              <Crown className="h-8 w-8 text-pink-500" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">Family Plan Feature</h3>
+            <p className="text-muted-foreground mb-4 max-w-sm mx-auto">
+              The Password Vault is available on the Family Plan. Securely store and share passwords with your family members.
+            </p>
+            <Link href="/plans">
+              <Button className="bg-pink-500 hover:bg-pink-600">
+                <Crown className="h-4 w-4 mr-2" />
+                Upgrade to Family Plan
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isLoading) {
     return (

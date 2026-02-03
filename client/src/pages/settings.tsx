@@ -27,6 +27,7 @@ import type { FamilyMember } from "@shared/schema";
 import { InviteTeenModal } from "@/components/family/invite-teen-modal";
 import { ParentInviteModal } from "@/components/parent-invite-modal";
 import { KidPointManager } from "@/components/family/kid-point-manager";
+import { useSubscription } from "@/hooks/use-subscription";
 
 const addFamilyMemberSchema = z.object({
   name: z.string().min(1, "Name is required").max(50, "Name too long"),
@@ -65,6 +66,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isIndividualPlan, canAddFamilyMembers, canAccessPasswordVault } = useSubscription();
   const [mindfulUsageEnabled, setMindfulUsageEnabled] = useState(true);
   const [reminderInterval, setReminderInterval] = useState("20");
   const [breakDuration, setBreakDuration] = useState([5]);
@@ -813,8 +815,29 @@ export default function SettingsPage() {
                 <div className="space-y-4">
                   <h4 className="font-medium text-sm text-muted-foreground">Add New Family Members</h4>
                   
+                  {/* Individual Plan Upgrade Banner */}
+                  {isIndividualPlan && (
+                    <div className="p-4 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-lg border border-pink-200 dark:border-pink-800">
+                      <div className="flex items-start gap-3">
+                        <Crown className="h-5 w-5 text-pink-500 mt-0.5" />
+                        <div className="flex-1">
+                          <h5 className="font-medium text-pink-800 dark:text-pink-200">Upgrade to Family Plan</h5>
+                          <p className="text-sm text-pink-700 dark:text-pink-300 mb-3">
+                            Add family members, share calendars, and assign tasks by upgrading to the Family plan for just $9.99/month.
+                          </p>
+                          <Link href="/plans">
+                            <Button size="sm" className="bg-pink-500 hover:bg-pink-600">
+                              <Crown className="h-3 w-3 mr-2" />
+                              Upgrade Now
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Option 1: Add Child/Teen Profile */}
-                  <div className="border rounded-lg p-4 space-y-3">
+                  <div className={`border rounded-lg p-4 space-y-3 ${isIndividualPlan ? 'opacity-50' : ''}`}>
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                         <Plus className="h-4 w-4 text-blue-600" />
@@ -824,16 +847,21 @@ export default function SettingsPage() {
                         <p className="text-sm text-muted-foreground mb-3">
                           Create a coordination profile for children or teens. Perfect for assigning chores, tracking activities, and family planning. No account needed.
                         </p>
-                        <Button variant="outline" size="sm" onClick={handleAddFamilyMember}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={handleAddFamilyMember}
+                          disabled={isIndividualPlan}
+                        >
                           <Plus className="h-3 w-3 mr-2" />
-                          Add Profile
+                          {isIndividualPlan ? "Family Plan Required" : "Add Profile"}
                         </Button>
                       </div>
                     </div>
                   </div>
 
                   {/* Option 2: Invite New Parent */}
-                  <div className="border rounded-lg p-4 space-y-3">
+                  <div className={`border rounded-lg p-4 space-y-3 ${isIndividualPlan ? 'opacity-50' : ''}`}>
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                         <UserPlus className="h-4 w-4 text-green-600" />
@@ -843,16 +871,21 @@ export default function SettingsPage() {
                         <p className="text-sm text-muted-foreground mb-3">
                           Send an invitation to a parent who doesn't have an account yet. They'll get an email invitation to create their own account and join your family.
                         </p>
-                        <Button variant="outline" size="sm" onClick={() => setShowParentInviteModal(true)}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setShowParentInviteModal(true)}
+                          disabled={isIndividualPlan}
+                        >
                           <Mail className="h-3 w-3 mr-2" />
-                          Send Invitation
+                          {isIndividualPlan ? "Family Plan Required" : "Send Invitation"}
                         </Button>
                       </div>
                     </div>
                   </div>
 
                   {/* Teen Invite (keeping separate for clarity) */}
-                  <div className="border rounded-lg p-4 space-y-3">
+                  <div className={`border rounded-lg p-4 space-y-3 ${isIndividualPlan ? 'opacity-50' : ''}`}>
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                         <Users className="h-4 w-4 text-orange-600" />
@@ -862,9 +895,14 @@ export default function SettingsPage() {
                         <p className="text-sm text-muted-foreground mb-3">
                           Give older teens their own login to view tasks, earn points, and access family information. Includes gamification and parental oversight.
                         </p>
-                        <Button variant="outline" size="sm" onClick={() => setShowInviteTeenModal(true)}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => setShowInviteTeenModal(true)}
+                          disabled={isIndividualPlan}
+                        >
                           <Users className="h-3 w-3 mr-2" />
-                          Create Teen Account
+                          {isIndividualPlan ? "Family Plan Required" : "Create Teen Account"}
                         </Button>
                       </div>
                     </div>

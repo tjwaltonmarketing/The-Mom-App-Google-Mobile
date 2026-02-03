@@ -15,6 +15,21 @@ import { emailService } from "./email-service";
 
 const storage = new DatabaseStorage();
 
+// Helper function to check if user is on Individual plan
+async function isUserOnIndividualPlan(userId: number): Promise<boolean> {
+  const subscription = await storage.getUserSubscription(userId);
+  if (!subscription) {
+    // Check if user is family member (not owner) - get owner's subscription
+    const family = await storage.getFamilyByUserId(userId);
+    if (family && family.ownerId !== userId) {
+      const ownerSubscription = await storage.getUserSubscription(family.ownerId);
+      return ownerSubscription?.subscriptionPlan === "individual";
+    }
+    return false;
+  }
+  return subscription.subscriptionPlan === "individual";
+}
+
 export async function registerRoutes(app: Express) {
   // Setup Replit Auth first (handles sessions, passport, login/logout routes)
   await setupAuth(app);
@@ -2052,11 +2067,14 @@ export async function registerRoutes(app: Express) {
 
       const { title, description, dueDate, priority, assignedTo, category, points, estimatedTime, childProfileId, isPrivate } = req.body;
 
+      // Check if user is on Individual plan - cannot assign tasks to others
+      const onIndividualPlan = await isUserOnIndividualPlan(req.session.userId);
+      
       // Check if assignedTo is a family member with a child profile
-      let finalAssignedTo = assignedTo || null;
-      let finalChildProfileId = childProfileId || null;
+      let finalAssignedTo = onIndividualPlan ? null : (assignedTo || null);
+      let finalChildProfileId = onIndividualPlan ? null : (childProfileId || null);
 
-      if (assignedTo && !childProfileId) {
+      if (assignedTo && !childProfileId && !onIndividualPlan) {
         // Check if this family member has a child profile
         const childProfile = await storage.getChildProfileByFamilyMember(assignedTo, userFamilyMember.id);
         if (childProfile) {
@@ -2451,6 +2469,14 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
+      // Check if user is on Individual plan - cannot add family members
+      if (await isUserOnIndividualPlan(req.session.userId)) {
+        return res.status(403).json({ 
+          error: "Family Plan Required", 
+          message: "Adding family members requires a Family Plan subscription." 
+        });
+      }
+
       const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
       if (!familyMembership) {
         return res.status(404).json({ error: "Family not found" });
@@ -2821,6 +2847,12 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Title and start time are required" });
       }
 
+      // Check if user is on Individual plan - force private visibility
+      const onIndividualPlan = await isUserOnIndividualPlan(req.session.userId);
+      const finalVisibilityType = onIndividualPlan ? "private" : (visibilityType || "shared");
+      const finalSharedWith = onIndividualPlan ? [] : (sharedWith || []);
+      const finalIsPrivate = onIndividualPlan ? true : (isPrivate || false);
+
       // Create the event data
       const eventData = {
         title,
@@ -2831,9 +2863,9 @@ export async function registerRoutes(app: Express) {
         familyId: familyMembership.familyId,
         assignedTo: assignedTo || [], // Array of family member IDs
         isAllDay: isAllDay || false,
-        isPrivate: isPrivate || false,
-        visibilityType: visibilityType || "shared",
-        sharedWith: sharedWith || [],
+        isPrivate: finalIsPrivate,
+        visibilityType: finalVisibilityType,
+        sharedWith: finalSharedWith,
         createdBy: userFamilyMember.id
       };
 
@@ -2972,6 +3004,14 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
+      // Check if user is on Individual plan - cannot access password vault
+      if (await isUserOnIndividualPlan(req.session.userId)) {
+        return res.status(403).json({ 
+          error: "Family Plan Required", 
+          message: "Password Vault requires a Family Plan subscription." 
+        });
+      }
+
       const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
       if (!familyMembership) {
         return res.status(404).json({ error: "Family not found" });
@@ -2989,6 +3029,14 @@ export async function registerRoutes(app: Express) {
     try {
       if (!req.session.userId) {
         return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Check if user is on Individual plan - cannot access password vault
+      if (await isUserOnIndividualPlan(req.session.userId)) {
+        return res.status(403).json({ 
+          error: "Family Plan Required", 
+          message: "Password Vault requires a Family Plan subscription." 
+        });
       }
 
       const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
@@ -3036,6 +3084,14 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
+      // Check if user is on Individual plan - cannot access password vault
+      if (await isUserOnIndividualPlan(req.session.userId)) {
+        return res.status(403).json({ 
+          error: "Family Plan Required", 
+          message: "Password Vault requires a Family Plan subscription." 
+        });
+      }
+
       const passwordId = parseInt(req.params.id);
       const { isFavorite } = req.body;
 
@@ -3071,6 +3127,14 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
+      // Check if user is on Individual plan - cannot access password vault
+      if (await isUserOnIndividualPlan(req.session.userId)) {
+        return res.status(403).json({ 
+          error: "Family Plan Required", 
+          message: "Password Vault requires a Family Plan subscription." 
+        });
+      }
+
       const passwordId = parseInt(req.params.id);
       
       // Get the parent's family member record
@@ -3102,6 +3166,14 @@ export async function registerRoutes(app: Express) {
     try {
       if (!req.session.userId) {
         return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Check if user is on Individual plan - cannot access password vault
+      if (await isUserOnIndividualPlan(req.session.userId)) {
+        return res.status(403).json({ 
+          error: "Family Plan Required", 
+          message: "Password Vault requires a Family Plan subscription." 
+        });
       }
 
       const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { CalendarDays, User, Flag, Lock } from "lucide-react";
+import { CalendarDays, User, Flag, Lock, Crown } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { FamilyMember, InsertTask, Task } from "@shared/schema";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useSubscription } from "@/hooks/use-subscription";
+import { Link } from "wouter";
 
 interface TaskModalProps {
   isOpen: boolean;
@@ -34,6 +36,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { isIndividualPlan, canAssignTasks } = useSubscription();
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
@@ -220,32 +223,46 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
 
             <div>
               <label className="text-sm font-medium">Assign To</label>
-              <Select value={assignedTo} onValueChange={setAssignedTo}>
-                <SelectTrigger className="mt-1">
-                  <User className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Select member" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {familyMembers.map((member) => (
-                    <SelectItem key={`member-${member.id}`} value={`member-${member.id}`}>
-                      {member.name} ({member.role})
-                    </SelectItem>
-                  ))}
-                  {childProfiles.length > 0 && (
-                    <>
-                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1">
-                        Child Accounts
-                      </div>
-                      {childProfiles.map((child) => (
-                        <SelectItem key={`child-${child.id}`} value={`child-${child.id}`}>
-                          {child.displayName} (Child Account)
-                        </SelectItem>
-                      ))}
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
+              {isIndividualPlan ? (
+                <div className="mt-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Crown className="h-4 w-4 text-pink-500" />
+                    <span>Task assignment requires Family Plan</span>
+                  </div>
+                  <Link href="/plans">
+                    <Button variant="link" size="sm" className="text-pink-500 p-0 h-auto mt-1">
+                      Upgrade to assign tasks
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <Select value={assignedTo} onValueChange={setAssignedTo}>
+                  <SelectTrigger className="mt-1">
+                    <User className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Select member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                    {familyMembers.map((member) => (
+                      <SelectItem key={`member-${member.id}`} value={`member-${member.id}`}>
+                        {member.name} ({member.role})
+                      </SelectItem>
+                    ))}
+                    {childProfiles.length > 0 && (
+                      <>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground border-t mt-1">
+                          Child Accounts
+                        </div>
+                        {childProfiles.map((child) => (
+                          <SelectItem key={`child-${child.id}`} value={`child-${child.id}`}>
+                            {child.displayName} (Child Account)
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
 
