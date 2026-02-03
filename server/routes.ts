@@ -2284,7 +2284,7 @@ export async function registerRoutes(app: Express) {
       }
 
       const family = await storage.getFamilyByUserId(req.session.userId);
-      const user = await storage.getUser(req.session.userId);
+      const user = await storage.getUserById(req.session.userId);
 
       // Generate invite code
       const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
