@@ -1774,6 +1774,45 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Teen family info endpoint - returns family name and member count
+  app.get("/api/teen/family-info", async (req, res) => {
+    try {
+      if (!req.session.teenId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      // Get the teen's family member record
+      const teenProfile = await storage.getTeenProfile(req.session.teenId);
+      if (!teenProfile) {
+        return res.status(404).json({ error: "Teen profile not found" });
+      }
+
+      const familyMember = await storage.getFamilyMemberById(teenProfile.familyMemberId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      // Get family info
+      const family = await storage.getFamilyById(familyMember.familyId);
+      if (!family) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      // Get family members count
+      const familyMembers = await storage.getFamilyMembersByFamily(familyMember.familyId);
+      const activeMemberCount = familyMembers.filter(m => m.isActive).length;
+
+      res.json({
+        familyId: family.id,
+        familyName: family.name,
+        memberCount: activeMemberCount
+      });
+    } catch (error) {
+      console.error("Teen family info error:", error);
+      res.status(500).json({ error: "Failed to get family info" });
+    }
+  });
+
   // Teen family members endpoints
   app.get("/api/teen/family-members", async (req, res) => {
     try {

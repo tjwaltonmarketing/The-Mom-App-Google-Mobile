@@ -109,6 +109,22 @@ export default function TeenDashboard() {
   });
   
 
+  // Fetch family info (name and member count)
+  const { data: familyInfo } = useQuery<{ familyId: number; familyName: string; memberCount: number }>({
+    queryKey: ["/api/teen/family-info"],
+    queryFn: async () => {
+      const response = await fetch("/api/teen/family-info", {
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return response.json();
+    },
+    retry: false,
+    enabled: authData !== undefined,
+  });
+
   // Fetch teen stats (points, streak) from the family member record
   const { data: teenStats } = useQuery({
     queryKey: ["/api/teen/stats"],
@@ -406,8 +422,8 @@ export default function TeenDashboard() {
               <div className="space-y-3">
                 <div className="text-center">
                   <p className="text-sm text-gray-600 mb-2">Connected to</p>
-                  <p className="font-semibold">The Walton Family</p>
-                  <p className="text-xs text-gray-500 mt-1">3 members</p>
+                  <p className="font-semibold">{familyInfo?.familyName || "Your Family"}</p>
+                  <p className="text-xs text-gray-500 mt-1">{familyInfo?.memberCount || 0} members</p>
                 </div>
                 <Button 
                   variant="outline" 
