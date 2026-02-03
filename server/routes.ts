@@ -753,18 +753,26 @@ export async function registerRoutes(app: Express) {
           delete req.session.userId;
           delete req.session.inviteCode;
           
-          return res.json({
-            success: true,
-            teenProfile: {
-              id: teenProfile.id,
-              firstName: teenProfile.firstName,
-              lastName: teenProfile.lastName,
-              username: teenProfile.username,
-              avatar: teenProfile.avatar,
-              points: teenProfile.points,
-              streak: teenProfile.streak,
-              favoriteColor: teenProfile.favoriteColor
+          // Save session explicitly before responding
+          return req.session.save((err) => {
+            if (err) {
+              console.error("Session save error:", err);
+              return res.status(500).json({ error: "Failed to save session" });
             }
+            
+            return res.json({
+              success: true,
+              teenProfile: {
+                id: teenProfile.id,
+                firstName: teenProfile.firstName,
+                lastName: teenProfile.lastName,
+                username: teenProfile.username,
+                avatar: teenProfile.avatar,
+                points: teenProfile.points,
+                streak: teenProfile.streak,
+                favoriteColor: teenProfile.favoriteColor
+              }
+            });
           });
         }
       }
@@ -815,18 +823,26 @@ export async function registerRoutes(app: Express) {
       delete req.session.userId; // Clear parent session
       delete req.session.inviteCode;
 
-      res.json({
-        success: true,
-        teenProfile: {
-          id: teenProfile.id,
-          firstName: teenProfile.firstName,
-          lastName: teenProfile.lastName,
-          username: teenProfile.username,
-          avatar: teenProfile.avatar,
-          points: teenProfile.points,
-          streak: teenProfile.streak,
-          favoriteColor: teenProfile.favoriteColor
+      // Save session explicitly before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({ error: "Failed to save session" });
         }
+        
+        res.json({
+          success: true,
+          teenProfile: {
+            id: teenProfile.id,
+            firstName: teenProfile.firstName,
+            lastName: teenProfile.lastName,
+            username: teenProfile.username,
+            avatar: teenProfile.avatar,
+            points: teenProfile.points,
+            streak: teenProfile.streak,
+            favoriteColor: teenProfile.favoriteColor
+          }
+        });
       });
     } catch (error) {
       console.error("Teen setup error:", error);
