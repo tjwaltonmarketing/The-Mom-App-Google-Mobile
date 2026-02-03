@@ -134,14 +134,11 @@ export default function TeenOnboarding() {
         description: "Welcome to your family coordination hub",
       });
       
-      // Invalidate and refetch auth queries before navigating
-      await queryClient.invalidateQueries({ queryKey: ["/api/teen/auth/user"] });
-      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      // Refetch auth queries and wait for completion before navigating
+      await queryClient.refetchQueries({ queryKey: ["/api/teen/auth/user"] });
       
-      // Small delay to ensure session is properly set
-      setTimeout(() => {
-        setLocation("/teen-dashboard");
-      }, 100);
+      // Navigate to dashboard
+      setLocation("/teen-dashboard");
     },
     onError: () => {
       toast({

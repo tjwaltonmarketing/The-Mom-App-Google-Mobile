@@ -767,6 +767,7 @@ export async function registerRoutes(app: Express) {
 
       if (existingUser) {
         // Teen already exists - just log them in
+        console.log("Teen already exists, logging in:", existingUser.id);
         user = existingUser;
         
         // Find their teen profile
@@ -785,6 +786,11 @@ export async function registerRoutes(app: Express) {
               console.error("Session save error:", err);
               return res.status(500).json({ error: "Failed to save session" });
             }
+            
+            console.log("Existing teen session saved:", {
+              teenId: req.session.teenId,
+              sessionId: req.sessionID
+            });
             
             return res.json({
               success: true,
