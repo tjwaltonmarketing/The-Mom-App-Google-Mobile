@@ -82,7 +82,7 @@ import {
   type InsertFeatureRequest,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, gte, lt, desc, isNull, or, inArray } from "drizzle-orm";
+import { eq, and, gte, lt, desc, isNull, or, inArray, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User Authentication
