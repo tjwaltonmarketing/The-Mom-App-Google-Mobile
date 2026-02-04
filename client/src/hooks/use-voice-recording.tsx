@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { Capacitor } from "@capacitor/core";
 
 interface UseVoiceRecordingOptions {
   onTranscript: (transcript: string) => void;
@@ -13,9 +14,31 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
 
   const requestMicrophonePermission = useCallback(async (): Promise<boolean> => {
     try {
-      // Request microphone permission through the browser API
+      // On native platforms, we need to explicitly request permission
+      if (Capacitor.isNativePlatform()) {
+        // For Capacitor, try to get user media which triggers native permission dialog
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach(track => track.stop());
+          setPermissionStatus('granted');
+          return true;
+        } catch (nativeError: any) {
+          console.error('Native microphone permission error:', nativeError);
+          setPermissionStatus('denied');
+          
+          // On native, provide more specific guidance
+          const isAndroid = Capacitor.getPlatform() === 'android';
+          const settingsPath = isAndroid 
+            ? 'Go to Settings > Apps > The Mom App > Permissions > Microphone'
+            : 'Go to Settings > The Mom App > Microphone';
+          
+          onError?.(`Microphone access was denied. ${settingsPath} to enable it.`);
+          return false;
+        }
+      }
+      
+      // Web browser permission request
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Stop the stream immediately - we just needed to trigger the permission prompt
       stream.getTracks().forEach(track => track.stop());
       setPermissionStatus('granted');
       return true;
