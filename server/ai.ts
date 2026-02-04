@@ -567,6 +567,33 @@ REQUIRED FORMAT EXAMPLES:
   
   // Handle meal suggestions differently than regular tasks
   if (lowerInput.includes('meal') || lowerInput.includes('recipe') || lowerInput.includes('cook') || lowerInput.includes('dinner') || lowerInput.includes('lunch') || lowerInput.includes('breakfast')) {
+    // Extract the simple meal name from the input for the "use my own recipe" option
+    const simpleMealPrompt = `Extract just the meal name from this voice input. Return only a short meal name (2-5 words), no recipes or details.
+"${voiceInput}"
+
+Examples:
+- "I put chicken and rice for the meal plan" -> "Chicken and Rice"
+- "Add spaghetti and meatballs for dinner Tuesday" -> "Spaghetti and Meatballs"
+- "Make tacos for dinner" -> "Tacos"
+
+Respond with JSON: { "mealName": "Chicken and Rice", "dayMentioned": "Tuesday" }`;
+
+    let simpleMealName = "My Own Recipe";
+    let dayMentioned = "";
+    
+    try {
+      const simpleResponse = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: simpleMealPrompt }],
+        response_format: { type: "json_object" },
+      });
+      const simpleResult = JSON.parse(simpleResponse.choices[0].message.content || "{}");
+      simpleMealName = simpleResult.mealName || "My Own Recipe";
+      dayMentioned = simpleResult.dayMentioned || "";
+    } catch (e) {
+      console.error("Simple meal extraction error:", e);
+    }
+    
     const mealPrompt = `This is a request for meal suggestions. Please provide specific meal ideas based on this voice input:
 "${voiceInput}"
 
@@ -600,21 +627,36 @@ Respond with JSON: {
       });
 
       const result = JSON.parse(response.choices[0].message.content || "{}");
+      
+      // Create the simple "use my own recipe" option as the first choice
+      const simpleMealOption = {
+        title: simpleMealName + (dayMentioned ? ` for ${dayMentioned}` : ""),
+        description: "Use my own recipe - no AI suggestions",
+        type: "meal",
+        priority: "medium",
+        isSimple: true
+      };
+      
+      // Prepend the simple option to the AI suggestions
+      const allTasks = [simpleMealOption, ...(result.tasks || [])];
+      
       return {
-        tasks: result.tasks || [],
-        interpretation: result.interpretation || "Here are some meal suggestions for you!"
+        tasks: allTasks,
+        interpretation: `Choose "${simpleMealName}" to use your own recipe, or pick a suggested recipe below!`
       };
     } catch (error) {
       console.error("Meal suggestion error:", error);
       return {
         tasks: [
           {
-            title: "Chicken and Rice Stir-Fry",
-            description: "Quick chicken and rice dish with vegetables",
-            priority: "medium"
+            title: simpleMealName + (dayMentioned ? ` for ${dayMentioned}` : ""),
+            description: "Use my own recipe",
+            type: "meal",
+            priority: "medium",
+            isSimple: true
           }
         ],
-        interpretation: "I suggest a chicken and rice stir-fry - it's quick and family-friendly!"
+        interpretation: `I'll add "${simpleMealName}" to your meal plan - you can use your own recipe!`
       };
     }
   }

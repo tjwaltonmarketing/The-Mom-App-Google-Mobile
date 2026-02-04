@@ -30,6 +30,7 @@ interface SmartAction {
   assigneeName?: string;
   points?: number;
   priority?: string;
+  isSimple?: boolean;
 }
 
 interface FamilyMember {
@@ -337,12 +338,12 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
               </div>
               <div className="space-y-3">
                 {smartActions.map((action, index) => (
-                  <div key={index} className="bg-white rounded-lg p-3 border">
+                  <div key={index} className={`rounded-lg p-3 border ${action.isSimple ? 'bg-blue-50 border-blue-200' : 'bg-white'}`}>
                     <div className="flex items-start space-x-3">
                       {action.type === "task" ? (
                         <CheckSquare className="h-4 w-4 text-blue-500 mt-1" />
                       ) : action.type === "meal" ? (
-                        <Utensils className="h-4 w-4 text-green-500 mt-1" />
+                        <Utensils className={`h-4 w-4 mt-1 ${action.isSimple ? 'text-blue-500' : 'text-green-500'}`} />
                       ) : action.type === "grocery" ? (
                         <ShoppingCart className="h-4 w-4 text-orange-500 mt-1" />
                       ) : (
@@ -351,12 +352,15 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
                           <p className="font-medium text-sm">{action.title}</p>
-                          <Badge variant="outline" className="text-xs">
-                            {action.type}
+                          <Badge variant="outline" className={`text-xs ${action.isSimple ? 'bg-blue-100 text-blue-700 border-blue-300' : ''}`}>
+                            {action.isSimple ? 'my recipe' : action.type}
                           </Badge>
                         </div>
-                        {action.description && (
+                        {action.description && !action.isSimple && (
                           <p className="text-xs text-gray-600 mb-2">{action.description}</p>
+                        )}
+                        {action.isSimple && (
+                          <p className="text-xs text-blue-600 mb-2">Use your own recipe - just add to meal plan</p>
                         )}
                         
                         {action.type === "task" && (
