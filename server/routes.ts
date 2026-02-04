@@ -4451,37 +4451,68 @@ export async function registerRoutes(app: Express) {
             } else if (action.type === "create_meal" && action.data) {
               // Normalize day to lowercase for consistency with meal planning component
               const normalizedDay = (action.data.day || "monday").toLowerCase();
-              // Parse ingredients - can be comma-separated string or array
-              let ingredients: string[] = [];
-              if (action.data.ingredients) {
-                if (typeof action.data.ingredients === 'string') {
-                  ingredients = action.data.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i);
-                } else if (Array.isArray(action.data.ingredients)) {
-                  ingredients = action.data.ingredients;
+              const capitalizedDay = normalizedDay.charAt(0).toUpperCase() + normalizedDay.slice(1);
+              const mealType = action.data.mealType || "dinner";
+              
+              // Check for duplicate meal (same name, day, and meal type created recently)
+              const existingMeals = await storage.getMealPlansByFamily(familyId);
+              const isDuplicate = existingMeals.some((m: any) => 
+                m.meal === action.data.meal && 
+                m.day === capitalizedDay && 
+                m.mealType === mealType &&
+                new Date(m.createdAt).getTime() > Date.now() - 60000 // Created within last minute
+              );
+              
+              if (isDuplicate) {
+                console.log("AI skipped duplicate meal:", action.data.meal);
+                action.executed = true;
+              } else {
+                // Parse ingredients - can be comma-separated string or array
+                let ingredients: string[] = [];
+                if (action.data.ingredients) {
+                  if (typeof action.data.ingredients === 'string') {
+                    ingredients = action.data.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i);
+                  } else if (Array.isArray(action.data.ingredients)) {
+                    ingredients = action.data.ingredients;
+                  }
                 }
+                const mealData = {
+                  meal: action.data.meal,
+                  day: capitalizedDay,
+                  mealType: mealType,
+                  ingredients: ingredients,
+                  notes: action.data.notes || "",
+                  createdBy: familyMember?.id || null,
+                };
+                await storage.createMealPlan(mealData);
+                action.executed = true;
+                console.log("AI created meal plan:", mealData);
               }
-              const mealData = {
-                meal: action.data.meal,
-                day: normalizedDay.charAt(0).toUpperCase() + normalizedDay.slice(1), // Capitalize first letter
-                mealType: action.data.mealType || "dinner",
-                ingredients: ingredients,
-                notes: action.data.notes || "",
-                createdBy: familyMember?.id || null,
-              };
-              await storage.createMealPlan(mealData);
-              action.executed = true;
-              console.log("AI created meal plan:", mealData);
             } else if (action.type === "create_grocery" && action.data) {
-              const groceryData = {
-                item: action.data.name || action.data.item,
-                category: action.data.category || "other",
-                quantity: action.data.quantity || "1",
-                isCompleted: false,
-                addedBy: familyMember?.id || null,
-              };
-              await storage.createGroceryItem(groceryData);
-              action.executed = true;
-              console.log("AI created grocery item:", groceryData);
+              const itemName = action.data.name || action.data.item;
+              
+              // Check for duplicate grocery item (same name created recently)
+              const existingItems = await storage.getGroceryItemsByFamily(familyId);
+              const isDuplicate = existingItems.some((g: any) => 
+                g.item.toLowerCase() === itemName.toLowerCase() &&
+                new Date(g.createdAt).getTime() > Date.now() - 60000 // Created within last minute
+              );
+              
+              if (isDuplicate) {
+                console.log("AI skipped duplicate grocery:", itemName);
+                action.executed = true;
+              } else {
+                const groceryData = {
+                  item: itemName,
+                  category: action.data.category || "other",
+                  quantity: action.data.quantity || "1",
+                  isCompleted: false,
+                  addedBy: familyMember?.id || null,
+                };
+                await storage.createGroceryItem(groceryData);
+                action.executed = true;
+                console.log("AI created grocery item:", groceryData);
+              }
             }
           } catch (actionError) {
             console.error("Failed to execute action:", action.type, actionError);
@@ -4579,37 +4610,68 @@ export async function registerRoutes(app: Express) {
               action.executed = true;
             } else if (action.type === "create_meal" && action.data) {
               const normalizedDay = (action.data.day || "monday").toLowerCase();
-              // Parse ingredients - can be comma-separated string or array
-              let ingredients: string[] = [];
-              if (action.data.ingredients) {
-                if (typeof action.data.ingredients === 'string') {
-                  ingredients = action.data.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i);
-                } else if (Array.isArray(action.data.ingredients)) {
-                  ingredients = action.data.ingredients;
+              const capitalizedDay = normalizedDay.charAt(0).toUpperCase() + normalizedDay.slice(1);
+              const mealType = action.data.mealType || "dinner";
+              
+              // Check for duplicate meal (same name, day, and meal type created recently)
+              const existingMeals = await storage.getMealPlansByFamily(familyId);
+              const isDuplicate = existingMeals.some((m: any) => 
+                m.meal === action.data.meal && 
+                m.day === capitalizedDay && 
+                m.mealType === mealType &&
+                new Date(m.createdAt).getTime() > Date.now() - 60000 // Created within last minute
+              );
+              
+              if (isDuplicate) {
+                console.log("Voice AI skipped duplicate meal:", action.data.meal);
+                action.executed = true;
+              } else {
+                // Parse ingredients - can be comma-separated string or array
+                let ingredients: string[] = [];
+                if (action.data.ingredients) {
+                  if (typeof action.data.ingredients === 'string') {
+                    ingredients = action.data.ingredients.split(',').map((i: string) => i.trim()).filter((i: string) => i);
+                  } else if (Array.isArray(action.data.ingredients)) {
+                    ingredients = action.data.ingredients;
+                  }
                 }
+                const mealData = {
+                  meal: action.data.meal,
+                  day: capitalizedDay,
+                  mealType: mealType,
+                  ingredients: ingredients,
+                  notes: action.data.notes || "",
+                  createdBy: familyMember?.id || null,
+                };
+                await storage.createMealPlan(mealData);
+                action.executed = true;
+                console.log("Voice AI created meal plan:", mealData);
               }
-              const mealData = {
-                meal: action.data.meal,
-                day: normalizedDay.charAt(0).toUpperCase() + normalizedDay.slice(1),
-                mealType: action.data.mealType || "dinner",
-                ingredients: ingredients,
-                notes: action.data.notes || "",
-                createdBy: familyMember?.id || null,
-              };
-              await storage.createMealPlan(mealData);
-              action.executed = true;
-              console.log("Voice AI created meal plan:", mealData);
             } else if (action.type === "create_grocery" && action.data) {
-              const groceryData = {
-                item: action.data.name || action.data.item,
-                category: action.data.category || "other",
-                quantity: action.data.quantity || "1",
-                isCompleted: false,
-                addedBy: familyMember?.id || null,
-              };
-              await storage.createGroceryItem(groceryData);
-              action.executed = true;
-              console.log("Voice AI created grocery item:", groceryData);
+              const itemName = action.data.name || action.data.item;
+              
+              // Check for duplicate grocery item (same name created recently)
+              const existingItems = await storage.getGroceryItemsByFamily(familyId);
+              const isDuplicate = existingItems.some((g: any) => 
+                g.item.toLowerCase() === itemName.toLowerCase() &&
+                new Date(g.createdAt).getTime() > Date.now() - 60000 // Created within last minute
+              );
+              
+              if (isDuplicate) {
+                console.log("Voice AI skipped duplicate grocery:", itemName);
+                action.executed = true;
+              } else {
+                const groceryData = {
+                  item: itemName,
+                  category: action.data.category || "other",
+                  quantity: action.data.quantity || "1",
+                  isCompleted: false,
+                  addedBy: familyMember?.id || null,
+                };
+                await storage.createGroceryItem(groceryData);
+                action.executed = true;
+                console.log("Voice AI created grocery item:", groceryData);
+              }
             }
           } catch (actionError) {
             console.error("Voice command failed to execute action:", action.type, actionError);
