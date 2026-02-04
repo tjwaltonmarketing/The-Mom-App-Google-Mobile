@@ -4399,7 +4399,8 @@ export async function registerRoutes(app: Express) {
       }
       
       if (result.actions && result.actions.length > 0 && familyId) {
-        for (const action of result.actions) {
+        // Execute all actions in parallel for faster performance
+        await Promise.all(result.actions.map(async (action) => {
           console.log("AI Chat - Executing action:", action.type, action.data?.title || action.data?.meal || "");
           try {
             if (action.type === "create_event" && action.data) {
@@ -4486,7 +4487,7 @@ export async function registerRoutes(app: Express) {
             console.error("Failed to execute action:", action.type, actionError);
             action.executed = false;
           }
-        }
+        }));
       }
 
       res.json(result);
@@ -4527,9 +4528,9 @@ export async function registerRoutes(app: Express) {
       const { processAIChatWithActions } = await import("./ai");
       const result = await processAIChatWithActions(message, familyMembers, familyId, req.session.userId!);
 
-      // Execute any detected actions
+      // Execute any detected actions in parallel for faster performance
       if (result.actions && result.actions.length > 0 && familyId) {
-        for (const action of result.actions) {
+        await Promise.all(result.actions.map(async (action) => {
           try {
             if (action.type === "create_event" && action.data) {
               const eventData = {
@@ -4614,7 +4615,7 @@ export async function registerRoutes(app: Express) {
             console.error("Voice command failed to execute action:", action.type, actionError);
             action.executed = false;
           }
-        }
+        }));
       }
 
       res.json(result);

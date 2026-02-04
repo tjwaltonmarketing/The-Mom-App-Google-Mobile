@@ -56,7 +56,7 @@ export async function apiRequest(
       const fullUrl = getApiUrl(url);
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for bulk operations
       
       const res = await fetch(fullUrl, {
         method,
