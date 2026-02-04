@@ -241,19 +241,19 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
                   onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
                   className="mt-0.5"
                 />
-                <label htmlFor="terms" className="text-xs text-gray-600 leading-tight cursor-pointer">
+                <label htmlFor="terms" className="text-sm text-gray-700 leading-snug cursor-pointer">
                   I agree to the{" "}
-                  <a href="/terms" target="_blank" className="text-pink-500 underline hover:text-pink-600">
+                  <a href="/terms" target="_blank" className="text-pink-500 underline hover:text-pink-600 font-medium">
                     Terms of Service
                   </a>{" "}
                   and{" "}
-                  <a href="/privacy" target="_blank" className="text-pink-500 underline hover:text-pink-600">
+                  <a href="/privacy" target="_blank" className="text-pink-500 underline hover:text-pink-600 font-medium">
                     Privacy Policy
                   </a>
                 </label>
               </div>
 
-              <p className="text-xs text-gray-500 italic">
+              <p className="text-sm text-gray-600 italic mt-1">
                 Cancel anytime. No guilt. No pressure.
               </p>
             </div>
