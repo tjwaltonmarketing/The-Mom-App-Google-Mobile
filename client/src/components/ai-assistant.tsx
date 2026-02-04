@@ -124,11 +124,9 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
 
   const quickPrompts = [
     "Help me plan meals for this week",
-    "How do I sync my Google Calendar?",
+    "Create a reminder for tomorrow at 3pm",
     "What tasks should I assign to the kids?",
-    "How do I use the password vault?",
-    "Why aren't my voice notes working?",
-    "How do I set up notifications?"
+    "Add milk and eggs to my grocery list"
   ];
 
   return (

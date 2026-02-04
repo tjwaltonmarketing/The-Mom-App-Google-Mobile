@@ -57,9 +57,9 @@ export default function AIAssistantPage() {
                   <div className="flex items-start gap-3">
                     <Clock className="text-green-500 mt-1" size={16} />
                     <div>
-                      <h4 className="font-medium text-sm">App Support</h4>
+                      <h4 className="font-medium text-sm">Meal Planning</h4>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
-                        "How do I sync my Google Calendar?"
+                        "Give me 5 easy dinner ideas for this week"
                       </p>
                     </div>
                   </div>
@@ -67,9 +67,9 @@ export default function AIAssistantPage() {
                   <div className="flex items-start gap-3">
                     <Bot className="text-purple-500 mt-1" size={16} />
                     <div>
-                      <h4 className="font-medium text-sm">Troubleshooting</h4>
+                      <h4 className="font-medium text-sm">Grocery List</h4>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
-                        "Why aren't my voice notes working?"
+                        "Add milk, bread, and eggs to my shopping list"
                       </p>
                     </div>
                   </div>
