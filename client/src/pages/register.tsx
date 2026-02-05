@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Eye, EyeOff, Users } from "lucide-react";
@@ -33,6 +34,7 @@ export default function Register() {
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   
   // Get invite params from URL
   const searchString = useSearch();
@@ -260,10 +262,29 @@ export default function Register() {
                 />
               )}
 
+              <div className="flex items-start gap-3 py-2">
+                <Checkbox
+                  id="register-terms"
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
+                  className="mt-0.5"
+                />
+                <label htmlFor="register-terms" className="text-sm text-gray-700 leading-snug cursor-pointer">
+                  I agree to the{" "}
+                  <a href="/terms" target="_blank" className="text-pink-500 underline hover:text-pink-600 font-medium">
+                    Terms of Service
+                  </a>{" "}
+                  and{" "}
+                  <a href="/privacy" target="_blank" className="text-pink-500 underline hover:text-pink-600 font-medium">
+                    Privacy Policy
+                  </a>
+                </label>
+              </div>
+
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={registerMutation.isPending}
+                disabled={registerMutation.isPending || !agreedToTerms}
               >
                 {registerMutation.isPending ? "Creating Account..." : "Create Account"}
               </Button>
