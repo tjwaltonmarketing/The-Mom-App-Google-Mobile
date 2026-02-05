@@ -54,6 +54,31 @@ jobs:
         rm -rf android/app/build
         rm -rf android/build
         
+    - name: Set correct app icon
+      run: |
+        # Copy The Mom App icon to all density folders
+        for density in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+          cp resources/android/themomappicon.png android/app/src/main/res/mipmap-${density}/themomappicon.png
+        done
+        
+        # Remove adaptive icon folder so Android uses the direct PNG
+        rm -rf android/app/src/main/res/mipmap-anydpi-v26
+        
+        # Update AndroidManifest.xml to use the correct icon
+        sed -i 's|android:icon="@mipmap/ic_launcher"|android:icon="@mipmap/themomappicon"|' android/app/src/main/AndroidManifest.xml
+        sed -i 's|android:roundIcon="@mipmap/ic_launcher_round"|android:roundIcon="@mipmap/themomappicon"|' android/app/src/main/AndroidManifest.xml
+        
+        echo "App icon configured successfully"
+        
+    - name: Add microphone permission to manifest
+      run: |
+        # Add RECORD_AUDIO and MODIFY_AUDIO_SETTINGS permissions if not already present
+        cd android/app/src/main
+        if ! grep -q "RECORD_AUDIO" AndroidManifest.xml; then
+          sed -i '/<uses-permission android:name="android.permission.INTERNET"/a\    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' AndroidManifest.xml
+        fi
+        echo "Microphone permissions configured"
+        
     - name: Set version code and name
       run: |
         cd android
