@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Check, ChevronRight, ChevronLeft, Mic } from "lucide-react";
 import onboardingSlide1 from "@/assets/images/onboarding-slide-1.png";
 import onboardingSlide2 from "@/assets/images/onboarding-slide-2.png";
@@ -70,8 +69,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState<"individual" | "family">("family");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-
+  
   const slide = slides[currentSlide];
   const isLastSlide = currentSlide === slides.length - 1;
 
@@ -234,26 +232,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
                 </Card>
               </div>
 
-              <div className="flex items-start space-x-2 mt-4">
-                <Checkbox
-                  id="terms"
-                  checked={agreedToTerms}
-                  onCheckedChange={(checked) => setAgreedToTerms(checked === true)}
-                  className="mt-0.5"
-                />
-                <label htmlFor="terms" className="text-sm text-gray-700 leading-snug cursor-pointer">
-                  I agree to the{" "}
-                  <a href="/terms" target="_blank" className="text-pink-500 underline hover:text-pink-600 font-medium">
-                    Terms of Service
-                  </a>{" "}
-                  and{" "}
-                  <a href="/privacy" target="_blank" className="text-pink-500 underline hover:text-pink-600 font-medium">
-                    Privacy Policy
-                  </a>
-                </label>
-              </div>
-
-              <p className="text-sm text-gray-600 italic mt-1">
+              <p className="text-sm text-gray-600 italic mt-4">
                 Cancel anytime. No guilt. No pressure.
               </p>
             </div>
@@ -274,7 +253,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
 
           <Button
             onClick={handleNext}
-            disabled={isLoading || (isLastSlide && !agreedToTerms)}
+            disabled={isLoading}
             className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg disabled:opacity-50"
           >
             {isLoading ? "STARTING YOUR TRIAL..." : isLastSlide ? "START MY 14-DAY FREE TRIAL" : slide.cta}
