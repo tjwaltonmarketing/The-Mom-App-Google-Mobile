@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
+import { SpeechRecognition } from "@capacitor-community/speech-recognition";
 
 interface UseVoiceRecordingOptions {
   onTranscript: (transcript: string) => void;
@@ -11,22 +12,25 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
   const [permissionStatus, setPermissionStatus] = useState<'unknown' | 'granted' | 'denied'>('unknown');
   const recognitionRef = useRef<any>(null);
   const fullTranscriptRef = useRef<string>("");
+  const isNativeRef = useRef(Capacitor.isNativePlatform());
 
   const requestMicrophonePermission = useCallback(async (): Promise<boolean> => {
     try {
-      // On native platforms, we need to explicitly request permission
-      if (Capacitor.isNativePlatform()) {
-        // For Capacitor, try to get user media which triggers native permission dialog
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          stream.getTracks().forEach(track => track.stop());
+      if (isNativeRef.current) {
+        const { speechRecognition } = await SpeechRecognition.checkPermissions();
+        
+        if (speechRecognition === 'granted') {
           setPermissionStatus('granted');
           return true;
-        } catch (nativeError: any) {
-          console.error('Native microphone permission error:', nativeError);
+        }
+        
+        const result = await SpeechRecognition.requestPermissions();
+        
+        if (result.speechRecognition === 'granted') {
+          setPermissionStatus('granted');
+          return true;
+        } else {
           setPermissionStatus('denied');
-          
-          // On native, provide more specific guidance
           const isAndroid = Capacitor.getPlatform() === 'android';
           const settingsPath = isAndroid 
             ? 'Go to Settings > Apps > The Mom App > Permissions > Microphone'
@@ -37,7 +41,6 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
         }
       }
       
-      // Web browser permission request
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach(track => track.stop());
       setPermissionStatus('granted');
@@ -58,22 +61,46 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
   }, [onError]);
 
   const startRecording = useCallback(async () => {
-    // Check for Speech Recognition support
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      console.warn("Speech recognition not supported in this browser");
-      onError?.('Voice recognition is not supported on this device. Please try using a different browser or device.');
-      return;
-    }
-
-    // Request microphone permission first
     const hasPermission = await requestMicrophonePermission();
     if (!hasPermission) {
       return;
     }
 
     try {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
+      if (isNativeRef.current) {
+        const available = await SpeechRecognition.available();
+        if (!available.available) {
+          onError?.('Voice recognition is not available on this device.');
+          return;
+        }
+
+        fullTranscriptRef.current = "";
+        setIsRecording(true);
+
+        await SpeechRecognition.start({
+          language: "en-US",
+          partialResults: true,
+          popup: false,
+        });
+
+        SpeechRecognition.addListener("partialResults", (data: any) => {
+          if (data.matches && data.matches.length > 0) {
+            const transcript = data.matches[0];
+            fullTranscriptRef.current = transcript;
+            onTranscript(transcript);
+          }
+        });
+
+        return;
+      }
+
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        onError?.('Voice recognition is not supported on this device. Please try using a different browser or device.');
+        return;
+      }
+
+      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognitionAPI();
       
       recognition.continuous = true;
       recognition.interimResults = true;
@@ -88,19 +115,15 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
       recognition.onresult = (event: any) => {
         let interimTranscript = '';
         
-        // Only process new results starting from resultIndex to avoid repetition
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            // Add final results to our accumulated transcript
             fullTranscriptRef.current += transcript + ' ';
           } else {
-            // Collect interim results for live preview
             interimTranscript += transcript;
           }
         }
         
-        // Send current complete transcript (final + interim for live preview)
         const currentTranscript = fullTranscriptRef.current + interimTranscript;
         if (currentTranscript.trim()) {
           onTranscript(currentTranscript.trim());
@@ -111,7 +134,6 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
         console.error('Speech recognition error:', event.error);
         setIsRecording(false);
         
-        // Provide user-friendly error messages
         switch (event.error) {
           case 'not-allowed':
             onError?.('Microphone access was denied. Please enable microphone permissions and try again.');
@@ -132,7 +154,6 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
 
       recognition.onend = () => {
         setIsRecording(false);
-        // Send final complete transcript
         if (fullTranscriptRef.current.trim()) {
           onTranscript(fullTranscriptRef.current.trim());
         }
@@ -147,8 +168,15 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
     }
   }, [onTranscript, onError, requestMicrophonePermission]);
 
-  const stopRecording = useCallback(() => {
-    if (recognitionRef.current) {
+  const stopRecording = useCallback(async () => {
+    if (isNativeRef.current) {
+      try {
+        await SpeechRecognition.stop();
+        SpeechRecognition.removeAllListeners();
+      } catch (error) {
+        console.error('Error stopping speech recognition:', error);
+      }
+    } else if (recognitionRef.current) {
       recognitionRef.current.stop();
     }
     setIsRecording(false);
@@ -162,7 +190,6 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
   };
 }
 
-// Extend Window interface for TypeScript
 declare global {
   interface Window {
     SpeechRecognition: any;
