@@ -143,7 +143,15 @@ export function SmartVoiceAssistant() {
 
   const stopListening = () => {
     if (recognitionRef.current) {
-      recognitionRef.current.stop();
+      try {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.abort();
+      } catch (e) {
+        try { recognitionRef.current.stop(); } catch (e2) {}
+      }
+      recognitionRef.current = null;
     }
     setIsListening(false);
   };

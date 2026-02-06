@@ -177,7 +177,19 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
         console.error('Error stopping speech recognition:', error);
       }
     } else if (recognitionRef.current) {
-      recognitionRef.current.stop();
+      try {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.abort();
+      } catch (e) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e2) {
+          console.error('Error stopping speech recognition:', e2);
+        }
+      }
+      recognitionRef.current = null;
     }
     setIsRecording(false);
   }, []);

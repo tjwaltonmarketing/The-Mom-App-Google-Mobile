@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/useAuth";
 import { SplashScreen } from "@/components/splash-screen";
 import { ThemeProvider } from "@/components/theme-provider";
+import { PullToRefreshIndicator } from "@/components/pull-to-refresh-indicator";
 
 // Pages
 import Login from "@/pages/login";
@@ -271,6 +272,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
+        <PullToRefreshIndicator />
         <Router />
         <Toaster />
       </ThemeProvider>

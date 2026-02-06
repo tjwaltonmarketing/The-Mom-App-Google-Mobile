@@ -4536,7 +4536,7 @@ export async function registerRoutes(app: Express) {
                 allDay: action.data.allDay || false,
                 privacyType: "shared" as const,
                 familyId: familyId,
-                createdBy: req.session.userId!,
+                createdBy: familyMember!.id,
                 createdAt: new Date(),
                 assignedTo: action.data.assignedTo || null,
                 recurrence: null,
@@ -4553,7 +4553,7 @@ export async function registerRoutes(app: Express) {
                 priority: action.data.priority || "medium",
                 dueDate: action.data.dueDate ? new Date(action.data.dueDate) : null,
                 familyId: familyId,
-                createdBy: req.session.userId!,
+                createdBy: familyMember!.id,
                 assignedTo: action.data.assignedTo || null,
                 isRecurring: false,
                 recurrencePattern: null,
@@ -4567,7 +4567,7 @@ export async function registerRoutes(app: Express) {
                 content: action.data.content,
                 transcription: action.data.content,
                 familyId: familyId,
-                createdBy: req.session.userId!,
+                createdBy: familyMember!.id,
                 createdAt: new Date(),
               };
               await storage.createVoiceNote(noteData);
@@ -4696,7 +4696,7 @@ export async function registerRoutes(app: Express) {
                 allDay: action.data.allDay || false,
                 privacyType: "shared" as const,
                 familyId: familyId,
-                createdBy: req.session.userId!,
+                createdBy: familyMember!.id,
                 createdAt: new Date(),
                 assignedTo: action.data.assignedTo || null,
                 recurrence: null,
@@ -4713,7 +4713,7 @@ export async function registerRoutes(app: Express) {
                 priority: action.data.priority || "medium",
                 dueDate: action.data.dueDate ? new Date(action.data.dueDate) : null,
                 familyId: familyId,
-                createdBy: req.session.userId!,
+                createdBy: familyMember!.id,
                 assignedTo: action.data.assignedTo || null,
                 isRecurring: false,
                 recurrencePattern: null,
@@ -4727,7 +4727,7 @@ export async function registerRoutes(app: Express) {
                 content: action.data.content,
                 transcription: action.data.content,
                 familyId: familyId,
-                createdBy: req.session.userId!,
+                createdBy: familyMember!.id,
                 createdAt: new Date(),
               };
               await storage.createVoiceNote(noteData);
