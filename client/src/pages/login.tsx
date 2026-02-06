@@ -214,7 +214,7 @@ export default function Login() {
           
         </CardHeader>
         <CardContent>
-          {/* Google Sign-In */}
+          {/* Google Sign-In - hidden until Google OAuth origins are configured
           {googleClientId && (
             <>
               <div ref={googleButtonRef} className={`w-full mb-4 ${gsiLoaded ? '' : 'hidden'}`} />
@@ -254,6 +254,7 @@ export default function Login() {
               </div>
             </>
           )}
+          */}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
