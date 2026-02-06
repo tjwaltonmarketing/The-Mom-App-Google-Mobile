@@ -38,7 +38,8 @@ export function FeedbackPromptModal() {
 
   const handleYes = () => {
     respondMutation.mutate({ response: "yes" });
-    setStep("positive");
+    setStep("thanks");
+    setTimeout(() => setIsOpen(false), 2000);
   };
 
   const handleNo = () => {
