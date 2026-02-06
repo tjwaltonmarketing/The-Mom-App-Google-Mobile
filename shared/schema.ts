@@ -12,7 +12,8 @@ export const users = pgTable("users", {
   lastName: varchar("last_name", { length: 100 }),
   profileImageUrl: varchar("profile_image_url", { length: 500 }), // Add for Replit Auth
   replitUserId: varchar("replit_user_id", { length: 255 }).unique(), // Link to Replit Auth
-  authMethod: varchar("auth_method", { length: 50 }).default("email"), // "email", "replit"
+  googleId: varchar("google_id", { length: 255 }).unique(), // Link to Google OAuth
+  authMethod: varchar("auth_method", { length: 50 }).default("email"), // "email", "replit", "google"
   isVerified: boolean("is_verified").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

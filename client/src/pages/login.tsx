@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,12 +29,83 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showSplash, setShowSplash] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   // Force light mode on login page
   useEffect(() => {
     document.documentElement.classList.remove('dark', 'blue-light-filter');
     localStorage.setItem('mom-app-theme', 'light');
   }, []);
+
+  // Fetch Google Client ID
+  const { data: googleConfig } = useQuery({
+    queryKey: ["/api/config/google-client-id"],
+  });
+  const googleClientId = (googleConfig as any)?.clientId;
+
+  // Google Sign-In mutation
+  const googleLoginMutation = useMutation({
+    mutationFn: async (credential: string) => {
+      const response = await apiRequest("POST", "/api/auth/google", { credential });
+      return await response.json();
+    },
+    onSuccess: (data: any) => {
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
+      if (data.user) {
+        queryClient.setQueryData(["/api/auth/user"], data.user);
+        queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+        setShowSplash(true);
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Google Sign-In Failed",
+        description: error.message || "Could not sign in with Google. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleGoogleCallback = useCallback((response: any) => {
+    if (response.credential) {
+      googleLoginMutation.mutate(response.credential);
+    }
+  }, [googleLoginMutation]);
+
+  // Load Google Identity Services script and render button
+  useEffect(() => {
+    if (!googleClientId) return;
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      if (window.google && googleButtonRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: handleGoogleCallback,
+        });
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: 'outline',
+          size: 'large',
+          width: googleButtonRef.current.offsetWidth,
+          text: 'signin_with',
+          shape: 'rectangular',
+        });
+      }
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
+    };
+  }, [googleClientId, handleGoogleCallback]);
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -115,7 +186,20 @@ export default function Login() {
           
         </CardHeader>
         <CardContent>
-          {/* Social login options hidden - can be restored later when needed */}
+          {/* Google Sign-In */}
+          {googleClientId && (
+            <>
+              <div ref={googleButtonRef} className="w-full mb-4" />
+              <div className="relative mb-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-gray-500">Or sign in with email</span>
+                </div>
+              </div>
+            </>
+          )}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField

@@ -118,6 +118,9 @@ export interface IStorage {
     authMethod: string;
   }): Promise<User>;
   
+  // Google Auth Methods
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
+  
   // Trial and Subscription Management
   initializeUserTrial(userId: number): Promise<User | undefined>;
   getUserTrialStatus(userId: number): Promise<{ isActive: boolean; daysRemaining: number; expiresAt: Date | null }>;
@@ -501,6 +504,11 @@ export class DatabaseStorage implements IStorage {
       isVerified: true, // Replit Auth users are pre-verified
     }).returning();
     return user;
+  }
+
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
+    return user || undefined;
   }
 
   async createPasswordResetToken(insertToken: InsertPasswordResetToken): Promise<PasswordResetToken> {

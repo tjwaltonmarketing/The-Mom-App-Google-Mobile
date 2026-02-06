@@ -13,6 +13,7 @@ import bcrypt from "bcryptjs";
 import { createCheckoutSession, handleWebhookEvent, stripe, initializeStripeProducts } from "./stripe";
 import { emailService } from "./email-service";
 import { notificationService } from "./notification-service";
+import { OAuth2Client } from "google-auth-library";
 
 const storage = new DatabaseStorage();
 
@@ -46,6 +47,11 @@ export async function registerRoutes(app: Express) {
   // Placeholder for API routes
   app.get("/api/test", (req, res) => {
     res.json({ message: "API is working" });
+  });
+
+  // Public config endpoint (non-sensitive values only)
+  app.get("/api/config/google-client-id", (req, res) => {
+    res.json({ clientId: process.env.GOOGLE_CLIENT_ID || "" });
   });
 
   // Weather API endpoint
@@ -257,6 +263,124 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Parent login error:", error);
       res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // Google Sign-In
+  app.post("/api/auth/google", async (req, res) => {
+    try {
+      const { credential } = req.body;
+      if (!credential) {
+        return res.status(400).json({ error: "Google credential is required" });
+      }
+
+      const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        return res.status(400).json({ error: "Invalid Google token" });
+      }
+
+      const { sub: googleId, email, given_name: firstName, family_name: lastName, picture: profileImageUrl } = payload;
+
+      // Check if user exists by Google ID
+      let user = await storage.getUserByGoogleId(googleId!);
+
+      if (!user) {
+        // Check if user exists by email (they registered with email/password before)
+        user = await storage.getUserByEmail(email.toLowerCase());
+        if (user) {
+          // Link Google account to existing user
+          await db.execute(sql`UPDATE users SET google_id = ${googleId}, auth_method = 'google', profile_image_url = COALESCE(profile_image_url, ${profileImageUrl}), is_verified = true WHERE id = ${user.id}`);
+          user = await storage.getUserById(user.id);
+        } else {
+          // Create new user with Google account
+          user = await storage.createUser({
+            email: email.toLowerCase(),
+            googleId: googleId!,
+            firstName: firstName || null,
+            lastName: lastName || null,
+            profileImageUrl: profileImageUrl || null,
+            authMethod: 'google',
+            isVerified: true,
+          });
+
+          // Create a family for the new user
+          const family = await storage.createFamily({
+            name: `${firstName || 'My'}'s Family`,
+            ownerId: user.id
+          });
+
+          // Create family member
+          await storage.createFamilyMember({
+            userId: user.id,
+            familyId: family.id,
+            name: `${firstName || ''} ${lastName || ''}`.trim(),
+            role: 'parent',
+            color: '#EC4899',
+            avatar: (firstName || 'U').charAt(0).toUpperCase(),
+            notificationPreference: 'sms',
+            canLogin: true,
+            isActive: true
+          });
+
+          // Create family membership
+          await storage.createFamilyMembership({
+            userId: user.id,
+            familyId: family.id,
+            role: 'owner'
+          });
+
+          // Send admin notification
+          const adminPhone = process.env.ADMIN_PHONE_NUMBER;
+          if (adminPhone) {
+            try {
+              await sendSMS(
+                adminPhone,
+                `🎉 New Mom App signup (Google)!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nTime: ${new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}`
+              );
+            } catch (smsError) {
+              console.error("Failed to send admin signup notification:", smsError);
+            }
+          }
+        }
+      }
+
+      if (!user) {
+        return res.status(500).json({ error: "Failed to create or find user" });
+      }
+
+      // Set session
+      req.session.userId = user.id;
+      delete req.session.teenId;
+
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+
+      const token = generateToken(user.id);
+
+      res.json({
+        success: true,
+        token,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          profileImageUrl: user.profileImageUrl,
+          isVerified: user.isVerified
+        }
+      });
+    } catch (error) {
+      console.error("Google auth error:", error);
+      res.status(500).json({ error: "Google authentication failed" });
     }
   });
 
