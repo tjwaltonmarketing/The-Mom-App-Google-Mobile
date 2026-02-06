@@ -278,7 +278,7 @@ export default function TeenPasswords() {
               <Plus className="h-4 w-4" />
               Add
             </Button>
-            <Badge variant="secondary" className="flex items-center gap-1">
+            <Badge variant="secondary" className="flex items-center gap-1 dark:bg-green-900 dark:text-green-200">
               <Shield className="h-3 w-3" />
               Secure
             </Badge>
