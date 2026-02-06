@@ -302,7 +302,7 @@ export default function TeenProfile() {
                 <div className="flex-1 space-y-4">
                   <div>
                     <Label>Change Profile Picture</Label>
-                    <p className="text-sm text-gray-600 mb-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                       Upload a new photo to personalize your profile. JPG, PNG, or GIF up to 5MB.
                     </p>
                     
@@ -345,8 +345,8 @@ export default function TeenProfile() {
                     </div>
                   </div>
                   
-                  <div className="bg-blue-50 p-3 rounded-lg">
-                    <p className="text-sm text-blue-700">
+                  <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
                       <strong>Tip:</strong> Choose a clear photo where your face is visible. 
                       This helps family members recognize you in the app!
                     </p>
@@ -383,7 +383,7 @@ export default function TeenProfile() {
                   <Input value={teenProfile?.family?.name || ""} disabled />
                 </div>
               </div>
-              <p className="text-sm text-gray-500 mt-3">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">
                 Contact your family admin to update basic information.
               </p>
             </CardContent>
@@ -450,8 +450,8 @@ export default function TeenProfile() {
                   </Button>
                 </div>
 
-                <div className="bg-amber-50 p-3 rounded-lg">
-                  <p className="text-sm text-amber-700">
+                <div className="bg-amber-50 dark:bg-amber-950 p-3 rounded-lg">
+                  <p className="text-sm text-amber-700 dark:text-amber-300">
                     <strong>Tip:</strong> Dark mode is great for evening use. 
                     It helps reduce eye strain and is easier on your eyes at night.
                   </p>
@@ -467,7 +467,7 @@ export default function TeenProfile() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-400">
                   New to the app or want to learn about all the cool features? 
                   Check out our kid-friendly tutorial!
                 </p>
@@ -481,8 +481,8 @@ export default function TeenProfile() {
                   View Interactive Tutorial
                 </Button>
                 
-                <div className="bg-purple-50 p-3 rounded-lg">
-                  <p className="text-sm text-purple-700">
+                <div className="bg-purple-50 dark:bg-purple-950 p-3 rounded-lg">
+                  <p className="text-sm text-purple-700 dark:text-purple-300">
                     <strong>Quick Tour:</strong> Learn how to use dark mode, 
                     notifications, calendar, points system, and more in just a few minutes!
                   </p>
@@ -498,7 +498,7 @@ export default function TeenProfile() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-400">
                   Need to sign out? You can always sign back in with your username and password.
                 </p>
                 
@@ -512,8 +512,8 @@ export default function TeenProfile() {
                   {logoutMutation.isPending ? "Signing Out..." : "Sign Out"}
                 </Button>
                 
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <p className="text-sm text-blue-700">
+                <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
                     <strong>Tip:</strong> Your data is always safe! Signing out just removes your session from this device.
                   </p>
                 </div>
