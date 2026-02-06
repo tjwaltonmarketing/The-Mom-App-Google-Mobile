@@ -161,8 +161,17 @@ export default function TeenNavigation({ currentPath, teenProfile }: TeenNavigat
               </Button>
             </div>
 
-            {/* Mobile Settings Button */}
-            <div className="md:hidden">
+            {/* Mobile Controls */}
+            <div className="md:hidden flex items-center gap-1">
+              <Button 
+                variant={theme === "dark" ? "default" : "ghost"} 
+                size="sm"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                className="h-8 w-8 p-0"
+              >
+                {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+              </Button>
               <Button 
                 variant="ghost" 
                 size="sm"
