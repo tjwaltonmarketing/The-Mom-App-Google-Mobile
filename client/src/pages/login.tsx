@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,10 +39,15 @@ export default function Login() {
   }, []);
 
   // Fetch Google Client ID
-  const { data: googleConfig } = useQuery({
-    queryKey: ["/api/config/google-client-id"],
-  });
-  const googleClientId = (googleConfig as any)?.clientId;
+  const [googleClientId, setGoogleClientId] = useState<string | null>(null);
+  useEffect(() => {
+    fetch("/api/config/google-client-id")
+      .then(res => res.json())
+      .then(data => {
+        if (data?.clientId) setGoogleClientId(data.clientId);
+      })
+      .catch(() => {});
+  }, []);
 
   // Google Sign-In mutation
   const googleLoginMutation = useMutation({
