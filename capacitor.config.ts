@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist/public',
   server: {
     androidScheme: 'https',
-    url: 'https://the-mom-app.replit.app'
+    url: 'https://app.themom.app'
   },
   plugins: {
     SplashScreen: {
