@@ -68,12 +68,12 @@ const categoryIcons = {
 };
 
 const categoryColors = {
-  streaming: "bg-blue-50 border-blue-200",
-  gaming: "bg-green-50 border-green-200", 
-  educational: "bg-purple-50 border-purple-200",
-  social: "bg-pink-50 border-pink-200",
-  school: "bg-indigo-50 border-indigo-200",
-  other: "bg-gray-50 border-gray-200"
+  streaming: "bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800",
+  gaming: "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800", 
+  educational: "bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800",
+  social: "bg-pink-50 dark:bg-pink-950 border-pink-200 dark:border-pink-800",
+  school: "bg-indigo-50 dark:bg-indigo-950 border-indigo-200 dark:border-indigo-800",
+  other: "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
 };
 
 export default function TeenPasswords() {
@@ -267,7 +267,7 @@ export default function TeenPasswords() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold">Passwords</h1>
-            <p className="text-gray-600">Manage your personal passwords and access family shared ones</p>
+            <p className="text-gray-600 dark:text-gray-400">Manage your personal passwords and access family shared ones</p>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -313,18 +313,18 @@ export default function TeenPasswords() {
           {isLoadingPersonal ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-              <span className="ml-3 text-gray-600">Loading your passwords...</span>
+              <span className="ml-3 text-gray-600 dark:text-gray-400">Loading your passwords...</span>
             </div>
           ) : filteredPersonalPasswords.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
                   <User className="h-8 w-8 text-blue-500" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   {searchTerm ? "No passwords found" : "No personal passwords yet"}
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   {searchTerm 
                     ? "Try adjusting your search terms" 
                     : "Create your first personal password to get started"
@@ -350,7 +350,7 @@ export default function TeenPasswords() {
                       <div className="flex items-center gap-3">
                         {categoryIcons[password.category as keyof typeof categoryIcons] || categoryIcons.other}
                         <div>
-                          <h3 className="font-semibold text-lg text-gray-900">{password.title}</h3>
+                          <h3 className="font-semibold text-lg text-gray-900 dark:text-white">{password.title}</h3>
                           <Badge variant="outline" className={categoryColors[password.category as keyof typeof categoryColors]}>
                             {password.category}
                           </Badge>
@@ -388,16 +388,16 @@ export default function TeenPasswords() {
                     <div className="space-y-3">
                       {password.website && (
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-600">Website</span>
-                          <span className="text-sm text-gray-900">{password.website}</span>
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Website</span>
+                          <span className="text-sm text-gray-900 dark:text-gray-200">{password.website}</span>
                         </div>
                       )}
                       
                       {password.username && (
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-600">Username</span>
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Username</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-900">{password.username}</span>
+                            <span className="text-sm text-gray-900 dark:text-gray-200">{password.username}</span>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -411,7 +411,7 @@ export default function TeenPasswords() {
                       )}
                       
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-600">Password</span>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Password</span>
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-mono">
                             {showPasswords[password.id] ? password.password : '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'}
@@ -437,8 +437,8 @@ export default function TeenPasswords() {
                       
                       {password.notes && (
                         <div className="pt-2 border-t">
-                          <span className="text-sm font-medium text-gray-600">Notes</span>
-                          <p className="text-sm text-gray-700 mt-1">{password.notes}</p>
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Notes</span>
+                          <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{password.notes}</p>
                         </div>
                       )}
                     </div>
@@ -461,18 +461,18 @@ export default function TeenPasswords() {
           {isLoadingShared ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-              <span className="ml-3 text-gray-600">Loading shared passwords...</span>
+              <span className="ml-3 text-gray-600 dark:text-gray-400">Loading shared passwords...</span>
             </div>
           ) : filteredSharedPasswords.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Shield className="h-8 w-8 text-gray-400" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   {searchTerm ? "No passwords found" : "No shared passwords yet"}
                 </h3>
-                <p className="text-gray-500 max-w-sm mx-auto mb-4">
+                <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto mb-4">
                   {searchTerm 
                     ? "Try searching for a different service or category"
                     : "Your parents haven't shared any passwords with the family yet."
@@ -490,7 +490,7 @@ export default function TeenPasswords() {
                         {categoryIcons[password.category]}
                         <div>
                           <CardTitle className="text-lg">{password.service}</CardTitle>
-                          <p className="text-sm text-gray-600 capitalize">{password.category}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">{password.category}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -547,13 +547,13 @@ export default function TeenPasswords() {
                     {password.notes && (
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Notes</Label>
-                        <div className="bg-gray-50 p-3 rounded text-sm">
+                        <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded text-sm dark:text-gray-300">
                           {password.notes}
                         </div>
                       </div>
                     )}
                     
-                    <div className="text-xs text-gray-500 pt-2 border-t">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t dark:border-gray-700">
                       Shared: {formatDate(password.sharedAt)}
                       {password.lastUsed && (
                         <span className="ml-4">
