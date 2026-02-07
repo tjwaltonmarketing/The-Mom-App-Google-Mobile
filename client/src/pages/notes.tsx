@@ -93,10 +93,6 @@ export default function Notes() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/text-notes"] });
       setShowFullScreenNewNote(false);
-      toast({
-        title: "Note Created",
-        description: "Your text note has been saved successfully.",
-      });
     },
     onError: () => {
       toast({
@@ -124,11 +120,6 @@ export default function Notes() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/text-notes"] });
-      // Don't close full screen editor - just show success (auto-save behavior)
-      toast({
-        title: "Note Updated",
-        description: "Your text note has been updated successfully.",
-      });
     },
     onError: () => {
       toast({
