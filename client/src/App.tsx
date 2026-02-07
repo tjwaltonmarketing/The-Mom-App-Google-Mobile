@@ -59,6 +59,40 @@ function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [splashCompleted, setSplashCompleted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
+  const [wasAuthenticated, setWasAuthenticated] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setWasAuthenticated(true);
+    } else if (wasAuthenticated && !isLoading) {
+      const timeout = setTimeout(() => {
+        setWasAuthenticated(false);
+      }, 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isAuthenticated, isLoading, wasAuthenticated]);
+
+  useEffect(() => {
+    const handleResume = () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/teen/auth/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        handleResume();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('resume', handleResume);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('resume', handleResume);
+    };
+  }, []);
 
   // Check subscription status for authenticated users
   const { data: subscriptionData, isLoading: subscriptionLoading, isFetching: subscriptionFetching, status: subscriptionStatus, refetch: refetchSubscription } = useQuery<SubscriptionData>({
@@ -222,8 +256,18 @@ function Router() {
       ) : (
         // Parent/Admin routes - for authenticated users
         <>
-          {!isAuthenticated ? (
+          {!isAuthenticated && !wasAuthenticated ? (
             <Route path="/" component={Login} />
+          ) : !isAuthenticated && wasAuthenticated ? (
+            // Previously authenticated, auth is being re-verified (app resume)
+            <Route path="/:rest*" component={() => (
+              <div className="min-h-screen flex items-center justify-center bg-neutral">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-gray-600">Reconnecting...</p>
+                </div>
+              </div>
+            )} />
           ) : !subscriptionReady ? (
             // Wait for subscription check to complete before routing
             <Route path="/" component={() => (
