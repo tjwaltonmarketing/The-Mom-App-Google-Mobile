@@ -4246,16 +4246,29 @@ export async function registerRoutes(app: Express) {
   // Subscription Endpoints
   app.get("/api/subscription", async (req, res) => {
     try {
-      if (!req.session.userId) {
+      let userId = req.session.userId;
+      if (!userId) {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+          const token = authHeader.substring(7);
+          const { verifyToken } = await import('./auth');
+          const decoded = verifyToken(token);
+          if (decoded) {
+            userId = decoded.userId;
+            req.session.userId = userId;
+          }
+        }
+      }
+      if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      let subscription = await storage.getUserSubscription(req.session.userId);
+      let subscription = await storage.getUserSubscription(userId);
       
       if (!subscription) {
         // Check if user is part of a family (joined via invite)
-        const family = await storage.getFamilyByUserId(req.session.userId);
-        if (family && family.ownerId !== req.session.userId) {
+        const family = await storage.getFamilyByUserId(userId);
+        if (family && family.ownerId !== userId) {
           // User is a family member (not owner) - get owner's subscription
           const ownerSubscription = await storage.getUserSubscription(family.ownerId);
           if (ownerSubscription) {

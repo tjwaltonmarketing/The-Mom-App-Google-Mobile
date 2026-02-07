@@ -99,11 +99,16 @@ function Router() {
     queryKey: ["/api/subscription"],
     queryFn: async () => {
       console.log("Fetching subscription data...");
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
       const response = await fetch("/api/subscription", {
         credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
       });
       console.log("Subscription response status:", response.status);
       if (response.status === 401) {
