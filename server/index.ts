@@ -21,6 +21,7 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowedOrigins = [
     'https://the-mom-app.replit.app',
+    'https://app.themom.app',
     'https://themom.app',
     'https://login.themom.app',
     'http://localhost:5000',
