@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, ChevronRight, ChevronLeft, Mic } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Mic, Calendar, ListTodo, UtensilsCrossed, Sparkles, Users } from "lucide-react";
 import onboardingSlide1 from "@/assets/images/onboarding-slide-1.png";
 import onboardingSlide2 from "@/assets/images/onboarding-slide-2.png";
 import onboardingSlide3 from "@/assets/images/onboarding-slide-3.png";
+import onboardingSlideCalendar from "@/assets/images/onboarding-slide-calendar.png";
+import onboardingSlideTasks from "@/assets/images/onboarding-slide-tasks.png";
+import onboardingSlideMeals from "@/assets/images/onboarding-slide-meals.png";
+import onboardingSlideAi from "@/assets/images/onboarding-slide-ai.png";
+import onboardingSlideFamily from "@/assets/images/onboarding-slide-family.png";
 import onboardingSlide4 from "@/assets/images/onboarding-slide-4.png";
 
 interface OnboardingFlowProps {
@@ -17,7 +22,7 @@ const slides = [
   {
     id: 1,
     image: onboardingSlide1,
-    headline: "🎉 You're officially in, Mama.",
+    headline: "You're officially in, Mama.",
     body: "Welcome to The Mom App, where the mental load gets lighter and life gets easier.\n\nYou just took the first step toward fewer reminders in your head, more help from the family, and more calm in your day.",
     reassurance: "No judgment. No perfection. Just support.",
     cta: "Let's make mom life easier",
@@ -35,26 +40,89 @@ const slides = [
     ],
     tagline: "Less overwhelm. More peace.",
     emotional: "Because your brain deserves a break too.",
-    cta: "Show me how it works",
+    cta: "Show me the features",
   },
   {
     id: 3,
-    image: onboardingSlide3,
-    headline: "Just say it. We'll handle the rest.",
+    image: onboardingSlideCalendar,
+    icon: "calendar",
+    headline: "Smart Calendar",
+    subtitle: "Your family's schedule, simplified.",
+    featureHighlights: [
+      "See everyone's events in one beautiful view",
+      "Color-coded by family member",
+      "Privacy controls \u2014 share what you want, keep what you don't",
+      "Syncs with Google Calendar",
+    ],
+    tagline: "Never double-book again.",
+    cta: "What else can it do?",
+  },
+  {
+    id: 4,
+    image: onboardingSlideTasks,
+    icon: "tasks",
+    headline: "Smart Task Management",
+    subtitle: "Delegate without the drama.",
+    featureHighlights: [
+      "Create tasks in seconds \u2014 by voice or text",
+      "Assign to family members with one tap",
+      "Smart reminders so nobody forgets",
+      "Teens earn points for completing tasks",
+    ],
+    tagline: "Get help. Without repeating yourself.",
+    cta: "There's more!",
+  },
+  {
+    id: 5,
+    image: onboardingSlideMeals,
+    icon: "meals",
+    headline: "Meal Planning Made Easy",
+    subtitle: "Answer \"What's for dinner?\" once and for all.",
+    featureHighlights: [
+      "Plan your weekly meals in minutes",
+      "Browse recipe suggestions and ideas",
+      "Auto-generate grocery lists from your meal plan",
+      "The whole family can see what's coming up",
+    ],
+    tagline: "Less stress at dinnertime. More time together.",
+    cta: "Keep going!",
+  },
+  {
+    id: 6,
+    image: onboardingSlideAi,
+    icon: "ai",
+    headline: "Your AI-Powered Assistant",
+    subtitle: "Just say it. We'll handle the rest.",
     body: "Talk to The Mom App like you'd talk to yourself:",
     examples: [
       '"Remind me to sign the permission slip."',
       '"Add milk, eggs, and snacks to the grocery list."',
       '"Put soccer practice on the calendar."',
     ],
-    micTip: "Just tap the microphone icon to get started:",
-    tagline: "We turn your words into tasks, lists, and plans instantly.",
+    micTip: "Tap the mic to get started:",
+    tagline: "Voice to action, instantly.",
     subtagline: "No typing. No digging. No mental clutter.",
-    trust: "Built for real moms with real chaos.",
-    cta: "Try it now",
+    cta: "One more thing...",
   },
   {
-    id: 4,
+    id: 7,
+    image: onboardingSlideFamily,
+    icon: "family",
+    headline: "Built for the Whole Family",
+    subtitle: "Everyone connected. Everyone contributing.",
+    featureHighlights: [
+      "Invite your partner, kids, or extended family",
+      "Teen dashboard with their own view",
+      "Shared grocery lists and notes",
+      "Password vault to keep family info safe",
+      "Feedback system \u2014 help us build what you need",
+    ],
+    tagline: "Your family command center.",
+    emotional: "Because it really does take a village.",
+    cta: "I'm ready!",
+  },
+  {
+    id: 8,
     image: onboardingSlide4,
     headline: "Start your 14-day free trial",
     trialBadge: "No credit card required",
@@ -64,6 +132,14 @@ const slides = [
     isPricing: true,
   },
 ];
+
+const iconMap: Record<string, any> = {
+  calendar: Calendar,
+  tasks: ListTodo,
+  meals: UtensilsCrossed,
+  ai: Sparkles,
+  family: Users,
+};
 
 export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: OnboardingFlowProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -98,22 +174,39 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
     return billingCycle === "monthly" ? "/month" : "/year";
   };
 
+  const IconComponent = slide.icon ? iconMap[slide.icon] : null;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex flex-col" style={{ fontFamily: "'Poppins', sans-serif" }}>
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-md mx-auto w-full">
-        <div className="w-full max-h-[300px] mb-6 flex items-center justify-center">
+        <div className="w-full max-h-[250px] mb-4 flex items-center justify-center">
           <img
             src={slide.image}
             alt={slide.headline}
-            className="max-h-[280px] w-auto object-contain rounded-2xl shadow-lg"
+            className="max-h-[230px] w-auto object-contain rounded-2xl shadow-lg"
           />
         </div>
 
-        <div className="text-center space-y-4 flex-1">
+        <div className="text-center space-y-3 flex-1 overflow-y-auto">
+          {IconComponent && (
+            <div className="flex items-center justify-center gap-2">
+              <div className="bg-pink-100 rounded-full p-2">
+                <IconComponent className="h-5 w-5 text-pink-500" />
+              </div>
+              {slide.subtitle && (
+                <p className="text-sm text-pink-600 font-medium">{slide.subtitle}</p>
+              )}
+            </div>
+          )}
+
           <h1 className="text-2xl font-bold text-gray-900">{slide.headline}</h1>
 
+          {!slide.icon && slide.subtitle && (
+            <p className="text-sm text-pink-600 font-medium">{slide.subtitle}</p>
+          )}
+
           {slide.body && !slide.isPricing && (
-            <p className="text-gray-600 whitespace-pre-line">{slide.body}</p>
+            <p className="text-gray-600 whitespace-pre-line text-sm">{slide.body}</p>
           )}
 
           {slide.reassurance && (
@@ -125,14 +218,25 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
               {slide.benefits.map((benefit, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <Check className="h-5 w-5 text-pink-500 mt-0.5 shrink-0" />
-                  <span className="text-gray-700">{benefit}</span>
+                  <span className="text-gray-700 text-sm">{benefit}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {slide.featureHighlights && (
+            <ul className="text-left space-y-2 mx-auto max-w-xs">
+              {slide.featureHighlights.map((highlight, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <Check className="h-4 w-4 text-pink-500 mt-0.5 shrink-0" />
+                  <span className="text-gray-700 text-sm">{highlight}</span>
                 </li>
               ))}
             </ul>
           )}
 
           {slide.examples && (
-            <div className="bg-gray-50 rounded-lg p-4 text-left space-y-2">
+            <div className="bg-gray-50 rounded-lg p-3 text-left space-y-1.5">
               {slide.examples.map((example, idx) => (
                 <p key={idx} className="text-gray-600 italic text-sm">{example}</p>
               ))}
@@ -149,15 +253,15 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
           )}
 
           {slide.tagline && !slide.isPricing && (
-            <p className="font-semibold text-gray-800">{slide.tagline}</p>
+            <p className="font-semibold text-gray-800 text-sm">{slide.tagline}</p>
           )}
 
           {slide.subtagline && (
-            <p className="text-gray-500 text-sm">{slide.subtagline}</p>
+            <p className="text-gray-500 text-xs">{slide.subtagline}</p>
           )}
 
           {slide.emotional && (
-            <p className="text-pink-600 italic">{slide.emotional}</p>
+            <p className="text-pink-600 italic text-sm">{slide.emotional}</p>
           )}
 
           {slide.trust && (
@@ -165,13 +269,13 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
           )}
 
           {slide.isPricing && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {slide.trialBadge && (
                 <div className="inline-block bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-medium">
                   {slide.trialBadge}
                 </div>
               )}
-              <p className="text-gray-600">{slide.body}</p>
+              <p className="text-gray-600 text-sm">{slide.body}</p>
               
               {slide.features && (
                 <div className="flex flex-wrap justify-center gap-2">
@@ -183,9 +287,9 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
                 </div>
               )}
 
-              <p className="text-gray-700 font-medium">{slide.tagline}</p>
+              <p className="text-gray-700 font-medium text-sm">{slide.tagline}</p>
 
-              <div className="flex justify-center gap-2 mb-4">
+              <div className="flex justify-center gap-2 mb-3">
                 <Button
                   variant={billingCycle === "monthly" ? "default" : "outline"}
                   size="sm"
@@ -232,20 +336,20 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
                 </Card>
               </div>
 
-              <p className="text-sm text-gray-600 italic mt-4">
+              <p className="text-sm text-gray-600 italic mt-3">
                 Cancel anytime. No guilt. No pressure.
               </p>
             </div>
           )}
         </div>
 
-        <div className="w-full space-y-3 mt-6">
-          <div className="flex justify-center gap-2 mb-4">
+        <div className="w-full space-y-3 mt-4">
+          <div className="flex justify-center gap-1.5 mb-3">
             {slides.map((_, idx) => (
               <div
                 key={idx}
                 className={`h-2 rounded-full transition-all ${
-                  idx === currentSlide ? "w-8 bg-pink-500" : "w-2 bg-gray-300"
+                  idx === currentSlide ? "w-6 bg-pink-500" : "w-2 bg-gray-300"
                 }`}
               />
             ))}
