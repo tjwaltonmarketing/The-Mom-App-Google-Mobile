@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupSession } from "./auth";
+import { initializeFirebase } from "./firebase-push";
 
 // Set LeadConnector environment variables for testing
 if (!process.env.LEADCONNECTOR_API_KEY) {
@@ -83,6 +84,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  initializeFirebase();
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

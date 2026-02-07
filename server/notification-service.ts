@@ -1,6 +1,7 @@
 import { storage } from "./storage";
 import { sendSMS } from "./sms-service";
 import { sendEmail } from "./email-service";
+import { sendPushNotification, sendPushToFamilyMember } from "./firebase-push";
 import type { InsertNotification } from "@shared/schema";
 import { addHours, addMinutes, isBefore, isAfter, format } from "date-fns";
 
@@ -229,6 +230,18 @@ export class NotificationService {
         console.error("Failed to send parent SMS:", error);
       }
     }
+
+    // Send FCM push notification
+    try {
+      await sendPushNotification({
+        userId,
+        title: "Task Notification",
+        body: message,
+        data: { type: "task", taskId: String(taskId) },
+      });
+    } catch (error) {
+      console.error("Failed to send parent push notification:", error);
+    }
   }
 
   private scheduleRecurringReminders(taskId: number, teenId: number, taskTitle: string, points: number) {
@@ -320,6 +333,20 @@ export class NotificationService {
         }
       } catch (error) {
         console.error("Failed to send teen SMS:", error);
+      }
+    }
+
+    // Send FCM push notification to teen (if they have a linked user account)
+    if (teenProfile.userId) {
+      try {
+        await sendPushNotification({
+          userId: teenProfile.userId,
+          title: "Task Notification",
+          body: message,
+          data: { type: "task", taskId: String(taskId) },
+        });
+      } catch (error) {
+        console.error("Failed to send teen push notification:", error);
       }
     }
   }
@@ -452,6 +479,18 @@ export class NotificationService {
         console.error("Failed to send event SMS:", error);
       }
     }
+
+    // Send FCM push notification
+    try {
+      await sendPushNotification({
+        userId,
+        title: "Event Reminder",
+        body: message,
+        data: { type: "event", eventId: String(eventId) },
+      });
+    } catch (error) {
+      console.error("Failed to send event push notification:", error);
+    }
   }
   
   async cancelEventReminders(eventId: number) {
@@ -534,6 +573,18 @@ export class NotificationService {
       console.log(`📱 Daily digest in-app notification sent to user ${userId}`);
     }
     
+    // Send FCM push notification for daily digest
+    try {
+      await sendPushNotification({
+        userId,
+        title: "Daily Task Summary",
+        body: message,
+        data: { type: "digest" },
+      });
+    } catch (error) {
+      console.error("Failed to send daily digest push notification:", error);
+    }
+
     if ((notificationMethod === "sms" || notificationMethod === "both") && user.phoneNumber) {
       try {
         const smsSent = await sendSMS(user.phoneNumber, message);
