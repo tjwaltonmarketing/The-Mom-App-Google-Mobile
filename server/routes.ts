@@ -605,6 +605,13 @@ export async function registerRoutes(app: Express) {
           eventReminders: true,
           dailyDigest: true,
           dailyDigestTime: "09:00",
+          taskReminderOnAssign: true,
+          taskReminderBeforeDue: "2h",
+          taskOverdueReminder: true,
+          taskOverdueRepeatInterval: "4h",
+          eventReminder1: "1d",
+          eventReminder2: "1h",
+          eventReminder3: "15m",
         });
       }
 
@@ -616,6 +623,13 @@ export async function registerRoutes(app: Express) {
         eventReminders: prefs.eventReminders ?? true,
         dailyDigest: prefs.dailyDigest ?? true,
         dailyDigestTime: prefs.dailyDigestTime || "09:00",
+        taskReminderOnAssign: prefs.taskReminderOnAssign ?? true,
+        taskReminderBeforeDue: prefs.taskReminderBeforeDue || "2h",
+        taskOverdueReminder: prefs.taskOverdueReminder ?? true,
+        taskOverdueRepeatInterval: prefs.taskOverdueRepeatInterval || "4h",
+        eventReminder1: prefs.eventReminder1 || "1d",
+        eventReminder2: prefs.eventReminder2 || "1h",
+        eventReminder3: prefs.eventReminder3 || "15m",
       });
     } catch (error) {
       console.error("Get preferences error:", error);
@@ -637,17 +651,32 @@ export async function registerRoutes(app: Express) {
         eventReminders,
         dailyDigest,
         dailyDigestTime,
+        taskReminderOnAssign,
+        taskReminderBeforeDue,
+        taskOverdueReminder,
+        taskOverdueRepeatInterval,
+        eventReminder1,
+        eventReminder2,
+        eventReminder3,
       } = req.body;
       
-      const prefs = await storage.updateUserPreferences(req.session.userId, {
-        marketingEmails,
-        usageAnalytics,
-        notificationMethod,
-        taskReminders,
-        eventReminders,
-        dailyDigest,
-        dailyDigestTime,
-      });
+      const updates: Record<string, any> = {};
+      if (marketingEmails !== undefined) updates.marketingEmails = marketingEmails;
+      if (usageAnalytics !== undefined) updates.usageAnalytics = usageAnalytics;
+      if (notificationMethod !== undefined) updates.notificationMethod = notificationMethod;
+      if (taskReminders !== undefined) updates.taskReminders = taskReminders;
+      if (eventReminders !== undefined) updates.eventReminders = eventReminders;
+      if (dailyDigest !== undefined) updates.dailyDigest = dailyDigest;
+      if (dailyDigestTime !== undefined) updates.dailyDigestTime = dailyDigestTime;
+      if (taskReminderOnAssign !== undefined) updates.taskReminderOnAssign = taskReminderOnAssign;
+      if (taskReminderBeforeDue !== undefined) updates.taskReminderBeforeDue = taskReminderBeforeDue;
+      if (taskOverdueReminder !== undefined) updates.taskOverdueReminder = taskOverdueReminder;
+      if (taskOverdueRepeatInterval !== undefined) updates.taskOverdueRepeatInterval = taskOverdueRepeatInterval;
+      if (eventReminder1 !== undefined) updates.eventReminder1 = eventReminder1;
+      if (eventReminder2 !== undefined) updates.eventReminder2 = eventReminder2;
+      if (eventReminder3 !== undefined) updates.eventReminder3 = eventReminder3;
+
+      const prefs = await storage.updateUserPreferences(req.session.userId, updates);
 
       res.json({
         success: true,
@@ -659,6 +688,13 @@ export async function registerRoutes(app: Express) {
           eventReminders: prefs.eventReminders,
           dailyDigest: prefs.dailyDigest,
           dailyDigestTime: prefs.dailyDigestTime,
+          taskReminderOnAssign: prefs.taskReminderOnAssign,
+          taskReminderBeforeDue: prefs.taskReminderBeforeDue,
+          taskOverdueReminder: prefs.taskOverdueReminder,
+          taskOverdueRepeatInterval: prefs.taskOverdueRepeatInterval,
+          eventReminder1: prefs.eventReminder1,
+          eventReminder2: prefs.eventReminder2,
+          eventReminder3: prefs.eventReminder3,
         }
       });
     } catch (error) {

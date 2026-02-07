@@ -377,6 +377,43 @@ const tutorials: Tutorial[] = [
     ]
   },
   {
+    id: "notification-reminders",
+    title: "Notification & Reminder Schedule",
+    description: "Understand how reminders work and customize them to fit your routine",
+    duration: "3 min",
+    difficulty: "beginner",
+    icon: Clock,
+    category: "getting-started",
+    steps: [
+      {
+        title: "Task Reminders - Default Schedule",
+        description: "When a task is created or assigned, you'll get notified right away. Then you'll receive a reminder 2 hours before the due date so you have time to finish it.",
+        tips: ["Immediate notification when a task is assigned to you", "2 hours before the due date: a heads-up reminder", "You can turn off assignment notifications if you prefer"]
+      },
+      {
+        title: "Overdue Task Reminders",
+        description: "If a task passes its due date without being completed, you'll get a notification 15 minutes after it's overdue. After that, gentle reminders repeat every 4 hours until it's done.",
+        tips: ["15 minutes after due: first overdue alert", "Repeats every 4 hours until completed", "Completing or deleting the task stops all reminders"]
+      },
+      {
+        title: "Event Reminders - Default Schedule",
+        description: "Calendar events trigger three reminders: 1 day before, 1 hour before, and 15 minutes before the event starts. This gives you plenty of lead time to prepare.",
+        tips: ["1 day before: plan ahead reminder", "1 hour before: time to get ready", "15 minutes before: it's almost time"]
+      },
+      {
+        title: "Daily Digest",
+        description: "Once a day, you'll receive a summary of all your open tasks, including how many are overdue, due today, and still pending. By default this arrives at 9:00 AM.",
+        tips: ["Shows overdue, due today, and pending task counts", "You can change the delivery time in Settings", "Turn it off entirely if you prefer"]
+      },
+      {
+        title: "Customize Your Schedule",
+        description: "Go to Settings > Notifications to customize all of these timings. You can change how far in advance you're reminded, adjust the overdue repeat frequency, or turn off specific reminders entirely.",
+        action: "Go to Settings and tap 'Notification Preferences' to customize",
+        tips: ["Change the pre-due reminder from 30 minutes to 4 hours", "Adjust overdue repeats to every 2, 4, or 8 hours", "Set event reminders to 5 minutes, 30 minutes, or 12 hours before", "All changes take effect immediately for new tasks and events"]
+      }
+    ]
+  },
+  {
     id: "feedback-and-feature-requests",
     title: "Submitting Feedback & Feature Requests",
     description: "Share your ideas, report bugs, and help improve The Mom App",

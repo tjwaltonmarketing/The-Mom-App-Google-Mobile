@@ -30,6 +30,7 @@ import {
   type FamilyMember, 
   type InsertFamilyMember,
   type UserPreferences,
+  type InsertUserPreferences,
   type Event,
   type InsertEvent,
   type Task,
@@ -97,7 +98,7 @@ export interface IStorage {
   
   // User Preferences
   getUserPreferences(userId: number): Promise<UserPreferences | undefined>;
-  updateUserPreferences(userId: number, prefs: { marketingEmails?: boolean; usageAnalytics?: boolean }): Promise<UserPreferences>;
+  updateUserPreferences(userId: number, prefs: Partial<Omit<InsertUserPreferences, 'userId'>>): Promise<UserPreferences>;
   getAllUserPreferences(): Promise<UserPreferences[]>;
   
   // Replit Auth Methods
@@ -437,7 +438,7 @@ export class DatabaseStorage implements IStorage {
     return prefs || undefined;
   }
 
-  async updateUserPreferences(userId: number, prefs: { marketingEmails?: boolean; usageAnalytics?: boolean }): Promise<UserPreferences> {
+  async updateUserPreferences(userId: number, prefs: Partial<Omit<InsertUserPreferences, 'userId'>>): Promise<UserPreferences> {
     // Try to update existing preferences
     const existing = await this.getUserPreferences(userId);
     

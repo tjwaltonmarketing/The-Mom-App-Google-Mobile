@@ -5,6 +5,18 @@ import { sendPushNotification, sendPushToFamilyMember } from "./firebase-push";
 import type { InsertNotification } from "@shared/schema";
 import { addHours, addMinutes, isBefore, isAfter, format } from "date-fns";
 
+function parseTimeOffset(offset: string): number {
+  const match = offset.match(/^(\d+)(m|h|d)$/);
+  if (!match) return 0;
+  const value = parseInt(match[1]);
+  switch (match[2]) {
+    case 'm': return value * 60 * 1000;
+    case 'h': return value * 60 * 60 * 1000;
+    case 'd': return value * 24 * 60 * 60 * 1000;
+    default: return 0;
+  }
+}
+
 export interface TaskNotificationConfig {
   taskId: number;
   teenId: number;
@@ -103,56 +115,54 @@ export class NotificationService {
   async scheduleParentTaskNotifications(config: ParentTaskNotificationConfig) {
     const { taskId, userId, taskTitle, dueDate } = config;
     
-    // Get user's notification preferences
     const prefs = await storage.getUserPreferences(userId);
     
     if (prefs?.taskReminders === false) {
-      return; // User has disabled task notifications
+      return;
     }
     
     const now = new Date();
+    const reminderOnAssign = prefs?.taskReminderOnAssign ?? true;
+    const beforeDue = prefs?.taskReminderBeforeDue || "2h";
+    const overdueEnabled = prefs?.taskOverdueReminder ?? true;
+    const overdueInterval = prefs?.taskOverdueRepeatInterval || "4h";
     
-    // 1. Initial notification - immediate
-    await this.sendParentTaskNotification({
-      type: "task_assigned",
-      taskId,
-      userId,
-      taskTitle,
-      dueDate,
-      message: `📋 New task: "${taskTitle}" - Due ${format(dueDate, "MMM d 'at' h:mm a")}`
-    });
-    
-    // 2. Reminder 2 hours before due date
-    const reminderTime = addHours(dueDate, -2);
-    if (isAfter(reminderTime, now)) {
-      this.scheduleNotification(`parent_reminder_${taskId}_${userId}`, reminderTime, async () => {
-        await this.sendParentTaskNotification({
-          type: "task_reminder",
-          taskId,
-          userId,
-          taskTitle,
-          dueDate,
-          message: `⏰ Reminder: "${taskTitle}" is due in 2 hours`
-        });
-      });
-    }
-    
-    // 3. Past due notification
-    const pastDueTime = addMinutes(dueDate, 15);
-    
-    if (isBefore(dueDate, now)) {
-      // Task is already overdue
+    // 1. Initial notification - immediate (if enabled)
+    if (reminderOnAssign) {
       await this.sendParentTaskNotification({
-        type: "task_past_due",
+        type: "task_assigned",
         taskId,
         userId,
         taskTitle,
         dueDate,
-        message: `🚨 Task overdue: "${taskTitle}" - Please complete soon!`
+        message: `📋 New task: "${taskTitle}" - Due ${format(dueDate, "MMM d 'at' h:mm a")}`
       });
-      this.scheduleParentRecurringReminders(taskId, userId, taskTitle);
-    } else {
-      this.scheduleNotification(`parent_past_due_${taskId}_${userId}`, pastDueTime, async () => {
+    }
+    
+    // 2. Reminder before due date (customizable)
+    const beforeDueMs = parseTimeOffset(beforeDue);
+    if (beforeDueMs > 0) {
+      const reminderTime = new Date(dueDate.getTime() - beforeDueMs);
+      if (isAfter(reminderTime, now)) {
+        const label = beforeDue === "30m" ? "30 minutes" : beforeDue === "1h" ? "1 hour" : beforeDue === "2h" ? "2 hours" : "4 hours";
+        this.scheduleNotification(`parent_reminder_${taskId}_${userId}`, reminderTime, async () => {
+          await this.sendParentTaskNotification({
+            type: "task_reminder",
+            taskId,
+            userId,
+            taskTitle,
+            dueDate,
+            message: `⏰ Reminder: "${taskTitle}" is due in ${label}`
+          });
+        });
+      }
+    }
+    
+    // 3. Past due notification (if enabled)
+    if (overdueEnabled) {
+      const pastDueTime = addMinutes(dueDate, 15);
+      
+      if (isBefore(dueDate, now)) {
         await this.sendParentTaskNotification({
           type: "task_past_due",
           taskId,
@@ -161,12 +171,31 @@ export class NotificationService {
           dueDate,
           message: `🚨 Task overdue: "${taskTitle}" - Please complete soon!`
         });
-        this.scheduleParentRecurringReminders(taskId, userId, taskTitle);
-      });
+        if (overdueInterval !== "none") {
+          this.scheduleParentRecurringReminders(taskId, userId, taskTitle, overdueInterval);
+        }
+      } else {
+        this.scheduleNotification(`parent_past_due_${taskId}_${userId}`, pastDueTime, async () => {
+          await this.sendParentTaskNotification({
+            type: "task_past_due",
+            taskId,
+            userId,
+            taskTitle,
+            dueDate,
+            message: `🚨 Task overdue: "${taskTitle}" - Please complete soon!`
+          });
+          if (overdueInterval !== "none") {
+            this.scheduleParentRecurringReminders(taskId, userId, taskTitle, overdueInterval);
+          }
+        });
+      }
     }
   }
   
-  private scheduleParentRecurringReminders(taskId: number, userId: number, taskTitle: string) {
+  private scheduleParentRecurringReminders(taskId: number, userId: number, taskTitle: string, interval: string = "4h") {
+    const intervalMs = parseTimeOffset(interval);
+    if (intervalMs <= 0) return;
+    
     const intervalId = setInterval(async () => {
       const task = await storage.getTask(taskId);
       if (!task || task.isCompleted) {
@@ -181,7 +210,7 @@ export class NotificationService {
         taskTitle,
         message: `🔔 Still pending: "${taskTitle}"`
       });
-    }, 4 * 60 * 60 * 1000); // 4 hours
+    }, intervalMs);
     
     this.notificationQueue.set(`parent_recurring_${taskId}_${userId}`, intervalId);
   }
@@ -385,55 +414,63 @@ export class NotificationService {
   }) {
     const { eventId, userId, eventTitle, startTime, location } = config;
     
-    // Get user's notification preferences
     const prefs = await storage.getUserPreferences(userId);
     if (prefs?.eventReminders === false) {
-      return; // User has disabled event reminders
+      return;
     }
     
     const now = new Date();
     const locationText = location ? ` at ${location}` : "";
     
-    // 1. Reminder 1 day before (for events more than 1 day away)
-    const oneDayBefore = addHours(startTime, -24);
-    if (isAfter(oneDayBefore, now)) {
-      this.scheduleNotification(`event_day_${eventId}`, oneDayBefore, async () => {
-        await this.sendEventNotification({
-          eventId,
-          userId,
-          eventTitle,
-          startTime,
-          message: `📅 Tomorrow: "${eventTitle}"${locationText} at ${format(startTime, "h:mm a")}`
+    const reminder1 = prefs?.eventReminder1 || "1d";
+    const reminder2 = prefs?.eventReminder2 || "1h";
+    const reminder3 = prefs?.eventReminder3 || "15m";
+
+    const labelMap: Record<string, string> = {
+      "5m": "5 minutes", "15m": "15 minutes", "30m": "30 minutes",
+      "1h": "1 hour", "2h": "2 hours", "12h": "12 hours", "1d": "tomorrow"
+    };
+    
+    // 1. First reminder (default: 1 day before)
+    if (reminder1 !== "none") {
+      const offset1 = parseTimeOffset(reminder1);
+      const time1 = new Date(startTime.getTime() - offset1);
+      if (isAfter(time1, now)) {
+        const label = reminder1 === "1d" 
+          ? `📅 Tomorrow: "${eventTitle}"${locationText} at ${format(startTime, "h:mm a")}`
+          : `📅 In ${labelMap[reminder1] || reminder1}: "${eventTitle}"${locationText}`;
+        this.scheduleNotification(`event_r1_${eventId}`, time1, async () => {
+          await this.sendEventNotification({ eventId, userId, eventTitle, startTime, message: label });
         });
-      });
+      }
     }
     
-    // 2. Reminder 1 hour before
-    const oneHourBefore = addHours(startTime, -1);
-    if (isAfter(oneHourBefore, now)) {
-      this.scheduleNotification(`event_hour_${eventId}`, oneHourBefore, async () => {
-        await this.sendEventNotification({
-          eventId,
-          userId,
-          eventTitle,
-          startTime,
-          message: `⏰ Starting in 1 hour: "${eventTitle}"${locationText}`
+    // 2. Second reminder (default: 1 hour before)
+    if (reminder2 !== "none") {
+      const offset2 = parseTimeOffset(reminder2);
+      const time2 = new Date(startTime.getTime() - offset2);
+      if (isAfter(time2, now)) {
+        this.scheduleNotification(`event_r2_${eventId}`, time2, async () => {
+          await this.sendEventNotification({
+            eventId, userId, eventTitle, startTime,
+            message: `⏰ Starting in ${labelMap[reminder2] || reminder2}: "${eventTitle}"${locationText}`
+          });
         });
-      });
+      }
     }
     
-    // 3. Reminder 15 minutes before
-    const fifteenMinBefore = addMinutes(startTime, -15);
-    if (isAfter(fifteenMinBefore, now)) {
-      this.scheduleNotification(`event_soon_${eventId}`, fifteenMinBefore, async () => {
-        await this.sendEventNotification({
-          eventId,
-          userId,
-          eventTitle,
-          startTime,
-          message: `🔔 Starting in 15 minutes: "${eventTitle}"${locationText}`
+    // 3. Third reminder (default: 15 minutes before)
+    if (reminder3 !== "none") {
+      const offset3 = parseTimeOffset(reminder3);
+      const time3 = new Date(startTime.getTime() - offset3);
+      if (isAfter(time3, now)) {
+        this.scheduleNotification(`event_r3_${eventId}`, time3, async () => {
+          await this.sendEventNotification({
+            eventId, userId, eventTitle, startTime,
+            message: `🔔 Starting in ${labelMap[reminder3] || reminder3}: "${eventTitle}"${locationText}`
+          });
         });
-      });
+      }
     }
   }
   

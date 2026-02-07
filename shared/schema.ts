@@ -57,6 +57,13 @@ export const userPreferences = pgTable("user_preferences", {
   eventReminders: boolean("event_reminders").default(true),
   dailyDigest: boolean("daily_digest").default(true),
   dailyDigestTime: text("daily_digest_time").default("09:00"), // HH:MM format
+  taskReminderOnAssign: boolean("task_reminder_on_assign").default(true),
+  taskReminderBeforeDue: text("task_reminder_before_due").default("2h"), // '30m', '1h', '2h', '4h'
+  taskOverdueReminder: boolean("task_overdue_reminder").default(true),
+  taskOverdueRepeatInterval: text("task_overdue_repeat_interval").default("4h"), // '2h', '4h', '8h', 'none'
+  eventReminder1: text("event_reminder_1").default("1d"), // '1d', '12h', 'none'
+  eventReminder2: text("event_reminder_2").default("1h"), // '2h', '1h', '30m', 'none'
+  eventReminder3: text("event_reminder_3").default("15m"), // '30m', '15m', '5m', 'none'
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

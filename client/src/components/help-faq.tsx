@@ -127,6 +127,20 @@ const faqItems: FAQItem[] = [
     tags: ["notifications", "sms", "email", "setup"]
   },
   {
+    id: "reminder-schedule",
+    question: "How are task and event reminders scheduled?",
+    answer: "Task reminders follow this default schedule: (1) Immediate notification when assigned, (2) 2 hours before the due date, (3) 15 minutes after overdue, then every 4 hours until completed. Event reminders are sent 1 day before, 1 hour before, and 15 minutes before the event. You can customize all of these timings in Settings > Notification Preferences.",
+    category: "features",
+    tags: ["reminders", "schedule", "tasks", "events", "notifications", "timing"]
+  },
+  {
+    id: "customize-reminders",
+    question: "Can I change when I receive reminders?",
+    answer: "Yes! Go to Settings and tap 'Notification Preferences'. You can customize: (1) Whether you get notified when tasks are assigned, (2) How far before the due date you're reminded (30 minutes to 4 hours), (3) How often overdue reminders repeat (every 2, 4, or 8 hours, or turn them off), (4) When event reminders fire (from 5 minutes to 1 day before). Changes apply to all new tasks and events going forward.",
+    category: "features",
+    tags: ["customize", "reminders", "schedule", "settings", "notifications", "preferences"]
+  },
+  {
     id: "ai-assistant-privacy",
     question: "Is my family data private when using the AI assistant?",
     answer: "Yes, your family data is encrypted and never shared with third parties. The AI assistant processes information locally and through secure connections. We don't store conversation history or use your data to train models for other users.",

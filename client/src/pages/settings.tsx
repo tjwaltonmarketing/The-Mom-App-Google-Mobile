@@ -121,6 +121,13 @@ export default function SettingsPage() {
   const [eventReminders, setEventReminders] = useState(true);
   const [dailyDigest, setDailyDigest] = useState(true);
   const [dailyDigestTime, setDailyDigestTime] = useState("09:00");
+  const [taskReminderOnAssign, setTaskReminderOnAssign] = useState(true);
+  const [taskReminderBeforeDue, setTaskReminderBeforeDue] = useState("2h");
+  const [taskOverdueReminder, setTaskOverdueReminder] = useState(true);
+  const [taskOverdueRepeatInterval, setTaskOverdueRepeatInterval] = useState("4h");
+  const [eventReminder1, setEventReminder1] = useState("1d");
+  const [eventReminder2, setEventReminder2] = useState("1h");
+  const [eventReminder3, setEventReminder3] = useState("15m");
 
   // Feedback form state
   const [feedbackType, setFeedbackType] = useState<"feedback" | "feature_request" | "bug_report">("feedback");
@@ -436,6 +443,13 @@ export default function SettingsPage() {
     eventReminders: boolean;
     dailyDigest: boolean;
     dailyDigestTime: string;
+    taskReminderOnAssign: boolean;
+    taskReminderBeforeDue: string;
+    taskOverdueReminder: boolean;
+    taskOverdueRepeatInterval: string;
+    eventReminder1: string;
+    eventReminder2: string;
+    eventReminder3: string;
   }>({
     queryKey: ["/api/auth/preferences"],
   });
@@ -450,6 +464,13 @@ export default function SettingsPage() {
       setEventReminders(userPrefs.eventReminders ?? true);
       setDailyDigest(userPrefs.dailyDigest ?? true);
       setDailyDigestTime(userPrefs.dailyDigestTime || "09:00");
+      setTaskReminderOnAssign(userPrefs.taskReminderOnAssign ?? true);
+      setTaskReminderBeforeDue(userPrefs.taskReminderBeforeDue || "2h");
+      setTaskOverdueReminder(userPrefs.taskOverdueReminder ?? true);
+      setTaskOverdueRepeatInterval(userPrefs.taskOverdueRepeatInterval || "4h");
+      setEventReminder1(userPrefs.eventReminder1 || "1d");
+      setEventReminder2(userPrefs.eventReminder2 || "1h");
+      setEventReminder3(userPrefs.eventReminder3 || "15m");
     }
   }, [userPrefs]);
 
@@ -484,6 +505,13 @@ export default function SettingsPage() {
       eventReminders: boolean;
       dailyDigest: boolean;
       dailyDigestTime: string;
+      taskReminderOnAssign: boolean;
+      taskReminderBeforeDue: string;
+      taskOverdueReminder: boolean;
+      taskOverdueRepeatInterval: string;
+      eventReminder1: string;
+      eventReminder2: string;
+      eventReminder3: string;
     }) => {
       const response = await apiRequest("PUT", "/api/auth/preferences", prefs);
       return response.json();
@@ -2131,14 +2159,14 @@ export default function SettingsPage() {
 
         {/* Notification Preferences Dialog */}
         <Dialog open={showNotificationDialog} onOpenChange={setShowNotificationDialog}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Bell className="h-5 w-5 text-primary" />
                 Notification Preferences
               </DialogTitle>
               <DialogDescription>
-                Choose how you'd like to receive task and event reminders.
+                Customize how and when you receive reminders.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6">
@@ -2157,56 +2185,163 @@ export default function SettingsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-medium">Task Reminders</Label>
-                    <p className="text-xs text-muted-foreground">Get notified about task deadlines</p>
+
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-semibold mb-3">Task Reminders</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Task Reminders</Label>
+                        <p className="text-xs text-muted-foreground">Get notified about task deadlines</p>
+                      </div>
+                      <Switch checked={taskReminders} onCheckedChange={setTaskReminders} />
+                    </div>
+                    {taskReminders && (
+                      <>
+                        <div className="flex items-center justify-between pl-2">
+                          <div>
+                            <Label className="text-sm">Notify on assignment</Label>
+                            <p className="text-xs text-muted-foreground">Get notified when a task is assigned</p>
+                          </div>
+                          <Switch checked={taskReminderOnAssign} onCheckedChange={setTaskReminderOnAssign} />
+                        </div>
+                        <div className="pl-2">
+                          <Label className="text-sm">Reminder before due date</Label>
+                          <p className="text-xs text-muted-foreground mb-1">How far in advance to remind you</p>
+                          <Select value={taskReminderBeforeDue} onValueChange={setTaskReminderBeforeDue}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="30m">30 minutes before</SelectItem>
+                              <SelectItem value="1h">1 hour before</SelectItem>
+                              <SelectItem value="2h">2 hours before</SelectItem>
+                              <SelectItem value="4h">4 hours before</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex items-center justify-between pl-2">
+                          <div>
+                            <Label className="text-sm">Overdue reminders</Label>
+                            <p className="text-xs text-muted-foreground">Get reminded about overdue tasks</p>
+                          </div>
+                          <Switch checked={taskOverdueReminder} onCheckedChange={setTaskOverdueReminder} />
+                        </div>
+                        {taskOverdueReminder && (
+                          <div className="pl-2">
+                            <Label className="text-sm">Overdue repeat frequency</Label>
+                            <p className="text-xs text-muted-foreground mb-1">How often to repeat overdue reminders</p>
+                            <Select value={taskOverdueRepeatInterval} onValueChange={setTaskOverdueRepeatInterval}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="2h">Every 2 hours</SelectItem>
+                                <SelectItem value="4h">Every 4 hours</SelectItem>
+                                <SelectItem value="8h">Every 8 hours</SelectItem>
+                                <SelectItem value="none">Don't repeat</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
-                  <Switch 
-                    checked={taskReminders} 
-                    onCheckedChange={setTaskReminders}
-                  />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-medium">Event Reminders</Label>
-                    <p className="text-xs text-muted-foreground">Get reminded before calendar events</p>
+
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-semibold mb-3">Event Reminders</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Event Reminders</Label>
+                        <p className="text-xs text-muted-foreground">Get reminded before calendar events</p>
+                      </div>
+                      <Switch checked={eventReminders} onCheckedChange={setEventReminders} />
+                    </div>
+                    {eventReminders && (
+                      <>
+                        <div className="pl-2">
+                          <Label className="text-sm">First reminder</Label>
+                          <p className="text-xs text-muted-foreground mb-1">Earliest heads-up before the event</p>
+                          <Select value={eventReminder1} onValueChange={setEventReminder1}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1d">1 day before</SelectItem>
+                              <SelectItem value="12h">12 hours before</SelectItem>
+                              <SelectItem value="none">Off</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="pl-2">
+                          <Label className="text-sm">Second reminder</Label>
+                          <p className="text-xs text-muted-foreground mb-1">Getting-ready reminder</p>
+                          <Select value={eventReminder2} onValueChange={setEventReminder2}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="2h">2 hours before</SelectItem>
+                              <SelectItem value="1h">1 hour before</SelectItem>
+                              <SelectItem value="30m">30 minutes before</SelectItem>
+                              <SelectItem value="none">Off</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="pl-2">
+                          <Label className="text-sm">Final reminder</Label>
+                          <p className="text-xs text-muted-foreground mb-1">Last-minute heads-up</p>
+                          <Select value={eventReminder3} onValueChange={setEventReminder3}>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="30m">30 minutes before</SelectItem>
+                              <SelectItem value="15m">15 minutes before</SelectItem>
+                              <SelectItem value="5m">5 minutes before</SelectItem>
+                              <SelectItem value="none">Off</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <Switch 
-                    checked={eventReminders} 
-                    onCheckedChange={setEventReminders}
-                  />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-medium">Daily Digest</Label>
-                    <p className="text-xs text-muted-foreground">Daily summary of open tasks</p>
+
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-semibold mb-3">Daily Digest</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-medium">Daily Digest</Label>
+                        <p className="text-xs text-muted-foreground">Daily summary of open tasks</p>
+                      </div>
+                      <Switch checked={dailyDigest} onCheckedChange={setDailyDigest} />
+                    </div>
+                    {dailyDigest && (
+                      <div className="pl-2">
+                        <Label className="text-sm">Delivery time</Label>
+                        <p className="text-xs text-muted-foreground mb-1">When to send your daily summary</p>
+                        <Select value={dailyDigestTime} onValueChange={setDailyDigestTime}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="07:00">7:00 AM</SelectItem>
+                            <SelectItem value="08:00">8:00 AM</SelectItem>
+                            <SelectItem value="09:00">9:00 AM</SelectItem>
+                            <SelectItem value="10:00">10:00 AM</SelectItem>
+                            <SelectItem value="18:00">6:00 PM</SelectItem>
+                            <SelectItem value="19:00">7:00 PM</SelectItem>
+                            <SelectItem value="20:00">8:00 PM</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
-                  <Switch 
-                    checked={dailyDigest} 
-                    onCheckedChange={setDailyDigest}
-                  />
                 </div>
-                {dailyDigest && (
-                  <div>
-                    <Label className="text-sm font-medium">Daily Digest Time</Label>
-                    <p className="text-xs text-muted-foreground mb-2">When should we send your daily summary?</p>
-                    <Select value={dailyDigestTime} onValueChange={setDailyDigestTime}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="07:00">7:00 AM</SelectItem>
-                        <SelectItem value="08:00">8:00 AM</SelectItem>
-                        <SelectItem value="09:00">9:00 AM</SelectItem>
-                        <SelectItem value="10:00">10:00 AM</SelectItem>
-                        <SelectItem value="18:00">6:00 PM</SelectItem>
-                        <SelectItem value="19:00">7:00 PM</SelectItem>
-                        <SelectItem value="20:00">8:00 PM</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
               </div>
             </div>
             <DialogFooter>
@@ -2214,13 +2349,19 @@ export default function SettingsPage() {
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  // Reset to saved values
                   if (userPrefs) {
                     setNotificationMethod(userPrefs.notificationMethod || "both");
                     setTaskReminders(userPrefs.taskReminders ?? true);
                     setEventReminders(userPrefs.eventReminders ?? true);
                     setDailyDigest(userPrefs.dailyDigest ?? true);
                     setDailyDigestTime(userPrefs.dailyDigestTime || "09:00");
+                    setTaskReminderOnAssign(userPrefs.taskReminderOnAssign ?? true);
+                    setTaskReminderBeforeDue(userPrefs.taskReminderBeforeDue || "2h");
+                    setTaskOverdueReminder(userPrefs.taskOverdueReminder ?? true);
+                    setTaskOverdueRepeatInterval(userPrefs.taskOverdueRepeatInterval || "4h");
+                    setEventReminder1(userPrefs.eventReminder1 || "1d");
+                    setEventReminder2(userPrefs.eventReminder2 || "1h");
+                    setEventReminder3(userPrefs.eventReminder3 || "15m");
                   }
                   setShowNotificationDialog(false);
                 }}
@@ -2235,6 +2376,13 @@ export default function SettingsPage() {
                     eventReminders,
                     dailyDigest,
                     dailyDigestTime,
+                    taskReminderOnAssign,
+                    taskReminderBeforeDue,
+                    taskOverdueReminder,
+                    taskOverdueRepeatInterval,
+                    eventReminder1,
+                    eventReminder2,
+                    eventReminder3,
                   });
                 }}
                 disabled={updateNotificationMutation.isPending}
