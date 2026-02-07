@@ -2174,16 +2174,10 @@ export default function SettingsPage() {
                 <div>
                   <Label className="text-sm font-medium">Notification Method</Label>
                   <p className="text-xs text-muted-foreground mb-2">How would you like to receive reminders?</p>
-                  <Select value={notificationMethod} onValueChange={(value: "in_app" | "sms" | "both") => setNotificationMethod(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="in_app">In-App Only (Push Notifications)</SelectItem>
-                      <SelectItem value="sms">Text Messages Only</SelectItem>
-                      <SelectItem value="both">Both In-App and Text</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
+                    <Bell className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Push Notifications (In-App)</span>
+                  </div>
                 </div>
 
                 <div className="border-t pt-4">

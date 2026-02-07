@@ -1,5 +1,4 @@
 import { storage } from "./storage";
-import { sendSMS } from "./sms-service";
 import { sendEmail } from "./email-service";
 import { sendPushNotification, sendPushToFamilyMember } from "./firebase-push";
 import type { InsertNotification } from "@shared/schema";
@@ -227,38 +226,20 @@ export class NotificationService {
     
     // Get user preferences
     const prefs = await storage.getUserPreferences(userId);
-    const notificationMethod = prefs?.notificationMethod || "both";
-    
-    // Get user info for SMS
-    const user = await storage.getUser(userId);
-    const phoneNumber = user?.phoneNumber;
+    const notificationMethod = prefs?.notificationMethod || "in_app";
     
     // Create in-app notification
-    if (notificationMethod === "in_app" || notificationMethod === "both") {
-      const notificationRecord: InsertNotification = {
-        title: "Task Notification",
-        message,
-        recipientId: userId,
-        relatedTaskId: taskId,
-        deliveryMethod: "in_app",
-        scheduledFor: new Date(),
-        status: type === "task_past_due" ? "urgent" : "pending"
-      };
-      await storage.createNotification(notificationRecord);
-      console.log(`📱 Parent in-app notification: ${message}`);
-    }
-    
-    // Send SMS if enabled and phone number available
-    if ((notificationMethod === "sms" || notificationMethod === "both") && phoneNumber) {
-      try {
-        const smsSent = await sendSMS(phoneNumber, message);
-        if (smsSent) {
-          console.log(`📲 Parent SMS sent to ${phoneNumber}: ${message}`);
-        }
-      } catch (error) {
-        console.error("Failed to send parent SMS:", error);
-      }
-    }
+    const notificationRecord: InsertNotification = {
+      title: "Task Notification",
+      message,
+      recipientId: userId,
+      relatedTaskId: taskId,
+      deliveryMethod: "in_app",
+      scheduledFor: new Date(),
+      status: type === "task_past_due" ? "urgent" : "pending"
+    };
+    await storage.createNotification(notificationRecord);
+    console.log(`📱 Parent in-app notification: ${message}`);
 
     // Send FCM push notification
     try {
@@ -353,18 +334,6 @@ export class NotificationService {
       console.log(`📱 Teen in-app notification: ${message}`);
     }
     
-    // Send SMS if teen has phone number and settings allow it
-    if (preferSms && phoneNumber) {
-      try {
-        const smsSent = await sendSMS(phoneNumber, message);
-        if (smsSent) {
-          console.log(`📲 Teen SMS sent to ${phoneNumber}: ${message}`);
-        }
-      } catch (error) {
-        console.error("Failed to send teen SMS:", error);
-      }
-    }
-
     // Send FCM push notification to teen (if they have a linked user account)
     if (teenProfile.userId) {
       try {
@@ -485,37 +454,19 @@ export class NotificationService {
     
     // Get user preferences to determine delivery method
     const prefs = await storage.getUserPreferences(userId);
-    const notificationMethod = prefs?.notificationMethod || "both";
+    const notificationMethod = prefs?.notificationMethod || "in_app";
     
-    // Get user info for SMS
-    const user = await storage.getUser(userId);
-    const phoneNumber = user?.phoneNumber;
-    
-    // Create in-app notification if method includes in_app
-    if (notificationMethod === "in_app" || notificationMethod === "both") {
-      const notificationRecord: InsertNotification = {
-        title: "Event Reminder",
-        message,
-        recipientId: userId,
-        deliveryMethod: "in_app",
-        scheduledFor: new Date(),
-        status: "pending"
-      };
-      await storage.createNotification(notificationRecord);
-      console.log(`📱 In-app event notification: ${message}`);
-    }
-    
-    // Send SMS if method includes sms and phone number is available
-    if ((notificationMethod === "sms" || notificationMethod === "both") && phoneNumber) {
-      try {
-        const smsSent = await sendSMS(phoneNumber, message);
-        if (smsSent) {
-          console.log(`📲 SMS event reminder sent to ${phoneNumber}: ${message}`);
-        }
-      } catch (error) {
-        console.error("Failed to send event SMS:", error);
-      }
-    }
+    // Create in-app notification
+    const notificationRecord: InsertNotification = {
+      title: "Event Reminder",
+      message,
+      recipientId: userId,
+      deliveryMethod: "in_app",
+      scheduledFor: new Date(),
+      status: "pending"
+    };
+    await storage.createNotification(notificationRecord);
+    console.log(`📱 In-app event notification: ${message}`);
 
     // Send FCM push notification
     try {
@@ -596,19 +547,17 @@ export class NotificationService {
     
     message += `Total open: ${openTasks.length}`;
     
-    // Send via preferred method
-    if (notificationMethod === "in_app" || notificationMethod === "both") {
-      const notificationRecord: InsertNotification = {
-        title: "Daily Task Summary",
-        message,
-        recipientId: userId,
-        deliveryMethod: "in_app",
-        scheduledFor: new Date(),
-        status: "pending"
-      };
-      await storage.createNotification(notificationRecord);
-      console.log(`📱 Daily digest in-app notification sent to user ${userId}`);
-    }
+    // Create in-app notification
+    const notificationRecord: InsertNotification = {
+      title: "Daily Task Summary",
+      message,
+      recipientId: userId,
+      deliveryMethod: "in_app",
+      scheduledFor: new Date(),
+      status: "pending"
+    };
+    await storage.createNotification(notificationRecord);
+    console.log(`📱 Daily digest in-app notification sent to user ${userId}`);
     
     // Send FCM push notification for daily digest
     try {
@@ -620,17 +569,6 @@ export class NotificationService {
       });
     } catch (error) {
       console.error("Failed to send daily digest push notification:", error);
-    }
-
-    if ((notificationMethod === "sms" || notificationMethod === "both") && user.phoneNumber) {
-      try {
-        const smsSent = await sendSMS(user.phoneNumber, message);
-        if (smsSent) {
-          console.log(`📲 Daily digest SMS sent to ${user.phoneNumber}`);
-        }
-      } catch (error) {
-        console.error("Failed to send daily digest SMS:", error);
-      }
     }
   }
   
