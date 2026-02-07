@@ -1,6 +1,8 @@
 import { CloudSun, Loader2, AlertCircle, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
+import { Capacitor } from "@capacitor/core";
+import { Geolocation } from "@capacitor/geolocation";
 
 interface WeatherData {
   temperature: number;
@@ -72,29 +74,52 @@ export function WeatherWidget() {
     }
   };
 
-  const getCurrentLocation = (): Promise<{ latitude: number; longitude: number; isDefault: boolean }> => {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        // Default to New York coordinates (more neutral default)
-        resolve({ latitude: 40.7128, longitude: -74.0060, isDefault: true });
-        return;
+  const getCurrentLocation = async (): Promise<{ latitude: number; longitude: number; isDefault: boolean }> => {
+    const defaultLocation = { latitude: 40.7128, longitude: -74.0060, isDefault: true };
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        const permStatus = await Geolocation.checkPermissions();
+        if (permStatus.location === 'denied') {
+          const reqResult = await Geolocation.requestPermissions();
+          if (reqResult.location === 'denied') {
+            return defaultLocation;
+          }
+        }
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+          timeout: 15000,
+        });
+        return {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          isDefault: false,
+        };
       }
 
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          resolve({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            isDefault: false
-          });
-        },
-        () => {
-          // Default location if geolocation fails - use New York as neutral default
-          resolve({ latitude: 40.7128, longitude: -74.0060, isDefault: true });
-        },
-        { timeout: 10000, enableHighAccuracy: true }
-      );
-    });
+      if (!navigator.geolocation) {
+        return defaultLocation;
+      }
+
+      return new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            resolve({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              isDefault: false,
+            });
+          },
+          () => {
+            resolve(defaultLocation);
+          },
+          { timeout: 10000, enableHighAccuracy: true }
+        );
+      });
+    } catch (err) {
+      console.error("Location error:", err);
+      return defaultLocation;
+    }
   };
 
   const getCityFromCoordinates = async (lat: number, lon: number, isDefault: boolean): Promise<string> => {
@@ -149,7 +174,11 @@ export function WeatherWidget() {
       'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC', 'North Dakota': 'ND', 'Ohio': 'OH',
       'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Rhode Island': 'RI', 'South Carolina': 'SC',
       'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT',
-      'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'
+      'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY',
+      'Alberta': 'AB', 'British Columbia': 'BC', 'Manitoba': 'MB', 'New Brunswick': 'NB',
+      'Newfoundland and Labrador': 'NL', 'Nova Scotia': 'NS', 'Ontario': 'ON',
+      'Prince Edward Island': 'PE', 'Quebec': 'QC', 'Saskatchewan': 'SK',
+      'Northwest Territories': 'NT', 'Nunavut': 'NU', 'Yukon': 'YT'
     };
     return stateMap[state] || state;
   };
