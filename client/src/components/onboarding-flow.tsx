@@ -52,7 +52,7 @@ const slides = [
       "See everyone's events in one beautiful view",
       "Color-coded by family member",
       "Privacy controls \u2014 share what you want, keep what you don't",
-      "Syncs with Google Calendar",
+      "Shared, busy, and private event types",
     ],
     tagline: "Never double-book again.",
     cta: "What else can it do?",
@@ -206,11 +206,11 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
           )}
 
           {slide.body && !slide.isPricing && (
-            <p className="text-gray-600 whitespace-pre-line text-sm">{slide.body}</p>
+            <p className="text-gray-600 whitespace-pre-line text-base">{slide.body}</p>
           )}
 
           {slide.reassurance && (
-            <p className="text-sm text-pink-600 font-medium italic">{slide.reassurance}</p>
+            <p className="text-base text-pink-600 font-medium italic">{slide.reassurance}</p>
           )}
 
           {slide.benefits && (
@@ -218,7 +218,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
               {slide.benefits.map((benefit, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <Check className="h-5 w-5 text-pink-500 mt-0.5 shrink-0" />
-                  <span className="text-gray-700 text-sm">{benefit}</span>
+                  <span className="text-gray-700 text-base">{benefit}</span>
                 </li>
               ))}
             </ul>
@@ -229,7 +229,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
               {slide.featureHighlights.map((highlight, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <Check className="h-4 w-4 text-pink-500 mt-0.5 shrink-0" />
-                  <span className="text-gray-700 text-sm">{highlight}</span>
+                  <span className="text-gray-700 text-base">{highlight}</span>
                 </li>
               ))}
             </ul>
@@ -238,7 +238,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
           {slide.examples && (
             <div className="bg-gray-50 rounded-lg p-3 text-left space-y-1.5">
               {slide.examples.map((example, idx) => (
-                <p key={idx} className="text-gray-600 italic text-sm">{example}</p>
+                <p key={idx} className="text-gray-600 italic text-base">{example}</p>
               ))}
             </div>
           )}
@@ -253,15 +253,15 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
           )}
 
           {slide.tagline && !slide.isPricing && (
-            <p className="font-semibold text-gray-800 text-sm">{slide.tagline}</p>
+            <p className="font-semibold text-gray-800 text-base">{slide.tagline}</p>
           )}
 
           {slide.subtagline && (
-            <p className="text-gray-500 text-xs">{slide.subtagline}</p>
+            <p className="text-gray-500 text-sm">{slide.subtagline}</p>
           )}
 
           {slide.emotional && (
-            <p className="text-pink-600 italic text-sm">{slide.emotional}</p>
+            <p className="text-pink-600 italic text-base">{slide.emotional}</p>
           )}
 
           {slide.trust && (
@@ -317,6 +317,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
                     <h3 className="font-semibold text-gray-900">Individual</h3>
                     <p className="text-2xl font-bold text-pink-500">{getPrice("individual")}</p>
                     <p className="text-xs text-gray-500">{getPeriod()}</p>
+                    <p className="text-xs text-gray-600 mt-1">Perfect for just you</p>
                   </CardContent>
                 </Card>
 
