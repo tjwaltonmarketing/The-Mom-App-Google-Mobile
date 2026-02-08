@@ -28,40 +28,48 @@ class CapacitorPushNotificationService implements PushNotificationService {
   }
 
   async initialize(): Promise<void> {
-    if (this.isInitialized || !Capacitor.isNativePlatform()) {
+    if (this.isInitialized) {
+      console.log('Push notifications already initialized, skipping');
+      return;
+    }
+
+    if (!Capacitor.isNativePlatform()) {
+      console.log('Not a native platform, skipping Capacitor push init');
       return;
     }
 
     try {
+      console.log('Loading push notifications plugin...');
       const PushNotifications = await this.loadPlugin();
       if (!PushNotifications) {
         console.warn('Push notifications plugin could not be loaded, skipping initialization');
         return;
       }
 
-      console.log('Initializing push notifications...');
+      console.log('Push notifications plugin loaded, setting up listeners...');
 
-      PushNotifications.addListener('registration', (token: any) => {
+      await PushNotifications.addListener('registration', (token: any) => {
         console.info('Registration token: ', token.value);
         this.currentToken = token.value;
         this.saveTokenToServer(token.value);
       });
 
-      PushNotifications.addListener('registrationError', (err: any) => {
+      await PushNotifications.addListener('registrationError', (err: any) => {
         console.warn('Push notification registration error (non-fatal):', err?.error || err);
       });
 
-      PushNotifications.addListener('pushNotificationReceived', (notification: any) => {
+      await PushNotifications.addListener('pushNotificationReceived', (notification: any) => {
         console.log('Push notification received: ', notification);
         this.handleForegroundNotification(notification);
       });
 
-      PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
+      await PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
         console.log('Push notification action performed', notification);
         this.handleNotificationAction(notification);
       });
 
       this.isInitialized = true;
+      console.log('Push notifications listeners registered successfully');
     } catch (error) {
       console.warn('Push notification initialization failed (non-fatal):', error);
     }
@@ -69,21 +77,34 @@ class CapacitorPushNotificationService implements PushNotificationService {
 
   async requestPermissions(): Promise<boolean> {
     if (!Capacitor.isNativePlatform()) {
+      console.log('Not native platform, skipping permission request');
       return false;
     }
 
     try {
       const PushNotifications = await this.loadPlugin();
-      if (!PushNotifications) return false;
+      if (!PushNotifications) {
+        console.warn('Plugin not available for permission request');
+        return false;
+      }
 
+      const currentStatus = await PushNotifications.checkPermissions();
+      console.log('Current push notification permission status:', JSON.stringify(currentStatus));
+
+      if (currentStatus.receive === 'granted') {
+        console.log('Push notification permissions already granted');
+        return true;
+      }
+
+      console.log('Requesting push notification permissions from user...');
       const result = await PushNotifications.requestPermissions();
-      console.log('Permission result:', result);
+      console.log('Permission request result:', JSON.stringify(result));
       
       if (result.receive === 'granted') {
-        console.log('Push notification permissions granted');
+        console.log('Push notification permissions granted by user');
         return true;
       } else {
-        console.log('Push notification permissions denied');
+        console.log('Push notification permissions denied by user, result:', result.receive);
         return false;
       }
     } catch (error) {
@@ -242,18 +263,24 @@ export function getPushNotificationService(): PushNotificationService {
 
 export async function setupPushNotifications(): Promise<boolean> {
   try {
+    console.log('=== Push Notification Setup Starting ===');
+    console.log('Platform:', Capacitor.getPlatform(), '| Native:', Capacitor.isNativePlatform());
+    
     const service = getPushNotificationService();
     
+    console.log('Step 1: Initializing service...');
     await service.initialize();
     
+    console.log('Step 2: Requesting permissions...');
     const permissionGranted = await service.requestPermissions();
     if (!permissionGranted) {
-      console.log('Push notification permissions not granted');
+      console.log('Push notification permissions not granted, stopping setup');
       return false;
     }
     
+    console.log('Step 3: Registering for notifications...');
     await service.registerForNotifications();
-    console.log('Push notifications setup completed successfully');
+    console.log('=== Push Notification Setup Complete ===');
     return true;
   } catch (error) {
     console.warn('Failed to setup push notifications (non-fatal):', error);
