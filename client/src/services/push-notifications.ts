@@ -1,4 +1,3 @@
-import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
 import { Capacitor } from '@capacitor/core';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -14,47 +13,69 @@ export interface PushNotificationService {
 class CapacitorPushNotificationService implements PushNotificationService {
   private isInitialized = false;
   private currentToken: string | null = null;
+  private PushNotificationsPlugin: any = null;
+
+  private async loadPlugin(): Promise<any> {
+    if (this.PushNotificationsPlugin) return this.PushNotificationsPlugin;
+    try {
+      const mod = await import('@capacitor/push-notifications');
+      this.PushNotificationsPlugin = mod.PushNotifications;
+      return this.PushNotificationsPlugin;
+    } catch (error) {
+      console.warn('Push notifications plugin not available:', error);
+      return null;
+    }
+  }
 
   async initialize(): Promise<void> {
     if (this.isInitialized || !Capacitor.isNativePlatform()) {
       return;
     }
 
-    console.log('Initializing push notifications...');
+    try {
+      const PushNotifications = await this.loadPlugin();
+      if (!PushNotifications) {
+        console.warn('Push notifications plugin could not be loaded, skipping initialization');
+        return;
+      }
 
-    // Add listeners for push notification events
-    PushNotifications.addListener('registration', (token: Token) => {
-      console.info('Registration token: ', token.value);
-      this.currentToken = token.value;
-      this.saveTokenToServer(token.value);
-    });
+      console.log('Initializing push notifications...');
 
-    PushNotifications.addListener('registrationError', (err: any) => {
-      console.error('Registration error: ', err.error);
-    });
+      PushNotifications.addListener('registration', (token: any) => {
+        console.info('Registration token: ', token.value);
+        this.currentToken = token.value;
+        this.saveTokenToServer(token.value);
+      });
 
-    PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-      console.log('Push notification received: ', notification);
-      // Handle foreground notifications
-      this.handleForegroundNotification(notification);
-    });
+      PushNotifications.addListener('registrationError', (err: any) => {
+        console.warn('Push notification registration error (non-fatal):', err?.error || err);
+      });
 
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
-      console.log('Push notification action performed', notification);
-      // Handle notification tap/action
-      this.handleNotificationAction(notification);
-    });
+      PushNotifications.addListener('pushNotificationReceived', (notification: any) => {
+        console.log('Push notification received: ', notification);
+        this.handleForegroundNotification(notification);
+      });
 
-    this.isInitialized = true;
+      PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
+        console.log('Push notification action performed', notification);
+        this.handleNotificationAction(notification);
+      });
+
+      this.isInitialized = true;
+    } catch (error) {
+      console.warn('Push notification initialization failed (non-fatal):', error);
+    }
   }
 
   async requestPermissions(): Promise<boolean> {
     if (!Capacitor.isNativePlatform()) {
-      console.log('Push notifications are only available on native platforms');
       return false;
     }
 
     try {
+      const PushNotifications = await this.loadPlugin();
+      if (!PushNotifications) return false;
+
       const result = await PushNotifications.requestPermissions();
       console.log('Permission result:', result);
       
@@ -66,23 +87,24 @@ class CapacitorPushNotificationService implements PushNotificationService {
         return false;
       }
     } catch (error) {
-      console.error('Error requesting permissions:', error);
+      console.warn('Error requesting push permissions (non-fatal):', error);
       return false;
     }
   }
 
   async registerForNotifications(): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
-      console.log('Registration is only available on native platforms');
       return;
     }
 
     try {
+      const PushNotifications = await this.loadPlugin();
+      if (!PushNotifications) return;
+
       await PushNotifications.register();
       console.log('Successfully registered for push notifications');
     } catch (error) {
-      console.error('Error registering for push notifications:', error);
-      throw error;
+      console.warn('Error registering for push notifications (non-fatal):', error);
     }
   }
 
@@ -110,48 +132,42 @@ class CapacitorPushNotificationService implements PushNotificationService {
 
       console.log('Push token saved to server successfully');
     } catch (error) {
-      console.error('Failed to save push token to server:', error);
-      // Don't throw error here - save attempt failing shouldn't break the app
+      console.warn('Failed to save push token to server (non-fatal):', error);
     }
   }
 
-  private handleForegroundNotification(notification: PushNotificationSchema): void {
+  private handleForegroundNotification(notification: any): void {
     console.log('Handling foreground notification:', notification);
     
-    // You can customize this to show in-app notifications
-    // For example, using a toast or custom notification component
-    
-    // If you want to show a browser notification when app is in foreground:
-    if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification(notification.title || 'Mom App', {
-        body: notification.body,
-        icon: '/icon-192.png', // Adjust path as needed
-        tag: notification.id || 'mom-app-notification',
-      });
+    try {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(notification.title || 'Mom App', {
+          body: notification.body,
+          icon: '/icon-192.png',
+          tag: notification.id || 'mom-app-notification',
+        });
+      }
+    } catch (error) {
+      console.warn('Error showing foreground notification:', error);
     }
   }
 
-  private handleNotificationAction(action: ActionPerformed): void {
+  private handleNotificationAction(action: any): void {
     console.log('Handling notification action:', action);
     
-    const data = action.notification.data;
-    
-    // Handle different notification types based on data
-    if (data?.type === 'task') {
-      // Navigate to tasks page
-      window.location.href = '/teen/tasks';
-    } else if (data?.type === 'event') {
-      // Navigate to calendar page
-      window.location.href = '/teen/calendar';
-    } else if (data?.type === 'notification') {
-      // Navigate to notifications
-      window.location.href = '/teen';
+    try {
+      const data = action.notification.data;
+      
+      if (data?.type === 'task') {
+        window.location.href = '/teen/tasks';
+      } else if (data?.type === 'event') {
+        window.location.href = '/teen/calendar';
+      } else if (data?.type === 'notification') {
+        window.location.href = '/teen';
+      }
+    } catch (error) {
+      console.warn('Error handling notification action:', error);
     }
-    
-    // You can also use your router here instead of window.location
-    // For example, if using wouter:
-    // import { navigate } from 'wouter/use-location';
-    // navigate('/teen/tasks');
   }
 
   async cleanup(): Promise<void> {
@@ -160,18 +176,19 @@ class CapacitorPushNotificationService implements PushNotificationService {
     }
 
     try {
-      // Remove all listeners
-      await PushNotifications.removeAllListeners();
+      const PushNotifications = await this.loadPlugin();
+      if (PushNotifications) {
+        await PushNotifications.removeAllListeners();
+      }
       this.isInitialized = false;
       this.currentToken = null;
       console.log('Push notifications service cleaned up');
     } catch (error) {
-      console.error('Error cleaning up push notifications:', error);
+      console.warn('Error cleaning up push notifications:', error);
     }
   }
 }
 
-// Web fallback service for non-native platforms
 class WebPushNotificationService implements PushNotificationService {
   async initialize(): Promise<void> {
     console.log('Web push notifications not implemented yet');
@@ -179,8 +196,12 @@ class WebPushNotificationService implements PushNotificationService {
 
   async requestPermissions(): Promise<boolean> {
     if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
-      return permission === 'granted';
+      try {
+        const permission = await Notification.requestPermission();
+        return permission === 'granted';
+      } catch {
+        return false;
+      }
     }
     return false;
   }
@@ -202,7 +223,6 @@ class WebPushNotificationService implements PushNotificationService {
   }
 }
 
-// Factory function to get the appropriate service
 export function createPushNotificationService(): PushNotificationService {
   if (Capacitor.isNativePlatform()) {
     return new CapacitorPushNotificationService();
@@ -211,7 +231,6 @@ export function createPushNotificationService(): PushNotificationService {
   }
 }
 
-// Singleton instance
 let pushNotificationService: PushNotificationService | null = null;
 
 export function getPushNotificationService(): PushNotificationService {
@@ -221,7 +240,6 @@ export function getPushNotificationService(): PushNotificationService {
   return pushNotificationService;
 }
 
-// Convenience function to set up push notifications
 export async function setupPushNotifications(): Promise<boolean> {
   try {
     const service = getPushNotificationService();
@@ -238,7 +256,7 @@ export async function setupPushNotifications(): Promise<boolean> {
     console.log('Push notifications setup completed successfully');
     return true;
   } catch (error) {
-    console.error('Failed to setup push notifications:', error);
+    console.warn('Failed to setup push notifications (non-fatal):', error);
     return false;
   }
 }

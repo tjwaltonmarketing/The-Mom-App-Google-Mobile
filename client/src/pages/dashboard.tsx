@@ -20,23 +20,22 @@ import { setupPushNotifications } from "@/services/push-notifications";
 export default function Dashboard() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
 
-  // Initialize push notifications when parent dashboard loads
   useEffect(() => {
-    const initializePushNotifications = async () => {
+    const timer = setTimeout(async () => {
       try {
         console.log('Parent Dashboard: Initializing push notifications...');
         const success = await setupPushNotifications();
         if (success) {
           console.log('Parent Dashboard: Push notifications initialized successfully');
         } else {
-          console.log('Parent Dashboard: Push notifications initialization failed or not supported');
+          console.log('Parent Dashboard: Push notifications not available or denied');
         }
       } catch (error) {
-        console.error('Parent Dashboard: Push notification setup error:', error);
+        console.warn('Parent Dashboard: Push notification setup failed (non-fatal):', error);
       }
-    };
+    }, 2000);
 
-    initializePushNotifications();
+    return () => clearTimeout(timer);
   }, []);
 
   return (
