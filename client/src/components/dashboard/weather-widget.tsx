@@ -1,8 +1,6 @@
-import { CloudSun, Loader2, AlertCircle, MapPin } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect, useState } from "react";
-import { Capacitor } from "@capacitor/core";
-import { Geolocation } from "@capacitor/geolocation";
+import { CloudSun, Loader2, AlertCircle, MapPin, Pencil, Check, X } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useState, useRef } from "react";
 
 interface WeatherData {
   temperature: number;
@@ -12,29 +10,75 @@ interface WeatherData {
   isDefaultLocation?: boolean;
 }
 
+interface SavedLocation {
+  latitude: number;
+  longitude: number;
+  displayName: string;
+}
+
+const LOCATION_STORAGE_KEY = 'momapp_weather_location';
+
+function getSavedLocation(): SavedLocation | null {
+  try {
+    const stored = localStorage.getItem(LOCATION_STORAGE_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return null;
+}
+
+function saveLocation(location: SavedLocation) {
+  try {
+    localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify(location));
+  } catch {}
+}
+
 export function WeatherWidget() {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [locationInput, setLocationInput] = useState('');
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchWeatherData();
   }, []);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
 
   const fetchWeatherData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Try to get user's location
-      const locationResult = await getCurrentLocation();
-      const { latitude, longitude, isDefault } = locationResult;
-      
-      // Fetch weather data from a free weather service
+      const saved = getSavedLocation();
+      let latitude: number;
+      let longitude: number;
+      let locationName: string;
+      let isDefault = false;
+
+      if (saved) {
+        latitude = saved.latitude;
+        longitude = saved.longitude;
+        locationName = saved.displayName;
+      } else {
+        const defaultLoc = { latitude: 40.7128, longitude: -74.0060 };
+        latitude = defaultLoc.latitude;
+        longitude = defaultLoc.longitude;
+        locationName = "New York, NY";
+        isDefault = true;
+      }
+
       const response = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit&timezone=auto`
       );
-      
+
       if (!response.ok) {
         throw new Error('Weather service unavailable');
       }
@@ -42,26 +86,21 @@ export function WeatherWidget() {
       const data = await response.json();
       const temp = Math.round(data.current.temperature_2m);
       const weatherCode = data.current.weather_code;
-      
-      // Convert weather code to description
+
       const description = getWeatherDescription(weatherCode);
       const outfitSuggestion = getOutfitSuggestion(temp, weatherCode);
-      
-      // Get city name from coordinates using reverse geocoding
-      const cityName = await getCityFromCoordinates(latitude, longitude, isDefault);
-      
+
       setWeatherData({
         temperature: temp,
         description,
         outfitSuggestion,
-        location: cityName,
+        location: isDefault ? `${locationName} (tap to set yours)` : locationName,
         isDefaultLocation: isDefault
       });
-      
+
     } catch (error) {
       console.error('Weather fetch error:', error);
       setError('Weather data unavailable');
-      // Set reasonable default data
       setWeatherData({
         temperature: 72,
         description: "Weather information unavailable",
@@ -74,92 +113,64 @@ export function WeatherWidget() {
     }
   };
 
-  const getCurrentLocation = async (): Promise<{ latitude: number; longitude: number; isDefault: boolean }> => {
-    const defaultLocation = { latitude: 40.7128, longitude: -74.0060, isDefault: true };
-
+  const geocodeLocation = async (query: string): Promise<SavedLocation | null> => {
     try {
-      if (Capacitor.isNativePlatform()) {
-        const permStatus = await Geolocation.checkPermissions();
-        if (permStatus.location === 'denied') {
-          const reqResult = await Geolocation.requestPermissions();
-          if (reqResult.location === 'denied') {
-            return defaultLocation;
-          }
-        }
-        const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-          timeout: 15000,
-        });
-        return {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          isDefault: false,
-        };
+      const response = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`
+      );
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+
+      if (!data.results || data.results.length === 0) {
+        return null;
       }
 
-      if (!navigator.geolocation) {
-        return defaultLocation;
-      }
+      const result = data.results[0];
+      const parts = [result.name];
+      if (result.admin1) parts.push(getStateAbbreviation(result.admin1));
+      const displayName = parts.join(', ');
 
-      return new Promise((resolve) => {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            resolve({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              isDefault: false,
-            });
-          },
-          () => {
-            resolve(defaultLocation);
-          },
-          { timeout: 10000, enableHighAccuracy: true }
-        );
-      });
-    } catch (err) {
-      console.error("Location error:", err);
-      return defaultLocation;
+      return {
+        latitude: result.latitude,
+        longitude: result.longitude,
+        displayName,
+      };
+    } catch {
+      return null;
     }
   };
 
-  const getCityFromCoordinates = async (lat: number, lon: number, isDefault: boolean): Promise<string> => {
-    if (isDefault) {
-      return "New York, NY (default)";
+  const handleLocationSubmit = async () => {
+    const query = locationInput.trim();
+    if (!query) return;
+
+    setSearchLoading(true);
+    setSearchError(null);
+
+    const location = await geocodeLocation(query);
+
+    if (location) {
+      saveLocation(location);
+      setIsEditing(false);
+      setLocationInput('');
+      setSearchError(null);
+      await fetchWeatherData();
+    } else {
+      setSearchError("Couldn't find that location. Try a city name or zip code.");
     }
-    
-    try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`,
-        {
-          headers: {
-            'User-Agent': 'MomApp/1.0'
-          }
-        }
-      );
-      
-      if (!response.ok) {
-        return "Your Location";
-      }
-      
-      const data = await response.json();
-      const address = data.address;
-      
-      // Try to get city, town, or village name
-      const city = address.city || address.town || address.village || address.municipality || address.county;
-      const state = address.state;
-      
-      if (city && state) {
-        // Abbreviate common US states
-        const stateAbbrev = getStateAbbreviation(state);
-        return `${city}, ${stateAbbrev}`;
-      } else if (city) {
-        return city;
-      }
-      
-      return "Your Location";
-    } catch (error) {
-      console.error('Reverse geocoding error:', error);
-      return "Your Location";
+
+    setSearchLoading(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleLocationSubmit();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+      setSearchError(null);
+      setLocationInput('');
     }
   };
 
@@ -211,12 +222,11 @@ export function WeatherWidget() {
   if (loading) {
     return (
       <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-lg font-semibold">Today's Weather</CardTitle>
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-blue-100">Loading weather data...</div>
+        <CardContent className="py-3 px-4">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span className="text-blue-100">Loading weather...</span>
+          </div>
         </CardContent>
       </Card>
     );
@@ -225,19 +235,18 @@ export function WeatherWidget() {
   if (error && !weatherData) {
     return (
       <Card className="bg-gradient-to-br from-gray-500 to-gray-600 text-white">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-lg font-semibold">Weather</CardTitle>
-          <AlertCircle className="h-8 w-8" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-gray-100">
-            <p className="mb-2">Weather unavailable</p>
-            <button 
-              onClick={fetchWeatherData}
-              className="text-sm underline hover:text-white"
-            >
-              Try again
-            </button>
+        <CardContent className="py-3 px-4">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-6 w-6" />
+            <div>
+              <span>Weather unavailable</span>
+              <button
+                onClick={fetchWeatherData}
+                className="ml-2 text-sm underline hover:text-white"
+              >
+                Try again
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -255,19 +264,57 @@ export function WeatherWidget() {
                 <span className="text-2xl font-bold">{weatherData?.temperature}°F</span>
                 <span className="text-blue-100 text-sm ml-2">{weatherData?.description}</span>
               </div>
-              <div className="flex items-center gap-1 text-xs text-blue-200">
-                <MapPin className="h-3 w-3" />
-                <span>{weatherData?.location}</span>
-                {weatherData?.isDefaultLocation && (
-                  <button 
-                    onClick={fetchWeatherData}
-                    className="ml-1 underline hover:text-white"
-                    title="Click to retry getting your location"
+
+              {isEditing ? (
+                <div className="mt-1">
+                  <div className="flex items-center gap-1">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={locationInput}
+                      onChange={(e) => setLocationInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="City, State or Zip"
+                      className="bg-white/20 text-white placeholder-blue-200 text-xs rounded px-2 py-1 w-36 outline-none focus:bg-white/30"
+                      disabled={searchLoading}
+                    />
+                    <button
+                      onClick={handleLocationSubmit}
+                      disabled={searchLoading || !locationInput.trim()}
+                      className="p-1 hover:bg-white/20 rounded disabled:opacity-50"
+                      title="Save location"
+                    >
+                      {searchLoading ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Check className="h-3 w-3" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => { setIsEditing(false); setSearchError(null); setLocationInput(''); }}
+                      className="p-1 hover:bg-white/20 rounded"
+                      title="Cancel"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                  {searchError && (
+                    <p className="text-xs text-red-200 mt-1">{searchError}</p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 text-xs text-blue-200">
+                  <MapPin className="h-3 w-3" />
+                  <span>{weatherData?.location}</span>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="ml-1 p-0.5 hover:bg-white/20 rounded"
+                    title="Change location"
                   >
-                    (retry)
+                    <Pencil className="h-3 w-3" />
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="text-right text-xs text-blue-100 max-w-[140px]">
