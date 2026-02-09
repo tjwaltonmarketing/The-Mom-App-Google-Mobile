@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { apiRequest } from '@/lib/queryClient';
 
 export interface PushNotificationService {
@@ -13,19 +14,6 @@ export interface PushNotificationService {
 class CapacitorPushNotificationService implements PushNotificationService {
   private isInitialized = false;
   private currentToken: string | null = null;
-  private PushNotificationsPlugin: any = null;
-
-  private async loadPlugin(): Promise<any> {
-    if (this.PushNotificationsPlugin) return this.PushNotificationsPlugin;
-    try {
-      const mod = await import('@capacitor/push-notifications');
-      this.PushNotificationsPlugin = mod.PushNotifications;
-      return this.PushNotificationsPlugin;
-    } catch (error) {
-      console.warn('Push notifications plugin not available:', error);
-      return null;
-    }
-  }
 
   async initialize(): Promise<void> {
     if (this.isInitialized) {
@@ -39,31 +27,24 @@ class CapacitorPushNotificationService implements PushNotificationService {
     }
 
     try {
-      console.log('Loading push notifications plugin...');
-      const PushNotifications = await this.loadPlugin();
-      if (!PushNotifications) {
-        console.warn('Push notifications plugin could not be loaded, skipping initialization');
-        return;
-      }
+      console.log('Setting up push notification listeners...');
 
-      console.log('Push notifications plugin loaded, setting up listeners...');
-
-      await PushNotifications.addListener('registration', (token: any) => {
+      await PushNotifications.addListener('registration', (token) => {
         console.info('Registration token: ', token.value);
         this.currentToken = token.value;
         this.saveTokenToServer(token.value);
       });
 
-      await PushNotifications.addListener('registrationError', (err: any) => {
+      await PushNotifications.addListener('registrationError', (err) => {
         console.warn('Push notification registration error (non-fatal):', err?.error || err);
       });
 
-      await PushNotifications.addListener('pushNotificationReceived', (notification: any) => {
+      await PushNotifications.addListener('pushNotificationReceived', (notification) => {
         console.log('Push notification received: ', notification);
         this.handleForegroundNotification(notification);
       });
 
-      await PushNotifications.addListener('pushNotificationActionPerformed', (notification: any) => {
+      await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
         console.log('Push notification action performed', notification);
         this.handleNotificationAction(notification);
       });
@@ -82,12 +63,6 @@ class CapacitorPushNotificationService implements PushNotificationService {
     }
 
     try {
-      const PushNotifications = await this.loadPlugin();
-      if (!PushNotifications) {
-        console.warn('Plugin not available for permission request');
-        return false;
-      }
-
       const currentStatus = await PushNotifications.checkPermissions();
       console.log('Current push notification permission status:', JSON.stringify(currentStatus));
 
@@ -119,9 +94,6 @@ class CapacitorPushNotificationService implements PushNotificationService {
     }
 
     try {
-      const PushNotifications = await this.loadPlugin();
-      if (!PushNotifications) return;
-
       await PushNotifications.register();
       console.log('Successfully registered for push notifications');
     } catch (error) {
@@ -197,10 +169,7 @@ class CapacitorPushNotificationService implements PushNotificationService {
     }
 
     try {
-      const PushNotifications = await this.loadPlugin();
-      if (PushNotifications) {
-        await PushNotifications.removeAllListeners();
-      }
+      await PushNotifications.removeAllListeners();
       this.isInitialized = false;
       this.currentToken = null;
       console.log('Push notifications service cleaned up');
@@ -212,7 +181,7 @@ class CapacitorPushNotificationService implements PushNotificationService {
 
 class WebPushNotificationService implements PushNotificationService {
   async initialize(): Promise<void> {
-    console.log('Web push notifications not implemented yet');
+    console.log('Web push notifications: skipping native init');
   }
 
   async requestPermissions(): Promise<boolean> {
