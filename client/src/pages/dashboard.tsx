@@ -13,30 +13,11 @@ import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { MindfulUsage } from "@/components/mindful-usage";
 import { FeedbackPromptModal } from "@/components/feedback-prompt-modal";
 import { WebAccessTipModal } from "@/components/web-access-tip-modal";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { setupPushNotifications } from "@/services/push-notifications";
 
 export default function Dashboard() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(async () => {
-      try {
-        console.log('Parent Dashboard: Initializing push notifications...');
-        const success = await setupPushNotifications();
-        if (success) {
-          console.log('Parent Dashboard: Push notifications initialized successfully');
-        } else {
-          console.log('Parent Dashboard: Push notifications not available or denied');
-        }
-      } catch (error) {
-        console.warn('Parent Dashboard: Push notification setup failed (non-fatal):', error);
-      }
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <div className="min-h-screen bg-neutral dark:bg-background blue-light-filter:bg-neutral">
