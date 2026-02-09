@@ -12,12 +12,6 @@ export function useNotifications() {
     refetchInterval: 30000, // Check every 30 seconds
   });
 
-  // Request notification permission on first load
-  useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-  }, []);
 
   // Check for due notifications
   useEffect(() => {
