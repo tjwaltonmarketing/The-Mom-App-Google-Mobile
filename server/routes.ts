@@ -728,6 +728,35 @@ export async function registerRoutes(app: Express) {
         }
       }
       
+      // Try token-based authentication for persistent mobile login
+      const token = extractTokenFromRequest(req);
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) {
+          // Find teen profile by userId
+          const teenProfile = await storage.getTeenProfileByUserId(decoded.userId);
+          if (teenProfile) {
+            // Restore the teen session
+            req.session.teenId = teenProfile.id;
+            return res.json({
+              isAuthenticated: true,
+              teenId: teenProfile.id,
+              teenProfile: {
+                id: teenProfile.id,
+                firstName: teenProfile.firstName,
+                lastName: teenProfile.lastName,
+                username: teenProfile.username,
+                avatar: teenProfile.avatar,
+                points: teenProfile.points,
+                streak: teenProfile.streak,
+                favoriteColor: teenProfile.favoriteColor,
+                familyMemberId: teenProfile.familyMemberId
+              }
+            });
+          }
+        }
+      }
+
       // Not authenticated
       res.json({
         isAuthenticated: false,
@@ -783,8 +812,11 @@ export async function registerRoutes(app: Express) {
         });
       });
 
+      const token = generateToken(teenProfile.userId);
+
       res.json({
         success: true,
+        token,
         teenProfile: {
           id: teenProfile.id,
           firstName: teenProfile.firstName,
@@ -839,9 +871,11 @@ export async function registerRoutes(app: Express) {
             return res.status(500).json({ error: "Failed to save session" });
           }
           
+          const inviteToken = generateToken(existingTeen.userId);
           return res.json({
             success: true,
             needsSetup: false,
+            token: inviteToken,
             teenProfile: {
               id: existingTeen.id,
               firstName: existingTeen.firstName,

@@ -29,6 +29,9 @@ export default function TeenLogin() {
       return response.json();
     },
     onSuccess: (data) => {
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
       if (data.needsSetup) {
         // Pass invite data to onboarding page so they don't need to enter code again
         const params = new URLSearchParams({
@@ -72,8 +75,11 @@ export default function TeenLogin() {
       });
       return response.json();
     },
-    onSuccess: async () => {
+    onSuccess: async (data: any) => {
       console.log("Login successful, refreshing auth state...");
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
       
       // Force refetch teen auth data first
       await queryClient.refetchQueries({ queryKey: ["/api/teen/auth/user"] });

@@ -29,30 +29,51 @@ class CapacitorPushNotificationService implements PushNotificationService {
     try {
       console.log('Setting up push notification listeners...');
 
+      try {
+        await PushNotifications.removeAllListeners();
+      } catch (e) {
+        // ignore cleanup errors
+      }
+
       await PushNotifications.addListener('registration', (token) => {
-        console.info('Registration token: ', token.value);
-        this.currentToken = token.value;
-        this.saveTokenToServer(token.value);
+        try {
+          console.info('Registration token: ', token.value);
+          this.currentToken = token.value;
+          this.saveTokenToServer(token.value).catch(err => {
+            console.warn('Failed to save token (non-fatal):', err);
+          });
+        } catch (error) {
+          console.warn('Error in registration handler (non-fatal):', error);
+        }
       });
 
       await PushNotifications.addListener('registrationError', (err) => {
-        console.warn('Push notification registration error (non-fatal):', err?.error || err);
+        console.warn('Push notification registration error (non-fatal):', JSON.stringify(err));
       });
 
       await PushNotifications.addListener('pushNotificationReceived', (notification) => {
-        console.log('Push notification received: ', notification);
-        this.handleForegroundNotification(notification);
+        try {
+          console.log('Push notification received: ', notification);
+          this.handleForegroundNotification(notification);
+        } catch (error) {
+          console.warn('Error handling received notification (non-fatal):', error);
+        }
       });
 
       await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-        console.log('Push notification action performed', notification);
-        this.handleNotificationAction(notification);
+        try {
+          console.log('Push notification action performed', notification);
+          this.handleNotificationAction(notification);
+        } catch (error) {
+          console.warn('Error handling notification action (non-fatal):', error);
+        }
       });
 
       this.isInitialized = true;
       console.log('Push notifications listeners registered successfully');
     } catch (error) {
       console.warn('Push notification initialization failed (non-fatal):', error);
+      this.isInitialized = false;
     }
   }
 
@@ -63,8 +84,14 @@ class CapacitorPushNotificationService implements PushNotificationService {
     }
 
     try {
-      const currentStatus = await PushNotifications.checkPermissions();
-      console.log('Current push notification permission status:', JSON.stringify(currentStatus));
+      let currentStatus: any;
+      try {
+        currentStatus = await PushNotifications.checkPermissions();
+        console.log('Current push notification permission status:', JSON.stringify(currentStatus));
+      } catch (checkError) {
+        console.warn('Error checking permissions (non-fatal):', checkError);
+        currentStatus = { receive: 'prompt' };
+      }
 
       if (currentStatus.receive === 'granted') {
         console.log('Push notification permissions already granted');
@@ -94,6 +121,7 @@ class CapacitorPushNotificationService implements PushNotificationService {
     }
 
     try {
+      await new Promise(resolve => setTimeout(resolve, 500));
       await PushNotifications.register();
       console.log('Successfully registered for push notifications');
     } catch (error) {
@@ -235,20 +263,38 @@ export async function setupPushNotifications(): Promise<boolean> {
     console.log('=== Push Notification Setup Starting ===');
     console.log('Platform:', Capacitor.getPlatform(), '| Native:', Capacitor.isNativePlatform());
     
+    if (!Capacitor.isNativePlatform()) {
+      console.log('Not a native platform, skipping push notification setup');
+      return false;
+    }
+
     const service = getPushNotificationService();
     
-    console.log('Step 1: Initializing service...');
+    console.log('Step 1: Initializing service (setting up listeners)...');
     await service.initialize();
     
     console.log('Step 2: Requesting permissions...');
-    const permissionGranted = await service.requestPermissions();
+    let permissionGranted = false;
+    try {
+      permissionGranted = await service.requestPermissions();
+    } catch (permError) {
+      console.warn('Permission request threw error (non-fatal):', permError);
+      return false;
+    }
+
     if (!permissionGranted) {
       console.log('Push notification permissions not granted, stopping setup');
       return false;
     }
     
     console.log('Step 3: Registering for notifications...');
-    await service.registerForNotifications();
+    try {
+      await service.registerForNotifications();
+    } catch (regError) {
+      console.warn('Registration threw error (non-fatal):', regError);
+      return false;
+    }
+
     console.log('=== Push Notification Setup Complete ===');
     return true;
   } catch (error) {

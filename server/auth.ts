@@ -73,7 +73,7 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-jwt-secret-for-development";
 
 export function generateToken(userId: number): string {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '24h' });
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '90d' });
 }
 
 export function verifyToken(token: string): { userId: number } | null {

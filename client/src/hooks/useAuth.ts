@@ -1,5 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { getApiUrl } from "@/lib/config";
+
+function getStoredAuthToken(): string | null {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    return localStorage.getItem('auth_token');
+  }
+  return null;
+}
 
 export function useAuth() {
   const queryClient = useQueryClient();
@@ -7,8 +15,15 @@ export function useAuth() {
   const { data: user, isLoading, error } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
-      const response = await fetch("/api/auth/user", {
+      const headers: Record<string, string> = {};
+      const token = getStoredAuthToken();
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const fullUrl = getApiUrl("/api/auth/user");
+      const response = await fetch(fullUrl, {
         credentials: "include",
+        headers,
       });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -16,7 +31,7 @@ export function useAuth() {
       return response.json();
     },
     retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   const logoutMutation = useMutation({

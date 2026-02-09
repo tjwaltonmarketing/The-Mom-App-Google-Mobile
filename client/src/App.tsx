@@ -173,12 +173,17 @@ function Router() {
     queryKey: ["/api/teen/auth/user"],
     queryFn: async () => {
       console.log("Fetching teen auth data...");
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
       const response = await fetch("/api/teen/auth/user", {
         credentials: "include",
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
       });
       console.log("Teen auth response status:", response.status, response.statusText);
       if (!response.ok) {
