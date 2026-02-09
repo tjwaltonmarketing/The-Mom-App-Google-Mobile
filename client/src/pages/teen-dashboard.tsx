@@ -24,6 +24,7 @@ import {
   Utensils
 } from "lucide-react";
 import TeenNavigation from "@/components/teen/teen-navigation";
+import { NotificationPrompt } from "@/components/dashboard/notification-prompt";
 import type { Task, Event } from "@shared/schema";
 
 interface MealPlan {
@@ -211,6 +212,8 @@ export default function TeenDashboard() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
           {getGreeting()}, {teenProfile?.firstName || 'there'}!
         </h1>
+
+        <NotificationPrompt />
 
         {/* Weather Widget at Top */}
         <div className="mb-6">

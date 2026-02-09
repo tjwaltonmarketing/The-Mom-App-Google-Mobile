@@ -258,47 +258,54 @@ export function getPushNotificationService(): PushNotificationService {
   return pushNotificationService;
 }
 
-export async function setupPushNotifications(): Promise<boolean> {
+export async function initializePushListeners(): Promise<boolean> {
   try {
-    console.log('=== Push Notification Setup Starting ===');
-    console.log('Platform:', Capacitor.getPlatform(), '| Native:', Capacitor.isNativePlatform());
-    
     if (!Capacitor.isNativePlatform()) {
-      console.log('Not a native platform, skipping push notification setup');
+      return false;
+    }
+    const service = getPushNotificationService();
+    await service.initialize();
+    return true;
+  } catch (error) {
+    console.warn('Push listener init failed (non-fatal):', error);
+    return false;
+  }
+}
+
+export async function checkPushPermissionStatus(): Promise<'granted' | 'denied' | 'prompt'> {
+  try {
+    if (!Capacitor.isNativePlatform()) {
+      return 'denied';
+    }
+    const status = await PushNotifications.checkPermissions();
+    return status.receive as 'granted' | 'denied' | 'prompt';
+  } catch {
+    return 'denied';
+  }
+}
+
+export async function requestAndRegisterPush(): Promise<boolean> {
+  try {
+    if (!Capacitor.isNativePlatform()) {
       return false;
     }
 
     const service = getPushNotificationService();
-    
-    console.log('Step 1: Initializing service (setting up listeners)...');
     await service.initialize();
-    
-    console.log('Step 2: Requesting permissions...');
-    let permissionGranted = false;
-    try {
-      permissionGranted = await service.requestPermissions();
-    } catch (permError) {
-      console.warn('Permission request threw error (non-fatal):', permError);
-      return false;
-    }
 
+    const permissionGranted = await service.requestPermissions();
     if (!permissionGranted) {
-      console.log('Push notification permissions not granted, stopping setup');
-      return false;
-    }
-    
-    console.log('Step 3: Registering for notifications...');
-    try {
-      await service.registerForNotifications();
-    } catch (regError) {
-      console.warn('Registration threw error (non-fatal):', regError);
       return false;
     }
 
-    console.log('=== Push Notification Setup Complete ===');
+    await service.registerForNotifications();
     return true;
   } catch (error) {
-    console.warn('Failed to setup push notifications (non-fatal):', error);
+    console.warn('Push registration failed (non-fatal):', error);
     return false;
   }
+}
+
+export async function setupPushNotifications(): Promise<boolean> {
+  return requestAndRegisterPush();
 }

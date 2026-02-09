@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { SplashScreen } from "@/components/splash-screen";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PullToRefreshIndicator } from "@/components/pull-to-refresh-indicator";
-import { setupPushNotifications } from "@/services/push-notifications";
 
 // Pages
 import Login from "@/pages/login";
@@ -61,27 +60,6 @@ function Router() {
   const [splashCompleted, setSplashCompleted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
-  const pushNotificationSetupDone = useRef(false);
-
-  useEffect(() => {
-    if (isAuthenticated && !pushNotificationSetupDone.current) {
-      pushNotificationSetupDone.current = true;
-      const timer = setTimeout(async () => {
-        try {
-          console.log('App: Initializing push notifications for authenticated user...');
-          const success = await setupPushNotifications();
-          if (success) {
-            console.log('App: Push notifications initialized successfully');
-          } else {
-            console.log('App: Push notifications not available or denied');
-          }
-        } catch (error) {
-          console.warn('App: Push notification setup failed (non-fatal):', error);
-        }
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [isAuthenticated]);
 
   useEffect(() => {
     if (isAuthenticated) {
