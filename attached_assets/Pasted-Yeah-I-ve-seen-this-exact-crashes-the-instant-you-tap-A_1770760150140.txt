@@ -1,0 +1,184 @@
+Yeah — I’ve seen this exact “crashes the instant you tap Allow” pattern a few times with Capacitor + custom permission plumbing. The key signal is: the crash happens at the native permission callback boundary, not when the dialog opens.
+
+You can often fix it without guessing… but you need to do two things:
+
+Get the native stack trace (logcat) (even once)
+
+Stop fighting Capacitor’s permission lifecycle (most consistent root cause is a bad/duplicate onRequestPermissionsResult path)
+
+Below is the best “do-this-now” plan + the most common fixes that match your setup.
+
+1) Get the crash stack trace on your S23 (no special dev environment required)
+
+On any laptop (Windows/Mac), install Android Platform Tools (ADB). Then:
+
+Windows
+
+Download “platform-tools” from Google
+
+Unzip, open that folder in Terminal/PowerShell
+
+On your phone: Settings → Developer Options → USB debugging ON
+
+Plug phone in via USB
+
+Run:
+
+adb devices
+adb logcat -c
+adb logcat *:E
+
+
+Reproduce crash: login → tap “Allow” → crash.
+Copy the stack trace that prints right as it crashes.
+
+Samsung fallback if no computer
+
+Settings → Developer options → Take bug report (or “Bug report”) right after reproducing. It generates a report you can share. It’s messier than logcat but still useful.
+
+This will tell us in 10 seconds if it’s:
+
+NullPointerException in your plugin/activity
+
+IllegalStateException from double-callback / wrong lifecycle
+
+SecurityException / manifest mismatch
+
+Something Firebase/notification-channel related
+
+2) The most likely root cause in your exact description
+✅ #1 cause: MainActivity.onRequestPermissionsResult is overridden/forwarded incorrectly
+
+Capacitor’s BridgeActivity already handles permission results. If you override onRequestPermissionsResult() and manually forward to the bridge/plugins, you can easily trigger:
+
+double delivery of the result
+
+delivery to a null bridge
+
+calling the callback on a plugin instance that’s not attached
+…and the app can crash immediately after the user taps Allow.
+
+Fix: remove your override and any manual forwarding unless you absolutely know you need it and you’re calling the correct super method.
+
+What I want you to try immediately:
+
+In MainActivity.java, remove any onRequestPermissionsResult override you added for this.
+
+Remove any custom forwarding to plugin.
+
+Let Capacitor handle permissions.
+
+If removing it fixes the crash, that was it.
+
+3) The “known-good” way to request POST_NOTIFICATIONS in Capacitor 5 (custom plugin)
+
+Make sure your plugin is declared like this (Java example):
+
+@CapacitorPlugin(
+  name = "FCMPlugin",
+  permissions = {
+    @Permission(
+      alias = "notifications",
+      strings = { Manifest.permission.POST_NOTIFICATIONS }
+    )
+  }
+)
+public class FCMPlugin extends Plugin {
+
+  @PluginMethod
+  public void requestPermissions(PluginCall call) {
+    requestPermissionForAlias("notifications", call, "notificationsPermsCallback");
+  }
+
+  @PermissionCallback
+  private void notificationsPermsCallback(PluginCall call) {
+    boolean granted = getPermissionState("notifications") == PermissionState.GRANTED;
+    JSObject ret = new JSObject();
+    ret.put("granted", granted);
+    call.resolve(ret);
+  }
+}
+
+And in AndroidManifest.xml you MUST have:
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+Also ensure your Gradle is actually compiling with a modern SDK:
+
+compileSdk 35
+
+targetSdk 35
+
+(You already target 35; just confirm compileSdk matches.)
+
+4) Another common crash point: calling NotificationChannel creation with a null context or too early
+
+Some implementations create notification channels right after permission is granted, but do it using a null Activity or a stale context reference. That tends to crash immediately post-allow.
+
+Rule: create notification channels using getContext() (plugin) or getApplicationContext() (service), and only when those are guaranteed non-null.
+
+Example safe channel creation:
+
+Context ctx = getContext(); // in plugin
+if (ctx != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+  NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+  // create channel...
+}
+
+5) Make sure you’re not double-registering FirebaseMessagingService
+
+Sometimes people accidentally declare the messaging service twice or with wrong exported flags.
+
+Check AndroidManifest.xml for something like:
+
+<service
+  android:name=".MomAppMessagingService"
+  android:exported="false">
+  <intent-filter>
+    <action android:name="com.google.firebase.MESSAGING_EVENT" />
+  </intent-filter>
+</service>
+
+
+No duplicates. No weird exported=true unless you know why.
+
+6) Quick sanity test to isolate the crash
+
+Do this test to prove it’s permission callback plumbing vs Firebase:
+
+Temporarily change your permission callback to do NOTHING except resolve:
+
+No token fetch
+
+No channel creation
+
+No plugin events
+
+Just call.resolve(...)
+
+If it still crashes, it’s almost certainly:
+
+Activity override / forwarding issue
+
+Capacitor permission framework being invoked incorrectly
+
+Plugin not attached / lifecycle mismatch
+
+If it stops crashing, then the crash is in whatever you do after permission is granted.
+
+7) If you want the fastest path to resolution
+
+Paste these two things here (redact anything sensitive):
+
+Your MainActivity.java (especially anything related to plugin registration + permission forwarding)
+
+Your FCMPlugin.java (permission request + callback)
+
+And if you can, the logcat stack trace.
+
+With just those, I can usually pinpoint the exact line that’s exploding and tell you the one change that fixes it.
+
+If I had to bet (based on what you wrote)
+
+I’d put money on MainActivity permission result forwarding or double-callback causing a native crash right when Android returns the permission result.
+
+If you paste MainActivity.java + FCMPlugin.java, I’ll mark up the exact edits.

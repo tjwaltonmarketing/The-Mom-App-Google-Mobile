@@ -1,26 +1,31 @@
 package com.momapp.family;
 
 import android.Manifest;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import com.getcapacitor.JSObject;
+import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
 import com.google.firebase.messaging.FirebaseMessaging;
 
-@CapacitorPlugin(name = "FCMPlugin")
+@CapacitorPlugin(
+    name = "FCMPlugin",
+    permissions = {
+        @Permission(
+            alias = "notifications",
+            strings = { Manifest.permission.POST_NOTIFICATIONS }
+        )
+    }
+)
 public class FCMPlugin extends Plugin {
     private static final String TAG = "FCMPlugin";
-    private static final int NOTIFICATION_PERMISSION_REQUEST = 9001;
     private static FCMPlugin instance;
-    private PluginCall pendingPermissionCall;
 
     @Override
     public void load() {
@@ -91,9 +96,14 @@ public class FCMPlugin extends Plugin {
         try {
             JSObject result = new JSObject();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                int status = ContextCompat.checkSelfPermission(
-                    getContext(), Manifest.permission.POST_NOTIFICATIONS);
-                result.put("receive", status == PackageManager.PERMISSION_GRANTED ? "granted" : "prompt");
+                PermissionState state = getPermissionState("notifications");
+                if (state == PermissionState.GRANTED) {
+                    result.put("receive", "granted");
+                } else if (state == PermissionState.DENIED) {
+                    result.put("receive", "denied");
+                } else {
+                    result.put("receive", "prompt");
+                }
             } else {
                 result.put("receive", "granted");
             }
@@ -108,65 +118,20 @@ public class FCMPlugin extends Plugin {
 
     @PluginMethod
     public void requestPermissions(PluginCall call) {
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                int status = ContextCompat.checkSelfPermission(
-                    getContext(), Manifest.permission.POST_NOTIFICATIONS);
-                if (status == PackageManager.PERMISSION_GRANTED) {
-                    JSObject result = new JSObject();
-                    result.put("receive", "granted");
-                    call.resolve(result);
-                    return;
-                }
-
-                pendingPermissionCall = call;
-                ActivityCompat.requestPermissions(
-                    getActivity(),
-                    new String[]{ Manifest.permission.POST_NOTIFICATIONS },
-                    NOTIFICATION_PERMISSION_REQUEST
-                );
-            } else {
-                JSObject result = new JSObject();
-                result.put("receive", "granted");
-                call.resolve(result);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error requesting permissions: " + e.getMessage());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissionForAlias("notifications", call, "notificationsPermsCallback");
+        } else {
             JSObject result = new JSObject();
-            result.put("receive", "denied");
+            result.put("receive", "granted");
             call.resolve(result);
         }
     }
 
-    public void handlePermissionResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode != NOTIFICATION_PERMISSION_REQUEST) return;
-
-        try {
-            JSObject result = new JSObject();
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                result.put("receive", "granted");
-                Log.i(TAG, "Notification permission granted");
-            } else {
-                result.put("receive", "denied");
-                Log.i(TAG, "Notification permission denied");
-            }
-
-            if (pendingPermissionCall != null) {
-                pendingPermissionCall.resolve(result);
-                pendingPermissionCall = null;
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error handling permission result: " + e.getMessage());
-            if (pendingPermissionCall != null) {
-                JSObject result = new JSObject();
-                result.put("receive", "denied");
-                pendingPermissionCall.resolve(result);
-                pendingPermissionCall = null;
-            }
-        }
-    }
-
-    public static int getPermissionRequestCode() {
-        return NOTIFICATION_PERMISSION_REQUEST;
+    @PermissionCallback
+    private void notificationsPermsCallback(PluginCall call) {
+        boolean granted = getPermissionState("notifications") == PermissionState.GRANTED;
+        JSObject ret = new JSObject();
+        ret.put("receive", granted ? "granted" : "denied");
+        call.resolve(ret);
     }
 }
