@@ -11,6 +11,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 @CapacitorPlugin(
@@ -100,8 +101,8 @@ public class FCMPlugin extends Plugin {
         }
     }
 
-    @PluginMethod(returnType = PluginMethod.RETURN_CALLBACK)
-    public void permissionCallback(PluginCall call) {
+    @PermissionCallback
+    private void permissionCallback(PluginCall call) {
         JSObject result = new JSObject();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             int status = getActivity().checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS);
