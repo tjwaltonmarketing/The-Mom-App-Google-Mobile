@@ -34,5 +34,6 @@
 -keep class com.google.firebase.iid.** { *; }
 -keep class com.google.firebase.installations.** { *; }
 
-# Capacitor Push Notifications plugin
--keep class com.capacitorjs.plugins.pushnotifications.** { *; }
+# Custom FCM Plugin and Messaging Service
+-keep class com.momapp.family.FCMPlugin { *; }
+-keep class com.momapp.family.MomAppMessagingService { *; }

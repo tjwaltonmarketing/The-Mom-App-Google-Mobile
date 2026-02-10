@@ -43,6 +43,7 @@ Preferred communication style: Simple, everyday language.
 - **Database**: PostgreSQL (Neon serverless recommended).
 - **AI Services**: OpenAI API for transcription and assistance.
 - **Mobile Builds**: Capacitor for Android/iOS.
+- **Push Notifications**: Custom native FCM plugin (FCMPlugin.java + MomAppMessagingService.java) in android/app/src/main/java/com/momapp/family/. Uses firebase-messaging:23.3.1 directly (not the Capacitor push-notifications plugin, which was removed due to native crashes). NOTE: If running `npx cap sync`, re-remove `capacitor-push-notifications` from capacitor.build.gradle and capacitor.settings.gradle.
 - **SMS Services**: Twilio (primary), AWS SNS (backup) for notifications.
 - **Email Services**: SendGrid.
 - **Calendar Integration**: Google Calendar API for synchronization.

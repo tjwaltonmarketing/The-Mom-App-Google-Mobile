@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/useAuth";
@@ -60,6 +60,13 @@ function Router() {
   const [splashCompleted, setSplashCompleted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    import("@/services/push-notifications").then(({ setupNotificationTapHandler }) => {
+      setupNotificationTapHandler(setLocation);
+    }).catch(() => {});
+  }, [setLocation]);
 
   useEffect(() => {
     if (isAuthenticated) {

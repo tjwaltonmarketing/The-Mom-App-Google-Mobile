@@ -1,196 +1,143 @@
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, registerPlugin } from '@capacitor/core';
 import { apiRequest } from '@/lib/queryClient';
 
-let pushService: NativePushService | null = null;
+interface FCMPluginInterface {
+  getToken(): Promise<{ token: string }>;
+  checkPermissions(): Promise<{ receive: string }>;
+  requestPermissions(): Promise<{ receive: string }>;
+  addListener(event: string, callback: (data: any) => void): Promise<any>;
+  removeAllListeners(): Promise<void>;
+}
 
-class NativePushService {
-  private isListenersReady = false;
-  private currentToken: string | null = null;
-  private PushNotificationsModule: any = null;
+let fcmPlugin: FCMPluginInterface | null = null;
+let listenersReady = false;
 
-  async loadPlugin(): Promise<boolean> {
-    if (this.PushNotificationsModule) return true;
+function getPlugin(): FCMPluginInterface | null {
+  if (!Capacitor.isNativePlatform()) return null;
+  if (!fcmPlugin) {
     try {
-      const mod = await import('@capacitor/push-notifications');
-      this.PushNotificationsModule = mod.PushNotifications;
-      return true;
+      fcmPlugin = registerPlugin<FCMPluginInterface>('FCMPlugin');
     } catch (e) {
-      console.warn('Failed to load PushNotifications plugin:', e);
-      return false;
+      console.warn('Failed to register FCMPlugin:', e);
+      return null;
     }
   }
+  return fcmPlugin;
+}
 
-  async setupListeners(): Promise<boolean> {
-    if (this.isListenersReady) return true;
+async function setupListeners(): Promise<void> {
+  if (listenersReady) return;
+  const plugin = getPlugin();
+  if (!plugin) return;
 
-    const loaded = await this.loadPlugin();
-    if (!loaded) return false;
+  try {
+    await plugin.addListener('fcmTokenReceived', (data: any) => {
+      console.log('FCM token received via listener');
+      saveTokenToServer(data.token).catch(() => {});
+    });
 
-    const PN = this.PushNotificationsModule;
+    await plugin.addListener('pushNotificationReceived', (data: any) => {
+      console.log('Push received in foreground:', data);
+      try {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(data.title || 'The Mom App', {
+            body: data.body,
+            icon: '/icon-192.png',
+          });
+        }
+      } catch (_) {}
+    });
 
-    try {
-      await PN.removeAllListeners();
-    } catch (_) {}
-
-    try {
-      await PN.addListener('registration', (token: any) => {
-        console.info('FCM token received:', token.value);
-        this.currentToken = token.value;
-        this.saveTokenToServer(token.value).catch(() => {});
-      });
-
-      await PN.addListener('registrationError', (err: any) => {
-        console.warn('Push registration error:', JSON.stringify(err));
-      });
-
-      await PN.addListener('pushNotificationReceived', (notification: any) => {
-        console.log('Push received in foreground:', notification);
-        this.showForegroundNotification(notification);
-      });
-
-      await PN.addListener('pushNotificationActionPerformed', (action: any) => {
-        console.log('Push action performed:', action);
-        this.handleNotificationTap(action);
-      });
-
-      this.isListenersReady = true;
-      return true;
-    } catch (e) {
-      console.warn('Failed to set up push listeners:', e);
-      return false;
-    }
-  }
-
-  async checkPermission(): Promise<'granted' | 'denied' | 'prompt'> {
-    const loaded = await this.loadPlugin();
-    if (!loaded) return 'denied';
-    try {
-      const status = await this.PushNotificationsModule.checkPermissions();
-      return status.receive as 'granted' | 'denied' | 'prompt';
-    } catch {
-      return 'denied';
-    }
-  }
-
-  async requestPermission(): Promise<boolean> {
-    const loaded = await this.loadPlugin();
-    if (!loaded) return false;
-    try {
-      const result = await this.PushNotificationsModule.requestPermissions();
-      return result.receive === 'granted';
-    } catch {
-      return false;
-    }
-  }
-
-  async register(): Promise<boolean> {
-    const loaded = await this.loadPlugin();
-    if (!loaded) return false;
-
-    try {
-      await this.setupListeners();
-      await new Promise(resolve => setTimeout(resolve, 300));
-      await this.PushNotificationsModule.register();
-      return true;
-    } catch (e) {
-      console.warn('Push register() failed:', e);
-      return false;
-    }
-  }
-
-  async saveTokenToServer(token: string): Promise<void> {
-    try {
-      const platform = Capacitor.getPlatform();
-      await apiRequest('/api/push-tokens', {
-        method: 'POST',
-        body: JSON.stringify({
-          token,
-          platform,
-          deviceInfo: {
-            platform,
-            userAgent: navigator.userAgent,
-            timestamp: new Date().toISOString(),
-          },
-        }),
-      });
-      console.log('Push token saved to server');
-    } catch (e) {
-      console.warn('Failed to save push token:', e);
-    }
-  }
-
-  getToken(): string | null {
-    return this.currentToken;
-  }
-
-  private showForegroundNotification(notification: any): void {
-    try {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification(notification.title || 'The Mom App', {
-          body: notification.body,
-          icon: '/icon-192.png',
-          tag: notification.id || 'mom-app-notification',
-        });
-      }
-    } catch (_) {}
-  }
-
-  private handleNotificationTap(action: any): void {
-    try {
-      const data = action.notification?.data;
-      if (data?.type === 'task') {
-        window.location.href = '/teen/tasks';
-      } else if (data?.type === 'event') {
-        window.location.href = '/teen/calendar';
-      } else if (data?.type === 'notification') {
-        window.location.href = '/teen';
-      }
-    } catch (_) {}
-  }
-
-  async cleanup(): Promise<void> {
-    if (!this.isListenersReady || !this.PushNotificationsModule) return;
-    try {
-      await this.PushNotificationsModule.removeAllListeners();
-      this.isListenersReady = false;
-      this.currentToken = null;
-    } catch (_) {}
+    listenersReady = true;
+  } catch (e) {
+    console.warn('Failed to set up FCM listeners:', e);
   }
 }
 
-function getService(): NativePushService | null {
-  if (!Capacitor.isNativePlatform()) return null;
-  if (!pushService) {
-    pushService = new NativePushService();
+async function saveTokenToServer(token: string): Promise<void> {
+  try {
+    const platform = Capacitor.getPlatform();
+    await apiRequest('/api/push-tokens', {
+      method: 'POST',
+      body: JSON.stringify({
+        token,
+        platform,
+        deviceInfo: {
+          platform,
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+        },
+      }),
+    });
+    console.log('Push token saved to server');
+  } catch (e) {
+    console.warn('Failed to save push token:', e);
   }
-  return pushService;
 }
 
 export async function initializePushListeners(): Promise<boolean> {
-  const svc = getService();
-  if (!svc) return false;
-  return svc.setupListeners();
+  if (!Capacitor.isNativePlatform()) return false;
+  try {
+    await setupListeners();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function checkPushPermissionStatus(): Promise<'granted' | 'denied' | 'prompt'> {
-  const svc = getService();
-  if (!svc) return 'denied';
-  return svc.checkPermission();
+  const plugin = getPlugin();
+  if (!plugin) return 'denied';
+  try {
+    const result = await plugin.checkPermissions();
+    return result.receive as 'granted' | 'denied' | 'prompt';
+  } catch {
+    return 'denied';
+  }
 }
 
 export async function requestAndRegisterPush(): Promise<boolean> {
-  const svc = getService();
-  if (!svc) return false;
+  const plugin = getPlugin();
+  if (!plugin) return false;
 
-  const listenersOk = await svc.setupListeners();
-  if (!listenersOk) return false;
+  try {
+    await setupListeners();
 
-  const granted = await svc.requestPermission();
-  if (!granted) return false;
+    const permResult = await plugin.requestPermissions();
+    if (permResult.receive !== 'granted') {
+      return false;
+    }
 
-  return svc.register();
+    const tokenResult = await plugin.getToken();
+    if (tokenResult?.token) {
+      console.log('FCM token obtained successfully');
+      await saveTokenToServer(tokenResult.token);
+      return true;
+    }
+
+    return false;
+  } catch (e) {
+    console.warn('Push registration failed:', e);
+    return false;
+  }
 }
 
 export async function setupPushNotifications(): Promise<boolean> {
   return requestAndRegisterPush();
+}
+
+export function setupNotificationTapHandler(navigate: (route: string) => void): void {
+  if (!Capacitor.isNativePlatform()) return;
+
+  (window as any).__NOTIFICATION_HANDLER__ = (route: string) => {
+    if (route && route !== '/') {
+      navigate(route);
+    }
+  };
+
+  const pendingRoute = (window as any).__NOTIFICATION_ROUTE__;
+  if (pendingRoute && pendingRoute !== '/') {
+    navigate(pendingRoute);
+    (window as any).__NOTIFICATION_ROUTE__ = null;
+  }
 }

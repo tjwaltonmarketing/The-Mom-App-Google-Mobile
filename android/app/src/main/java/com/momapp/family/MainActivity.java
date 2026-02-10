@@ -1,14 +1,14 @@
 package com.momapp.family;
 
-import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.Manifest;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.PermissionRequest;
-import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -23,6 +23,7 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(FCMPlugin.class);
         super.onCreate(savedInstanceState);
 
         try {
@@ -37,6 +38,47 @@ public class MainActivity extends BridgeActivity {
         }
 
         createNotificationChannel();
+        handleNotificationIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleNotificationIntent(intent);
+    }
+
+    private void handleNotificationIntent(Intent intent) {
+        if (intent == null) return;
+        String fromNotification = intent.getStringExtra("fromNotification");
+        if (!"true".equals(fromNotification)) return;
+
+        try {
+            String type = intent.getStringExtra("type");
+            String route = "/";
+            if ("task".equals(type)) {
+                route = "/teen/tasks";
+            } else if ("event".equals(type)) {
+                route = "/teen/calendar";
+            } else if ("notification".equals(type)) {
+                route = "/teen";
+            }
+
+            final String targetRoute = route;
+            getBridge().getWebView().post(() -> {
+                try {
+                    getBridge().getWebView().evaluateJavascript(
+                        "window.__NOTIFICATION_ROUTE__ = '" + targetRoute + "'; " +
+                        "if (window.__NOTIFICATION_HANDLER__) { window.__NOTIFICATION_HANDLER__('" + targetRoute + "'); }",
+                        null
+                    );
+                    Log.i(TAG, "Notification route injected: " + targetRoute);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to inject notification route: " + e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error handling notification intent: " + e.getMessage());
+        }
     }
 
     private void createNotificationChannel() {
