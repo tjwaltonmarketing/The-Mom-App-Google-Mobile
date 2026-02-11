@@ -69,6 +69,14 @@ function Router() {
   }, [setLocation]);
 
   useEffect(() => {
+    if (isAuthenticated || isTeenUser) {
+      import("@/services/push-notifications").then(({ autoRequestPushPermission }) => {
+        autoRequestPushPermission().catch(() => {});
+      }).catch(() => {});
+    }
+  }, [isAuthenticated, isTeenUser]);
+
+  useEffect(() => {
     if (isAuthenticated) {
       setWasAuthenticated(true);
     } else if (wasAuthenticated && !isLoading) {

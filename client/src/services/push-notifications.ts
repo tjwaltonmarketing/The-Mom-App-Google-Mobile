@@ -126,6 +126,35 @@ export async function setupPushNotifications(): Promise<boolean> {
   return requestAndRegisterPush();
 }
 
+export async function autoRequestPushPermission(): Promise<boolean> {
+  if (!Capacitor.isNativePlatform()) return false;
+
+  try {
+    const plugin = getPlugin();
+    if (!plugin) return false;
+
+    const status = await plugin.checkPermissions();
+    if (status.receive === 'granted') {
+      await setupListeners();
+      const tokenResult = await plugin.getToken();
+      if (tokenResult?.token) {
+        await saveTokenToServer(tokenResult.token);
+      }
+      return true;
+    }
+
+    if (status.receive === 'prompt') {
+      localStorage.removeItem('push_prompt_dismissed');
+      return requestAndRegisterPush();
+    }
+
+    return false;
+  } catch (e) {
+    console.warn('Auto push permission request failed:', e);
+    return false;
+  }
+}
+
 export function setupNotificationTapHandler(navigate: (route: string) => void): void {
   if (!Capacitor.isNativePlatform()) return;
 
