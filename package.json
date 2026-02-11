@@ -18,7 +18,6 @@
     "@capacitor/core": "^6.1.2",
     "@capacitor/geolocation": "^6.1.1",
     "@capacitor/ios": "^6.1.2",
-    "@capacitor/push-notifications": "^6.0.4",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@neondatabase/serverless": "^0.10.4",
