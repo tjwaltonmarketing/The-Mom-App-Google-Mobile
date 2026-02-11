@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { Capacitor } from "@capacitor/core";
-import { Bell, X } from "lucide-react";
+import { Bell, X, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { checkPushPermissionStatus, requestAndRegisterPush } from "@/services/push-notifications";
+import { checkPushPermissionStatus, requestAndRegisterPush, openNotificationSettings } from "@/services/push-notifications";
 
 export function NotificationPrompt() {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showSettingsOption, setShowSettingsOption] = useState(false);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
@@ -17,6 +18,9 @@ export function NotificationPrompt() {
     checkPushPermissionStatus().then((status) => {
       if (status !== "granted") {
         setVisible(true);
+        if (status === "denied") {
+          setShowSettingsOption(true);
+        }
       }
     });
   }, []);
@@ -30,13 +34,16 @@ export function NotificationPrompt() {
       if (success) {
         setVisible(false);
       } else {
-        localStorage.setItem("push_prompt_dismissed", "true");
-        setVisible(false);
+        setShowSettingsOption(true);
       }
     } catch {
-      setVisible(false);
+      setShowSettingsOption(true);
     }
     setLoading(false);
+  };
+
+  const handleOpenSettings = async () => {
+    await openNotificationSettings();
   };
 
   const handleDismiss = () => {
@@ -55,9 +62,16 @@ export function NotificationPrompt() {
           Get reminders about tasks, events, and family updates — even when the app is closed.
         </p>
         <div className="flex gap-2 mt-3">
-          <Button size="sm" onClick={handleEnable} disabled={loading}>
-            {loading ? "Setting up…" : "Enable"}
-          </Button>
+          {showSettingsOption ? (
+            <Button size="sm" onClick={handleOpenSettings}>
+              <Settings className="h-4 w-4 mr-1" />
+              Open Settings
+            </Button>
+          ) : (
+            <Button size="sm" onClick={handleEnable} disabled={loading}>
+              {loading ? "Setting up…" : "Enable"}
+            </Button>
+          )}
           <Button size="sm" variant="ghost" onClick={handleDismiss}>
             Not now
           </Button>

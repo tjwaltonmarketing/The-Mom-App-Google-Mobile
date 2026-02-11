@@ -5,6 +5,7 @@ interface FCMPluginInterface {
   getToken(): Promise<{ token: string }>;
   checkPermissions(): Promise<{ receive: string }>;
   requestPermissions(): Promise<{ receive: string }>;
+  openNotificationSettings(): Promise<void>;
   addListener(event: string, callback: (data: any) => void): Promise<any>;
   removeAllListeners(): Promise<void>;
 }
@@ -104,6 +105,8 @@ export async function requestAndRegisterPush(): Promise<boolean> {
     await setupListeners();
 
     const permResult = await plugin.requestPermissions();
+    console.log('requestPermissions result:', permResult.receive);
+
     if (permResult.receive !== 'granted') {
       return false;
     }
@@ -126,14 +129,30 @@ export async function setupPushNotifications(): Promise<boolean> {
   return requestAndRegisterPush();
 }
 
+export async function openNotificationSettings(): Promise<void> {
+  const plugin = getPlugin();
+  if (!plugin) return;
+  try {
+    await plugin.openNotificationSettings();
+  } catch (e) {
+    console.warn('Failed to open notification settings:', e);
+  }
+}
+
 export async function autoRequestPushPermission(): Promise<boolean> {
   if (!Capacitor.isNativePlatform()) return false;
 
   try {
     const plugin = getPlugin();
-    if (!plugin) return false;
+    if (!plugin) {
+      console.warn('FCMPlugin not available');
+      return false;
+    }
 
+    console.log('autoRequestPushPermission: checking status...');
     const status = await plugin.checkPermissions();
+    console.log('autoRequestPushPermission: status =', status.receive);
+
     if (status.receive === 'granted') {
       await setupListeners();
       const tokenResult = await plugin.getToken();
@@ -143,12 +162,20 @@ export async function autoRequestPushPermission(): Promise<boolean> {
       return true;
     }
 
-    if (status.receive === 'prompt') {
-      localStorage.removeItem('push_prompt_dismissed');
-      return requestAndRegisterPush();
+    localStorage.removeItem('push_prompt_dismissed');
+    console.log('autoRequestPushPermission: requesting permission...');
+    const result = await requestAndRegisterPush();
+    console.log('autoRequestPushPermission: request result =', result);
+
+    if (!result) {
+      const recheckStatus = await plugin.checkPermissions();
+      if (recheckStatus.receive !== 'granted') {
+        console.log('autoRequestPushPermission: permission denied, opening settings...');
+        await plugin.openNotificationSettings();
+      }
     }
 
-    return false;
+    return result;
   } catch (e) {
     console.warn('Auto push permission request failed:', e);
     return false;
