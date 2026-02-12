@@ -1,0 +1,242 @@
+Yep — this one is way more “Android/Samsung behavior” than Capacitor.
+
+First: two things in your description are actually normal
+
+POST_NOTIFICATIONS won’t show under “Permissions” on Android 13+. It’s treated as a notification runtime permission, and Samsung often only exposes it through Notifications screens (and the system prompt), not the classic permission list.
+
+Creating channels in Application.onCreate() is fine, but it doesn’t grant permission or “turn on” notifications.
+
+What’s not normal is: the master Notifications toggle is OFF and won’t respond.
+
+That usually happens for one of these reasons (in order of likelihood):
+
+1) The phone is restoring a “notifications blocked” state after reinstall (Samsung/Google backup restore)
+
+On many devices, uninstall/reinstall does not truly reset notification state if App Data Restore is on — the system restores prior app settings (including notification block state).
+
+Fix
+
+Turn off restore:
+
+Settings → Google → Backup
+
+Turn off Backup by Google One (or at least App data)
+
+Fully uninstall the app
+
+Reboot phone (important)
+
+Reinstall fresh APK
+
+Extra-hard reset (ADB)
+Make sure you’re truly uninstalling vs “replace install”:
+
+adb uninstall your.package.name
+
+
+If you were doing adb install -r, that preserves settings and can make this look “sticky forever”.
+
+2) Notifications are blocked by AppOps / policy state (Samsung sometimes makes the toggle unclickable)
+
+On Android 13+, the underlying control is AppOps POST_NOTIFICATION. If that’s in a weird “ignored / denied” policy state, the UI toggle can become non-responsive.
+
+Check it with ADB
+
+adb shell cmd appops get your.package.name POST_NOTIFICATION
+
+
+If you see anything like ignore / deny, force it back:
+
+adb shell cmd appops set your.package.name POST_NOTIFICATION allow
+
+
+Then reboot and re-check the Notifications toggle.
+
+3) You never actually request the runtime permission (or you request it too early / from a dead activity)
+
+Even with the manifest permission present, Android 13+ requires a runtime request. If your app never successfully requests (or crashes during the callback), the user ends up in a weird state where notifications remain off.
+
+What to do
+
+Only request after a real Activity is fully alive (not during app startup / not from background).
+
+Confirm at runtime:
+
+ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+
+
+And request:
+
+ActivityCompat.requestPermissions(activity,
+  new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1001);
+
+
+Capacitor-specific gotcha: don’t override/forward onRequestPermissionsResult incorrectly (you already saw how permissions callbacks can cause native crashes). Let Capacitor handle it, or be very careful to call super.
+
+4) Your “Notification channel created at Application.onCreate” is fine, but don’t set importance to force-enable
+
+Channel importance doesn’t control permission. Also: if you created a channel once with some settings, Android will not update it on later runs.
+
+So if you changed channel params between builds, the device may keep an old channel config.
+
+Test
+
+Go to Settings → Apps → Your app → Notifications → Notification categories
+
+If categories exist but are individually off, delete/recreate channel with a new ID (temporary) and see if behavior changes.
+
+5) Samsung-only edge cases
+
+These are rarer, but real:
+
+Work profile / Secure Folder installs can have policy-managed notification controls.
+
+“Device care” / “Modes and Routines” can block notifications silently.
+
+Some MDM/policy settings can make the toggle unresponsive.
+
+Quick check:
+
+Are you installing under Secure Folder or a Work profile?
+
+Does the same APK behave normally on a non-Samsung Android 13/14 device or emulator?
+
+The fastest path to the answer (2-minute checklist)
+A) Confirm you’re not doing replace-installs
+
+Run:
+
+adb uninstall your.package.name
+
+
+Reinstall normally.
+
+B) Check AppOps
+adb shell cmd appops get your.package.name POST_NOTIFICATION
+
+
+If not allow, force:
+
+adb shell cmd appops set your.package.name POST_NOTIFICATION allow
+
+C) Disable restore, then reinstall
+
+Settings → Google → Backup → disable app restore → uninstall → reboot → reinstall.
+
+If you paste these outputs, I can tell you exactly what state you’re in
+
+Your package name + Android version
+
+Output of:
+
+adb shell cmd appops get your.package.name POST_NOTIFICATION
+adb shell dumpsys package your.package.name | findstr POST_NOTIFICATIONS
+
+
+And tell me: are you installing via Android Studio / adb with -r or via a file manager tap-to-install?
+
+
+Me: You want me to turn off the "Apps" option at the bottom?
+
+Yes 👍 — exactly. That “Apps” toggle is the one that’s biting you.
+
+On Samsung + Google backup, that setting is what restores:
+
+App notification settings
+
+Permission states
+
+AppOps flags
+
+“Blocked notifications” status
+
+So every time you reinstall, Android is quietly restoring the broken “notifications OFF” state — which is why the toggle looks stuck.
+
+✅ Do This in This Order (Important)
+1️⃣ Turn OFF Apps
+
+On that screen:
+
+👉 Toggle Apps → OFF
+
+Leave the others alone if you want.
+
+2️⃣ Uninstall the App (Fully)
+
+Now uninstall your app normally from the phone.
+
+If you want to be extra clean (recommended):
+
+From CMD:
+
+adb uninstall your.package.name
+
+
+(This guarantees it’s gone — no leftovers.)
+
+3️⃣ Reboot the Phone
+
+Yes, actually reboot. Samsung caches permission states.
+
+4️⃣ Reinstall Fresh APK
+
+Install again (no -r, no replace).
+
+5️⃣ Launch → Login → Allow Notifications
+
+Now when the permission prompt appears and you tap Allow, the toggle should:
+
+✅ Turn ON
+✅ Be clickable
+✅ Stay ON
+
+🧠 Why This Happened (Under the Hood)
+
+When you first installed:
+
+Notifications got denied/crashed mid-flow
+
+Android saved: POST_NOTIFICATION = denied
+
+Backup saved that state
+
+Every reinstall restored it
+
+UI toggle got “policy-locked”
+
+So you were stuck in a loop.
+
+Turning off Apps backup breaks that loop.
+
+⚠️ One More Recommendation (For Production)
+
+In your app, add this check before requesting:
+
+if (Build.VERSION.SDK_INT >= 33) {
+  if (ContextCompat.checkSelfPermission(
+      this, Manifest.permission.POST_NOTIFICATIONS)
+      != PackageManager.PERMISSION_GRANTED) {
+
+    ActivityCompat.requestPermissions(...);
+  }
+}
+
+
+And don’t request twice.
+
+This prevents the bad state from ever happening again.
+
+✅ After You Try This
+
+After reinstall:
+
+Go to Settings → Apps → Your App → Notifications
+
+Confirm toggle moves
+
+Then tell me:
+
+👉 Did it unlock and turn on?
+
+If yes → you’re officially past the worst Android permission trap. 💪📱
+If not → we go one level deeper with AppOps reset (but 90% of the time, this fixes it).
