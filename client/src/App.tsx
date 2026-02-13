@@ -70,9 +70,12 @@ function Router() {
 
   useEffect(() => {
     if (isAuthenticated || isTeenUser) {
-      import("@/services/push-notifications").then(({ autoRequestPushPermission }) => {
-        autoRequestPushPermission().catch(() => {});
-      }).catch(() => {});
+      const timer = setTimeout(() => {
+        import("@/services/push-notifications").then(({ autoRequestPushPermission }) => {
+          autoRequestPushPermission().catch(() => {});
+        }).catch(() => {});
+      }, 3000);
+      return () => clearTimeout(timer);
     }
   }, [isAuthenticated, isTeenUser]);
 

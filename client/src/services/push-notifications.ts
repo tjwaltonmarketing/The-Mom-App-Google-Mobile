@@ -12,6 +12,7 @@ interface FCMPluginInterface {
 
 let fcmPlugin: FCMPluginInterface | null = null;
 let listenersReady = false;
+let permissionRequestInProgress = false;
 
 function getPlugin(): FCMPluginInterface | null {
   if (!Capacitor.isNativePlatform()) return null;
@@ -24,6 +25,27 @@ function getPlugin(): FCMPluginInterface | null {
     }
   }
   return fcmPlugin;
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function waitForPlugin(maxAttempts = 5): Promise<FCMPluginInterface | null> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const plugin = getPlugin();
+    if (plugin) {
+      try {
+        await plugin.checkPermissions();
+        return plugin;
+      } catch {
+        console.log(`FCMPlugin not ready yet, attempt ${i + 1}/${maxAttempts}`);
+      }
+    }
+    await delay(1000);
+  }
+  console.warn('FCMPlugin failed to become ready');
+  return null;
 }
 
 async function setupListeners(): Promise<void> {
@@ -98,12 +120,19 @@ export async function checkPushPermissionStatus(): Promise<'granted' | 'denied' 
 }
 
 export async function requestAndRegisterPush(): Promise<boolean> {
+  if (permissionRequestInProgress) {
+    console.log('Permission request already in progress, skipping');
+    return false;
+  }
+
   const plugin = getPlugin();
   if (!plugin) return false;
 
   try {
+    permissionRequestInProgress = true;
     await setupListeners();
 
+    console.log('Calling plugin.requestPermissions()...');
     const permResult = await plugin.requestPermissions();
     console.log('requestPermissions result:', permResult.receive);
 
@@ -122,6 +151,8 @@ export async function requestAndRegisterPush(): Promise<boolean> {
   } catch (e) {
     console.warn('Push registration failed:', e);
     return false;
+  } finally {
+    permissionRequestInProgress = false;
   }
 }
 
@@ -143,36 +174,44 @@ export async function autoRequestPushPermission(): Promise<boolean> {
   if (!Capacitor.isNativePlatform()) return false;
 
   try {
-    const plugin = getPlugin();
+    console.log('autoRequestPushPermission: waiting for plugin to be ready...');
+    const plugin = await waitForPlugin(5);
     if (!plugin) {
-      console.warn('FCMPlugin not available');
+      console.warn('autoRequestPushPermission: FCMPlugin never became ready');
       return false;
     }
 
-    console.log('autoRequestPushPermission: checking status...');
+    console.log('autoRequestPushPermission: plugin ready, checking status...');
     const status = await plugin.checkPermissions();
     console.log('autoRequestPushPermission: status =', status.receive);
 
     if (status.receive === 'granted') {
       await setupListeners();
-      const tokenResult = await plugin.getToken();
-      if (tokenResult?.token) {
-        await saveTokenToServer(tokenResult.token);
+      try {
+        const tokenResult = await plugin.getToken();
+        if (tokenResult?.token) {
+          await saveTokenToServer(tokenResult.token);
+        }
+      } catch (e) {
+        console.warn('Failed to get/save token:', e);
       }
       return true;
     }
 
-    localStorage.removeItem('push_prompt_dismissed');
-    console.log('autoRequestPushPermission: requesting permission...');
+    if (status.receive === 'denied') {
+      console.log('autoRequestPushPermission: permanently denied, showing banner instead');
+      localStorage.removeItem('push_prompt_dismissed');
+      return false;
+    }
+
+    console.log('autoRequestPushPermission: requesting permission (waiting 2s for Activity)...');
+    await delay(2000);
+
     const result = await requestAndRegisterPush();
     console.log('autoRequestPushPermission: request result =', result);
 
     if (!result) {
-      const recheckStatus = await plugin.checkPermissions();
-      if (recheckStatus.receive !== 'granted') {
-        console.log('autoRequestPushPermission: permission denied, opening settings...');
-        await plugin.openNotificationSettings();
-      }
+      localStorage.removeItem('push_prompt_dismissed');
     }
 
     return result;
