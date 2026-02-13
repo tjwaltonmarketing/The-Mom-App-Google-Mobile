@@ -1,0 +1,311 @@
+Got it. This is a different class of issue than the “toggle stuck” one.
+
+On Android 13+, the POST_NOTIFICATIONS prompt only appears if:
+
+your app is actually calling a permission request from a live foreground Activity, and
+
+the permission is not already granted/denied with “don’t ask again”, and
+
+your code is using the right lifecycle (especially in Capacitor), and
+
+you’re not breaking the callback chain (Capacitor can “swallow” results if MainActivity overrides are wrong).
+
+Given what you described, there are two smoking guns:
+
+The two most likely causes
+✅ Cause A: You’re requesting from the wrong Activity context (or at the wrong time)
+
+In Capacitor, the safest call is:
+
+getActivity() from the plugin (not some cached activity reference)
+
+and ensure the Activity is resumed (foreground)
+
+If you call ActivityCompat.requestPermissions() while the Activity is not in a valid state (or you’re using an activity reference that isn’t the current one), Android will often do nothing (no dialog, no exception), especially on Samsung.
+
+Fix pattern
+Inside the plugin method:
+
+@PluginMethod
+public void requestNotifications(PluginCall call) {
+  Activity activity = getActivity();
+  if (activity == null) {
+    call.reject("Activity is null");
+    return;
+  }
+
+  if (Build.VERSION.SDK_INT < 33) {
+    call.resolve();
+    return;
+  }
+
+  if (ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS)
+      == PackageManager.PERMISSION_GRANTED) {
+    call.resolve();
+    return;
+  }
+
+  ActivityCompat.requestPermissions(activity,
+      new String[]{Manifest.permission.POST_NOTIFICATIONS}, 2001);
+
+  // DON'T call resolve() yet; resolve in the callback
+  saveCall(call);
+}
+
+
+If you’re not doing saveCall(call) and the callback later, it can break things too.
+
+✅ Cause B: You’ve overridden onRequestPermissionsResult() in MainActivity and/or are registering plugin incorrectly
+
+This line from your description is a major red flag:
+
+“Plugin is registered in MainActivity.onCreate() via registerPlugin(FCMPlugin.class) before super.onCreate()”
+
+That’s not the normal pattern. In Capacitor 5/6, you typically register plugins after super.onCreate() (or in the generated plugin registration mechanism). Doing it before can create weird lifecycle timing where the Bridge isn’t ready, and permission routing can silently fail.
+
+Also: overriding and “forwarding” onRequestPermissionsResult() is a common way to break Capacitor’s internal dispatcher.
+
+Fix rule of thumb
+
+Do not override onRequestPermissionsResult() unless you must.
+
+If you do override, always call super.onRequestPermissionsResult(...) first.
+
+The fastest way to prove what’s happening (no guesswork)
+
+On your wife’s phone, run these 3 checks:
+
+1) See current permission state
+adb shell dumpsys package com.momapp.family | findstr POST_NOTIFICATIONS
+
+2) See AppOps state (this matters on Samsung)
+adb shell cmd appops get com.momapp.family POST_NOTIFICATION
+
+
+You’re looking for:
+
+allow (good)
+
+deny or ignore (dialog may never show)
+
+3) Force-reset app’s permission decision history (easy test)
+adb shell pm clear com.momapp.family
+
+
+Then open app and try again.
+If the dialog starts appearing after pm clear, it means the system had a prior decision cached.
+
+A critical Android 13 behavior that trips people up
+
+If the user has already toggled Notifications ON manually in settings, your runtime request might not show (because Android thinks the user has already made their choice in settings) — the runtime permission dialog can be skipped depending on OEM behavior.
+
+So the test should be:
+
+pm clear
+
+don’t touch notification settings manually
+
+trigger your request once from inside the app
+
+What I would change immediately (most likely to fix)
+1) Stop manual forwarding in MainActivity
+
+Remove your onRequestPermissionsResult() override entirely if possible.
+
+2) Use Capacitor’s permission helper instead of raw ActivityCompat
+
+It’s more reliable in hybrid apps:
+
+@CapacitorPlugin(
+  name = "FCMPlugin",
+  permissions = {
+    @Permission(alias = "notifications", strings = { Manifest.permission.POST_NOTIFICATIONS })
+  }
+)
+public class FCMPlugin extends Plugin {
+
+  @PluginMethod
+  public void requestPermissions(PluginCall call) {
+    if (Build.VERSION.SDK_INT < 33) {
+      call.resolve();
+      return;
+    }
+    requestPermissionForAlias("notifications", call, "permCallback");
+  }
+
+  @PermissionCallback
+  private void permCallback(PluginCall call) {
+    JSObject ret = new JSObject();
+    ret.put("granted", getPermissionState("notifications") == PermissionState.GRANTED);
+    call.resolve(ret);
+  }
+}
+
+
+This avoids Samsung + WebView edge cases where ActivityCompat is ignored.
+
+3) Register plugin the “normal” way
+
+Don’t register before super.onCreate().
+
+If you paste these two files, I can tell you exactly where it’s going wrong
+
+MainActivity.java
+
+FCMPlugin.java
+
+(Just those two usually reveal the bug instantly: ordering, lifecycle, bad override, wrong Activity reference, or calling resolve too early.)
+
+Quick question you can answer without code:
+
+On your wife’s phone, did she ever tap “Don’t allow” on any notification prompt for this app previously?
+If yes, the OS may have decided and won’t show again unless you pm clear / reinstall with backups off.
+
+If you can grab the adb logcat lines around your “requestPermissions” call, even better — but MainActivity + plugin code is usually enough.
+
+She has never tapped "Don't Allow"
+Thought for 17s
+
+Cool — if she’s never hit “Don’t allow”, then the OS isn’t suppressing the dialog because of a prior user denial. That narrows it down a lot.
+
+On Samsung/Android 13+, when the POST_NOTIFICATIONS dialog never appears, it’s almost always one of these:
+
+the app is not actually calling the request on-device (code path not firing), or
+
+it’s calling it from an invalid Activity/lifecycle state (Android silently ignores), or
+
+Capacitor’s permission routing is broken by MainActivity overrides / plugin registration order, or
+
+the permission is already considered “handled” (granted/blocked) at the OS/app-ops layer (rare, but checkable).
+
+Below is the “do this now” fix path that resolves 90% of these cases in Capacitor apps.
+
+1) First, confirm whether Android thinks it’s already granted
+
+On your wife’s phone (with ADB), run:
+
+adb shell dumpsys package com.momapp.family | findstr grantedPermissions
+adb shell dumpsys package com.momapp.family | findstr POST_NOTIFICATIONS
+adb shell cmd appops get com.momapp.family POST_NOTIFICATION
+
+
+Interpretation:
+
+If POST_NOTIFICATIONS is granted → no popup will ever show (your JS should treat it as granted).
+
+If AppOps shows deny/ignore → Android may block the prompt (and you’ll need a reset).
+
+If neither shows granted and AppOps isn’t allow → then your call is likely not firing or is being ignored.
+
+(Your symptom “Notifications toggle defaults OFF but is clickable” is consistent with “not granted + not requested successfully.”)
+
+2) The #1 Capacitor fix: stop overriding permission routing in MainActivity
+
+In Capacitor 5/6, overriding onRequestPermissionsResult() and “forwarding” manually is a common way to break things, sometimes in a way that results in no dialog or a swallowed request/callback.
+
+Do this:
+
+Remove your MainActivity.onRequestPermissionsResult() override entirely (preferred), OR
+
+If you must keep it, ensure you call:
+
+@Override
+public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+  super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+}
+
+
+…and do no custom forwarding unless you have a very specific reason.
+
+3) Register the plugin the normal way (don’t register before super.onCreate())
+
+This line is another red flag:
+
+registerPlugin(FCMPlugin.class) before super.onCreate()
+
+If you register before the bridge is initialized, you can get lifecycle weirdness where permission calls don’t behave correctly.
+
+Fix:
+
+Move registration after super.onCreate().
+
+Or better: rely on Capacitor’s normal plugin discovery/registration (recommended if you can).
+
+4) Use Capacitor’s permission framework (most reliable in WebView apps)
+
+Even if raw ActivityCompat.requestPermissions() should work, Capacitor apps are far more consistent when you use the built-in permission alias system.
+
+Use this in your plugin:
+
+@CapacitorPlugin(
+  name = "FCMPlugin",
+  permissions = {
+    @Permission(
+      alias = "notifications",
+      strings = { Manifest.permission.POST_NOTIFICATIONS }
+    )
+  }
+)
+public class FCMPlugin extends Plugin {
+
+  @PluginMethod
+  public void requestPermissions(PluginCall call) {
+    if (Build.VERSION.SDK_INT < 33) {
+      JSObject ret = new JSObject();
+      ret.put("granted", true);
+      call.resolve(ret);
+      return;
+    }
+    requestPermissionForAlias("notifications", call, "permCallback");
+  }
+
+  @PermissionCallback
+  private void permCallback(PluginCall call) {
+    boolean granted = getPermissionState("notifications") == PermissionState.GRANTED;
+    JSObject ret = new JSObject();
+    ret.put("granted", granted);
+    call.resolve(ret);
+  }
+}
+
+
+Also confirm manifest:
+
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+5) Make sure the request is happening on a live Activity + main thread
+
+Samsung will sometimes ignore permission requests if they aren’t executed on the UI thread or from a valid resumed activity.
+
+If you keep using ActivityCompat.requestPermissions, wrap it:
+
+Activity activity = getActivity();
+if (activity == null) { call.reject("No activity"); return; }
+
+activity.runOnUiThread(() -> {
+  ActivityCompat.requestPermissions(activity,
+    new String[]{Manifest.permission.POST_NOTIFICATIONS}, 2001);
+});
+
+6) Clean-state test on wife’s phone (fast + definitive)
+
+Run:
+
+adb shell pm clear com.momapp.family
+
+
+Then:
+
+open the app
+
+log in
+
+trigger request once
+
+If the popup appears after pm clear, your phone was holding state for that app install (even without her explicitly denying).
+
+The “most likely” culprit in your description
+
+MainActivity permission result forwarding + registering before super.onCreate().
+
+Those two together cause exactly this kind of “no dialog, nothing happens” behavior in Capacitor apps—because the bridge/activity lifecycle and permission dispatcher aren’t in a clean state.

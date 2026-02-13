@@ -6,7 +6,6 @@ import android.Manifest;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.PermissionRequest;
-import android.webkit.WebView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -15,13 +14,12 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     private static final String TAG = "MomApp";
     private static final int MICROPHONE_PERMISSION_REQUEST_CODE = 1001;
-    private static final int NOTIFICATION_PERMISSION_CODE = 2001;
     private PermissionRequest pendingPermissionRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        registerPlugin(FCMPlugin.class);
         super.onCreate(savedInstanceState);
+        registerPlugin(FCMPlugin.class);
         handleNotificationIntent(getIntent());
     }
 
@@ -69,15 +67,6 @@ public class MainActivity extends BridgeActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-        Log.i(TAG, "onRequestPermissionsResult: code=" + requestCode + " perms=" + (permissions != null ? permissions.length : 0));
-
-        if (requestCode == NOTIFICATION_PERMISSION_CODE) {
-            FCMPlugin plugin = FCMPlugin.getInstance();
-            if (plugin != null) {
-                plugin.handleRequestPermissionsResult(requestCode, permissions, grantResults);
-            }
-        }
-        
         if (requestCode == MICROPHONE_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 if (pendingPermissionRequest != null) {

@@ -1,32 +1,37 @@
 package com.momapp.family;
 
 import android.Manifest;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.util.Log;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.Settings;
+import android.util.Log;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.getcapacitor.JSObject;
+import com.getcapacitor.PermissionState;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import androidx.core.app.NotificationManagerCompat;
+import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
 import com.google.firebase.messaging.FirebaseMessaging;
 
-@CapacitorPlugin(name = "FCMPlugin")
+@CapacitorPlugin(
+    name = "FCMPlugin",
+    permissions = {
+        @Permission(
+            alias = "notifications",
+            strings = { Manifest.permission.POST_NOTIFICATIONS }
+        )
+    }
+)
 public class FCMPlugin extends Plugin {
     private static final String TAG = "FCMPlugin";
-    private static final int NOTIFICATION_PERMISSION_CODE = 2001;
     private static FCMPlugin instance;
-    private PluginCall pendingPermissionCall;
 
     @Override
     public void load() {
@@ -92,55 +97,32 @@ public class FCMPlugin extends Plugin {
         }
     }
 
-    private boolean hasAskedPermissionBefore() {
-        SharedPreferences prefs = getActivity().getSharedPreferences("fcm_plugin_prefs", 0);
-        return prefs.getBoolean("notification_permission_asked", false);
-    }
-
-    private void markPermissionAsked() {
-        SharedPreferences prefs = getActivity().getSharedPreferences("fcm_plugin_prefs", 0);
-        prefs.edit().putBoolean("notification_permission_asked", true).apply();
-    }
-
     @PluginMethod
     public void checkPermissions(PluginCall call) {
         JSObject result = new JSObject();
         try {
             if (Build.VERSION.SDK_INT >= 33) {
-                int status = ContextCompat.checkSelfPermission(
-                    getActivity(),
-                    "android.permission.POST_NOTIFICATIONS"
-                );
-                if (status == PackageManager.PERMISSION_GRANTED) {
+                PermissionState state = getPermissionState("notifications");
+                Log.i(TAG, "checkPermissions: Capacitor state = " + state);
+                if (state == PermissionState.GRANTED) {
                     result.put("receive", "granted");
-                    Log.i(TAG, "checkPermissions: granted");
-                } else {
-                    boolean shouldShow = ActivityCompat.shouldShowRequestPermissionRationale(
-                        getActivity(),
-                        "android.permission.POST_NOTIFICATIONS"
-                    );
+                } else if (state == PermissionState.DENIED) {
                     boolean askedBefore = hasAskedPermissionBefore();
-
                     if (!askedBefore) {
                         result.put("receive", "prompt");
                         Log.i(TAG, "checkPermissions: prompt (never asked)");
-                    } else if (shouldShow) {
-                        result.put("receive", "prompt");
-                        Log.i(TAG, "checkPermissions: prompt (can ask again)");
                     } else {
                         result.put("receive", "denied");
-                        Log.i(TAG, "checkPermissions: denied (permanently denied)");
+                        Log.i(TAG, "checkPermissions: denied");
                     }
+                } else {
+                    result.put("receive", "prompt");
+                    Log.i(TAG, "checkPermissions: prompt");
                 }
             } else {
                 boolean enabled = NotificationManagerCompat.from(getContext()).areNotificationsEnabled();
-                if (enabled) {
-                    result.put("receive", "granted");
-                    Log.i(TAG, "checkPermissions: granted (pre-Android 13, notifications enabled)");
-                } else {
-                    result.put("receive", "denied");
-                    Log.i(TAG, "checkPermissions: denied (pre-Android 13, notifications disabled in settings)");
-                }
+                result.put("receive", enabled ? "granted" : "denied");
+                Log.i(TAG, "checkPermissions: pre-Android 13, " + (enabled ? "enabled" : "disabled"));
             }
         } catch (Exception e) {
             Log.e(TAG, "Error checking permissions: " + e.getMessage());
@@ -154,12 +136,8 @@ public class FCMPlugin extends Plugin {
         Log.i(TAG, "requestPermissions called, SDK: " + Build.VERSION.SDK_INT);
 
         if (Build.VERSION.SDK_INT >= 33) {
-            int status = ContextCompat.checkSelfPermission(
-                getActivity(),
-                "android.permission.POST_NOTIFICATIONS"
-            );
-
-            if (status == PackageManager.PERMISSION_GRANTED) {
+            PermissionState currentState = getPermissionState("notifications");
+            if (currentState == PermissionState.GRANTED) {
                 Log.i(TAG, "Permission already granted");
                 JSObject result = new JSObject();
                 result.put("receive", "granted");
@@ -167,24 +145,9 @@ public class FCMPlugin extends Plugin {
                 return;
             }
 
-            Log.i(TAG, "Requesting POST_NOTIFICATIONS permission via ActivityCompat");
-            pendingPermissionCall = call;
+            Log.i(TAG, "Requesting POST_NOTIFICATIONS via Capacitor permission framework");
             markPermissionAsked();
-
-            try {
-                ActivityCompat.requestPermissions(
-                    getActivity(),
-                    new String[]{ "android.permission.POST_NOTIFICATIONS" },
-                    NOTIFICATION_PERMISSION_CODE
-                );
-                Log.i(TAG, "requestPermissions dispatched to system");
-            } catch (Exception e) {
-                Log.e(TAG, "Failed to request permission: " + e.getMessage());
-                pendingPermissionCall = null;
-                JSObject result = new JSObject();
-                result.put("receive", "denied");
-                call.resolve(result);
-            }
+            requestPermissionForAlias("notifications", call, "notificationPermCallback");
         } else {
             boolean enabled = NotificationManagerCompat.from(getContext()).areNotificationsEnabled();
             Log.i(TAG, "Pre-Android 13, notifications " + (enabled ? "enabled" : "disabled"));
@@ -210,6 +173,17 @@ public class FCMPlugin extends Plugin {
         }
     }
 
+    @PermissionCallback
+    private void notificationPermCallback(PluginCall call) {
+        PermissionState state = getPermissionState("notifications");
+        boolean granted = (state == PermissionState.GRANTED);
+        Log.i(TAG, "notificationPermCallback: " + (granted ? "GRANTED" : "DENIED") + " (state=" + state + ")");
+
+        JSObject result = new JSObject();
+        result.put("receive", granted ? "granted" : "denied");
+        call.resolve(result);
+    }
+
     @PluginMethod
     public void openNotificationSettings(PluginCall call) {
         try {
@@ -229,25 +203,21 @@ public class FCMPlugin extends Plugin {
         }
     }
 
-    @Override
-    public void handleRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.handleRequestPermissionsResult(requestCode, permissions, grantResults);
+    private boolean hasAskedPermissionBefore() {
+        try {
+            SharedPreferences prefs = getContext().getSharedPreferences("fcm_plugin_prefs", 0);
+            return prefs.getBoolean("notification_permission_asked", false);
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
-        Log.i(TAG, "handleRequestPermissionsResult: requestCode=" + requestCode +
-            ", permissions=" + (permissions != null ? permissions.length : 0) +
-            ", results=" + (grantResults != null ? grantResults.length : 0));
-
-        if (requestCode == NOTIFICATION_PERMISSION_CODE && pendingPermissionCall != null) {
-            boolean granted = grantResults != null &&
-                grantResults.length > 0 &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED;
-
-            Log.i(TAG, "Notification permission result: " + (granted ? "GRANTED" : "DENIED"));
-
-            JSObject result = new JSObject();
-            result.put("receive", granted ? "granted" : "denied");
-            pendingPermissionCall.resolve(result);
-            pendingPermissionCall = null;
+    private void markPermissionAsked() {
+        try {
+            SharedPreferences prefs = getContext().getSharedPreferences("fcm_plugin_prefs", 0);
+            prefs.edit().putBoolean("notification_permission_asked", true).apply();
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to mark permission asked: " + e.getMessage());
         }
     }
 }
