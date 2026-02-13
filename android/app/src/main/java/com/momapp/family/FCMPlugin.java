@@ -18,6 +18,7 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import androidx.core.app.NotificationManagerCompat;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 @CapacitorPlugin(name = "FCMPlugin")
@@ -132,8 +133,14 @@ public class FCMPlugin extends Plugin {
                     }
                 }
             } else {
-                result.put("receive", "granted");
-                Log.i(TAG, "checkPermissions: granted (pre-Android 13)");
+                boolean enabled = NotificationManagerCompat.from(getContext()).areNotificationsEnabled();
+                if (enabled) {
+                    result.put("receive", "granted");
+                    Log.i(TAG, "checkPermissions: granted (pre-Android 13, notifications enabled)");
+                } else {
+                    result.put("receive", "denied");
+                    Log.i(TAG, "checkPermissions: denied (pre-Android 13, notifications disabled in settings)");
+                }
             }
         } catch (Exception e) {
             Log.e(TAG, "Error checking permissions: " + e.getMessage());
@@ -179,9 +186,26 @@ public class FCMPlugin extends Plugin {
                 call.resolve(result);
             }
         } else {
-            Log.i(TAG, "Pre-Android 13, notifications always allowed");
+            boolean enabled = NotificationManagerCompat.from(getContext()).areNotificationsEnabled();
+            Log.i(TAG, "Pre-Android 13, notifications " + (enabled ? "enabled" : "disabled"));
+            if (!enabled) {
+                Log.i(TAG, "Pre-Android 13: notifications disabled, opening settings");
+                try {
+                    Intent intent;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+                        intent.putExtra(Settings.EXTRA_APP_PACKAGE, getActivity().getPackageName());
+                    } else {
+                        intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent.setData(Uri.parse("package:" + getActivity().getPackageName()));
+                    }
+                    getActivity().startActivity(intent);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to open settings: " + e.getMessage());
+                }
+            }
             JSObject result = new JSObject();
-            result.put("receive", "granted");
+            result.put("receive", enabled ? "granted" : "denied");
             call.resolve(result);
         }
     }

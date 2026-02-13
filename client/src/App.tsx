@@ -68,16 +68,7 @@ function Router() {
     }).catch(() => {});
   }, [setLocation]);
 
-  useEffect(() => {
-    if (isAuthenticated || isTeenUser) {
-      const timer = setTimeout(() => {
-        import("@/services/push-notifications").then(({ autoRequestPushPermission }) => {
-          autoRequestPushPermission().catch(() => {});
-        }).catch(() => {});
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [isAuthenticated, isTeenUser]);
+  const [pushRequested, setPushRequested] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -212,6 +203,18 @@ function Router() {
     rawTeenData: teenData,
     routeCondition: teenData && !teenError
   });
+
+  useEffect(() => {
+    if ((isAuthenticated || isTeenUser) && !pushRequested) {
+      setPushRequested(true);
+      const timer = setTimeout(() => {
+        import("@/services/push-notifications").then(({ autoRequestPushPermission }) => {
+          autoRequestPushPermission().catch(() => {});
+        }).catch(() => {});
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, isTeenUser, pushRequested]);
 
   // Show splash screen on initial load for a minimum duration
   if (!splashCompleted && initialLoad) {
