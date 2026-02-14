@@ -53,6 +53,46 @@ jobs:
         rm -rf android/.gradle
         rm -rf android/app/build
         rm -rf android/build
+
+    - name: Restore custom native files
+      run: |
+        echo "Copying custom native overrides back into generated Android project..."
+        
+        cp native-overrides/android/app/src/main/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+        cp native-overrides/android/app/google-services.json android/app/google-services.json
+        
+        mkdir -p android/app/src/main/java/com/momapp/family
+        cp native-overrides/android/app/src/main/java/com/momapp/family/*.java android/app/src/main/java/com/momapp/family/
+        
+        echo "Restored files:"
+        ls -la android/app/src/main/java/com/momapp/family/
+        echo ""
+        echo "AndroidManifest.xml POST_NOTIFICATIONS check:"
+        grep -c "POST_NOTIFICATIONS" android/app/src/main/AndroidManifest.xml && echo "FOUND" || echo "MISSING"
+        echo ""
+        echo "google-services.json check:"
+        ls -la android/app/google-services.json
+        
+        echo "Adding Firebase dependency to app/build.gradle..."
+        sed -i "/implementation project(':capacitor-android')/a\\    implementation 'com.google.firebase:firebase-messaging:23.3.1'" android/app/build.gradle
+        
+        echo "Adding Google Services classpath to project build.gradle..."
+        sed -i "/classpath 'com.android.tools.build:gradle/a\\        classpath 'com.google.gms:google-services:4.4.2'" android/build.gradle
+        
+        echo "Adding Google Services plugin to app/build.gradle..."
+        cat >> android/app/build.gradle << 'FIREBASE_EOF'
+        
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}
+FIREBASE_EOF
+        
+        echo "Native overrides restored successfully"
         
     - name: Set correct app icon
       run: |
@@ -64,20 +104,7 @@ jobs:
         # Remove adaptive icon folder so Android uses the direct PNG
         rm -rf android/app/src/main/res/mipmap-anydpi-v26
         
-        # Update AndroidManifest.xml to use the correct icon
-        sed -i 's|android:icon="@mipmap/ic_launcher"|android:icon="@mipmap/themomappicon"|' android/app/src/main/AndroidManifest.xml
-        sed -i 's|android:roundIcon="@mipmap/ic_launcher_round"|android:roundIcon="@mipmap/themomappicon"|' android/app/src/main/AndroidManifest.xml
-        
         echo "App icon configured successfully"
-        
-    - name: Add microphone permission to manifest
-      run: |
-        # Add RECORD_AUDIO and MODIFY_AUDIO_SETTINGS permissions if not already present
-        cd android/app/src/main
-        if ! grep -q "RECORD_AUDIO" AndroidManifest.xml; then
-          sed -i '/<uses-permission android:name="android.permission.INTERNET"/a\    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />' AndroidManifest.xml
-        fi
-        echo "Microphone permissions configured"
         
     - name: Set version code and name
       run: |

@@ -44,6 +44,7 @@ Preferred communication style: Simple, everyday language.
 - **AI Services**: OpenAI API for transcription and assistance.
 - **Mobile Builds**: Capacitor for Android/iOS.
 - **Push Notifications**: Custom native FCM plugin (FCMPlugin.java + MomAppMessagingService.java) in android/app/src/main/java/com/momapp/family/. Uses firebase-messaging:23.3.1 directly (not the Capacitor push-notifications plugin, which was removed due to native crashes). NOTE: If running `npx cap sync`, re-remove `capacitor-push-notifications` from capacitor.build.gradle and capacitor.settings.gradle.
+- **CRITICAL - Native Android Overrides**: The GitHub Actions build (`build-android.yml`) deletes and regenerates the `android/` folder on every build via `npx cap add android`. All custom native Java files, AndroidManifest.xml, and google-services.json are stored in `native-overrides/` and copied back in the "Restore custom native files" build step. **Any changes to native Android files MUST be updated in BOTH `android/` (for local dev) AND `native-overrides/` (for CI builds).**
 - **SMS Services**: Twilio (primary), AWS SNS (backup) for notifications.
 - **Email Services**: SendGrid.
 - **Calendar Integration**: Google Calendar API for synchronization.
