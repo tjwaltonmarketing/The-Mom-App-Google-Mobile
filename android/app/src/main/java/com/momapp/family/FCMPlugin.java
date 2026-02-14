@@ -1,5 +1,6 @@
 package com.momapp.family;
 
+import android.app.Activity;
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +10,7 @@ import android.provider.Settings;
 import android.util.Log;
 
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PermissionState;
@@ -35,8 +37,12 @@ public class FCMPlugin extends Plugin {
 
     @Override
     public void load() {
+        super.load();
         instance = this;
-        Log.i(TAG, "FCMPlugin loaded successfully");
+        Log.d(TAG, "FCMPlugin loaded");
+        Log.d(TAG, "FCMPlugin load() - activity=" + getActivity());
+        Log.d(TAG, "FCMPlugin load() - bridge=" + getBridge());
+        Log.d(TAG, "FCMPlugin load() - sdk=" + Build.VERSION.SDK_INT);
     }
 
     public static FCMPlugin getInstance() {
@@ -73,6 +79,45 @@ public class FCMPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void debugNotificationPermission(PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("sdk", Build.VERSION.SDK_INT);
+
+        Activity a = getActivity();
+        ret.put("activityNull", (a == null));
+        ret.put("bridgeNull", (getBridge() == null));
+
+        if (a != null) {
+            if (Build.VERSION.SDK_INT >= 33) {
+                int granted = ContextCompat.checkSelfPermission(a, Manifest.permission.POST_NOTIFICATIONS);
+                ret.put("permissionState", granted);
+                ret.put("permissionStateString", granted == 0 ? "GRANTED" : "DENIED");
+
+                try {
+                    PermissionState capState = getPermissionState("notifications");
+                    ret.put("capacitorState", capState != null ? capState.toString() : "null");
+                } catch (Exception e) {
+                    ret.put("capacitorState", "error: " + e.getMessage());
+                }
+
+                boolean notifEnabled = NotificationManagerCompat.from(getContext()).areNotificationsEnabled();
+                ret.put("notificationsEnabled", notifEnabled);
+            } else {
+                ret.put("permissionState", 0);
+                ret.put("permissionStateString", "GRANTED (pre-33)");
+                boolean notifEnabled = NotificationManagerCompat.from(getContext()).areNotificationsEnabled();
+                ret.put("notificationsEnabled", notifEnabled);
+            }
+        }
+
+        boolean askedBefore = hasAskedPermissionBefore();
+        ret.put("askedBefore", askedBefore);
+
+        Log.d(TAG, "debugNotificationPermission result: " + ret.toString());
+        call.resolve(ret);
+    }
+
+    @PluginMethod
     public void getToken(PluginCall call) {
         try {
             FirebaseMessaging.getInstance().getToken()
@@ -101,31 +146,32 @@ public class FCMPlugin extends Plugin {
     public void checkPermissions(PluginCall call) {
         JSObject result = new JSObject();
         try {
+            Log.d(TAG, "checkPermissions called, SDK=" + Build.VERSION.SDK_INT);
             if (Build.VERSION.SDK_INT >= 33) {
                 PermissionState state = getPermissionState("notifications");
-                Log.i(TAG, "checkPermissions: Capacitor state = " + state);
+                Log.d(TAG, "checkPermissions: Capacitor state = " + state);
                 if (state == PermissionState.GRANTED) {
                     result.put("receive", "granted");
                 } else if (state == PermissionState.DENIED) {
                     boolean askedBefore = hasAskedPermissionBefore();
                     if (!askedBefore) {
                         result.put("receive", "prompt");
-                        Log.i(TAG, "checkPermissions: prompt (never asked)");
+                        Log.d(TAG, "checkPermissions: prompt (never asked)");
                     } else {
                         result.put("receive", "denied");
-                        Log.i(TAG, "checkPermissions: denied");
+                        Log.d(TAG, "checkPermissions: denied");
                     }
                 } else {
                     result.put("receive", "prompt");
-                    Log.i(TAG, "checkPermissions: prompt");
+                    Log.d(TAG, "checkPermissions: prompt (state=" + state + ")");
                 }
             } else {
                 boolean enabled = NotificationManagerCompat.from(getContext()).areNotificationsEnabled();
                 result.put("receive", enabled ? "granted" : "denied");
-                Log.i(TAG, "checkPermissions: pre-Android 13, " + (enabled ? "enabled" : "disabled"));
+                Log.d(TAG, "checkPermissions: pre-Android 13, " + (enabled ? "enabled" : "disabled"));
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error checking permissions: " + e.getMessage());
+            Log.e(TAG, "Error checking permissions: " + e.getMessage(), e);
             result.put("receive", "prompt");
         }
         call.resolve(result);
@@ -133,26 +179,32 @@ public class FCMPlugin extends Plugin {
 
     @PluginMethod
     public void requestPermissions(PluginCall call) {
-        Log.i(TAG, "requestPermissions called, SDK: " + Build.VERSION.SDK_INT);
+        Log.d(TAG, "requestPermissions() called");
+        Log.d(TAG, "activity=" + getActivity());
+        Log.d(TAG, "sdk=" + Build.VERSION.SDK_INT);
+        Log.d(TAG, "bridge=" + getBridge());
 
         if (Build.VERSION.SDK_INT >= 33) {
             PermissionState currentState = getPermissionState("notifications");
+            Log.d(TAG, "requestPermissions: currentState=" + currentState);
+
             if (currentState == PermissionState.GRANTED) {
-                Log.i(TAG, "Permission already granted");
+                Log.d(TAG, "Permission already granted, resolving immediately");
                 JSObject result = new JSObject();
                 result.put("receive", "granted");
                 call.resolve(result);
                 return;
             }
 
-            Log.i(TAG, "Requesting POST_NOTIFICATIONS via Capacitor permission framework");
+            Log.d(TAG, "Calling requestPermissionForAlias('notifications') via Capacitor framework");
             markPermissionAsked();
             requestPermissionForAlias("notifications", call, "notificationPermCallback");
+            Log.d(TAG, "requestPermissionForAlias dispatched");
         } else {
             boolean enabled = NotificationManagerCompat.from(getContext()).areNotificationsEnabled();
-            Log.i(TAG, "Pre-Android 13, notifications " + (enabled ? "enabled" : "disabled"));
+            Log.d(TAG, "Pre-Android 13, notifications " + (enabled ? "enabled" : "disabled"));
             if (!enabled) {
-                Log.i(TAG, "Pre-Android 13: notifications disabled, opening settings");
+                Log.d(TAG, "Pre-Android 13: notifications disabled, opening settings");
                 try {
                     Intent intent;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -177,7 +229,7 @@ public class FCMPlugin extends Plugin {
     private void notificationPermCallback(PluginCall call) {
         PermissionState state = getPermissionState("notifications");
         boolean granted = (state == PermissionState.GRANTED);
-        Log.i(TAG, "notificationPermCallback: " + (granted ? "GRANTED" : "DENIED") + " (state=" + state + ")");
+        Log.d(TAG, "notificationPermCallback fired: " + (granted ? "GRANTED" : "DENIED") + " (state=" + state + ")");
 
         JSObject result = new JSObject();
         result.put("receive", granted ? "granted" : "denied");

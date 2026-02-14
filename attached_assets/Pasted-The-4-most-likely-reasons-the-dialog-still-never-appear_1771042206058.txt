@@ -1,0 +1,136 @@
+The 4 most likely reasons the dialog still never appears
+1) Your permission annotation isn’t being applied at runtime (wrong import / wrong annotation / not actually built into APK)
+
+Capacitor 6 uses the permission annotations, but if the plugin annotation is wrong (or using the wrong package imports), Capacitor won’t request anything.
+
+What to confirm inside FCMPlugin.java:
+
+It uses @CapacitorPlugin(...) (not the older @NativePlugin)
+
+It imports the right classes from com.getcapacitor.annotation.*
+
+The permission string is exactly Manifest.permission.POST_NOTIFICATIONS
+
+Also confirm the plugin is truly loaded:
+Add a log line in plugin load():
+
+@Override
+public void load() {
+  super.load();
+  Log.d("FCMPlugin", "FCMPlugin loaded");
+}
+
+
+If you never see that log, the plugin isn’t loaded, so permission requests will never happen.
+
+2) The call isn’t firing from JS (or is firing before the bridge is ready)
+
+Even if you “wait 5 seconds,” it might still be called while the Activity is paused or the WebView isn’t attached (especially if you call it right after navigation / login transitions).
+
+Prove it:
+In requestPermissions() add:
+
+Log.d("FCMPlugin", "requestPermissions() called");
+Log.d("FCMPlugin", "activity=" + getActivity());
+Log.d("FCMPlugin", "sdk=" + Build.VERSION.SDK_INT);
+
+
+If you don’t see “requestPermissions() called” in logcat at the moment you trigger it, the JS call isn’t reaching native.
+
+If you do see it but activity=null, Android will not show the dialog.
+
+3) You’re accidentally reusing “replace install” so the OS never prompts again
+
+Even if nobody tapped “Don’t allow,” Android can decide “don’t prompt” if it believes the user has already made a notification choice via Settings toggle or previous permission flow.
+
+On debug cycles, this happens constantly if you install with:
+
+adb install -r
+
+Android Studio “Run” (often does replace)
+
+or the phone restored settings from backup
+
+Definitive clean test:
+
+adb uninstall com.momapp.family
+adb shell pm clear com.momapp.family
+
+
+Then install WITHOUT -r.
+
+(Yes, pm clear after uninstall seems redundant, but it helps flush weird OEM state.)
+
+4) Your manifest / merged manifest is missing POST_NOTIFICATIONS in the final build
+
+This is super common with Capacitor/Replit builds: dev thinks it’s in AndroidManifest.xml, but the merged manifest that ships isn’t.
+
+Check the final APK:
+On your computer:
+
+aapt dump permissions path\to\your.apk
+
+
+You should see:
+
+android.permission.POST_NOTIFICATIONS
+
+
+If not, the app literally cannot request it.
+
+The fastest “binary test” to isolate OS vs code
+
+Add this inside the plugin and call it from JS:
+
+@PluginMethod
+public void debugNotificationPermission(PluginCall call) {
+  JSObject ret = new JSObject();
+  if (Build.VERSION.SDK_INT < 33) {
+    ret.put("sdk", Build.VERSION.SDK_INT);
+    ret.put("granted", true);
+    call.resolve(ret);
+    return;
+  }
+  Activity a = getActivity();
+  ret.put("sdk", Build.VERSION.SDK_INT);
+  ret.put("activityNull", (a == null));
+  if (a != null) {
+    int granted = ContextCompat.checkSelfPermission(a, Manifest.permission.POST_NOTIFICATIONS);
+    ret.put("permissionState", granted);
+  }
+  call.resolve(ret);
+}
+
+
+If JS says activityNull=true, you’ve found it: you’re calling when there’s no active activity (or wrong lifecycle).
+
+What I need from you (NOT the whole app)
+
+Paste any one of these and I can pinpoint it:
+
+Option A (best)
+
+The actual updated FCMPlugin.java + MainActivity.java contents.
+
+Option B (second best)
+
+The logcat lines surrounding the request attempt, including anything with:
+
+FCMPlugin
+
+Capacitor
+
+Permission
+
+POST_NOTIFICATIONS
+
+Activity
+
+(10–30 lines is plenty.)
+
+Option C (quick verification)
+
+Output of:
+
+adb shell dumpsys package com.momapp.family | findstr POST_NOTIFICATIONS
+adb shell cmd appops get com.momapp.family POST_NOTIFICATION

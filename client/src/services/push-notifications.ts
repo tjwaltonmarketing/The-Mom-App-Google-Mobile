@@ -6,6 +6,7 @@ interface FCMPluginInterface {
   checkPermissions(): Promise<{ receive: string }>;
   requestPermissions(): Promise<{ receive: string }>;
   openNotificationSettings(): Promise<void>;
+  debugNotificationPermission(): Promise<Record<string, any>>;
   addListener(event: string, callback: (data: any) => void): Promise<any>;
   removeAllListeners(): Promise<void>;
 }
@@ -170,6 +171,19 @@ export async function openNotificationSettings(): Promise<void> {
   }
 }
 
+export async function debugPushPermission(): Promise<Record<string, any> | null> {
+  const plugin = getPlugin();
+  if (!plugin) return null;
+  try {
+    const result = await plugin.debugNotificationPermission();
+    console.log('debugNotificationPermission result:', JSON.stringify(result));
+    return result;
+  } catch (e) {
+    console.warn('debugNotificationPermission failed:', e);
+    return null;
+  }
+}
+
 export async function autoRequestPushPermission(): Promise<boolean> {
   if (!Capacitor.isNativePlatform()) return false;
 
@@ -180,6 +194,9 @@ export async function autoRequestPushPermission(): Promise<boolean> {
       console.warn('autoRequestPushPermission: FCMPlugin never became ready');
       return false;
     }
+
+    const debugInfo = await debugPushPermission();
+    console.log('autoRequestPushPermission: debug info:', JSON.stringify(debugInfo));
 
     console.log('autoRequestPushPermission: plugin ready, checking status...');
     const status = await plugin.checkPermissions();
