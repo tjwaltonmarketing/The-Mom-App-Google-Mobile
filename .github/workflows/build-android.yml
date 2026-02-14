@@ -80,17 +80,15 @@ jobs:
         sed -i "/classpath 'com.android.tools.build:gradle/a\\        classpath 'com.google.gms:google-services:4.4.2'" android/build.gradle
         
         echo "Adding Google Services plugin to app/build.gradle..."
-        cat >> android/app/build.gradle << 'FIREBASE_EOF'
-        
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
-    }
-} catch(Exception e) {
-    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
-}
-FIREBASE_EOF
+        echo "" >> android/app/build.gradle
+        echo "try {" >> android/app/build.gradle
+        echo "    def servicesJSON = file('google-services.json')" >> android/app/build.gradle
+        echo "    if (servicesJSON.text) {" >> android/app/build.gradle
+        echo "        apply plugin: 'com.google.gms.google-services'" >> android/app/build.gradle
+        echo "    }" >> android/app/build.gradle
+        echo "} catch(Exception e) {" >> android/app/build.gradle
+        echo "    logger.info('google-services.json not found, push notifications disabled')" >> android/app/build.gradle
+        echo "}" >> android/app/build.gradle
         
         echo "Native overrides restored successfully"
         
