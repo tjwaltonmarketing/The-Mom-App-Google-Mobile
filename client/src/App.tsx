@@ -205,12 +205,22 @@ function Router() {
   });
 
   useEffect(() => {
+    console.log('Push notification useEffect:', { isAuthenticated, isTeenUser, pushRequested });
     if ((isAuthenticated || isTeenUser) && !pushRequested) {
       setPushRequested(true);
+      console.log('Push notification: scheduling auto-request in 3s');
       const timer = setTimeout(() => {
+        console.log('Push notification: importing module...');
         import("@/services/push-notifications").then(({ autoRequestPushPermission }) => {
-          autoRequestPushPermission().catch(() => {});
-        }).catch(() => {});
+          console.log('Push notification: module loaded, calling autoRequestPushPermission');
+          autoRequestPushPermission().then((result) => {
+            console.log('Push notification: autoRequestPushPermission result =', result);
+          }).catch((err) => {
+            console.error('Push notification: autoRequestPushPermission error:', err);
+          });
+        }).catch((err) => {
+          console.error('Push notification: module import error:', err);
+        });
       }, 3000);
       return () => clearTimeout(timer);
     }
