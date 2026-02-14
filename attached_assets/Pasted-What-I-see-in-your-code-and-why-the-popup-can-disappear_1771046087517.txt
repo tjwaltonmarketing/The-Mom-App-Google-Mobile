@@ -1,0 +1,113 @@
+What I see in your code (and why the popup can “disappear”)
+1) Your app has its own “asked before” gate, stored in SharedPreferences
+
+In FCMPlugin.checkPermissions() you do this logic:
+
+If Android 13+ and getPermissionState("notifications") == DENIED:
+
+If hasAskedPermissionBefore() is false → return "prompt"
+
+If hasAskedPermissionBefore() is true → return "denied" (and your JS likely won’t call requestPermissions())
+
+And in requestPermissions() you call:
+
+markPermissionAsked();
+requestPermissionForAlias("notifications", call, "notificationPermCallback");
+
+
+So even if the system dialog never appears (for any reason), your app now believes it already asked, and future runs won’t show the “Turn on notifications” prompt (because your JS probably only shows it when "prompt").
+
+2) Your manifest has android:allowBackup="true"
+
+That means SharedPreferences can be restored (Google backup / Samsung backup). So on your wife’s phone, it’s totally possible that the app data restored and hasAskedPermissionBefore() is already true, even though she never saw the dialog.
+
+That perfectly matches your symptom:
+
+Notifications toggle is OFF but clickable
+
+She never sees the in-app prompt
+
+POST_NOTIFICATIONS doesn’t show in “App permissions” (normal on Samsung)
+
+No popup appears
+
+The fastest fix (do these in this exact order)
+A) Prove whether your JS is even calling requestPermissions()
+
+Your plugin logs these lines:
+
+FCMPlugin: requestPermissions() called
+
+Calling requestPermissionForAlias('notifications')...
+
+On your wife’s phone, run logcat and trigger your “enable notifications” flow.
+
+If you do not see requestPermissions() called, then the native request never happens — your JS gate is blocking it because checkPermissions() is returning "denied" (askedBefore = true).
+
+✅ Quick test: Temporarily change your JS to call FCMPlugin.requestPermissions() unconditionally when she taps “Turn on notifications” (ignore checkPermissions() result). That will immediately tell you if you’re just gating it away.
+
+B) Reset her app data (this clears the “askedBefore” flag)
+
+On her phone:
+
+adb shell pm clear com.momapp.family
+
+
+Then open app, login, and test again.
+
+This is the cleanest way to remove any restored SharedPreferences without guessing.
+
+C) During dev/testing, stop backups from restoring bad state
+
+In AndroidManifest.xml (for dev builds), change:
+
+android:allowBackup="false"
+
+
+Backups are great for users, but they cause absolute chaos during permission debugging because they restore your app’s internal “already asked” flags.
+
+(For production you can re-enable, but while debugging this issue, turning it off removes a huge variable.)
+
+Code change I strongly recommend (prevents “askedBefore” from breaking you)
+1) Only set “askedBefore” after the permission callback returns
+
+Right now you set it before the OS shows anything. If Android ignores the request (or your call never reaches the dialog due to lifecycle), you still mark “asked”.
+
+Change this:
+
+markPermissionAsked();
+requestPermissionForAlias(...)
+
+
+To:
+
+requestPermissionForAlias("notifications", call, "notificationPermCallback");
+
+
+And inside the callback:
+
+@PermissionCallback
+private void notificationPermCallback(PluginCall call) {
+    markPermissionAsked(); // <-- move here
+    ...
+}
+
+2) Consider removing the “askedBefore” gate entirely
+
+A safer rule is:
+
+If not GRANTED → always let the user tap a button that calls requestPermissions()
+
+If Android won’t show the dialog again, then send them to settings
+
+That avoids this whole “silent denied” UX trap.
+
+One more check: Is Android already treating it as granted?
+
+Run on wife’s phone:
+
+adb shell dumpsys package com.momapp.family | findstr POST_NOTIFICATIONS
+adb shell cmd appops get com.momapp.family POST_NOTIFICATION
+
+
+If permission is already granted but notifications are toggled OFF, Android won’t show a popup because there’s nothing to request — you must route to settings.

@@ -152,18 +152,9 @@ public class FCMPlugin extends Plugin {
                 Log.d(TAG, "checkPermissions: Capacitor state = " + state);
                 if (state == PermissionState.GRANTED) {
                     result.put("receive", "granted");
-                } else if (state == PermissionState.DENIED) {
-                    boolean askedBefore = hasAskedPermissionBefore();
-                    if (!askedBefore) {
-                        result.put("receive", "prompt");
-                        Log.d(TAG, "checkPermissions: prompt (never asked)");
-                    } else {
-                        result.put("receive", "denied");
-                        Log.d(TAG, "checkPermissions: denied");
-                    }
                 } else {
                     result.put("receive", "prompt");
-                    Log.d(TAG, "checkPermissions: prompt (state=" + state + ")");
+                    Log.d(TAG, "checkPermissions: not granted, returning prompt (state=" + state + ")");
                 }
             } else {
                 boolean enabled = NotificationManagerCompat.from(getContext()).areNotificationsEnabled();
@@ -197,7 +188,6 @@ public class FCMPlugin extends Plugin {
             }
 
             Log.d(TAG, "Calling requestPermissionForAlias('notifications') via Capacitor framework");
-            markPermissionAsked();
             requestPermissionForAlias("notifications", call, "notificationPermCallback");
             Log.d(TAG, "requestPermissionForAlias dispatched");
         } else {
@@ -227,6 +217,7 @@ public class FCMPlugin extends Plugin {
 
     @PermissionCallback
     private void notificationPermCallback(PluginCall call) {
+        markPermissionAsked();
         PermissionState state = getPermissionState("notifications");
         boolean granted = (state == PermissionState.GRANTED);
         Log.d(TAG, "notificationPermCallback fired: " + (granted ? "GRANTED" : "DENIED") + " (state=" + state + ")");

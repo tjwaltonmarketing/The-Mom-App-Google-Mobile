@@ -215,13 +215,7 @@ export async function autoRequestPushPermission(): Promise<boolean> {
       return true;
     }
 
-    if (status.receive === 'denied') {
-      console.log('autoRequestPushPermission: permanently denied, showing banner instead');
-      localStorage.removeItem('push_prompt_dismissed');
-      return false;
-    }
-
-    console.log('autoRequestPushPermission: requesting permission (waiting 2s for Activity)...');
+    console.log('autoRequestPushPermission: not granted, requesting permission (waiting 2s for Activity)...');
     await delay(2000);
 
     const result = await requestAndRegisterPush();
