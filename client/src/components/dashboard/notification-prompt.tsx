@@ -8,20 +8,35 @@ export function NotificationPrompt() {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showSettingsOption, setShowSettingsOption] = useState(false);
+  const [debugInfo, setDebugInfo] = useState("");
 
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
-
+    const isNative = Capacitor.isNativePlatform();
+    const platform = Capacitor.getPlatform();
     const dismissed = localStorage.getItem("push_prompt_dismissed");
-    if (dismissed) return;
+
+    console.log("NotificationPrompt: isNative=" + isNative + " platform=" + platform + " dismissed=" + dismissed);
+
+    if (!isNative) {
+      setDebugInfo("not-native:" + platform);
+      return;
+    }
+
+    if (dismissed) {
+      localStorage.removeItem("push_prompt_dismissed");
+      console.log("NotificationPrompt: cleared stale push_prompt_dismissed flag");
+    }
 
     checkPushPermissionStatus().then((status) => {
+      console.log("NotificationPrompt: permission status=" + status);
+      setDebugInfo("native:" + platform + " perm:" + status);
       if (status !== "granted") {
         setVisible(true);
-        if (status === "denied") {
-          setShowSettingsOption(true);
-        }
       }
+    }).catch((err) => {
+      console.error("NotificationPrompt: checkPushPermissionStatus error:", err);
+      setDebugInfo("native:" + platform + " error:" + String(err));
+      setVisible(true);
     });
   }, []);
 
@@ -30,13 +45,16 @@ export function NotificationPrompt() {
   const handleEnable = async () => {
     setLoading(true);
     try {
+      console.log("NotificationPrompt: handleEnable - calling requestAndRegisterPush");
       const success = await requestAndRegisterPush();
+      console.log("NotificationPrompt: handleEnable result=" + success);
       if (success) {
         setVisible(false);
       } else {
         setShowSettingsOption(true);
       }
-    } catch {
+    } catch (err) {
+      console.error("NotificationPrompt: handleEnable error:", err);
       setShowSettingsOption(true);
     }
     setLoading(false);
@@ -69,7 +87,7 @@ export function NotificationPrompt() {
             </Button>
           ) : (
             <Button size="sm" onClick={handleEnable} disabled={loading}>
-              {loading ? "Setting up…" : "Enable"}
+              {loading ? "Setting up…" : "Enable Notifications"}
             </Button>
           )}
           <Button size="sm" variant="ghost" onClick={handleDismiss}>
