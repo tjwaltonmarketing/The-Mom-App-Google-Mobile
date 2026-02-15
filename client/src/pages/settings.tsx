@@ -28,6 +28,62 @@ import { InviteTeenModal } from "@/components/family/invite-teen-modal";
 import { ParentInviteModal } from "@/components/parent-invite-modal";
 import { KidPointManager } from "@/components/family/kid-point-manager";
 import { useSubscription } from "@/hooks/use-subscription";
+import { Capacitor } from "@capacitor/core";
+import { checkPushPermissionStatus, requestAndRegisterPush, openNotificationSettings } from "@/services/push-notifications";
+
+function PushNotificationSetting() {
+  const [status, setStatus] = useState<"loading" | "granted" | "denied" | "prompt" | "not-native">("loading");
+  const [enabling, setEnabling] = useState(false);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      setStatus("not-native");
+      return;
+    }
+    checkPushPermissionStatus().then(setStatus).catch(() => setStatus("denied"));
+  }, []);
+
+  if (status === "not-native" || status === "loading") return null;
+
+  const handleEnable = async () => {
+    setEnabling(true);
+    const success = await requestAndRegisterPush();
+    if (success) {
+      setStatus("granted");
+    } else {
+      setStatus("denied");
+    }
+    setEnabling(false);
+  };
+
+  return (
+    <div className="pt-2 border-t">
+      <div className="flex items-center justify-between">
+        <div>
+          <Label className="text-sm font-medium">Device Push Notifications</Label>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {status === "granted"
+              ? "Notifications are enabled on this device"
+              : "Notifications are turned off on this device"}
+          </p>
+        </div>
+        {status === "granted" ? (
+          <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50 dark:bg-green-900/20">
+            <Check className="h-3 w-3 mr-1" /> On
+          </Badge>
+        ) : status === "prompt" ? (
+          <Button size="sm" variant="outline" onClick={handleEnable} disabled={enabling}>
+            {enabling ? "Enabling…" : "Enable"}
+          </Button>
+        ) : (
+          <Button size="sm" variant="outline" onClick={() => openNotificationSettings()}>
+            Open Settings
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const addFamilyMemberSchema = z.object({
   name: z.string().min(1, "Name is required").max(50, "Name too long"),
@@ -817,13 +873,14 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="notifications">Push notifications</Label>
+                  <Label htmlFor="notifications">In-app notifications</Label>
                   <Switch
                     id="notifications"
                     checked={notifications}
                     onCheckedChange={setNotifications}
                   />
                 </div>
+                <PushNotificationSetting />
               </CardContent>
             </Card>
 

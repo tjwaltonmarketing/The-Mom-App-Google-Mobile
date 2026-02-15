@@ -13,7 +13,6 @@ import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { MindfulUsage } from "@/components/mindful-usage";
 import { FeedbackPromptModal } from "@/components/feedback-prompt-modal";
 import { WebAccessTipModal } from "@/components/web-access-tip-modal";
-import { NotificationPrompt } from "@/components/dashboard/notification-prompt";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -33,7 +32,6 @@ export default function Dashboard() {
         
         <WelcomeHeader onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
         
-        <NotificationPrompt />
         
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="w-full mb-6 h-auto p-1">
