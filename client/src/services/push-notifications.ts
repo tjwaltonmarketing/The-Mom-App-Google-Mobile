@@ -167,7 +167,15 @@ export async function openNotificationSettings(): Promise<void> {
   try {
     await plugin.openNotificationSettings();
   } catch (e) {
-    console.warn('Failed to open notification settings:', e);
+    console.warn('Failed to open notification settings via plugin, trying fallback:', e);
+    try {
+      const platform = Capacitor.getPlatform();
+      if (platform === 'ios') {
+        await (window as any).Capacitor?.Plugins?.App?.openUrl?.({ url: 'app-settings:' });
+      }
+    } catch (fallbackErr) {
+      console.warn('Fallback settings open also failed:', fallbackErr);
+    }
   }
 }
 
