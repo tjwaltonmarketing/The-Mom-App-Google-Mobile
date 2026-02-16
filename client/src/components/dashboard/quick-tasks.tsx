@@ -137,7 +137,7 @@ export function QuickTasks() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-lg font-semibold flex items-center">
-          <CheckCircle className="text-secondary mr-2 h-5 w-5" />
+          <CheckCircle className="text-pink-500 mr-2 h-5 w-5" />
           Quick Tasks
         </CardTitle>
         <Button 

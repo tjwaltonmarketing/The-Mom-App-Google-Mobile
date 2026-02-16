@@ -294,7 +294,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md w-full mx-4">
+      <DialogContent className="max-w-md w-[calc(100%-2rem)] mx-auto left-[50%] translate-x-[-50%]">
         <DialogHeader>
           <DialogTitle className="text-center">
             {isRecording ? "Listening..." : "Voice Assistant"}
