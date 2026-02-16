@@ -146,7 +146,9 @@ function Router() {
   
   // Determine if user needs onboarding (never had a subscription)
   // Only show onboarding if subscription query completed and returned no data
-  const needsOnboarding = isAuthenticated && subscriptionReady && !subscriptionData;
+  // Also skip onboarding if user already completed it (localStorage fallback for mobile)
+  const onboardingCompleted = typeof window !== 'undefined' && localStorage.getItem("onboarding_completed") === "true";
+  const needsOnboarding = isAuthenticated && subscriptionReady && !subscriptionData && !onboardingCompleted;
 
   // Determine if user needs to upgrade (expired trial or cancelled subscription)
   const needsUpgrade = isAuthenticated && !subscriptionLoading && subscriptionData && (

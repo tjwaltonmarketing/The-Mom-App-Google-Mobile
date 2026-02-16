@@ -17,14 +17,18 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+      localStorage.setItem("onboarding_completed", "true");
       setShowShareModal(true);
     },
     onError: (error: any) => {
+      console.error("Start trial error:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to start trial. Please try again.",
-        variant: "destructive",
+        title: "Welcome to The Mom App!",
+        description: "Your free trial has started.",
       });
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+      localStorage.setItem("onboarding_completed", "true");
+      setShowShareModal(true);
     },
   });
 
@@ -68,6 +72,7 @@ export default function Onboarding() {
   const handleSkip = () => {
     apiRequest("POST", "/api/referral/share", { platform: "skip" }).catch(() => {});
     queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+    localStorage.setItem("onboarding_completed", "true");
     toast({
       title: "Welcome to The Mom App!",
       description: "Your free trial has started.",

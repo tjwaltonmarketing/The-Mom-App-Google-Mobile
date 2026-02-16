@@ -1,8 +1,9 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { setupSession } from "./auth";
+import { setupSession, extractTokenFromRequest, verifyToken } from "./auth";
 import { initializeFirebase } from "./firebase-push";
+import { storage } from "./storage";
 
 // Set LeadConnector environment variables for testing
 if (!process.env.LEADCONNECTOR_API_KEY) {
@@ -54,6 +55,24 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// JWT-to-session middleware: automatically set session userId from JWT token
+// This ensures all endpoints work with token-based auth from the native mobile app
+app.use(async (req, res, next) => {
+  if (!req.session.userId && req.path.startsWith('/api')) {
+    const token = extractTokenFromRequest(req);
+    if (token) {
+      const decoded = verifyToken(token);
+      if (decoded) {
+        const user = await storage.getUserById(decoded.userId);
+        if (user) {
+          req.session.userId = user.id;
+        }
+      }
+    }
+  }
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
