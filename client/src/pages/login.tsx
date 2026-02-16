@@ -153,7 +153,7 @@ export default function Login() {
     onSuccess: (data: any) => {
       console.log("Login successful, user data:", data);
       
-      // Store JWT token for cross-domain authentication
+      localStorage.removeItem('onboarding_completed');
       if (data.token) {
         localStorage.setItem('auth_token', data.token);
       }

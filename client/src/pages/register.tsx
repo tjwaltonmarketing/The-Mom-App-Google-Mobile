@@ -71,7 +71,7 @@ export default function Register() {
       return await response.json();
     },
     onSuccess: (data: any) => {
-      // Store JWT token for cross-domain authentication
+      localStorage.removeItem('onboarding_completed');
       if (data.token) {
         localStorage.setItem('auth_token', data.token);
       }

@@ -40,7 +40,7 @@ export function useAuth() {
       // Clear token from localStorage for mobile compatibility
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.removeItem('auth_token');
-        // Reset theme to light mode on logout
+        localStorage.removeItem('onboarding_completed');
         localStorage.setItem('mom-app-theme', 'light');
       }
       
