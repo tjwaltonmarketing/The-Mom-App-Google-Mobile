@@ -27,6 +27,7 @@ app.use((req, res, next) => {
     'http://localhost:5000',
     'http://localhost:5173',
     'capacitor://localhost',
+    'https://localhost',
     'http://localhost'
   ];
   
