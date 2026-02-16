@@ -66,7 +66,13 @@ export default function Onboarding() {
   };
 
   const handleSkip = () => {
-    shareMutation.mutate("skip");
+    apiRequest("POST", "/api/referral/share", { platform: "skip" }).catch(() => {});
+    queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+    toast({
+      title: "Welcome to The Mom App!",
+      description: "Your free trial has started.",
+    });
+    setLocation("/");
   };
 
   const handleComplete = () => {
