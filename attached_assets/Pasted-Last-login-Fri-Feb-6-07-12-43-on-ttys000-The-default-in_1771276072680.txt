@@ -1,0 +1,111 @@
+Last login: Fri Feb  6 07:12:43 on ttys000
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+#242:~ user289897$ cd ~/Desktop/The-Mom-App-Google-Mobile
+#242:The-Mom-App-Google-Mobile user289897$ git pull
+remote: Enumerating objects: 54, done.
+remote: Counting objects: 100% (54/54), done.
+remote: Compressing objects: 100% (8/8), done.
+remote: Total 40 (delta 33), reused 39 (delta 32), pack-reused 0 (from 0)
+Unpacking objects: 100% (40/40), 285.25 KiB | 1.35 MiB/s, done.
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+   e4b9d9c..7209a38  main       -> origin/main
+Updating e4b9d9c..7209a38
+Fast-forward
+ attached_assets/image_1770353632391.png        | Bin 0 -> 99586 bytes
+ attached_assets/image_1770355241564.png        | Bin 0 -> 84583 bytes
+ attached_assets/image_1770356014146.png        | Bin 0 -> 111272 bytes
+ client/src/components/teen/teen-navigation.tsx |  13 +++-
+ client/src/pages/teen-passwords.tsx            |  54 ++++++-------
+ client/src/pages/teen-profile.tsx              |  26 +++----
+ ios/App/App/Info.plist                         | 100 +++++++++++++------------
+ 7 files changed, 102 insertions(+), 91 deletions(-)
+ create mode 100644 attached_assets/image_1770353632391.png
+ create mode 100644 attached_assets/image_1770355241564.png
+ create mode 100644 attached_assets/image_1770356014146.png
+#242:The-Mom-App-Google-Mobile user289897$ npm install
+
+up to date, audited 799 packages in 3s
+
+114 packages are looking for funding
+  run `npm fund` for details
+
+36 vulnerabilities (4 low, 8 moderate, 23 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+#242:The-Mom-App-Google-Mobile user289897$ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (1) index.htmlBrowserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3177 modules transformed.
+../dist/public/index.html                                                              2.20 kB │ gzip:   0.80 kB
+../dist/public/assets/The Mom app_20250607_125224_0000_1749573727197-CXHC4Cic.png     25.37 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                          27.04 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                      82.76 kB
+../dist/public/assets/onboarding-slide-4-rHtayH7z.png                                356.97 kB
+../dist/public/assets/onboarding-slide-2-DOAnxM2R.png                                472.23 kB
+../dist/public/assets/onboarding-slide-1-WQCRwazH.png                                473.66 kB
+../dist/public/assets/onboarding-slide-3-CJyeMctS.png                                525.84 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                   4,686.94 kB
+../dist/public/assets/index-cekVb2UZ.css                                             131.13 kB │ gzip:  20.14 kB
+../dist/public/assets/web-Brkic83h.js                                                  0.80 kB │ gzip:   0.24 kB
+../dist/public/assets/index-DthMo3Ec.js                                            1,664.80 kB │ gzip: 475.73 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.00s
+
+  dist/index.js  328.5kb
+
+⚡ Done in 16ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap sync ios
+✔ Copying web assets from public to ios/App/App/public in 21.97ms
+✔ Creating capacitor.config.json in ios/App/App in 935.63μs
+✔ copy ios in 63.41ms
+✔ Updating iOS plugins in 7.28ms
+✖ Updating iOS native dependencies with pod install - failed!
+✖ update ios - failed!
+[error] Command line invocation:
+        /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project
+        App.xcodeproj clean
+        
+        User defaults from command line:
+        IDEPackageSupportUseBuiltinSCM = YES
+        
+        2026-02-06 07:27:30.428 xcodebuild[17521:36488952] Writing error result
+        bundle to
+        /var/folders/12/lvx2p_216230x82zmfzdgcr40000nj/T/ResultBundle_2026-06-02_07-27-0030.xcresult
+        xcodebuild: error: 'App.xcodeproj' does not exist.
+        
+#242:The-Mom-App-Google-Mobile user289897$ pod install --project-directory=ios/App
+Analyzing dependencies
+Downloading dependencies
+Generating Pods project
+Integrating client project
+Pod installation complete! There are 4 dependencies from the Podfile and 4 total pods installed.
+#242:The-Mom-App-Google-Mobile user289897$ npx cap open ios
+✔ Opening the Xcode workspace... in 3.01s
+#242:The-Mom-App-Google-Mobile user289897$ 
+  [Restored Feb 16, 2026 at 1:05:49 PM]
+^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[ALast login: Mon Feb 16 13:05:07 on console
+^[[A
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+#242:~ user289897$ 
+#242:~ user289897$ 
