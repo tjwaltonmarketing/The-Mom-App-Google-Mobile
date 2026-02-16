@@ -23,6 +23,7 @@ import {
   AlertDialogTrigger 
 } from "@/components/ui/alert-dialog";
 import { apiRequest } from "@/lib/queryClient";
+import { getApiUrl } from "@/lib/config";
 import { useQueryClient } from "@tanstack/react-query";
 import { TaskModal } from "@/components/task-modal";
 import { TaskEditModal } from "@/components/task-edit-modal";
@@ -43,7 +44,7 @@ export function AdvancedTaskManagement() {
   const { data: tasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
     queryFn: async () => {
-      const response = await fetch('/api/tasks', {
+      const response = await fetch(getApiUrl('/api/tasks'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +65,7 @@ export function AdvancedTaskManagement() {
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
     queryFn: async () => {
-      const response = await fetch('/api/family-members', {
+      const response = await fetch(getApiUrl('/api/family-members'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +84,7 @@ export function AdvancedTaskManagement() {
   const { data: currentUser } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
-      const response = await fetch('/api/auth/user', {
+      const response = await fetch(getApiUrl('/api/auth/user'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

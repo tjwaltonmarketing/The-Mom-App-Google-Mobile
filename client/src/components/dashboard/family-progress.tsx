@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Trophy, Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getApiUrl } from "@/lib/config";
 
 interface TeenProfile {
   id: number;
@@ -15,7 +16,7 @@ export function FamilyProgress() {
   const { data: teens, isLoading } = useQuery<TeenProfile[]>({
     queryKey: ["/api/teen-profiles"],
     queryFn: async () => {
-      const response = await fetch('/api/teen-profiles', {
+      const response = await fetch(getApiUrl('/api/teen-profiles'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

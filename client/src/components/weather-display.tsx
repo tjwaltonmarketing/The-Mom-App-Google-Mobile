@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Thermometer, Droplets, Wind } from "lucide-react";
+import { getApiUrl } from "@/lib/config";
 
 interface WeatherData {
   temperature: number;
@@ -35,7 +36,7 @@ export function WeatherDisplay({ location, compact = false, className = "" }: We
   const { data: weather, isLoading, error } = useQuery<WeatherData>({
     queryKey: ['/api/weather', location, temperatureUnit],
     queryFn: async () => {
-      const response = await fetch(`/api/weather/${encodeURIComponent(location)}?unit=${temperatureUnit}`, {
+      const response = await fetch(getApiUrl(`/api/weather/${encodeURIComponent(location)}?unit=${temperatureUnit}`), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

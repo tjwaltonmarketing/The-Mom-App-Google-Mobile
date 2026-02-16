@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { apiRequest } from "@/lib/queryClient";
+import { getApiUrl } from "@/lib/config";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, startOfWeek } from "date-fns";
 
@@ -54,7 +55,7 @@ export function MealPlanning() {
   const { data: teenData } = useQuery<{ isAuthenticated: boolean; teenId: number | null; teenProfile: any | null }>({
     queryKey: ["/api/teen/auth/user"],
     queryFn: async () => {
-      const response = await fetch("/api/teen/auth/user", {
+      const response = await fetch(getApiUrl("/api/teen/auth/user"), {
         credentials: "include",
       });
       if (!response.ok) {
@@ -76,7 +77,7 @@ export function MealPlanning() {
   const { data: mealPlans = [], refetch: refetchMeals, isLoading: mealsLoading, error: mealsError } = useQuery<MealPlan[]>({
     queryKey: [mealPlansEndpoint],
     queryFn: async () => {
-      const response = await fetch(mealPlansEndpoint, {
+      const response = await fetch(getApiUrl(mealPlansEndpoint), {
         credentials: "include",
       });
       if (!response.ok) {
@@ -95,7 +96,7 @@ export function MealPlanning() {
   const { data: groceryList = [], refetch: refetchGrocery } = useQuery<GroceryItem[]>({
     queryKey: [groceryItemsEndpoint],
     queryFn: async () => {
-      const response = await fetch(groceryItemsEndpoint, {
+      const response = await fetch(getApiUrl(groceryItemsEndpoint), {
         credentials: "include",
       });
       if (!response.ok) {

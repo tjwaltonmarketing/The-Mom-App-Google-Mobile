@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { PasswordModal } from "@/components/password-modal";
+import { getApiUrl } from "@/lib/config";
 import { PasswordEditModal } from "@/components/password-edit-modal";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -57,7 +58,7 @@ export function PasswordVault() {
 
   const { data: passwords = [], isLoading, error } = useQuery({
     queryKey: ['/api/passwords'],
-    queryFn: () => fetch('/api/passwords', { credentials: 'include' }).then(res => res.json()) as Promise<Password[]>,
+    queryFn: () => fetch(getApiUrl('/api/passwords'), { credentials: 'include' }).then(res => res.json()) as Promise<Password[]>,
   });
 
   // Individual password deletion

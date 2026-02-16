@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { getApiUrl } from "@/lib/config";
 import { 
   ArrowLeft,
   Eye,
@@ -105,7 +106,7 @@ export default function TeenPasswords() {
     queryKey: ["/api/teen/passwords"],
     queryFn: async () => {
       console.log("Fetching teen personal passwords...");
-      const response = await fetch('/api/teen/passwords', {
+      const response = await fetch(getApiUrl('/api/teen/passwords'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +130,7 @@ export default function TeenPasswords() {
     queryKey: ["/api/teen/shared-passwords"],
     queryFn: async () => {
       console.log("Fetching teen shared passwords...");
-      const response = await fetch('/api/teen/shared-passwords', {
+      const response = await fetch(getApiUrl('/api/teen/shared-passwords'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

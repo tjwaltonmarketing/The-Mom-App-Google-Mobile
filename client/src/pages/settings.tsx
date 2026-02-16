@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Smartphone, Heart, Clock, Bell, Palette, User, Download, Shield, Users, Mic, Plus, Edit, Trash2, Camera, Lock, UserPlus, Star, Mail, KeyRound, CheckSquare, Crown, Check, MessageSquare, Send, Lightbulb, Bug } from "lucide-react";
+import { getApiUrl } from "@/lib/config";
 import { Link } from "wouter";
 // import { CalendarSync } from "@/components/calendar-sync"; // Disabled until Google OAuth verification
 import { ImportExportModal } from "@/components/import-export-modal";
@@ -234,7 +235,7 @@ export default function SettingsPage() {
     staleTime: 0,
     gcTime: 0,
     queryFn: async () => {
-      const response = await fetch('/api/family-members', {
+      const response = await fetch(getApiUrl('/api/family-members'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

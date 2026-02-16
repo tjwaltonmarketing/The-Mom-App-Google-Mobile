@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SplashScreen } from "@/components/splash-screen";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PullToRefreshIndicator } from "@/components/pull-to-refresh-indicator";
+import { getApiUrl } from "@/lib/config";
 
 // Pages
 import Login from "@/pages/login";
@@ -115,7 +116,7 @@ function Router() {
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
-      const response = await fetch("/api/subscription", {
+      const response = await fetch(getApiUrl("/api/subscription"), {
         credentials: "include",
         headers,
       });
@@ -169,7 +170,7 @@ function Router() {
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }
-      const response = await fetch("/api/teen/auth/user", {
+      const response = await fetch(getApiUrl("/api/teen/auth/user"), {
         credentials: "include",
         method: "GET",
         headers,

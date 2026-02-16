@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { getApiUrl } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -164,7 +165,7 @@ export default function TeenTasks() {
   // Clear all tasks mutation
   const clearAllTasksMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/teen/tasks/clear-all", {
+      const response = await fetch(getApiUrl("/api/teen/tasks/clear-all"), {
         method: "DELETE",
         credentials: "include",
       });

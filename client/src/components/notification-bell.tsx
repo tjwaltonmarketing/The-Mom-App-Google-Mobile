@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatTimeInUserTimezone } from "@/lib/timezone";
 import { apiRequest } from "@/lib/queryClient";
+import { getApiUrl } from "@/lib/config";
 import { useToast } from "@/hooks/use-toast";
 import type { Notification } from "@shared/schema";
 
@@ -18,7 +19,7 @@ export function NotificationBell() {
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications/pending"],
     queryFn: async () => {
-      const response = await fetch('/api/notifications/pending', {
+      const response = await fetch(getApiUrl('/api/notifications/pending'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -35,7 +36,7 @@ export function NotificationBell() {
 
   const clearAllNotificationsMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/notifications/clear-all", {
+      const response = await fetch(getApiUrl("/api/notifications/clear-all"), {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

@@ -8,6 +8,7 @@ import { EventEditModal } from "@/components/event-edit-modal";
 import type { Event, FamilyMember } from "@shared/schema";
 import { format } from "date-fns";
 import { formatTimeInUserTimezone } from "@/lib/timezone";
+import { getApiUrl } from "@/lib/config";
 import { useState } from "react";
 import { WeatherDisplay } from "@/components/weather-display";
 
@@ -17,7 +18,7 @@ export function TodaySchedule() {
   const { data: events = [] } = useQuery<Event[]>({
     queryKey: ["/api/events/today"],
     queryFn: async () => {
-      const response = await fetch('/api/events/today', {
+      const response = await fetch(getApiUrl('/api/events/today'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -35,7 +36,7 @@ export function TodaySchedule() {
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
     queryFn: async () => {
-      const response = await fetch('/api/family-members', {
+      const response = await fetch(getApiUrl('/api/family-members'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

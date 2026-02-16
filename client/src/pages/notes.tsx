@@ -14,6 +14,7 @@ import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { FullScreenNoteEditor } from "@/components/full-screen-note-editor";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { getApiUrl } from "@/lib/config";
 import { RichTextEditor, RichTextDisplay } from "@/components/ui/rich-text-editor";
 import type { VoiceNote, TextNote, FamilyMember } from "@shared/schema";
 import { formatDistanceToNow, format, isToday, isYesterday, startOfDay } from "date-fns";
@@ -32,7 +33,7 @@ export default function Notes() {
   const { data: voiceNotes = [], isLoading: voiceNotesLoading } = useQuery<VoiceNote[]>({
     queryKey: ["/api/voice-notes/recent"],
     queryFn: async () => {
-      const response = await fetch('/api/voice-notes/recent', {
+      const response = await fetch(getApiUrl('/api/voice-notes/recent'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -55,7 +56,7 @@ export default function Notes() {
   const { data: textNotes = [], isLoading: textNotesLoading } = useQuery<TextNote[]>({
     queryKey: ["/api/text-notes"],
     queryFn: async () => {
-      const response = await fetch('/api/text-notes', {
+      const response = await fetch(getApiUrl('/api/text-notes'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +78,7 @@ export default function Notes() {
   // Text Notes Mutations
   const createTextNoteMutation = useMutation({
     mutationFn: async (noteData: { title: string; content: string }) => {
-      const response = await fetch('/api/text-notes', {
+      const response = await fetch(getApiUrl('/api/text-notes'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +106,7 @@ export default function Notes() {
 
   const updateTextNoteMutation = useMutation({
     mutationFn: async ({ id, ...noteData }: { id: number; title: string; content: string }) => {
-      const response = await fetch(`/api/text-notes/${id}`, {
+      const response = await fetch(getApiUrl(`/api/text-notes/${id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -132,7 +133,7 @@ export default function Notes() {
 
   const deleteTextNoteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`/api/text-notes/${id}`, {
+      const response = await fetch(getApiUrl(`/api/text-notes/${id}`), {
         method: 'DELETE',
         credentials: 'include',
       });

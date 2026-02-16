@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { useMobileScroll } from "@/hooks/use-mobile-scroll";
 import { useSubscription } from "@/hooks/use-subscription";
+import { getApiUrl } from "@/lib/config";
 import { Plus, Eye, EyeOff, Crown } from "lucide-react";
 import { Link } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -72,7 +73,7 @@ export function PasswordModal({ trigger, onPasswordAdded }: PasswordModalProps) 
   const onSubmit = async (data: PasswordFormData) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/passwords', {
+      const response = await fetch(getApiUrl('/api/passwords'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

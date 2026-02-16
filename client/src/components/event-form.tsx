@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LocationAutocomplete } from "@/components/location-autocomplete";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { getApiUrl } from "@/lib/config";
 import { insertEventSchema, type FamilyMember } from "@shared/schema";
 import { format } from "date-fns";
 import * as z from "zod";
@@ -47,7 +48,7 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
     queryFn: async () => {
-      const response = await fetch('/api/family-members', {
+      const response = await fetch(getApiUrl('/api/family-members'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

@@ -6,6 +6,7 @@ import { FaFacebook } from "react-icons/fa";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { getApiUrl } from "@/lib/config";
 import { useToast } from "@/hooks/use-toast";
 
 export function TrialBanner() {
@@ -19,7 +20,7 @@ export function TrialBanner() {
   const { data: subscription } = useQuery({
     queryKey: ["/api/subscription"],
     queryFn: async () => {
-      const response = await fetch("/api/subscription", {
+      const response = await fetch(getApiUrl("/api/subscription"), {
         credentials: "include",
       });
       if (!response.ok) {

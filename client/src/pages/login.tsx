@@ -10,6 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { getApiUrl } from "@/lib/config";
 import { Eye, EyeOff, RefreshCw, Users } from "lucide-react";
 import logoPath from "@assets/The_Mom_app_(5)_1766014062224.png";
 import beforeAfterPath from "@assets/The_Mom_app_(4)_1766014201419.png";
@@ -41,7 +42,7 @@ export default function Login() {
   // Fetch Google Client ID
   const [googleClientId, setGoogleClientId] = useState<string | null>(null);
   useEffect(() => {
-    fetch("/api/config/google-client-id")
+    fetch(getApiUrl("/api/config/google-client-id"))
       .then(res => res.json())
       .then(data => {
         if (data?.clientId) setGoogleClientId(data.clientId);

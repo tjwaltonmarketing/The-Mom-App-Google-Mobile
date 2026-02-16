@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { getApiUrl } from "@/lib/config";
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -25,7 +26,7 @@ export function FreshStart() {
   const { data: tasks = [] } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
     queryFn: async () => {
-      const response = await fetch('/api/tasks', {
+      const response = await fetch(getApiUrl('/api/tasks'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +44,7 @@ export function FreshStart() {
   const { data: events = [] } = useQuery<Event[]>({
     queryKey: ["/api/events"],
     queryFn: async () => {
-      const response = await fetch('/api/events', {
+      const response = await fetch(getApiUrl('/api/events'), {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

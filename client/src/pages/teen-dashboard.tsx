@@ -26,6 +26,7 @@ import {
 import TeenNavigation from "@/components/teen/teen-navigation";
 import { NotificationPrompt } from "@/components/dashboard/notification-prompt";
 import type { Task, Event } from "@shared/schema";
+import { getApiUrl } from "@/lib/config";
 
 interface MealPlan {
   id: number;
@@ -48,7 +49,7 @@ export default function TeenDashboard() {
   const { data: authData, isLoading: profileLoading } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     queryFn: async () => {
-      const response = await fetch("/api/teen/auth/user", {
+      const response = await fetch(getApiUrl("/api/teen/auth/user"), {
         credentials: "include",
       });
       if (!response.ok) {
@@ -75,7 +76,7 @@ export default function TeenDashboard() {
     queryKey: ["/api/teen/meal-plans/week"],
     queryFn: async () => {
       console.log("Teen Dashboard: Fetching weekly meal plans...");
-      const response = await fetch("/api/teen/meal-plans/week", {
+      const response = await fetch(getApiUrl("/api/teen/meal-plans/week"), {
         credentials: "include",
       });
       if (!response.ok) {
@@ -94,7 +95,7 @@ export default function TeenDashboard() {
   const { data: familyInfo } = useQuery<{ familyId: number; familyName: string; memberCount: number }>({
     queryKey: ["/api/teen/family-info"],
     queryFn: async () => {
-      const response = await fetch("/api/teen/family-info", {
+      const response = await fetch(getApiUrl("/api/teen/family-info"), {
         credentials: "include",
       });
       if (!response.ok) {
@@ -111,7 +112,7 @@ export default function TeenDashboard() {
     queryKey: ["/api/teen/stats"],
     queryFn: async () => {
       console.log("Dashboard: Fetching stats...");
-      const response = await fetch("/api/teen/stats", {
+      const response = await fetch(getApiUrl("/api/teen/stats"), {
         credentials: "include",
       });
       if (!response.ok) {
@@ -132,7 +133,7 @@ export default function TeenDashboard() {
     queryKey: ["/api/teen/tasks"],  
     queryFn: async () => {
       console.log("Dashboard: Fetching tasks...");
-      const response = await fetch("/api/teen/tasks", {
+      const response = await fetch(getApiUrl("/api/teen/tasks"), {
         credentials: "include",
       });
       if (!response.ok) {
@@ -153,7 +154,7 @@ export default function TeenDashboard() {
     queryKey: ["/api/teen/events"],
     queryFn: async () => {
       console.log("Dashboard: Fetching events...");
-      const response = await fetch("/api/teen/events", {
+      const response = await fetch(getApiUrl("/api/teen/events"), {
         credentials: "include",
       });
       if (!response.ok) {
