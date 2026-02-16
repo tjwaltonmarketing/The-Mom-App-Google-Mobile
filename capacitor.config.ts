@@ -5,8 +5,7 @@ const config: CapacitorConfig = {
   appName: 'The Mom App',
   webDir: 'dist/public',
   server: {
-    androidScheme: 'https',
-    url: 'https://app.themom.app'
+    androidScheme: 'https'
   },
   plugins: {
     SplashScreen: {
