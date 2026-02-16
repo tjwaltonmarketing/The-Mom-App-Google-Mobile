@@ -1,4 +1,5 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
 import { apiRequest } from '@/lib/queryClient';
 
 interface FCMPluginInterface {
@@ -162,20 +163,23 @@ export async function setupPushNotifications(): Promise<boolean> {
 }
 
 export async function openNotificationSettings(): Promise<void> {
+  const platform = Capacitor.getPlatform();
+
+  if (platform === 'ios') {
+    try {
+      await CapApp.openUrl({ url: 'app-settings:' });
+    } catch (e) {
+      console.warn('Failed to open iOS settings:', e);
+    }
+    return;
+  }
+
   const plugin = getPlugin();
   if (!plugin) return;
   try {
     await plugin.openNotificationSettings();
   } catch (e) {
-    console.warn('Failed to open notification settings via plugin, trying fallback:', e);
-    try {
-      const platform = Capacitor.getPlatform();
-      if (platform === 'ios') {
-        await (window as any).Capacitor?.Plugins?.App?.openUrl?.({ url: 'app-settings:' });
-      }
-    } catch (fallbackErr) {
-      console.warn('Fallback settings open also failed:', fallbackErr);
-    }
+    console.warn('Failed to open notification settings:', e);
   }
 }
 
