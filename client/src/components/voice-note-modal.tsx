@@ -202,6 +202,12 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     }
   };
 
+  const handleCancelRecording = () => {
+    stopRecording();
+    setTranscript("");
+    setSmartActions([]);
+  };
+
   const handleSaveNote = () => {
     if (transcript.trim()) {
       createVoiceNoteMutation.mutate(transcript);
@@ -562,7 +568,7 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
                 <Button
                   variant="outline"
                   className="flex-1"
-                  onClick={handleStopRecording}
+                  onClick={handleCancelRecording}
                 >
                   <Square className="mr-2 h-4 w-4" />
                   Stop
