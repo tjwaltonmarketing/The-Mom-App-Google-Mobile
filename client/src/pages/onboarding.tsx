@@ -39,6 +39,7 @@ export default function Onboarding() {
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+      localStorage.setItem("onboarding_completed", "true");
       if (data.bonusAwarded) {
         toast({
           title: "Bonus Week Added!",
@@ -50,14 +51,15 @@ export default function Onboarding() {
           description: "Your 14-day free trial has started.",
         });
       }
-      setLocation("/");
+      window.location.href = "/";
     },
     onError: () => {
+      localStorage.setItem("onboarding_completed", "true");
       toast({
         title: "Welcome to The Mom App!",
         description: "Your 14-day free trial has started.",
       });
-      setLocation("/");
+      window.location.href = "/";
     },
   });
 
@@ -77,7 +79,7 @@ export default function Onboarding() {
       title: "Welcome to The Mom App!",
       description: "Your free trial has started.",
     });
-    setLocation("/");
+    window.location.href = "/";
   };
 
   const handleComplete = () => {
