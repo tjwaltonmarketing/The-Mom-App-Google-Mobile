@@ -18,7 +18,7 @@ public class FCMPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotificationCenterDel
 
     private static var instance: FCMPlugin?
 
-    public override func load() {
+    override public func load() {
         super.load()
         FCMPlugin.instance = self
 
@@ -28,9 +28,8 @@ public class FCMPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotificationCenterDel
         print("[FCMPlugin] Plugin loaded")
     }
 
-    @objc func checkPermissions(_ call: CAPPluginCall) {
+    @objc public func checkPermissions(_ call: CAPPluginCall) {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
-            let result = JSObject()
             switch settings.authorizationStatus {
             case .authorized, .provisional, .ephemeral:
                 call.resolve(["receive": "granted"])
@@ -44,7 +43,7 @@ public class FCMPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotificationCenterDel
         }
     }
 
-    @objc func requestPermissions(_ call: CAPPluginCall) {
+    @objc public func requestPermissions(_ call: CAPPluginCall) {
         print("[FCMPlugin] requestPermissions called")
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
             if let error = error {
@@ -63,7 +62,7 @@ public class FCMPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotificationCenterDel
         }
     }
 
-    @objc func getToken(_ call: CAPPluginCall) {
+    @objc public func getToken(_ call: CAPPluginCall) {
         Messaging.messaging().token { token, error in
             if let error = error {
                 print("[FCMPlugin] getToken error: \(error.localizedDescription)")
@@ -80,7 +79,7 @@ public class FCMPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotificationCenterDel
         }
     }
 
-    @objc func openNotificationSettings(_ call: CAPPluginCall) {
+    @objc public func openNotificationSettings(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
             if let url = URL(string: UIApplication.openSettingsURLString) {
                 UIApplication.shared.open(url, options: [:]) { _ in
@@ -92,7 +91,7 @@ public class FCMPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotificationCenterDel
         }
     }
 
-    @objc func debugNotificationPermission(_ call: CAPPluginCall) {
+    @objc public func debugNotificationPermission(_ call: CAPPluginCall) {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             var result = JSObject()
             result["platform"] = "ios"
@@ -135,14 +134,14 @@ public class FCMPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotificationCenterDel
     public func userNotificationCenter(_ center: UNUserNotificationCenter,
                                         willPresent notification: UNNotification,
                                         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        let userInfo = notification.request.content.userInfo
-        print("[FCMPlugin] Push received in foreground: \(userInfo)")
+        let content = notification.request.content
+        print("[FCMPlugin] Push received in foreground: \(content.userInfo)")
 
         var data = JSObject()
-        data["title"] = notification.request.content.title
-        data["body"] = notification.request.content.body
+        data["title"] = content.title
+        data["body"] = content.body
 
-        if let route = userInfo["route"] as? String {
+        if let route = content.userInfo["route"] as? String {
             data["route"] = route
         }
 
