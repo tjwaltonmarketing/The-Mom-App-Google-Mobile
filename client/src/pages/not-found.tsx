@@ -1,7 +1,31 @@
+import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import { useLocation } from "wouter";
+
+function isNativeApp(): boolean {
+  if (typeof window === 'undefined') return false;
+  const cap = (window as any).Capacitor;
+  return cap && typeof cap.isNativePlatform === 'function' && cap.isNativePlatform();
+}
 
 export default function NotFound() {
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (isNativeApp()) {
+      setLocation("/");
+    }
+  }, [setLocation]);
+
+  if (isNativeApp()) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
+        <p className="text-gray-500">Reloading...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md mx-4">
