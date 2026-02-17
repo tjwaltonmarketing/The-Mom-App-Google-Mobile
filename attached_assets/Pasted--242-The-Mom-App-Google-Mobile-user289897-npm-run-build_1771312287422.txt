@@ -1,0 +1,202 @@
+#242:The-Mom-App-Google-Mobile user289897$ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (1) index.htmlBrowserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3185 modules transformed.
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/notification-prompt.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/web-access-tip-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, dynamic import will not move module into another chunk.
+
+../dist/public/index.html                                                              2.20 kB │ gzip:   0.80 kB
+../dist/public/assets/The Mom app_20250607_125224_0000_1749573727197-CXHC4Cic.png     25.37 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                          27.04 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                      82.76 kB
+../dist/public/assets/onboarding-slide-4-rHtayH7z.png                                356.97 kB
+../dist/public/assets/onboarding-slide-2-DOAnxM2R.png                                472.23 kB
+../dist/public/assets/onboarding-slide-1-WQCRwazH.png                                473.66 kB
+../dist/public/assets/onboarding-slide-family-EbBOjLQv.png                           578.29 kB
+../dist/public/assets/onboarding-slide-tasks-FJgrccnv.png                            860.62 kB
+../dist/public/assets/onboarding-slide-meals-a2IrNqzw.png                            928.19 kB
+../dist/public/assets/onboarding-slide-ai-Bxp1YDl6.png                               945.11 kB
+../dist/public/assets/onboarding-slide-calendar-CEeLQ3iz.png                       1,098.90 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                   4,686.94 kB
+../dist/public/assets/index-Csd8noZR.css                                             132.10 kB │ gzip:  20.29 kB
+../dist/public/assets/web-CWoitZCu.js                                                  0.35 kB │ gzip:   0.19 kB
+../dist/public/assets/web-ByFYeQj0.js                                                  0.80 kB │ gzip:   0.24 kB
+../dist/public/assets/index-DxdDq50M.js                                            1,696.31 kB │ gzip: 484.29 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.59s
+
+  dist/index.js  356.0kb
+
+⚡ Done in 17ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap sync ios
+✔ Copying web assets from public to ios/App/App/public in 30.43ms
+✔ Creating capacitor.config.json in ios/App/App in 800.88μs
+✔ copy ios in 78.20ms
+✔ Updating iOS plugins in 8.25ms
+✖ Updating iOS native dependencies with pod install - failed!
+✖ update ios - failed!
+[error] Command line invocation:
+        /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project
+        App.xcodeproj clean
+        
+        User defaults from command line:
+        IDEPackageSupportUseBuiltinSCM = YES
+        
+        2026-02-16 21:04:28.685 xcodebuild[79905:3150913] Writing error result
+        bundle to
+        /var/folders/12/lvx2p_216230x82zmfzdgcr40000nj/T/ResultBundle_2026-16-02_21-04-0028.xcresult
+        xcodebuild: error: 'App.xcodeproj' does not exist.
+        
+#242:The-Mom-App-Google-Mobile user289897$ pod install --project-directory=ios/App
+Analyzing dependencies
+Downloading dependencies
+Generating Pods project
+Integrating client project
+Pod installation complete! There are 5 dependencies from the Podfile and 5 total pods installed.
+#242:The-Mom-App-Google-Mobile user289897$ npx cap open ios
+✔ Opening the Xcode workspace... in 3.01s
+#242:The-Mom-App-Google-Mobile user289897$ cd ~/Desktop/The-Mom-App-Google-Mobile
+#242:The-Mom-App-Google-Mobile user289897$ pod install
+[!] No `Podfile' found in the project directory.
+#242:The-Mom-App-Google-Mobile user289897$ git pull
+remote: Enumerating objects: 20, done.
+remote: Counting objects: 100% (20/20), done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 13 (delta 6), reused 13 (delta 6), pack-reused 0 (from 0)
+Unpacking objects: 100% (13/13), 3.27 KiB | 223.00 KiB/s, done.
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+   df46d01..a32b89b  main       -> origin/main
+Updating df46d01..a32b89b
+error: Your local changes to the following files would be overwritten by merge:
+	ios/App/Podfile
+Please commit your changes or stash them before you merge.
+Aborting
+#242:The-Mom-App-Google-Mobile user289897$ cd ios/App
+#242:App user289897$ pod install
+Analyzing dependencies
+Downloading dependencies
+Generating Pods project
+Integrating client project
+Pod installation complete! There are 5 dependencies from the Podfile and 5 total pods installed.
+#242:App user289897$ ios/App/App.xcworkspace
+-bash: ios/App/App.xcworkspace: No such file or directory
+#242:App user289897$ cd ~/Desktop/The-Mom-App-Google-Mobile
+#242:The-Mom-App-Google-Mobile user289897$ git pull
+Updating df46d01..a32b89b
+error: Your local changes to the following files would be overwritten by merge:
+	ios/App/Podfile
+Please commit your changes or stash them before you merge.
+Aborting
+#242:The-Mom-App-Google-Mobile user289897$ npm install
+
+up to date, audited 934 packages in 3s
+
+122 packages are looking for funding
+  run `npm fund` for details
+
+37 vulnerabilities (4 low, 9 moderate, 23 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+#242:The-Mom-App-Google-Mobile user289897$ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (1) index.htmlBrowserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3185 modules transformed.
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/notification-prompt.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/web-access-tip-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, dynamic import will not move module into another chunk.
+
+../dist/public/index.html                                                              2.20 kB │ gzip:   0.80 kB
+../dist/public/assets/The Mom app_20250607_125224_0000_1749573727197-CXHC4Cic.png     25.37 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                          27.04 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                      82.76 kB
+../dist/public/assets/onboarding-slide-4-rHtayH7z.png                                356.97 kB
+../dist/public/assets/onboarding-slide-2-DOAnxM2R.png                                472.23 kB
+../dist/public/assets/onboarding-slide-1-WQCRwazH.png                                473.66 kB
+../dist/public/assets/onboarding-slide-family-EbBOjLQv.png                           578.29 kB
+../dist/public/assets/onboarding-slide-tasks-FJgrccnv.png                            860.62 kB
+../dist/public/assets/onboarding-slide-meals-a2IrNqzw.png                            928.19 kB
+../dist/public/assets/onboarding-slide-ai-Bxp1YDl6.png                               945.11 kB
+../dist/public/assets/onboarding-slide-calendar-CEeLQ3iz.png                       1,098.90 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                   4,686.94 kB
+../dist/public/assets/index-Csd8noZR.css                                             132.10 kB │ gzip:  20.29 kB
+../dist/public/assets/web-CWoitZCu.js                                                  0.35 kB │ gzip:   0.19 kB
+../dist/public/assets/web-ByFYeQj0.js                                                  0.80 kB │ gzip:   0.24 kB
+../dist/public/assets/index-DxdDq50M.js                                            1,696.31 kB │ gzip: 484.29 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.19s
+
+  dist/index.js  356.0kb
+
+⚡ Done in 16ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap sync ios
+✔ Copying web assets from public to ios/App/App/public in 28.52ms
+✔ Creating capacitor.config.json in ios/App/App in 748.88μs
+✔ copy ios in 74.14ms
+✔ Updating iOS plugins in 8.70ms
+✖ Updating iOS native dependencies with pod install - failed!
+✖ update ios - failed!
+[error] Command line invocation:
+        /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project
+        App.xcodeproj clean
+        
+        User defaults from command line:
+        IDEPackageSupportUseBuiltinSCM = YES
+        
+        2026-02-16 22:38:10.275 xcodebuild[85811:3252598] Writing error result
+        bundle to
+        /var/folders/12/lvx2p_216230x82zmfzdgcr40000nj/T/ResultBundle_2026-16-02_22-38-0010.xcresult
+        xcodebuild: error: 'App.xcodeproj' does not exist.
+        
+#242:The-Mom-App-Google-Mobile user289897$ pod install --project-directory=ios/App
+Analyzing dependencies
+Downloading dependencies
+Generating Pods project
+Integrating client project
+Pod installation complete! There are 5 dependencies from the Podfile and 5 total pods installed.
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/FCMPlugin.swift
+usage: cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file target_file
+       cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file ... target_directory
+#242:The-Mom-App-Google-Mobile user289897$ ios/App/App/FCMPlugin.swift
+-bash: ios/App/App/FCMPlugin.swift: No such file or directory
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/AppDelegate.swift
+usage: cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file target_file
+       cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file ... target_directory
+#242:The-Mom-App-Google-Mobile user289897$ ios/App/App/AppDelegate.swift
+-bash: ios/App/App/AppDelegate.swift: Permission denied
+#242:The-Mom-App-Google-Mobile user289897$ mkdir -p native-overrides/ios/App/App
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/FCMPlugin.swift
+usage: cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file target_file
+       cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file ... target_directory
+#242:The-Mom-App-Google-Mobile user289897$ ios/App/App/FCMPlugin.swift
+-bash: ios/App/App/FCMPlugin.swift: No such file or directory
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/AppDelegate.swift
+usage: cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file target_file
+       cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file ... target_directory
+#242:The-Mom-App-Google-Mobile user289897$ ios/App/App/AppDelegate.swift
+-bash: ios/App/App/AppDelegate.swift: Permission denied
+#242:The-Mom-App-Google-Mobile user289897$ 
