@@ -9,10 +9,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        FirebaseApp.configure()
-        print("[AppDelegate] Firebase configured")
-
-        application.registerForRemoteNotifications()
+        if let _ = Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") {
+            FirebaseApp.configure()
+            print("[AppDelegate] Firebase configured")
+            application.registerForRemoteNotifications()
+        } else {
+            print("[AppDelegate] WARNING: GoogleService-Info.plist not found, skipping Firebase")
+        }
 
         return true
     }
