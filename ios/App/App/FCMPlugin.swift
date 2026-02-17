@@ -28,7 +28,7 @@ public class FCMPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotificationCenterDel
         print("[FCMPlugin] Plugin loaded")
     }
 
-    @objc public func checkPermissions(_ call: CAPPluginCall) {
+    @objc override public func checkPermissions(_ call: CAPPluginCall) {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             switch settings.authorizationStatus {
             case .authorized, .provisional, .ephemeral:
@@ -43,7 +43,7 @@ public class FCMPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotificationCenterDel
         }
     }
 
-    @objc public func requestPermissions(_ call: CAPPluginCall) {
+    @objc override public func requestPermissions(_ call: CAPPluginCall) {
         print("[FCMPlugin] requestPermissions called")
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
             if let error = error {
