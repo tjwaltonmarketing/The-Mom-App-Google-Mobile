@@ -1,0 +1,96 @@
+#242:The-Mom-App-Google-Mobile user289897$ open ios/App/App.xcworkspace
+#242:The-Mom-App-Google-Mobile user289897$ 
+#242:The-Mom-App-Google-Mobile user289897$ cd ~/Desktop/The-Mom-App-Google-Mobile
+#242:The-Mom-App-Google-Mobile user289897$ git stash
+Saved working directory and index state WIP on main: 6eb6159 Add native code for push notification functionality
+#242:The-Mom-App-Google-Mobile user289897$ git pull
+Already up to date.
+#242:The-Mom-App-Google-Mobile user289897$ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (3) src/main.tsxBrowserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3185 modules transformed.
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/notification-prompt.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/web-access-tip-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, dynamic import will not move module into another chunk.
+
+../dist/public/index.html                                                              2.20 kB │ gzip:   0.80 kB
+../dist/public/assets/The Mom app_20250607_125224_0000_1749573727197-CXHC4Cic.png     25.37 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                          27.04 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                      82.76 kB
+../dist/public/assets/onboarding-slide-4-rHtayH7z.png                                356.97 kB
+../dist/public/assets/onboarding-slide-2-DOAnxM2R.png                                472.23 kB
+../dist/public/assets/onboarding-slide-1-WQCRwazH.png                                473.66 kB
+../dist/public/assets/onboarding-slide-family-EbBOjLQv.png                           578.29 kB
+../dist/public/assets/onboarding-slide-tasks-FJgrccnv.png                            860.62 kB
+../dist/public/assets/onboarding-slide-meals-a2IrNqzw.png                            928.19 kB
+../dist/public/assets/onboarding-slide-ai-Bxp1YDl6.png                               945.11 kB
+../dist/public/assets/onboarding-slide-calendar-CEeLQ3iz.png                       1,098.90 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                   4,686.94 kB
+../dist/public/assets/index-Csd8noZR.css                                             132.10 kB │ gzip:  20.29 kB
+../dist/public/assets/web-CWoitZCu.js                                                  0.35 kB │ gzip:   0.19 kB
+../dist/public/assets/web-ByFYeQj0.js                                                  0.80 kB │ gzip:   0.24 kB
+../dist/public/assets/index-DxdDq50M.js                                            1,696.31 kB │ gzip: 484.29 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.16s
+
+  dist/index.js  356.0kb
+
+⚡ Done in 9ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap copy ios
+✔ Copying web assets from public to ios/App/App/public in 28.02ms
+✔ Creating capacitor.config.json in ios/App/App in 564.42μs
+✔ copy ios in 84.96ms
+#242:The-Mom-App-Google-Mobile user289897$ pod install --project-directory=ios/App
+Analyzing dependencies
+[!] No podspec found for `CapacitorPushNotifications` in `../../node_modules/@capacitor/push-notifications`
+#242:The-Mom-App-Google-Mobile user289897$ git pull
+remote: Enumerating objects: 27, done.
+remote: Counting objects: 100% (27/27), done.
+remote: Compressing objects: 100% (7/7), done.
+remote: Total 19 (delta 11), reused 19 (delta 11), pack-reused 0 (from 0)
+Unpacking objects: 100% (19/19), 273.31 KiB | 1.39 MiB/s, done.
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+   6eb6159..bce19f6  main       -> origin/main
+Updating 6eb6159..bce19f6
+Fast-forward
+ ...bile-user289897-npm-run-build_1771312287422.txt | 202 ++++++++++++++
+ ...bile-user289897-open-ios-App-_1771313321056.txt |  55 ++++
+ ...bile-user289897-pod-install-p_1771312978956.txt | 297 +++++++++++++++++++++
+ attached_assets/image_1771312910187.png            | Bin 0 -> 280915 bytes
+ ios/App/Podfile                                    |   1 -
+ native-overrides/ios/App/Podfile                   |   1 -
+ 6 files changed, 554 insertions(+), 2 deletions(-)
+ create mode 100644 attached_assets/Pasted--242-The-Mom-App-Google-Mobile-user289897-npm-run-build_1771312287422.txt
+ create mode 100644 attached_assets/Pasted--242-The-Mom-App-Google-Mobile-user289897-open-ios-App-_1771313321056.txt
+ create mode 100644 attached_assets/Pasted--242-The-Mom-App-Google-Mobile-user289897-pod-install-p_1771312978956.txt
+ create mode 100644 attached_assets/image_1771312910187.png
+#242:The-Mom-App-Google-Mobile user289897$ pod install --project-directory=ios/App
+Analyzing dependencies
+Downloading dependencies
+Installing Firebase (11.15.0)
+Installing FirebaseAnalytics (11.15.0)
+Installing FirebaseCore (11.15.0)
+Installing FirebaseCoreInternal (11.15.0)
+Installing FirebaseInstallations (11.15.0)
+Installing FirebaseMessaging (11.15.0)
+Installing GoogleAdsOnDeviceConversion (2.1.0)
+Installing GoogleAppMeasurement (11.15.0)
+Installing GoogleDataTransport (10.1.0)
+Installing GoogleUtilities (8.1.0)
+Installing PromisesObjC (2.4.0)
+Installing nanopb (3.30910.0)
+Removing CapacitorGeolocation
+Removing CapacitorNativeSettings
+Generating Pods project
+Integrating client project
+Pod installation complete! There are 5 dependencies from the Podfile and 15 total pods installed.
+#242:The-Mom-App-Google-Mobile user289897$ 
