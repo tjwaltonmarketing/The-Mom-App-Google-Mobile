@@ -1,0 +1,216 @@
+#242:The-Mom-App-Google-Mobile user289897$ #242:The-Mom-App-Google-Mobile user289897$ git pull
+#242:The-Mom-App-Google-Mobile user289897$ remote: Enumerating objects: 27, done.
+-bash: remote:: command not found
+#242:The-Mom-App-Google-Mobile user289897$ remote: Counting objects: 100% (27/27), done.
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ remote: Compressing objects: 100% (7/7), done.
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ remote: Total 19 (delta 11), reused 19 (delta 11), pack-reused 0 (from 0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Unpacking objects: 100% (19/19), 273.31 KiB | 1.39 MiB/s, done.
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+-bash: From: command not found
+#242:The-Mom-App-Google-Mobile user289897$    6eb6159..bce19f6  main       -> origin/main
+-bash: origin/main: No such file or directory
+#242:The-Mom-App-Google-Mobile user289897$ Updating 6eb6159..bce19f6
+-bash: Updating: command not found
+#242:The-Mom-App-Google-Mobile user289897$ Fast-forward
+-bash: Fast-forward: command not found
+#242:The-Mom-App-Google-Mobile user289897$  ...bile-user289897-npm-run-build_1771312287422.txt | 202 ++++++++++++++
+-bash: ...bile-user289897-npm-run-build_1771312287422.txt: command not found
+-bash: 202: command not found
+#242:The-Mom-App-Google-Mobile user289897$  ...bile-user289897-open-ios-App-_1771313321056.txt |  55 ++++
+-bash: ...bile-user289897-open-ios-App-_1771313321056.txt: command not found
+-bash: 55: command not found
+#242:The-Mom-App-Google-Mobile user289897$  ...bile-user289897-pod-install-p_1771312978956.txt | 297 +++++++++++++++++++++
+-bash: ...bile-user289897-pod-install-p_1771312978956.txt: command not found
+-bash: 297: command not found
+#242:The-Mom-App-Google-Mobile user289897$  attached_assets/image_1771312910187.png            | Bin 0 -> 280915 bytes
+-bash: attached_assets/image_1771312910187.png: Permission denied
+-bash: Bin: command not found
+#242:The-Mom-App-Google-Mobile user289897$  ios/App/Podfile                                    |   1 -
+-bash: ios/App/Podfile: Permission denied
+-bash: 1: command not found
+#242:The-Mom-App-Google-Mobile user289897$  native-overrides/ios/App/Podfile                   |   1 -
+-bash: native-overrides/ios/App/Podfile: Permission denied
+-bash: 1: command not found
+#242:The-Mom-App-Google-Mobile user289897$  6 files changed, 554 insertions(+), 2 deletions(-)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$  create mode 100644 attached_assets/Pasted--242-The-Mom-App-Google-Mobile-user289897-npm-run-build_1771312287422.txt
+-bash: create: command not found
+#242:The-Mom-App-Google-Mobile user289897$  create mode 100644 attached_assets/Pasted--242-The-Mom-App-Google-Mobile-user289897-open-ios-App-_1771313321056.txt
+-bash: create: command not found
+#242:The-Mom-App-Google-Mobile user289897$  create mode 100644 attached_assets/Pasted--242-The-Mom-App-Google-Mobile-user289897-pod-install-p_1771312978956.txt
+-bash: create: command not found
+#242:The-Mom-App-Google-Mobile user289897$  create mode 100644 attached_assets/image_1771312910187.png
+-bash: create: command not found
+#242:The-Mom-App-Google-Mobile user289897$ #242:The-Mom-App-Google-Mobile user289897$ pod install --project-directory=ios/App
+#242:The-Mom-App-Google-Mobile user289897$ Analyzing dependencies
+-bash: Analyzing: command not found
+#242:The-Mom-App-Google-Mobile user289897$ Downloading dependencies
+-bash: Downloading: command not found
+#242:The-Mom-App-Google-Mobile user289897$ Installing Firebase (11.15.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Installing FirebaseAnalytics (11.15.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Installing FirebaseCore (11.15.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Installing FirebaseCoreInternal (11.15.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Installing FirebaseInstallations (11.15.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Installing FirebaseMessaging (11.15.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Installing GoogleAdsOnDeviceConversion (2.1.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Installing GoogleAppMeasurement (11.15.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Installing GoogleDataTransport (10.1.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Installing GoogleUtilities (8.1.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Installing PromisesObjC (2.4.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Installing nanopb (3.30910.0)
+-bash: syntax error near unexpected token `('
+#242:The-Mom-App-Google-Mobile user289897$ Removing CapacitorGeolocation
+-bash: Removing: command not found
+#242:The-Mom-App-Google-Mobile user289897$ Removing CapacitorNativeSettings
+-bash: Removing: command not found
+#242:The-Mom-App-Google-Mobile user289897$ Generating Pods project
+-bash: Generating: command not found
+#242:The-Mom-App-Google-Mobile user289897$ Integrating client project
+-bash: Integrating: command not found
+#242:The-Mom-App-Google-Mobile user289897$ Pod installation complete! There are 5 dependencies from the Podfile and 15 total pods installed.
+[!] Unknown command: `installation`
+Did you mean: install?
+
+Usage:
+
+    $ pod COMMAND
+
+      CocoaPods, the Cocoa library package manager.
+
+Commands:
+
+    + cache         Manipulate the CocoaPods cache
+    + deintegrate   Deintegrate CocoaPods from your project
+    + env           Display pod environment
+    + init          Generate a Podfile for the current directory
+    + install       Install project dependencies according to versions from a
+                    Podfile.lock
+    + ipc           Inter-process communication
+    + lib           Develop pods
+    + list          List pods
+    + outdated      Show outdated project dependencies
+    + plugins       Show available CocoaPods plugins
+    + repo          Manage spec-repositories
+    + search        Search for pods
+    + setup         Set up the CocoaPods environment
+    + spec          Manage pod specs
+    + trunk         Interact with the CocoaPods API (e.g. publishing new specs)
+    + try           Try a Pod!
+    + update        Update outdated project dependencies and create new
+                    Podfile.lock
+
+Options:
+
+    --allow-root    Allows CocoaPods to run as root
+    --silent        Show nothing
+    --version       Show the version of the tool
+    --verbose       Show more debugging information
+    --no-ansi       Show output without ANSI codes
+    --help          Show help banner of specified command
+#242:The-Mom-App-Google-Mobile user289897$ Installing GoogleDataTransport (10.1.0)
+#242:The-Mom-App-Google-Mobile user289897$ cd ~/Desktop/The-Mom-App-Google-Mobile
+#242:The-Mom-App-Google-Mobile user289897$ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (3) src/main.tsxBrowserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3185 modules transformed.
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/notification-prompt.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/web-access-tip-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, dynamic import will not move module into another chunk.
+
+../dist/public/index.html                                                              2.20 kB │ gzip:   0.80 kB
+../dist/public/assets/The Mom app_20250607_125224_0000_1749573727197-CXHC4Cic.png     25.37 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                          27.04 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                      82.76 kB
+../dist/public/assets/onboarding-slide-4-rHtayH7z.png                                356.97 kB
+../dist/public/assets/onboarding-slide-2-DOAnxM2R.png                                472.23 kB
+../dist/public/assets/onboarding-slide-1-WQCRwazH.png                                473.66 kB
+../dist/public/assets/onboarding-slide-family-EbBOjLQv.png                           578.29 kB
+../dist/public/assets/onboarding-slide-tasks-FJgrccnv.png                            860.62 kB
+../dist/public/assets/onboarding-slide-meals-a2IrNqzw.png                            928.19 kB
+../dist/public/assets/onboarding-slide-ai-Bxp1YDl6.png                               945.11 kB
+../dist/public/assets/onboarding-slide-calendar-CEeLQ3iz.png                       1,098.90 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                   4,686.94 kB
+../dist/public/assets/index-Csd8noZR.css                                             132.10 kB │ gzip:  20.29 kB
+../dist/public/assets/web-CWoitZCu.js                                                  0.35 kB │ gzip:   0.19 kB
+../dist/public/assets/web-ByFYeQj0.js                                                  0.80 kB │ gzip:   0.24 kB
+../dist/public/assets/index-DxdDq50M.js                                            1,696.31 kB │ gzip: 484.29 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.25s
+▲ [WARNING] Import "defineConfig" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    vite.config.ts:1:9:
+      1 │ import { defineConfig } from "vite";
+        ╵          ~~~~~~~~~~~~
+
+▲ [WARNING] Import "createServer" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    server/vite.ts:4:9:
+      4 │ import { createServer as createViteServer, createLogger } from "vite";
+        ╵          ~~~~~~~~~~~~
+
+▲ [WARNING] Import "createLogger" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    server/vite.ts:4:43:
+      4 │ import { createServer as createViteServer, createLogger } from "vite";
+        ╵                                            ~~~~~~~~~~~~
+
+3 warnings
+
+  dist/index.js  355.9kb
+
+⚡ Done in 11ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap copy ios
+✔ Copying web assets from public to ios/App/App/public in 40.17ms
+✔ Creating capacitor.config.json in ios/App/App in 567.04μs
+✔ copy ios in 98.29ms
+#242:The-Mom-App-Google-Mobile user289897$ open ios/App/App.xcworkspace
+#242:The-Mom-App-Google-Mobile user289897$ cd ~/Desktop/The-Mom-App-Google-Mobile
+#242:The-Mom-App-Google-Mobile user289897$ git pull
+Already up to date.
+#242:The-Mom-App-Google-Mobile user289897$ git pull
+remote: Enumerating objects: 34, done.
+remote: Counting objects: 100% (34/34), done.
+remote: Compressing objects: 100% (9/9), done.
+remote: Total 24 (delta 14), reused 24 (delta 14), pack-reused 0 (from 0)
+Unpacking objects: 100% (24/24), 688.21 KiB | 2.42 MiB/s, done.
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+   bce19f6..eafac21  main       -> origin/main
+Updating bce19f6..eafac21
+Fast-forward
+ ...bile-user289897-open-ios-App-_1771313835190.txt |  96 +++++++++
+ ...There-are-5-dependencies-from_1771314055158.txt | 221 +++++++++++++++++++++
+ attached_assets/image_1771314341140.png            | Bin 0 -> 272974 bytes
+ attached_assets/image_1771314516792.png            | Bin 0 -> 441055 bytes
+ ios/App/App/FCMPlugin.swift                        |  23 +--
+ native-overrides/ios/App/App/FCMPlugin.swift       |  23 +--
+ 6 files changed, 339 insertions(+), 24 deletions(-)
+ create mode 100644 attached_assets/Pasted--242-The-Mom-App-Google-Mobile-user289897-open-ios-App-_1771313835190.txt
+ create mode 100644 attached_assets/Pasted-Pod-installation-complete-There-are-5-dependencies-from_1771314055158.txt
+ create mode 100644 attached_assets/image_1771314341140.png
+ create mode 100644 attached_assets/image_1771314516792.png
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/FCMPlugin.swift ios/App/App/FCMPlugin.swift
+#242:The-Mom-App-Google-Mobile user289897$ 
