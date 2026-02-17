@@ -1,5 +1,5 @@
 import { Capacitor, registerPlugin } from '@capacitor/core';
-import { App as CapApp } from '@capacitor/app';
+import { NativeSettings, IOSSettings, AndroidSettings } from 'capacitor-native-settings';
 import { apiRequest } from '@/lib/queryClient';
 
 interface FCMPluginInterface {
@@ -167,19 +167,32 @@ export async function openNotificationSettings(): Promise<void> {
 
   if (platform === 'ios') {
     try {
-      await CapApp.openUrl({ url: 'app-settings:' });
+      await NativeSettings.openIOS({
+        option: IOSSettings.App
+      });
     } catch (e) {
       console.warn('Failed to open iOS settings:', e);
     }
     return;
   }
 
-  const plugin = getPlugin();
-  if (!plugin) return;
-  try {
-    await plugin.openNotificationSettings();
-  } catch (e) {
-    console.warn('Failed to open notification settings:', e);
+  if (platform === 'android') {
+    const plugin = getPlugin();
+    if (plugin) {
+      try {
+        await plugin.openNotificationSettings();
+        return;
+      } catch (e) {
+        console.warn('FCMPlugin openNotificationSettings failed, trying NativeSettings:', e);
+      }
+    }
+    try {
+      await NativeSettings.openAndroid({
+        option: AndroidSettings.ApplicationDetails
+      });
+    } catch (e) {
+      console.warn('Failed to open Android settings:', e);
+    }
   }
 }
 
