@@ -26,6 +26,7 @@ import TeenTasks from "@/pages/teen-tasks";
 import TeenCalendar from "@/pages/teen-calendar";
 import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
+import DeleteAccount from "@/pages/delete-account";
 
 import TeenPasswords from "@/pages/teen-passwords";
 import TeenProfile from "@/pages/teen-profile";
@@ -257,6 +258,7 @@ function Router() {
       <Route path="/teen-onboarding" component={TeenOnboarding} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
+      <Route path="/delete-account" component={DeleteAccount} />
       <Route path="/onboarding" component={Onboarding} />
       <Route path="/upgrade" component={Upgrade} />
       <Route path="/upgrade/success" component={UpgradeSuccess} />
