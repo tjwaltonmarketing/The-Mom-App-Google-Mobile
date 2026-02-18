@@ -1,0 +1,77 @@
+#242:~ user289897$ cd ~/Desktop/The-Mom-App-Google-Mobile
+#242:The-Mom-App-Google-Mobile user289897$ git pull
+remote: Enumerating objects: 50, done.
+remote: Counting objects: 100% (50/50), done.
+remote: Compressing objects: 100% (14/14), done.
+remote: Total 40 (delta 25), reused 40 (delta 25), pack-reused 0 (from 0)
+Unpacking objects: 100% (40/40), 3.10 MiB | 7.29 MiB/s, done.
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+   130e4c6..fda30e8  main       -> origin/main
+Updating 130e4c6..fda30e8
+Fast-forward
+ attached_assets/image_1771318765693.png        | Bin 0 -> 488325 bytes
+ attached_assets/image_1771318991260.png        | Bin 0 -> 453607 bytes
+ attached_assets/image_1771345642286.png        | Bin 0 -> 355067 bytes
+ attached_assets/image_1771345682819.png        | Bin 0 -> 343379 bytes
+ attached_assets/image_1771345861214.png        | Bin 0 -> 168931 bytes
+ attached_assets/image_1771345987633.png        | Bin 0 -> 861282 bytes
+ attached_assets/image_1771346230949.png        | Bin 0 -> 283012 bytes
+ attached_assets/image_1771346261743.png        | Bin 0 -> 184012 bytes
+ attached_assets/image_1771374873586.png        | Bin 0 -> 165025 bytes
+ ios/App/App/AppDelegate.swift                  |  11 +++++++----
+ native-overrides/ios/App/App/AppDelegate.swift |  11 +++++++----
+ 11 files changed, 14 insertions(+), 8 deletions(-)
+ create mode 100644 attached_assets/image_1771318765693.png
+ create mode 100644 attached_assets/image_1771318991260.png
+ create mode 100644 attached_assets/image_1771345642286.png
+ create mode 100644 attached_assets/image_1771345682819.png
+ create mode 100644 attached_assets/image_1771345861214.png
+ create mode 100644 attached_assets/image_1771345987633.png
+ create mode 100644 attached_assets/image_1771346230949.png
+ create mode 100644 attached_assets/image_1771346261743.png
+ create mode 100644 attached_assets/image_1771374873586.png
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/AppDelegate.swift
+usage: cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file target_file
+       cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file ... target_directory
+#242:The-Mom-App-Google-Mobile user289897$ ios/App/App/AppDelegate.swift
+-bash: ios/App/App/AppDelegate.swift: Permission denied
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/FCMPlugin.swift
+usage: cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file target_file
+       cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file ... target_directory
+#242:The-Mom-App-Google-Mobile user289897$ ios/App/App/FCMPlugin.swift
+-bash: ios/App/App/FCMPlugin.swift: Permission denied
+#242:The-Mom-App-Google-Mobile user289897$ open ios/App/App.xcworkspace
+#242:The-Mom-App-Google-Mobile user289897$ cd ~/Desktop/The-Mom-App-Google-Mobile
+#242:The-Mom-App-Google-Mobile user289897$ git pull
+remote: Enumerating objects: 20, done.
+remote: Counting objects: 100% (20/20), done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 12 (delta 6), reused 12 (delta 6), pack-reused 0 (from 0)
+Unpacking objects: 100% (12/12), 180.65 KiB | 1016.00 KiB/s, done.
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+   fda30e8..6d6eb8b  main       -> origin/main
+Updating fda30e8..6d6eb8b
+Fast-forward
+ attached_assets/image_1771386485302.png | Bin 0 -> 191720 bytes
+ ios/App/Podfile                         |   1 +
+ native-overrides/ios/App/Podfile        |   1 +
+ 3 files changed, 2 insertions(+)
+ create mode 100644 attached_assets/image_1771386485302.png
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/AppDelegate.swift
+usage: cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file target_file
+       cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file ... target_directory
+#242:The-Mom-App-Google-Mobile user289897$ ios/App/App/AppDelegate.swift
+-bash: ios/App/App/AppDelegate.swift: Permission denied
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/FCMPlugin.swift
+usage: cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file target_file
+       cp [-R [-H | -L | -P]] [-fi | -n] [-aclpSsvXx] source_file ... target_directory
+#242:The-Mom-App-Google-Mobile user289897$ ios/App/App/FCMPlugin.swift
+-bash: ios/App/App/FCMPlugin.swift: Permission denied
+#242:The-Mom-App-Google-Mobile user289897$ pod install --project-directory=ios/App
+Analyzing dependencies
+Downloading dependencies
+Installing CapacitorNativeSettings (6.0.6)
+Generating Pods project
+Integrating client project
+Pod installation complete! There are 6 dependencies from the Podfile and 16 total pods installed.
+#242:The-Mom-App-Google-Mobile user289897$ 
