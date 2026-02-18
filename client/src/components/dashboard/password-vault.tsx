@@ -283,7 +283,7 @@ export function PasswordVault() {
 
       <CardContent>
         <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-          <TabsList className="grid grid-cols-4 lg:grid-cols-7 mb-20 bg-gray-100 dark:bg-gray-700 blue-light-filter:bg-amber-100">
+          <TabsList className="grid grid-cols-4 lg:grid-cols-7 mb-4 bg-gray-100 dark:bg-gray-700 blue-light-filter:bg-amber-100 h-auto flex-wrap">
             {categories.map(category => (
               <TabsTrigger
                 key={category.id}
@@ -298,7 +298,7 @@ export function PasswordVault() {
             ))}
           </TabsList>
 
-          <TabsContent value={selectedCategory} className="space-y-3 max-h-96 overflow-y-auto mt-16">
+          <TabsContent value={selectedCategory} className="space-y-3 max-h-96 overflow-y-auto">
             {filteredPasswords.length === 0 ? (
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Lock size={32} className="mx-auto mb-3 opacity-50" />
