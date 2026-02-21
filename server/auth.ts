@@ -36,21 +36,35 @@ export function setupSession(app: Express) {
   }));
 }
 
-export async function requireAuth(req: Request, res: Response, next: NextFunction) {
-  // Check session first
+export async function jwtSessionBridge(req: Request, res: Response, next: NextFunction) {
   if (req.session.userId) {
     return next();
   }
   
-  // Try token-based authentication as fallback
   const token = extractTokenFromRequest(req);
   if (token) {
     const decoded = verifyToken(token);
     if (decoded) {
-      // Verify user exists
       const user = await storage.getUserById(decoded.userId);
       if (user) {
-        // Set session for consistency
+        req.session.userId = user.id;
+      }
+    }
+  }
+  return next();
+}
+
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  if (req.session.userId) {
+    return next();
+  }
+  
+  const token = extractTokenFromRequest(req);
+  if (token) {
+    const decoded = verifyToken(token);
+    if (decoded) {
+      const user = await storage.getUserById(decoded.userId);
+      if (user) {
         req.session.userId = user.id;
         return next();
       }

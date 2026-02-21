@@ -8,7 +8,7 @@ import { db } from "./db";
 import { sql } from "drizzle-orm";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { GoogleCalendarService } from "./google-calendar-service";
-import { generateToken, verifyToken, extractTokenFromRequest } from "./auth";
+import { generateToken, verifyToken, extractTokenFromRequest, jwtSessionBridge } from "./auth";
 import bcrypt from "bcryptjs";
 import { createCheckoutSession, handleWebhookEvent, stripe, initializeStripeProducts } from "./stripe";
 import { emailService } from "./email-service";
@@ -35,6 +35,8 @@ async function isUserOnIndividualPlan(userId: number): Promise<boolean> {
 export async function registerRoutes(app: Express) {
   // Setup Replit Auth first (handles sessions, passport, login/logout routes)
   await setupAuth(app);
+  
+  app.use("/api", jwtSessionBridge);
   
   // Create HTTP server
   const server = createServer(app);

@@ -51,11 +51,21 @@ export function NotificationPrompt() {
       if (success) {
         setVisible(false);
       } else {
-        setShowSettingsOption(true);
+        const currentStatus = await checkPushPermissionStatus();
+        if (currentStatus === "granted") {
+          setVisible(false);
+        } else {
+          setShowSettingsOption(true);
+        }
       }
     } catch (err) {
       console.error("NotificationPrompt: handleEnable error:", err);
-      setShowSettingsOption(true);
+      const currentStatus = await checkPushPermissionStatus();
+      if (currentStatus === "granted") {
+        setVisible(false);
+      } else {
+        setShowSettingsOption(true);
+      }
     }
     setLoading(false);
   };

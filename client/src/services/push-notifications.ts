@@ -82,17 +82,14 @@ async function setupListeners(): Promise<void> {
 async function saveTokenToServer(token: string): Promise<void> {
   try {
     const platform = Capacitor.getPlatform();
-    await apiRequest('/api/push-tokens', {
-      method: 'POST',
-      body: JSON.stringify({
-        token,
+    await apiRequest('POST', '/api/push-tokens', {
+      token,
+      platform,
+      deviceInfo: {
         platform,
-        deviceInfo: {
-          platform,
-          userAgent: navigator.userAgent,
-          timestamp: new Date().toISOString(),
-        },
-      }),
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toISOString(),
+      },
     });
     console.log('Push token saved to server');
   } catch (e) {
