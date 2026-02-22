@@ -151,8 +151,8 @@ export function TrialBanner() {
     shareMutation.mutate();
   };
 
-  // Don't show banner if not visible or not on trial
-  if (!isVisible || !subscription || !subscription.isOnTrial) {
+  // Don't show banner if not visible, not on trial, or comped account (1000+ days = effectively permanent)
+  if (!isVisible || !subscription || !subscription.isOnTrial || trialDaysLeft > 365) {
     return null;
   }
 

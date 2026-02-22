@@ -55,8 +55,10 @@ export function PasswordVault() {
   const [deleteConfirmPassword, setDeleteConfirmPassword] = useState<Password | null>(null);
   const [showRemoveAllConfirm, setShowRemoveAllConfirm] = useState(false);
 
-  const { data: passwords = [], isLoading, error } = useQuery<Password[]>({
+  const { data: passwords = [], isLoading, error, refetch } = useQuery<Password[]>({
     queryKey: ['/api/passwords'],
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
   });
 
   // Individual password deletion
@@ -204,7 +206,7 @@ export function PasswordVault() {
               size="sm"
               variant="outline"
               className="mt-3"
-              onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/passwords'] })}
+              onClick={() => refetch()}
             >
               Try Again
             </Button>
