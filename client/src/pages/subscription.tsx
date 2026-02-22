@@ -3,17 +3,29 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Check, Calendar, CreditCard, Gift } from "lucide-react";
+import { Crown, Check, Calendar, CreditCard, Gift, Settings, AlertTriangle, XCircle, ExternalLink } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
-import { authFetch } from "@/lib/queryClient";
+import { authFetch, apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function SubscriptionPage() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const { toast } = useToast();
 
-  // Fetch real subscription data from API
   const { data: subscription, isLoading: subscriptionLoading } = useQuery({
     queryKey: ["/api/subscription"],
     queryFn: async () => {
@@ -26,7 +38,44 @@ export default function SubscriptionPage() {
     retry: false,
   });
 
-  // Default subscription data while loading
+  const portalMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/subscription/portal", {
+        returnUrl: window.location.href,
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      window.open(data.url, "_blank");
+    },
+    onError: () => {
+      toast({
+        title: "Unable to open billing portal",
+        description: "Please try again or contact support.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: () => apiRequest("POST", "/api/subscription/cancel"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+      setShowCancelDialog(false);
+      toast({
+        title: "Subscription cancelled",
+        description: "You'll continue to have access until the end of your current billing period.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Unable to cancel",
+        description: "Please try again or contact support.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const defaultSubscription = {
     subscriptionPlan: "trial",
     subscriptionStatus: "active",
@@ -35,6 +84,14 @@ export default function SubscriptionPage() {
   };
 
   const currentSubscription = subscription || defaultSubscription;
+  const hasStripeSubscription = !!currentSubscription.stripeSubscriptionId;
+  const isPaying = hasStripeSubscription && 
+    ["active", "cancelling"].includes(currentSubscription.subscriptionStatus);
+  const isCancelling = currentSubscription.subscriptionStatus === "cancelling";
+  const isTrial = currentSubscription.subscriptionPlan === "trial";
+  const isActiveNonStripe = !hasStripeSubscription && 
+    currentSubscription.subscriptionPlan !== "trial" && 
+    currentSubscription.subscriptionStatus === "active";
 
   const plans = {
     individual: {
@@ -68,6 +125,12 @@ export default function SubscriptionPage() {
     }
   };
 
+  const getPlanDisplayName = () => {
+    if (currentSubscription.subscriptionPlan === "family") return "Family Plan";
+    if (currentSubscription.subscriptionPlan === "individual") return "Individual Plan";
+    return "Free Trial";
+  };
+
   return (
     <div className="min-h-screen bg-neutral dark:bg-background blue-light-filter:bg-neutral">
       <Header onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
@@ -92,53 +155,168 @@ export default function SubscriptionPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Gift className="text-green-600" size={20} />
-                  Free Trial Active
+                  {isPaying ? (
+                    <CreditCard className="text-primary" size={20} />
+                  ) : (
+                    <Gift className="text-green-600" size={20} />
+                  )}
+                  {getPlanDisplayName()}
                 </CardTitle>
-                <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  {currentSubscription.trialDaysLeft || 0} days left
-                </Badge>
+                {isCancelling ? (
+                  <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                    Cancelling
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    {isTrial ? `${currentSubscription.trialDaysLeft || 0} days left` : "Active"}
+                  </Badge>
+                )}
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <p className="text-gray-600 dark:text-gray-400">
-                  You're currently enjoying full access to The Mom App during your 14-day free trial.
-                </p>
-                
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 blue-light-filter:bg-green-25 rounded-lg border border-green-200 dark:border-green-800">
-                  <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">What's included:</h4>
-                  <ul className="space-y-1 text-sm text-green-700 dark:text-green-300">
-                    <li className="flex items-center gap-2">
-                      <Check size={16} />
-                      Unlimited family members
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check size={16} />
-                      Voice notes and task creation
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check size={16} />
-                      SMS & email notifications
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check size={16} />
-                      Secure password vault
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Check size={16} />
-                      Meal planning tools
-                    </li>
-                  </ul>
-                </div>
+                {isTrial && (
+                  <p className="text-gray-600 dark:text-gray-400">
+                    You're currently enjoying full access to The Mom App during your 14-day free trial.
+                  </p>
+                )}
 
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Calendar size={16} />
-                  Trial ends on {new Date(currentSubscription.nextBillingDate).toLocaleDateString()}
-                </div>
+                {isPaying && !isCancelling && (
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Your {getPlanDisplayName()} is active. Thank you for being a subscriber!
+                  </p>
+                )}
+
+                {isCancelling && (
+                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="text-amber-600 mt-0.5 flex-shrink-0" size={18} />
+                      <div>
+                        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                          Your subscription is set to cancel
+                        </p>
+                        <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                          You'll continue to have full access until the end of your current billing period.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {isTrial && (
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 blue-light-filter:bg-green-25 rounded-lg border border-green-200 dark:border-green-800">
+                    <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">What's included:</h4>
+                    <ul className="space-y-1 text-sm text-green-700 dark:text-green-300">
+                      <li className="flex items-center gap-2">
+                        <Check size={16} />
+                        Unlimited family members
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check size={16} />
+                        Voice notes and task creation
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check size={16} />
+                        SMS & email notifications
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check size={16} />
+                        Secure password vault
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Check size={16} />
+                        Meal planning tools
+                      </li>
+                    </ul>
+                  </div>
+                )}
+
+                {isTrial && currentSubscription.nextBillingDate && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <Calendar size={16} />
+                    Trial ends on {new Date(currentSubscription.nextBillingDate).toLocaleDateString()}
+                  </div>
+                )}
+
+                {isPaying && currentSubscription.nextBillingDate && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <Calendar size={16} />
+                    {isCancelling ? "Access until" : "Next billing date:"} {new Date(currentSubscription.nextBillingDate).toLocaleDateString()}
+                  </div>
+                )}
+
+                {currentSubscription.billingInterval && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <CreditCard size={16} />
+                    Billed {currentSubscription.billingInterval}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
+
+          {/* Manage Subscription Card - only for paying users */}
+          {isPaying && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings size={20} />
+                  Manage Subscription
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Update your payment method, view invoices, or make changes to your subscription.
+                  </p>
+
+                  <Button
+                    onClick={() => portalMutation.mutate()}
+                    disabled={portalMutation.isPending}
+                    className="w-full"
+                    variant="outline"
+                  >
+                    <ExternalLink size={16} className="mr-2" />
+                    {portalMutation.isPending ? "Opening..." : "Manage Billing & Payment"}
+                  </Button>
+
+                  {!isCancelling && (
+                    <Button
+                      onClick={() => setShowCancelDialog(true)}
+                      variant="ghost"
+                      className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                    >
+                      <XCircle size={16} className="mr-2" />
+                      Cancel Subscription
+                    </Button>
+                  )}
+
+                  <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                    Need help? Contact us at support@themom.app
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {isActiveNonStripe && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings size={20} />
+                  Subscription Info
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Your plan is managed by your account administrator. For billing questions or changes, please contact us.
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-3 text-center">
+                  support@themom.app
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Billing Cycle Toggle */}
           <Card className="lg:col-span-2">
@@ -304,6 +482,27 @@ export default function SubscriptionPage() {
           </CardContent>
         </Card>
       </main>
+
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel your subscription?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your subscription will remain active until the end of your current billing period. After that, you'll lose access to premium features. You can always resubscribe later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Subscription</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => cancelMutation.mutate()}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={cancelMutation.isPending}
+            >
+              {cancelMutation.isPending ? "Cancelling..." : "Yes, Cancel"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <VoiceNoteModal 
         isOpen={isVoiceModalOpen} 

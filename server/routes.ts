@@ -4578,6 +4578,57 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Stripe Customer Portal - manage/cancel subscription
+  app.post("/api/subscription/portal", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const subscription = await storage.getUserSubscription(req.session.userId);
+      if (!subscription?.stripeCustomerId) {
+        return res.status(400).json({ error: "No active Stripe subscription found" });
+      }
+
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: subscription.stripeCustomerId,
+        return_url: req.body.returnUrl || "https://app.themom.app/subscription",
+      });
+
+      res.json({ url: portalSession.url });
+    } catch (error) {
+      console.error("Portal session error:", error);
+      res.status(500).json({ error: "Failed to create portal session" });
+    }
+  });
+
+  // Cancel subscription directly
+  app.post("/api/subscription/cancel", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const subscription = await storage.getUserSubscription(req.session.userId);
+      if (!subscription?.stripeSubscriptionId) {
+        return res.status(400).json({ error: "No active subscription to cancel" });
+      }
+
+      await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+
+      await storage.updateUserSubscription(req.session.userId, {
+        subscriptionStatus: "cancelling",
+      });
+
+      res.json({ success: true, message: "Subscription will cancel at end of billing period" });
+    } catch (error) {
+      console.error("Cancel subscription error:", error);
+      res.status(500).json({ error: "Failed to cancel subscription" });
+    }
+  });
+
   // AI Chat Endpoint with Event/Task Creation
   app.post("/api/ai/chat", async (req, res) => {
     try {
