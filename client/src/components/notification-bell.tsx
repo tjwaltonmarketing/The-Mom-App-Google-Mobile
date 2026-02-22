@@ -6,8 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { formatTimeInUserTimezone } from "@/lib/timezone";
-import { apiRequest } from "@/lib/queryClient";
-import { getApiUrl } from "@/lib/config";
+import { apiRequest, authFetch } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Notification } from "@shared/schema";
 
@@ -19,12 +18,7 @@ export function NotificationBell() {
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications/pending"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/notifications/pending'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/notifications/pending');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -36,12 +30,8 @@ export function NotificationBell() {
 
   const clearAllNotificationsMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(getApiUrl("/api/notifications/clear-all"), {
+      const response = await authFetch("/api/notifications/clear-all", {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
       });
       
       if (!response.ok) {

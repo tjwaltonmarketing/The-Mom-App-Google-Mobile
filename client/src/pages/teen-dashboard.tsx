@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, authFetch } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,6 @@ import {
 import TeenNavigation from "@/components/teen/teen-navigation";
 import { NotificationPrompt } from "@/components/dashboard/notification-prompt";
 import type { Task, Event } from "@shared/schema";
-import { getApiUrl } from "@/lib/config";
 
 interface MealPlan {
   id: number;
@@ -49,9 +48,7 @@ export default function TeenDashboard() {
   const { data: authData, isLoading: profileLoading } = useQuery({
     queryKey: ["/api/teen/auth/user"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl("/api/teen/auth/user"), {
-        credentials: "include",
-      });
+      const response = await authFetch("/api/teen/auth/user");
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
@@ -76,9 +73,7 @@ export default function TeenDashboard() {
     queryKey: ["/api/teen/meal-plans/week"],
     queryFn: async () => {
       console.log("Teen Dashboard: Fetching weekly meal plans...");
-      const response = await fetch(getApiUrl("/api/teen/meal-plans/week"), {
-        credentials: "include",
-      });
+      const response = await authFetch("/api/teen/meal-plans/week");
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
@@ -95,9 +90,7 @@ export default function TeenDashboard() {
   const { data: familyInfo } = useQuery<{ familyId: number; familyName: string; memberCount: number }>({
     queryKey: ["/api/teen/family-info"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl("/api/teen/family-info"), {
-        credentials: "include",
-      });
+      const response = await authFetch("/api/teen/family-info");
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
@@ -112,9 +105,7 @@ export default function TeenDashboard() {
     queryKey: ["/api/teen/stats"],
     queryFn: async () => {
       console.log("Dashboard: Fetching stats...");
-      const response = await fetch(getApiUrl("/api/teen/stats"), {
-        credentials: "include",
-      });
+      const response = await authFetch("/api/teen/stats");
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
@@ -133,9 +124,7 @@ export default function TeenDashboard() {
     queryKey: ["/api/teen/tasks"],  
     queryFn: async () => {
       console.log("Dashboard: Fetching tasks...");
-      const response = await fetch(getApiUrl("/api/teen/tasks"), {
-        credentials: "include",
-      });
+      const response = await authFetch("/api/teen/tasks");
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
@@ -154,9 +143,7 @@ export default function TeenDashboard() {
     queryKey: ["/api/teen/events"],
     queryFn: async () => {
       console.log("Dashboard: Fetching events...");
-      const response = await fetch(getApiUrl("/api/teen/events"), {
-        credentials: "include",
-      });
+      const response = await authFetch("/api/teen/events");
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { getApiUrl } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Clock, Target, CheckSquare, Filter, Calendar, Trash2 } from "lucide-react";
 import TeenNavigation from "@/components/teen/teen-navigation";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, authFetch } from "@/lib/queryClient";
 
 interface Task {
   id: number;
@@ -165,9 +164,8 @@ export default function TeenTasks() {
   // Clear all tasks mutation
   const clearAllTasksMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(getApiUrl("/api/teen/tasks/clear-all"), {
+      const response = await authFetch("/api/teen/tasks/clear-all", {
         method: "DELETE",
-        credentials: "include",
       });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);

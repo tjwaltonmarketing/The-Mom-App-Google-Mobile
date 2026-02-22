@@ -11,8 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { getApiUrl } from "@/lib/config";
+import { apiRequest, authFetch } from "@/lib/queryClient";
 import { useQueryClient } from "@tanstack/react-query";
 import type { FamilyMember, InsertTask, Task } from "@shared/schema";
 import { format } from "date-fns";
@@ -42,12 +41,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/family-members'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/family-members');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -60,12 +54,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const { data: childProfiles = [] } = useQuery<any[]>({
     queryKey: ["/api/child-profiles"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/child-profiles'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/child-profiles');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

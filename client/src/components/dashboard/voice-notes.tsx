@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import type { VoiceNote } from "@shared/schema";
-import { getApiUrl } from "@/lib/config";
+import { authFetch } from "@/lib/queryClient";
 
 interface VoiceNotesProps {
   onStartRecording: () => void;
@@ -14,12 +14,7 @@ export function VoiceNotes({ onStartRecording }: VoiceNotesProps) {
   const { data: allNotes = [], isLoading: notesLoading } = useQuery<VoiceNote[]>({
     queryKey: ["/api/voice-notes/recent"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/voice-notes/recent'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/voice-notes/recent');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

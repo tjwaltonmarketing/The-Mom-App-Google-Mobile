@@ -13,8 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { apiRequest } from "@/lib/queryClient";
-import { getApiUrl } from "@/lib/config";
+import { apiRequest, authFetch } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { format, addDays, startOfWeek } from "date-fns";
 
@@ -55,9 +54,7 @@ export function MealPlanning() {
   const { data: teenData } = useQuery<{ isAuthenticated: boolean; teenId: number | null; teenProfile: any | null }>({
     queryKey: ["/api/teen/auth/user"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl("/api/teen/auth/user"), {
-        credentials: "include",
-      });
+      const response = await authFetch("/api/teen/auth/user");
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
@@ -77,9 +74,7 @@ export function MealPlanning() {
   const { data: mealPlans = [], refetch: refetchMeals, isLoading: mealsLoading, error: mealsError } = useQuery<MealPlan[]>({
     queryKey: [mealPlansEndpoint],
     queryFn: async () => {
-      const response = await fetch(getApiUrl(mealPlansEndpoint), {
-        credentials: "include",
-      });
+      const response = await authFetch(mealPlansEndpoint);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
@@ -96,9 +91,7 @@ export function MealPlanning() {
   const { data: groceryList = [], refetch: refetchGrocery } = useQuery<GroceryItem[]>({
     queryKey: [groceryItemsEndpoint],
     queryFn: async () => {
-      const response = await fetch(getApiUrl(groceryItemsEndpoint), {
-        credentials: "include",
-      });
+      const response = await authFetch(groceryItemsEndpoint);
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }

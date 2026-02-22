@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, authFetch } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import type { Event } from "@shared/schema";
-import { getApiUrl } from "@/lib/config";
 
 // Define transformed event type for display
 interface DisplayEvent {
@@ -82,7 +81,7 @@ export default function TeenCalendar() {
     queryKey: ["/api/teen/events"],
     queryFn: async () => {
       console.log("Custom queryFn executing...");
-      const response = await fetch(getApiUrl("/api/teen/events"));
+      const response = await authFetch("/api/teen/events");
       if (!response.ok) {
         throw new Error('Failed to fetch events');
       }
@@ -107,7 +106,7 @@ export default function TeenCalendar() {
   const testFetch = async () => {
     try {
       console.log("Testing manual fetch...");
-      const response = await fetch(getApiUrl('/api/teen/events'));
+      const response = await authFetch('/api/teen/events');
       const data = await response.json();
       console.log("Manual fetch result:", data);
     } catch (err) {

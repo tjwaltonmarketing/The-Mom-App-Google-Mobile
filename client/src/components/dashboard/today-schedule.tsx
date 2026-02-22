@@ -8,7 +8,7 @@ import { EventEditModal } from "@/components/event-edit-modal";
 import type { Event, FamilyMember } from "@shared/schema";
 import { format } from "date-fns";
 import { formatTimeInUserTimezone } from "@/lib/timezone";
-import { getApiUrl } from "@/lib/config";
+import { authFetch } from "@/lib/queryClient";
 import { useState } from "react";
 import { WeatherDisplay } from "@/components/weather-display";
 
@@ -18,12 +18,7 @@ export function TodaySchedule() {
   const { data: events = [] } = useQuery<Event[]>({
     queryKey: ["/api/events/today"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/events/today'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/events/today');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -36,12 +31,7 @@ export function TodaySchedule() {
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/family-members'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/family-members');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

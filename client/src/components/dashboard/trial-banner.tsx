@@ -5,8 +5,7 @@ import { Crown, Clock, X, Gift, AlertTriangle } from "lucide-react";
 import { FaFacebook } from "react-icons/fa";
 import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { getApiUrl } from "@/lib/config";
+import { apiRequest, authFetch } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 export function TrialBanner() {
@@ -20,9 +19,7 @@ export function TrialBanner() {
   const { data: subscription } = useQuery({
     queryKey: ["/api/subscription"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl("/api/subscription"), {
-        credentials: "include",
-      });
+      const response = await authFetch("/api/subscription");
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Mic, Bot, BookOpen } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
-import { getApiUrl } from "@/lib/config";
+import { authFetch } from "@/lib/queryClient";
 
 interface DashboardStats {
   todayTasks: number;
@@ -55,12 +55,7 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
     queryKey: ["/api/dashboard/stats"],
     queryFn: async () => {
       console.log("Fetching dashboard stats...");
-      const response = await fetch(getApiUrl('/api/dashboard/stats'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/dashboard/stats');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -79,12 +74,7 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
   const { data: user } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/auth/user'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/auth/user');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -97,12 +87,7 @@ export function WelcomeHeader({ onStartVoiceNote }: WelcomeHeaderProps) {
   const { data: familyInfo } = useQuery<{ id: number; name: string }>({
     queryKey: ["/api/family"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/family'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/family');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

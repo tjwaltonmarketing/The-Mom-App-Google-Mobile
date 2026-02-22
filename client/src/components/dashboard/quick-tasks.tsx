@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { getApiUrl } from "@/lib/config";
+import { apiRequest, queryClient, authFetch } from "@/lib/queryClient";
 import { TaskEditModal } from "@/components/task-edit-modal";
 import { TaskModal } from "@/components/task-modal";
 import type { Task, FamilyMember } from "@shared/schema";
@@ -19,12 +18,7 @@ export function QuickTasks() {
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks/pending"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/tasks/pending'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/tasks/pending');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -41,12 +35,7 @@ export function QuickTasks() {
   const { data: familyMembers = [], isLoading: membersLoading } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/family-members'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/family-members');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -60,12 +49,7 @@ export function QuickTasks() {
   const { data: currentUser } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/auth/user'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/auth/user');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

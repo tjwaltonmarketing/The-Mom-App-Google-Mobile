@@ -7,7 +7,7 @@ import { Crown, Check, Calendar, CreditCard, Gift } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
-import { getApiUrl } from "@/lib/config";
+import { authFetch } from "@/lib/queryClient";
 
 export default function SubscriptionPage() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
@@ -17,9 +17,7 @@ export default function SubscriptionPage() {
   const { data: subscription, isLoading: subscriptionLoading } = useQuery({
     queryKey: ["/api/subscription"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl("/api/subscription"), {
-        credentials: "include",
-      });
+      const response = await authFetch("/api/subscription");
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }

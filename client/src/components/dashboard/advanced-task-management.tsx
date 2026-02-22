@@ -22,8 +22,7 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from "@/components/ui/alert-dialog";
-import { apiRequest } from "@/lib/queryClient";
-import { getApiUrl } from "@/lib/config";
+import { apiRequest, authFetch } from "@/lib/queryClient";
 import { useQueryClient } from "@tanstack/react-query";
 import { TaskModal } from "@/components/task-modal";
 import { TaskEditModal } from "@/components/task-edit-modal";
@@ -44,12 +43,7 @@ export function AdvancedTaskManagement() {
   const { data: tasks = [], isLoading: tasksLoading, refetch: refetchTasks } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/tasks'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/tasks');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -65,12 +59,7 @@ export function AdvancedTaskManagement() {
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
     queryKey: ["/api/family-members"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/family-members'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/family-members');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -84,12 +73,7 @@ export function AdvancedTaskManagement() {
   const { data: currentUser } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
-      const response = await fetch(getApiUrl('/api/auth/user'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      const response = await authFetch('/api/auth/user');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
