@@ -209,8 +209,8 @@ function Router() {
   });
 
   useEffect(() => {
-    console.log('Push notification useEffect:', { isAuthenticated, isTeenUser, pushRequested, needsOnboarding });
-    if ((isAuthenticated || isTeenUser) && !pushRequested && !needsOnboarding) {
+    console.log('Push notification useEffect:', { isAuthenticated, isTeenUser, pushRequested });
+    if ((isAuthenticated || isTeenUser) && !pushRequested) {
       setPushRequested(true);
       console.log('Push notification: scheduling auto-request in 3s');
       const timer = setTimeout(() => {
@@ -228,7 +228,7 @@ function Router() {
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [isAuthenticated, isTeenUser, pushRequested, needsOnboarding]);
+  }, [isAuthenticated, isTeenUser, pushRequested]);
 
   // Show splash screen on initial load for a minimum duration
   if (!splashCompleted && initialLoad) {
