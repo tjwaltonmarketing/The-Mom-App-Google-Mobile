@@ -4341,10 +4341,14 @@ export async function registerRoutes(app: Express) {
         trialDaysLeft = Math.max(0, Math.ceil((subscription.trialEndDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
       }
 
+      const referralShares = await storage.getReferralSharesByUser(req.session.userId);
+      const bonusClaimed = referralShares.some(s => s.bonusAwarded);
+
       res.json({
         ...subscription,
         trialDaysLeft,
         isOnTrial: !!isOnTrial,
+        bonusClaimed,
       });
     } catch (error) {
       console.error("Get subscription error:", error);

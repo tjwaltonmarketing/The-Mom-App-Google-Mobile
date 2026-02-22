@@ -28,15 +28,9 @@ export function TrialBanner() {
     retry: false,
   });
 
-  // Check if user has already received the share bonus
-  const { data: userData } = useQuery({
-    queryKey: ["/api/auth/user"],
-    retry: false,
-  });
-
   const shareMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/onboarding/share", { 
+      const response = await apiRequest("POST", "/api/referral/share", { 
         platform: "facebook", 
         skipped: false 
       });
@@ -62,7 +56,7 @@ export function TrialBanner() {
   });
 
   const trialDaysLeft = subscription?.trialDaysLeft || 0;
-  const alreadyReceivedBonus = (userData as any)?.referralShareDate !== null && (userData as any)?.referralShareDate !== undefined;
+  const alreadyReceivedBonus = !!subscription?.bonusClaimed;
 
   // Smart reminder schedule:
   // - 8+ days left: If dismissed, don't show until 7 days
