@@ -43,7 +43,13 @@ export async function registerRoutes(app: Express) {
 
   // Health check endpoint
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString() });
+    res.json({ 
+      status: "ok", 
+      timestamp: new Date().toISOString(),
+      hasSession: !!req.session,
+      hasUserId: !!req.session?.userId,
+      hasAuthHeader: !!req.headers.authorization,
+    });
   });
 
   // Placeholder for API routes

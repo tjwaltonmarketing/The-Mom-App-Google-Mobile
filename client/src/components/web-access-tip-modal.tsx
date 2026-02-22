@@ -6,7 +6,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Monitor, ExternalLink, Bell, ChevronRight, CheckCircle2, Settings } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
-import { requestAndRegisterPush, openNotificationSettings } from "@/services/push-notifications";
+import { requestAndRegisterPush, openNotificationSettings, checkPushPermissionStatus } from "@/services/push-notifications";
 
 const STORAGE_KEY = "onboarding_slides_shown";
 
@@ -67,11 +67,22 @@ export function WebAccessTipModal() {
       if (success) {
         setNotifResult("success");
       } else {
-        setNotifResult("failed");
+        const actualStatus = await checkPushPermissionStatus();
+        console.log("Onboarding: post-request permission status =", actualStatus);
+        if (actualStatus === "granted") {
+          setNotifResult("success");
+        } else {
+          setNotifResult("failed");
+        }
       }
     } catch (err) {
       console.error("Onboarding: enable error:", err);
-      setNotifResult("failed");
+      const actualStatus = await checkPushPermissionStatus();
+      if (actualStatus === "granted") {
+        setNotifResult("success");
+      } else {
+        setNotifResult("failed");
+      }
     }
     setEnableLoading(false);
   };

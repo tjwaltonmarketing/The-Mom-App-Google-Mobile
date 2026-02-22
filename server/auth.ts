@@ -43,12 +43,17 @@ export async function jwtSessionBridge(req: Request, res: Response, next: NextFu
   
   const token = extractTokenFromRequest(req);
   if (token) {
-    const decoded = verifyToken(token);
-    if (decoded) {
-      const user = await storage.getUserById(decoded.userId);
-      if (user) {
-        req.session.userId = user.id;
+    try {
+      const decoded = verifyToken(token);
+      if (decoded) {
+        const user = await storage.getUserById(decoded.userId);
+        if (user) {
+          req.session.userId = user.id;
+          console.log(`JWT bridge: restored session for user ${user.id} on ${req.method} ${req.path}`);
+        }
       }
+    } catch (err) {
+      console.warn("JWT bridge error:", err);
     }
   }
   return next();
