@@ -199,41 +199,41 @@ export function TrialBanner() {
             </div>
           </div>
         ) : (
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className={`absolute top-0 right-0 h-6 w-6 p-0 ${bannerStyle.urgent 
-                ? "text-orange-600 hover:text-orange-800 hover:bg-orange-100 dark:text-orange-400" 
-                : "text-pink-600 hover:text-pink-800 hover:bg-pink-100 dark:text-pink-400 dark:hover:text-pink-300 dark:hover:bg-pink-900/20"
-              }`}
-            >
-              <X size={14} />
-            </Button>
-            <div className="flex items-center justify-between flex-wrap gap-2 pr-8">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 ${bannerStyle.iconBg} rounded-lg flex items-center justify-center`}>
-                  <IconComponent className={bannerStyle.urgent ? "text-orange-500" : "text-primary"} size={20} />
-                </div>
-                <div>
-                  <h3 className={`font-semibold ${bannerStyle.titleColor}`}>
-                    {bannerStyle.title}
-                  </h3>
-                  <p className={`text-sm ${bannerStyle.textColor} flex items-center gap-1`}>
-                    <Clock size={14} />
-                    {trialDaysLeft} {trialDaysLeft === 1 ? "day" : "days"} remaining
-                    {bannerStyle.urgent && " - Upgrade to keep your data!"}
-                  </p>
-                </div>
+          <div className="flex gap-2">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className={`w-10 h-10 shrink-0 ${bannerStyle.iconBg} rounded-lg flex items-center justify-center`}>
+                <IconComponent className={bannerStyle.urgent ? "text-orange-500" : "text-primary"} size={20} />
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="min-w-0">
+                <h3 className={`font-semibold ${bannerStyle.titleColor}`}>
+                  {bannerStyle.title}
+                </h3>
+                <p className={`text-sm ${bannerStyle.textColor} flex items-center gap-1`}>
+                  <Clock size={14} className="shrink-0" />
+                  {trialDaysLeft} {trialDaysLeft === 1 ? "day" : "days"} remaining
+                  {bannerStyle.urgent && " - Upgrade to keep your data!"}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClose}
+                className={`h-6 w-6 p-0 ${bannerStyle.urgent 
+                  ? "text-orange-600 hover:text-orange-800 hover:bg-orange-100 dark:text-orange-400" 
+                  : "text-pink-600 hover:text-pink-800 hover:bg-pink-100 dark:text-pink-400 dark:hover:text-pink-300 dark:hover:bg-pink-900/20"
+                }`}
+              >
+                <X size={14} />
+              </Button>
+              <div className="flex flex-col items-end gap-1">
                 {!alreadyReceivedBonus && !bannerStyle.urgent && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setShowShareOption(true)}
-                    className="border-pink-300 text-pink-600 hover:bg-pink-50 dark:border-pink-700 dark:text-pink-400"
+                    className="border-pink-300 text-pink-600 hover:bg-pink-50 dark:border-pink-700 dark:text-pink-400 text-xs px-2"
                   >
                     <Gift size={14} className="mr-1" />
                     +7 Days Free
