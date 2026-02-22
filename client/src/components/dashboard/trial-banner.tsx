@@ -199,23 +199,12 @@ export function TrialBanner() {
             </div>
           </div>
         ) : (
-          <div className="relative">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className={`absolute -top-1 -right-1 h-5 w-5 p-0 ${bannerStyle.urgent 
-                ? "text-orange-600 hover:text-orange-800 hover:bg-orange-100 dark:text-orange-400" 
-                : "text-pink-600 hover:text-pink-800 hover:bg-pink-100 dark:text-pink-400 dark:hover:text-pink-300 dark:hover:bg-pink-900/20"
-              }`}
-            >
-              <X size={12} />
-            </Button>
-            <div className="flex items-center gap-3 pr-6">
+          <div className="flex gap-2">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className={`w-10 h-10 shrink-0 ${bannerStyle.iconBg} rounded-lg flex items-center justify-center`}>
                 <IconComponent className={bannerStyle.urgent ? "text-orange-500" : "text-primary"} size={20} />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="min-w-0">
                 <h3 className={`font-semibold ${bannerStyle.titleColor}`}>
                   {bannerStyle.title}
                 </h3>
@@ -225,27 +214,27 @@ export function TrialBanner() {
                   {bannerStyle.urgent && " - Upgrade to keep your data!"}
                 </p>
               </div>
-              <div className="flex flex-col items-end gap-1 shrink-0">
-                {!alreadyReceivedBonus && !bannerStyle.urgent && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowShareOption(true)}
-                    className="border-pink-300 text-pink-600 hover:bg-pink-50 dark:border-pink-700 dark:text-pink-400 text-xs px-2"
-                  >
-                    <Gift size={14} className="mr-1" />
-                    +7 Days Free
-                  </Button>
-                )}
-                <Button asChild size="sm" className={bannerStyle.urgent 
-                  ? "bg-orange-500 hover:bg-orange-600 text-white" 
-                  : "bg-primary hover:bg-primary/90 text-primary-foreground"
-                }>
-                  <Link href="/upgrade">
-                    Upgrade Now
-                  </Link>
-                </Button>
-              </div>
+            </div>
+            <div className="flex flex-col items-end shrink-0 -mt-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClose}
+                className={`h-5 w-5 p-0 mb-1 ${bannerStyle.urgent 
+                  ? "text-orange-600 hover:text-orange-800 hover:bg-orange-100 dark:text-orange-400" 
+                  : "text-pink-600 hover:text-pink-800 hover:bg-pink-100 dark:text-pink-400 dark:hover:text-pink-300 dark:hover:bg-pink-900/20"
+                }`}
+              >
+                <X size={12} />
+              </Button>
+              <Button asChild size="sm" className={bannerStyle.urgent 
+                ? "bg-orange-500 hover:bg-orange-600 text-white" 
+                : "bg-primary hover:bg-primary/90 text-primary-foreground"
+              }>
+                <Link href="/upgrade">
+                  Upgrade Now
+                </Link>
+              </Button>
             </div>
           </div>
         )}
