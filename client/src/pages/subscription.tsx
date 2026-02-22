@@ -57,6 +57,28 @@ export default function SubscriptionPage() {
     },
   });
 
+  const checkoutMutation = useMutation({
+    mutationFn: async (plan: "individual" | "family") => {
+      const res = await apiRequest("POST", "/api/checkout/create-session", {
+        plan,
+        interval: billingCycle,
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    },
+    onError: () => {
+      toast({
+        title: "Unable to start checkout",
+        description: "Please try again or contact support.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const cancelMutation = useMutation({
     mutationFn: () => apiRequest("POST", "/api/subscription/cancel"),
     onSuccess: () => {
@@ -381,9 +403,15 @@ export default function SubscriptionPage() {
                 ))}
               </ul>
 
-              <Button className="w-full" variant="outline" size="lg">
+              <Button
+                className="w-full"
+                variant="outline"
+                size="lg"
+                onClick={() => checkoutMutation.mutate("individual")}
+                disabled={checkoutMutation.isPending}
+              >
                 <CreditCard size={18} className="mr-2" />
-                Start Individual Plan
+                {checkoutMutation.isPending ? "Loading..." : "Start Individual Plan"}
               </Button>
             </CardContent>
           </Card>
@@ -430,9 +458,14 @@ export default function SubscriptionPage() {
                 ))}
               </ul>
 
-              <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
+              <Button
+                className="w-full bg-primary hover:bg-primary/90"
+                size="lg"
+                onClick={() => checkoutMutation.mutate("family")}
+                disabled={checkoutMutation.isPending}
+              >
                 <CreditCard size={18} className="mr-2" />
-                Start Family Plan
+                {checkoutMutation.isPending ? "Loading..." : "Start Family Plan"}
               </Button>
 
               <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
