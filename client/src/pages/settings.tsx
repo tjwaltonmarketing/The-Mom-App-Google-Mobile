@@ -1227,7 +1227,7 @@ export default function SettingsPage() {
                       <div>
                         <p className="font-medium capitalize">{subscriptionData.subscriptionPlan || "Free Trial"}</p>
                         <p className="text-sm text-muted-foreground">
-                          {subscriptionData.subscriptionPlan === "trial" 
+                          {subscriptionData.isOnTrial 
                             ? `${subscriptionData.trialDaysLeft || 0} days remaining in trial`
                             : subscriptionData.subscriptionStatus === "active" 
                               ? `${subscriptionData.billingInterval || "Monthly"} billing`
@@ -1235,12 +1235,12 @@ export default function SettingsPage() {
                           }
                         </p>
                       </div>
-                      {subscriptionData.subscriptionPlan === "trial" && (
+                      {subscriptionData.isOnTrial && (
                         <Badge variant="secondary" className="bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">
                           Trial Active
                         </Badge>
                       )}
-                      {subscriptionData.subscriptionStatus === "active" && subscriptionData.subscriptionPlan !== "trial" && (
+                      {subscriptionData.subscriptionStatus === "active" && !subscriptionData.isOnTrial && (
                         <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
                           Active
                         </Badge>
@@ -1296,7 +1296,7 @@ export default function SettingsPage() {
 
                     <Button asChild className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white">
                       <Link href="/upgrade">
-                        {subscriptionData.subscriptionPlan === "trial" ? "Upgrade Now" : "Change Plan"}
+                        {subscriptionData.isOnTrial ? "Upgrade Now" : "Change Plan"}
                       </Link>
                     </Button>
                   </div>

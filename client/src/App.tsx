@@ -56,6 +56,7 @@ interface SubscriptionData {
   subscriptionPlan: string;
   subscriptionStatus: string;
   trialDaysLeft?: number;
+  isOnTrial?: boolean;
 }
 
 function Router() {
@@ -157,7 +158,7 @@ function Router() {
   const needsUpgrade = isAuthenticated && !subscriptionLoading && subscriptionData && (
     subscriptionData.subscriptionStatus === "expired" ||
     subscriptionData.subscriptionStatus === "cancelled" ||
-    (subscriptionData.subscriptionPlan === "trial" && subscriptionData.trialDaysLeft === 0)
+    (subscriptionData.isOnTrial && subscriptionData.trialDaysLeft === 0)
   );
 
   // Only check teen auth if parent auth is not authenticated or loading

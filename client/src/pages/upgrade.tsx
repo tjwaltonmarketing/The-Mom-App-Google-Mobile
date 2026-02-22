@@ -107,7 +107,7 @@ export default function Upgrade() {
     ? Math.max(0, Math.ceil((new Date(subscription.trialEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
 
-  const isTrialExpired = trialDaysLeft <= 0 && subscription?.subscriptionPlan === "trial";
+  const isTrialExpired = trialDaysLeft <= 0 && subscription?.isOnTrial;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white py-8 px-4" style={{ fontFamily: "'Poppins', sans-serif" }}>

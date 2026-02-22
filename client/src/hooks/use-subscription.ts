@@ -4,6 +4,7 @@ interface SubscriptionData {
   subscriptionPlan: "trial" | "individual" | "family" | "expired";
   subscriptionStatus: string;
   trialDaysLeft?: number;
+  isOnTrial?: boolean;
   isFamilyMember?: boolean;
 }
 
@@ -14,14 +15,14 @@ export function useSubscription() {
 
   const isIndividualPlan = subscription?.subscriptionPlan === "individual";
   const isFamilyPlan = subscription?.subscriptionPlan === "family";
-  const isTrial = subscription?.subscriptionPlan === "trial";
-  const isExpired = subscription?.subscriptionPlan === "expired";
+  const isTrial = !!subscription?.isOnTrial;
+  const isExpired = subscription?.subscriptionStatus === "expired";
 
   const canAddFamilyMembers = isFamilyPlan || isTrial;
   const canAssignTasks = isFamilyPlan || isTrial;
   const canShareCalendar = isFamilyPlan || isTrial;
-  const canAccessPasswordVault = isFamilyPlan || isTrial || isIndividualPlan; // Individual can use vault, just not share
-  const canSharePasswords = isFamilyPlan || isTrial; // Only Family/Trial can share passwords
+  const canAccessPasswordVault = isFamilyPlan || isTrial || isIndividualPlan;
+  const canSharePasswords = isFamilyPlan || isTrial;
   const canInviteTeens = isFamilyPlan || isTrial;
   const canInviteParents = isFamilyPlan || isTrial;
 

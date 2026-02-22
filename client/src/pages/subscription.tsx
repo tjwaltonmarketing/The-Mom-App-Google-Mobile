@@ -110,9 +110,9 @@ export default function SubscriptionPage() {
   const isPaying = hasStripeSubscription && 
     ["active", "cancelling"].includes(currentSubscription.subscriptionStatus);
   const isCancelling = currentSubscription.subscriptionStatus === "cancelling";
-  const isTrial = currentSubscription.subscriptionPlan === "trial";
+  const isTrial = !!currentSubscription.isOnTrial;
   const isActiveNonStripe = !hasStripeSubscription && 
-    currentSubscription.subscriptionPlan !== "trial" && 
+    !isTrial &&
     currentSubscription.subscriptionStatus === "active";
 
   const plans = {

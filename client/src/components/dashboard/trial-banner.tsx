@@ -75,7 +75,7 @@ export function TrialBanner() {
   };
 
   useEffect(() => {
-    if (!subscription || subscription.subscriptionPlan !== "trial") return;
+    if (!subscription || !subscription.isOnTrial) return;
     
     const currentThreshold = getReminderThreshold(trialDaysLeft);
     const dismissedAt = localStorage.getItem('trialBannerDismissedAt');
@@ -158,7 +158,7 @@ export function TrialBanner() {
   };
 
   // Don't show banner if not visible or not on trial
-  if (!isVisible || !subscription || subscription.subscriptionPlan !== "trial") {
+  if (!isVisible || !subscription || !subscription.isOnTrial) {
     return null;
   }
 
