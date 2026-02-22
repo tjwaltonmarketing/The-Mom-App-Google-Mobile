@@ -8,6 +8,26 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+export function getAuthHeaders(): Record<string, string> {
+  const token = getAuthToken();
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const fullUrl = getApiUrl(url);
+  const authHeaders = getAuthHeaders();
+  const existingHeaders = (options.headers || {}) as Record<string, string>;
+  return fetch(fullUrl, {
+    ...options,
+    headers: { ...authHeaders, ...existingHeaders },
+    credentials: "include",
+  });
+}
+
 function getAuthToken(): string | null {
   // Try to get token from localStorage first (mobile apps)
   if (typeof window !== 'undefined' && window.localStorage) {
