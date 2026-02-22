@@ -309,7 +309,7 @@ export default function SubscriptionPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Your plan is managed by your account administrator. For billing questions or changes, please contact us.
+                  Your plan is managed by your account administrator. For billing questions, changes, or support, please contact us.
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-3 text-center">
                   themomapp.us@gmail.com
