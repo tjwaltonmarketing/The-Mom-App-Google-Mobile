@@ -60,31 +60,37 @@ export function WebAccessTipModal() {
 
   const handleEnableNotifications = async () => {
     setEnableLoading(true);
+    let settled = false;
+    const resolveResult = async () => {
+      if (settled) return;
+      settled = true;
+      try {
+        const actualStatus = await checkPushPermissionStatus();
+        console.log("Onboarding: final permission status =", actualStatus);
+        setNotifResult(actualStatus === "granted" ? "success" : "failed");
+      } catch {
+        setNotifResult("failed");
+      }
+      setEnableLoading(false);
+    };
+    const safetyTimeout = setTimeout(resolveResult, 8000);
     try {
       console.log("Onboarding: enabling notifications...");
       const success = await requestAndRegisterPush();
+      clearTimeout(safetyTimeout);
       console.log("Onboarding: enable result =", success);
       if (success) {
+        settled = true;
         setNotifResult("success");
+        setEnableLoading(false);
       } else {
-        const actualStatus = await checkPushPermissionStatus();
-        console.log("Onboarding: post-request permission status =", actualStatus);
-        if (actualStatus === "granted") {
-          setNotifResult("success");
-        } else {
-          setNotifResult("failed");
-        }
+        await resolveResult();
       }
     } catch (err) {
+      clearTimeout(safetyTimeout);
       console.error("Onboarding: enable error:", err);
-      const actualStatus = await checkPushPermissionStatus();
-      if (actualStatus === "granted") {
-        setNotifResult("success");
-      } else {
-        setNotifResult("failed");
-      }
+      await resolveResult();
     }
-    setEnableLoading(false);
   };
 
   const handleOpenSettings = async () => {
