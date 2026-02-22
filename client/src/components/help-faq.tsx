@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, Search, MessageCircleQuestion } from "lucide-react";
+import { ChevronDown, Search, MessageCircleQuestion, Mail } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 
@@ -461,6 +461,21 @@ export function HelpFAQ() {
           </Card>
         ))}
       </div>
+
+      <Card className="mt-6 border-dashed">
+        <CardContent className="flex items-center gap-3 py-5">
+          <Mail className="h-5 w-5 text-muted-foreground shrink-0" />
+          <div>
+            <p className="text-sm font-medium">Need further support?</p>
+            <p className="text-sm text-muted-foreground">
+              Contact us at{" "}
+              <a href="mailto:themomapp.us@gmail.com" className="text-primary underline">
+                themomapp.us@gmail.com
+              </a>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

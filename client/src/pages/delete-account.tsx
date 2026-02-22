@@ -194,7 +194,7 @@ export default function DeleteAccount() {
               If you have questions about account deletion or need assistance, please contact us at:
             </p>
             <ul>
-              <li><strong>Email:</strong> support@themomapp.com</li>
+              <li><strong>Email:</strong> themomapp.us@gmail.com</li>
             </ul>
           </CardContent>
         </Card>

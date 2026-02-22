@@ -177,7 +177,7 @@ These terms are governed by [Your State/Country] law. Any disputes will be resol
 ## Dispute Resolution
 
 ### Informal Resolution
-- Contact support@themom.app for issue resolution
+- Contact themomapp.us@gmail.com for issue resolution
 - We will attempt to resolve disputes amicably
 - Most issues can be resolved through customer support
 

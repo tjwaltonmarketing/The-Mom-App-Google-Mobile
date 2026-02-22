@@ -292,7 +292,7 @@ export default function SubscriptionPage() {
                   )}
 
                   <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                    Need help? Contact us at support@themom.app
+                    Need help? Contact us at themomapp.us@gmail.com
                   </p>
                 </div>
               </CardContent>
@@ -312,7 +312,7 @@ export default function SubscriptionPage() {
                   Your plan is managed by your account administrator. For billing questions or changes, please contact us.
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-3 text-center">
-                  support@themom.app
+                  themomapp.us@gmail.com
                 </p>
               </CardContent>
             </Card>
