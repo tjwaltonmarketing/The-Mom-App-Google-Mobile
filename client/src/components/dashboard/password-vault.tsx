@@ -59,6 +59,36 @@ export function PasswordVault() {
     queryKey: ['/api/passwords'],
     retry: 3,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
+    queryFn: async () => {
+      const { getApiUrl } = await import("@/lib/config");
+      const { getAuthHeaders } = await import("@/lib/queryClient");
+      const fullUrl = getApiUrl('/api/passwords');
+      const headers = getAuthHeaders();
+      
+      const res = await fetch(fullUrl, {
+        headers,
+        credentials: "include",
+      });
+      
+      if (!res.ok) {
+        const text = await res.text().catch(() => res.statusText);
+        console.error(`[PasswordVault] Fetch failed: ${res.status} ${text}`);
+        throw new Error(`${res.status}: ${text}`);
+      }
+      
+      const text = await res.text();
+      try {
+        const data = JSON.parse(text);
+        if (!Array.isArray(data)) {
+          console.error(`[PasswordVault] Expected array, got:`, typeof data);
+          return [];
+        }
+        return data as Password[];
+      } catch (parseError) {
+        console.error(`[PasswordVault] JSON parse error:`, parseError, `Response (first 200 chars):`, text.substring(0, 200));
+        throw new Error(`JSON parse error: ${(parseError as Error).message}`);
+      }
+    },
   });
 
   // Individual password deletion
@@ -201,7 +231,10 @@ export function PasswordVault() {
         <CardContent>
           <div className="text-center py-8 text-red-500">
             <Lock size={32} className="mx-auto mb-3 opacity-50" />
-            <p>{is401 ? "Session expired — please log out and log back in" : "Failed to load passwords"}</p>
+            <p>{is401 ? "Session expired — please log out and log back in" : "Failed to load passwords. Please try again."}</p>
+            {error.message && !is401 && (
+              <p className="text-xs text-gray-400 mt-1">{error.message}</p>
+            )}
             <Button
               size="sm"
               variant="outline"

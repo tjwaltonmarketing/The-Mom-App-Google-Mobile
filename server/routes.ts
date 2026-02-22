@@ -3681,7 +3681,7 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family not found" });
       }
 
-      const passwords = await storage.getPasswords();
+      const passwords = await storage.getPasswordsByFamily(familyMembership.familyId);
       res.json(passwords);
     } catch (error) {
       console.error("Passwords error:", error);
