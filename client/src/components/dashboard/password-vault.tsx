@@ -187,6 +187,7 @@ export function PasswordVault() {
   }
 
   if (error) {
+    const is401 = error.message?.includes('401');
     return (
       <Card className="bg-white dark:bg-gray-800 blue-light-filter:bg-amber-50">
         <CardHeader>
@@ -198,7 +199,15 @@ export function PasswordVault() {
         <CardContent>
           <div className="text-center py-8 text-red-500">
             <Lock size={32} className="mx-auto mb-3 opacity-50" />
-            <p>Failed to load passwords</p>
+            <p>{is401 ? "Session expired — please log out and log back in" : "Failed to load passwords"}</p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-3"
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/passwords'] })}
+            >
+              Try Again
+            </Button>
           </div>
         </CardContent>
       </Card>

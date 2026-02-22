@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { getApiUrl } from "@/lib/config";
+import { getApiUrl, clearAuthToken } from "@/lib/config";
 
 function getStoredAuthToken(): string | null {
   if (typeof window !== 'undefined' && window.localStorage) {
@@ -37,18 +37,14 @@ export function useAuth() {
   const logoutMutation = useMutation({
     mutationFn: () => apiRequest("POST", "/api/logout"),
     onSuccess: () => {
-      // Clear token from localStorage for mobile compatibility
+      clearAuthToken();
       if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.removeItem('auth_token');
         localStorage.removeItem('onboarding_completed');
         localStorage.setItem('mom-app-theme', 'light');
       }
       
-      // Clear cookie by setting it to expire
       if (typeof document !== 'undefined') {
-        document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         document.cookie = 'connect.sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        // Remove dark mode class from document
         document.documentElement.classList.remove('dark', 'blue-light-filter');
       }
       
