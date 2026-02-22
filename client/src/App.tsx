@@ -37,6 +37,7 @@ import Tutorials from "@/pages/tutorials";
 import AIAssistant from "@/pages/ai-assistant";
 import Upgrade from "@/pages/upgrade";
 import UpgradeSuccess from "@/pages/upgrade-success";
+import Subscription from "@/pages/subscription";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -341,6 +342,7 @@ function Router() {
               <Route path="/meal-plan" component={MealPlan} />
               <Route path="/grocery-list" component={GroceryList} />
               <Route path="/ai-assistant" component={AIAssistant} />
+              <Route path="/subscription" component={Subscription} />
             </>
           )}
           <Route component={NotFound} />
