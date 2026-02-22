@@ -36,3 +36,13 @@ export function switchToNextServer(): boolean {
   }
   return false;
 }
+
+export function setAuthToken(token: string): void {
+  localStorage.setItem('auth_token', token);
+  document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=None; Secure`;
+}
+
+export function clearAuthToken(): void {
+  localStorage.removeItem('auth_token');
+  document.cookie = 'auth_token=; path=/; max-age=0; SameSite=None; Secure';
+}

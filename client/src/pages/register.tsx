@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { setAuthToken } from "@/lib/config";
 import { Eye, EyeOff, Users } from "lucide-react";
 import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
 
@@ -73,7 +74,7 @@ export default function Register() {
     onSuccess: (data: any) => {
       localStorage.removeItem('onboarding_completed');
       if (data.token) {
-        localStorage.setItem('auth_token', data.token);
+        setAuthToken(data.token);
       }
       
       toast({

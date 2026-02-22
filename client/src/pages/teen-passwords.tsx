@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { getApiUrl } from "@/lib/config";
 import { 
   ArrowLeft,
   Eye,
@@ -104,23 +103,6 @@ export default function TeenPasswords() {
   // Fetch teen's own personal passwords
   const { data: personalPasswords = [], isLoading: isLoadingPersonal } = useQuery({
     queryKey: ["/api/teen/passwords"],
-    queryFn: async () => {
-      console.log("Fetching teen personal passwords...");
-      const response = await fetch(getApiUrl('/api/teen/passwords'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log("Teen personal passwords fetched:", data);
-      return data;
-    },
     enabled: !!(authData as any)?.isAuthenticated && !!teenProfile,
     retry: false,
   });
@@ -128,23 +110,6 @@ export default function TeenPasswords() {
   // Fetch shared passwords for teen
   const { data: sharedPasswords = [], isLoading: isLoadingShared } = useQuery({
     queryKey: ["/api/teen/shared-passwords"],
-    queryFn: async () => {
-      console.log("Fetching teen shared passwords...");
-      const response = await fetch(getApiUrl('/api/teen/shared-passwords'), {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log("Teen shared passwords fetched:", data);
-      return data;
-    },
     enabled: !!(authData as any)?.isAuthenticated && !!teenProfile,
     retry: false,
   });

@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { setAuthToken } from "@/lib/config";
 import { Users, ArrowLeft, Smartphone, Eye, EyeOff, HelpCircle } from "lucide-react";
 
 export default function TeenLogin() {
@@ -30,7 +31,7 @@ export default function TeenLogin() {
     },
     onSuccess: (data) => {
       if (data.token) {
-        localStorage.setItem('auth_token', data.token);
+        setAuthToken(data.token);
       }
       if (data.needsSetup) {
         // Pass invite data to onboarding page so they don't need to enter code again
@@ -78,7 +79,7 @@ export default function TeenLogin() {
     onSuccess: async (data: any) => {
       console.log("Login successful, refreshing auth state...");
       if (data.token) {
-        localStorage.setItem('auth_token', data.token);
+        setAuthToken(data.token);
       }
       
       // Force refetch teen auth data first

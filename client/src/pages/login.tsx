@@ -10,7 +10,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { getApiUrl } from "@/lib/config";
+import { getApiUrl, setAuthToken } from "@/lib/config";
 import { Eye, EyeOff, RefreshCw, Users } from "lucide-react";
 import logoPath from "@assets/The_Mom_app_(5)_1766014062224.png";
 import beforeAfterPath from "@assets/The_Mom_app_(4)_1766014201419.png";
@@ -58,7 +58,7 @@ export default function Login() {
     },
     onSuccess: (data: any) => {
       if (data.token) {
-        localStorage.setItem('auth_token', data.token);
+        setAuthToken(data.token);
       }
       if (data.user) {
         queryClient.setQueryData(["/api/auth/user"], data.user);
@@ -155,7 +155,7 @@ export default function Login() {
       
       localStorage.removeItem('onboarding_completed');
       if (data.token) {
-        localStorage.setItem('auth_token', data.token);
+        setAuthToken(data.token);
       }
       
       // Set user data immediately and show splash screen

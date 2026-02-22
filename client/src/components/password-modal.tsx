@@ -13,10 +13,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { useMobileScroll } from "@/hooks/use-mobile-scroll";
 import { useSubscription } from "@/hooks/use-subscription";
-import { getApiUrl } from "@/lib/config";
+import { apiRequest } from "@/lib/queryClient";
 import { Plus, Eye, EyeOff, Crown } from "lucide-react";
 import { Link } from "wouter";
-import { apiRequest } from "@/lib/queryClient";
 import { insertPasswordSchema } from "@shared/schema";
 import type { z } from "zod";
 import type { FamilyMember } from "@shared/schema";
@@ -73,21 +72,10 @@ export function PasswordModal({ trigger, onPasswordAdded }: PasswordModalProps) 
   const onSubmit = async (data: PasswordFormData) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(getApiUrl('/api/passwords'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          ...data,
-          sharedWith: canSharePasswords ? JSON.stringify(selectedMembers) : JSON.stringify([])
-        })
+      await apiRequest("POST", "/api/passwords", {
+        ...data,
+        sharedWith: canSharePasswords ? JSON.stringify(selectedMembers) : JSON.stringify([])
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to save password');
-      }
 
       toast({
         title: "Password Added",
