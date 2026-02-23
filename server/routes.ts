@@ -2985,7 +2985,7 @@ export async function registerRoutes(app: Express) {
       // Send SMS
       const inviterName = user?.firstName || 'A family member';
       const familyName = family?.name || 'the family';
-      const message = `${inviterName} has invited you to join ${familyName} on The Mom App! Your invite code is: ${inviteCode}. Download the app and use this code to join.`;
+      const message = `${inviterName} has invited you to join ${familyName} on The Mom App! Your invite code is: ${inviteCode}. Download the app and use this code to join: https://themom.app`;
       
       const smsSent = await sendSMS(phone, message);
 
