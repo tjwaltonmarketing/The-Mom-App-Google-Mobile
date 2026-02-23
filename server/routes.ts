@@ -3033,7 +3033,7 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const user = await storage.getUser(req.session.userId);
+      const user = await storage.getUserById(req.session.userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
@@ -4142,7 +4142,7 @@ export async function registerRoutes(app: Express) {
       if (!req.session.userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
-      const user = await storage.getUser(req.session.userId);
+      const user = await storage.getUserById(req.session.userId);
       if (!user || user.email !== "wearesubsonic@gmail.com") {
         return res.status(403).json({ error: "Admin access only" });
       }
@@ -4254,7 +4254,7 @@ export async function registerRoutes(app: Express) {
       if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
-      const user = await storage.getUser(userId);
+      const user = await storage.getUserById(userId);
       console.log("Admin check - user email:", user?.email);
       if (!user || user.email !== "wearesubsonic@gmail.com") {
         return res.status(403).json({ isAdmin: false });
@@ -4272,7 +4272,7 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const user = await storage.getUser(req.session.userId);
+      const user = await storage.getUserById(req.session.userId);
       if (!user || user.email !== "wearesubsonic@gmail.com") {
         return res.status(403).json({ error: "Admin access only" });
       }
