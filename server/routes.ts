@@ -4137,10 +4137,32 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.get("/api/admin/check", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const user = await storage.getUser(req.session.userId);
+      const adminPhone = process.env.ADMIN_PHONE_NUMBER;
+      if (!user || !adminPhone || user.phone !== adminPhone) {
+        return res.status(403).json({ isAdmin: false });
+      }
+      res.json({ isAdmin: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to check admin status" });
+    }
+  });
+
   app.post("/api/push-notifications/test", async (req, res) => {
     try {
       if (!req.session.userId) {
         return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      const adminPhone = process.env.ADMIN_PHONE_NUMBER;
+      if (!user || !adminPhone || user.phone !== adminPhone) {
+        return res.status(403).json({ error: "Admin access only" });
       }
 
       const { sendPushNotification } = await import("./firebase-push");

@@ -36,6 +36,7 @@ function PushNotificationSetting() {
   const [enabling, setEnabling] = useState(false);
   const [testingSend, setTestingSend] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -44,6 +45,9 @@ function PushNotificationSetting() {
       return;
     }
     checkPushPermissionStatus().then(setStatus).catch(() => setStatus("denied"));
+    fetch("/api/admin/check", { credentials: "include" })
+      .then(r => setIsAdmin(r.ok))
+      .catch(() => setIsAdmin(false));
   }, []);
 
   if (status === "not-native" || status === "loading") return null;
@@ -103,7 +107,7 @@ function PushNotificationSetting() {
           </Button>
         )}
       </div>
-      {status === "granted" && (
+      {status === "granted" && isAdmin && (
         <div className="mt-2">
           <Button size="sm" variant="outline" onClick={handleTestPush} disabled={testingSend} className="w-full">
             {testingSend ? "Sending…" : "Send Test Notification"}
