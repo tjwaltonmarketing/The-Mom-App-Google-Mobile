@@ -10,6 +10,7 @@ import {
   Star, Share2, ArrowLeft, RefreshCw, UserPlus, Activity
 } from "lucide-react";
 
+
 interface AdminMetrics {
   users: {
     total: number;
@@ -84,13 +85,24 @@ function MetricCard({ title, value, subtitle, icon: Icon, color = "text-primary"
 export default function Admin() {
   const [, setLocation] = useLocation();
 
-  const { data: adminCheck, isLoading: checkLoading } = useQuery<{ isAdmin: boolean }>({
+  const { data: adminCheck, isLoading: checkLoading } = useQuery<{ isAdmin: boolean } | null>({
     queryKey: ["/api/admin/check"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/check", { credentials: "include" });
+      if (res.status === 401 || res.status === 403) return null;
+      if (!res.ok) return null;
+      return res.json();
+    },
     retry: false,
   });
 
-  const { data: metrics, isLoading, refetch, isRefetching } = useQuery<AdminMetrics>({
+  const { data: metrics, isLoading, refetch, isRefetching } = useQuery<AdminMetrics | null>({
     queryKey: ["/api/admin/metrics"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/metrics", { credentials: "include" });
+      if (!res.ok) return null;
+      return res.json();
+    },
     enabled: !!adminCheck?.isAdmin,
     retry: false,
   });
