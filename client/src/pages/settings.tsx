@@ -67,7 +67,7 @@ function PushNotificationSetting() {
     setTestingSend(true);
     setTestResult(null);
     try {
-      const res = await fetch("/api/push-notifications/test", { method: "POST", credentials: "include" });
+      const res = await authFetch("/api/push-notifications/test", { method: "POST" });
       const data = await res.json();
       setTestResult(data.message);
       toast({
