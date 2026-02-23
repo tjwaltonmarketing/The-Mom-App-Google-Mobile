@@ -153,7 +153,7 @@ export function ParentInviteModal({ isOpen, onClose }: ParentInviteModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto top-[10%] sm:top-[50%] translate-y-0 sm:-translate-y-1/2 fixed">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
