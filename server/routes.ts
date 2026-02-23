@@ -1120,7 +1120,7 @@ export async function registerRoutes(app: Express) {
         inviteCode,
         familyId: familyMembership.familyId,
         teenName: name,
-        invitedBy: parentFamilyMember.id,
+        invitedBy: req.session.userId,
         expiresAt,
         status: "pending"
       });
