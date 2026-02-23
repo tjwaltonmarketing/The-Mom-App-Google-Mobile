@@ -7,10 +7,22 @@ import { Button } from "@/components/ui/button";
 import {
   Users, Home, TrendingUp, CreditCard, CheckSquare, Calendar,
   Mic, FileText, Utensils, ShoppingCart, Lock, Bell, MessageSquare,
-  Star, Share2, ArrowLeft, RefreshCw, UserPlus, Activity
+  Star, Share2, ArrowLeft, RefreshCw, UserPlus, Activity, Clock, Filter
 } from "lucide-react";
 import { authFetch } from "@/lib/queryClient";
 
+interface ActiveTrial {
+  id: number;
+  user_id: number;
+  subscription_plan: string;
+  subscription_status: string;
+  trial_start_date: string;
+  trial_end_date: string;
+  created_at: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+}
 
 interface AdminMetrics {
   users: {
@@ -39,6 +51,7 @@ interface AdminMetrics {
     subscription_status: string;
     count: number;
   }>;
+  activeTrials: ActiveTrial[];
   engagement: {
     tasks: { total: number; completed: number };
     events: number;
@@ -56,6 +69,7 @@ interface AdminMetrics {
   featureRequests: Array<{ type: string; status: string; count: number }>;
   referrals: Array<{ platform: string; count: number; bonus_count: number }>;
   satisfaction: Array<{ response: string | null; count: number }>;
+  dateFilter: string;
 }
 
 function MetricCard({ title, value, subtitle, icon: Icon, color = "text-primary" }: {
@@ -83,8 +97,29 @@ function MetricCard({ title, value, subtitle, icon: Icon, color = "text-primary"
   );
 }
 
+function getDaysRemaining(trialEndDate: string): number {
+  const end = new Date(trialEndDate);
+  const now = new Date();
+  return Math.max(0, Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+}
+
+function getTrialBadgeColor(daysLeft: number): string {
+  if (daysLeft <= 3) return "bg-red-100 text-red-700 border-red-200";
+  if (daysLeft <= 7) return "bg-yellow-100 text-yellow-700 border-yellow-200";
+  return "bg-green-100 text-green-700 border-green-200";
+}
+
+const DATE_FILTERS = [
+  { label: "Today", days: 1 },
+  { label: "7 Days", days: 7 },
+  { label: "30 Days", days: 30 },
+  { label: "90 Days", days: 90 },
+  { label: "All Time", days: 0 },
+];
+
 export default function Admin() {
   const [, setLocation] = useLocation();
+  const [selectedDays, setSelectedDays] = useState(0);
 
   const { data: adminCheck, isLoading: checkLoading } = useQuery<{ isAdmin: boolean } | null>({
     queryKey: ["/api/admin/check"],
@@ -98,9 +133,10 @@ export default function Admin() {
   });
 
   const { data: metrics, isLoading, refetch, isRefetching } = useQuery<AdminMetrics | null>({
-    queryKey: ["/api/admin/metrics"],
+    queryKey: ["/api/admin/metrics", selectedDays],
     queryFn: async () => {
-      const res = await authFetch("/api/admin/metrics");
+      const url = selectedDays > 0 ? `/api/admin/metrics?days=${selectedDays}` : "/api/admin/metrics";
+      const res = await authFetch(url);
       if (!res.ok) return null;
       return res.json();
     },
@@ -158,8 +194,6 @@ export default function Admin() {
     .filter(s => s.subscription_status === "active")
     .reduce((sum, s) => sum + Number(s.count), 0);
 
-  const totalTrials = getSubCount("trial", "active") + getSubCount("family", "active") + getSubCount("individual", "active");
-
   const totalFeedback = metrics.featureRequests.reduce((sum, fr) => sum + Number(fr.count), 0);
   const totalReferrals = metrics.referrals.reduce((sum, r) => sum + Number(r.count), 0);
 
@@ -184,13 +218,38 @@ export default function Admin() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-6">
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground">Date Range</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {DATE_FILTERS.map((filter) => (
+              <Button
+                key={filter.days}
+                variant={selectedDays === filter.days ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedDays(filter.days)}
+                className="text-xs"
+              >
+                {filter.label}
+              </Button>
+            ))}
+          </div>
+          {selectedDays > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Showing data from the last {selectedDays} day{selectedDays !== 1 ? "s" : ""}
+            </p>
+          )}
+        </div>
+
         <section className="mb-8">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <Users className="h-5 w-5 text-blue-600" />
             Users & Growth
           </h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard title="Total Users" value={metrics.users.total} icon={Users} color="text-blue-600" />
+            <MetricCard title={selectedDays > 0 ? `Users (${selectedDays}d)` : "Total Users"} value={metrics.users.total} icon={Users} color="text-blue-600" />
             <MetricCard title="New This Week" value={metrics.users.newThisWeek} icon={UserPlus} color="text-green-600" />
             <MetricCard title="New This Month" value={metrics.users.newThisMonth} icon={TrendingUp} color="text-purple-600" />
             <MetricCard title="Auth Methods" value={metrics.users.authMethods.length} subtitle={metrics.users.authMethods.map(a => `${a.auth_method}: ${a.count}`).join(", ")} icon={Activity} color="text-orange-600" />
@@ -227,6 +286,63 @@ export default function Admin() {
                   <span className="text-[10px] text-muted-foreground">
                     {new Date(metrics.users.signupsByDay[metrics.users.signupsByDay.length - 1]?.signup_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </span>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {metrics.activeTrials && metrics.activeTrials.length > 0 && (
+          <section className="mb-8">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-600" />
+              Active Trials
+              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 ml-1">
+                {metrics.activeTrials.length}
+              </Badge>
+            </h2>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left">
+                        <th className="pb-2 font-medium">User</th>
+                        <th className="pb-2 font-medium">Email</th>
+                        <th className="pb-2 font-medium">Plan</th>
+                        <th className="pb-2 font-medium">Started</th>
+                        <th className="pb-2 font-medium">Expires</th>
+                        <th className="pb-2 font-medium">Days Left</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {metrics.activeTrials.map((trial) => {
+                        const daysLeft = getDaysRemaining(trial.trial_end_date);
+                        return (
+                          <tr key={trial.id} className="border-b last:border-0">
+                            <td className="py-2 font-medium">
+                              {trial.first_name} {trial.last_name || ""}
+                            </td>
+                            <td className="py-2 text-muted-foreground text-xs">{trial.email}</td>
+                            <td className="py-2">
+                              <Badge variant="outline" className="capitalize text-xs">{trial.subscription_plan}</Badge>
+                            </td>
+                            <td className="py-2 text-muted-foreground text-xs">
+                              {new Date(trial.trial_start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </td>
+                            <td className="py-2 text-muted-foreground text-xs">
+                              {new Date(trial.trial_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </td>
+                            <td className="py-2">
+                              <Badge variant="outline" className={`text-xs ${getTrialBadgeColor(daysLeft)}`}>
+                                {daysLeft > 365 ? "Extended" : `${daysLeft} days`}
+                              </Badge>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </CardContent>
             </Card>

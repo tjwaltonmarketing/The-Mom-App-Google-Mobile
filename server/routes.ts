@@ -4152,6 +4152,12 @@ export async function registerRoutes(app: Express) {
       const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
       const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
+      const daysParam = req.query.days ? Number(req.query.days) : null;
+      let dateFilter: Date | null = null;
+      if (daysParam) {
+        dateFilter = new Date(today.getTime() - daysParam * 24 * 60 * 60 * 1000);
+      }
+
       const [
         totalUsersResult,
         newUsersWeekResult,
@@ -4177,8 +4183,11 @@ export async function registerRoutes(app: Express) {
         recentUsersResult,
         signupsByDayResult,
         authMethodsResult,
+        activeTrialsResult,
       ] = await Promise.all([
-        db.execute(sql`SELECT COUNT(*) as count FROM users`),
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(*) as count FROM users WHERE created_at >= ${dateFilter}`)
+          : db.execute(sql`SELECT COUNT(*) as count FROM users`),
         db.execute(sql`SELECT COUNT(*) as count FROM users WHERE created_at >= ${weekAgo}`),
         db.execute(sql`SELECT COUNT(*) as count FROM users WHERE created_at >= ${monthAgo}`),
         db.execute(sql`SELECT COUNT(*) as count FROM families`),
@@ -4186,13 +4195,27 @@ export async function registerRoutes(app: Express) {
         db.execute(sql`SELECT COUNT(*) as count FROM teen_profiles`),
         db.execute(sql`SELECT COUNT(*) as count FROM child_profiles`),
         db.execute(sql`SELECT subscription_plan, subscription_status, COUNT(*) as count FROM user_subscriptions GROUP BY subscription_plan, subscription_status`),
-        db.execute(sql`SELECT COUNT(*) as count FROM tasks`),
-        db.execute(sql`SELECT COUNT(*) as count FROM tasks WHERE is_completed = true`),
-        db.execute(sql`SELECT COUNT(*) as count FROM events`),
-        db.execute(sql`SELECT COUNT(*) as count FROM voice_notes`),
-        db.execute(sql`SELECT COUNT(*) as count FROM text_notes`),
-        db.execute(sql`SELECT COUNT(*) as count FROM meal_plans`),
-        db.execute(sql`SELECT COUNT(*) as count FROM grocery_items`),
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(*) as count FROM tasks WHERE created_at >= ${dateFilter}`)
+          : db.execute(sql`SELECT COUNT(*) as count FROM tasks`),
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(*) as count FROM tasks WHERE is_completed = true AND created_at >= ${dateFilter}`)
+          : db.execute(sql`SELECT COUNT(*) as count FROM tasks WHERE is_completed = true`),
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(*) as count FROM events WHERE start_time >= ${dateFilter}`)
+          : db.execute(sql`SELECT COUNT(*) as count FROM events`),
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(*) as count FROM voice_notes WHERE created_at >= ${dateFilter}`)
+          : db.execute(sql`SELECT COUNT(*) as count FROM voice_notes`),
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(*) as count FROM text_notes WHERE created_at >= ${dateFilter}`)
+          : db.execute(sql`SELECT COUNT(*) as count FROM text_notes`),
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(*) as count FROM meal_plans WHERE created_at >= ${dateFilter}`)
+          : db.execute(sql`SELECT COUNT(*) as count FROM meal_plans`),
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(*) as count FROM grocery_items WHERE created_at >= ${dateFilter}`)
+          : db.execute(sql`SELECT COUNT(*) as count FROM grocery_items`),
         db.execute(sql`SELECT COUNT(*) as count FROM passwords`),
         db.execute(sql`SELECT COUNT(*) as count, COUNT(CASE WHEN is_active = true THEN 1 END) as active_count FROM push_tokens`),
         db.execute(sql`SELECT COUNT(*) as count, response, COUNT(CASE WHEN review_requested = true THEN 1 END) as review_requested FROM feedback_prompts GROUP BY response`),
@@ -4202,6 +4225,17 @@ export async function registerRoutes(app: Express) {
         db.execute(sql`SELECT id, email, first_name, last_name, auth_method, created_at FROM users ORDER BY created_at DESC LIMIT 20`),
         db.execute(sql`SELECT DATE(created_at) as signup_date, COUNT(*) as count FROM users WHERE created_at >= ${monthAgo} GROUP BY DATE(created_at) ORDER BY signup_date`),
         db.execute(sql`SELECT auth_method, COUNT(*) as count FROM users GROUP BY auth_method`),
+        db.execute(sql`
+          SELECT us.id, us.user_id, us.subscription_plan, us.subscription_status, 
+                 us.trial_start_date, us.trial_end_date, us.created_at,
+                 u.email, u.first_name, u.last_name
+          FROM user_subscriptions us
+          JOIN users u ON u.id = us.user_id
+          WHERE us.trial_end_date > ${now}
+            AND us.subscription_status IN ('active', 'trial')
+            AND (us.stripe_subscription_id IS NULL OR us.stripe_subscription_id = '')
+          ORDER BY us.trial_end_date ASC
+        `),
       ]);
 
       res.json({
@@ -4220,6 +4254,7 @@ export async function registerRoutes(app: Express) {
           totalChildren: Number(totalChildrenResult.rows[0]?.count || 0),
         },
         subscriptions: subscriptionsResult.rows,
+        activeTrials: activeTrialsResult.rows,
         engagement: {
           tasks: {
             total: Number(totalTasksResult.rows[0]?.count || 0),
@@ -4240,6 +4275,7 @@ export async function registerRoutes(app: Express) {
         featureRequests: featureRequestsResult.rows,
         referrals: referralSharesResult.rows,
         satisfaction: satisfactionResult.rows,
+        dateFilter: daysParam ? `${daysParam} days` : "all time",
       });
     } catch (error) {
       console.error("Admin metrics error:", error);
@@ -4250,12 +4286,10 @@ export async function registerRoutes(app: Express) {
   app.get("/api/admin/check", async (req, res) => {
     try {
       const userId = req.session?.userId;
-      console.log("Admin check - userId:", userId);
       if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
       const user = await storage.getUserById(userId);
-      console.log("Admin check - user email:", user?.email);
       if (!user || user.email !== "wearesubsonic@gmail.com") {
         return res.status(403).json({ isAdmin: false });
       }
