@@ -34,6 +34,13 @@ public class MainActivity extends BridgeActivity {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
         }
 
+        getWindow().setNavigationBarColor(android.graphics.Color.parseColor("#F3F4F6"));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getWindow().getDecorView().setSystemUiVisibility(
+                getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            );
+        }
+
         handleNotificationIntent(getIntent());
     }
 
