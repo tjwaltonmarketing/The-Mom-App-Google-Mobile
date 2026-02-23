@@ -9,6 +9,7 @@ import {
   Mic, FileText, Utensils, ShoppingCart, Lock, Bell, MessageSquare,
   Star, Share2, ArrowLeft, RefreshCw, UserPlus, Activity
 } from "lucide-react";
+import { authFetch } from "@/lib/queryClient";
 
 
 interface AdminMetrics {
@@ -88,7 +89,7 @@ export default function Admin() {
   const { data: adminCheck, isLoading: checkLoading } = useQuery<{ isAdmin: boolean } | null>({
     queryKey: ["/api/admin/check"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/check", { credentials: "include" });
+      const res = await authFetch("/api/admin/check");
       if (res.status === 401 || res.status === 403) return null;
       if (!res.ok) return null;
       return res.json();
@@ -99,7 +100,7 @@ export default function Admin() {
   const { data: metrics, isLoading, refetch, isRefetching } = useQuery<AdminMetrics | null>({
     queryKey: ["/api/admin/metrics"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/metrics", { credentials: "include" });
+      const res = await authFetch("/api/admin/metrics");
       if (!res.ok) return null;
       return res.json();
     },

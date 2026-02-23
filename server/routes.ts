@@ -4249,15 +4249,19 @@ export async function registerRoutes(app: Express) {
 
   app.get("/api/admin/check", async (req, res) => {
     try {
-      if (!req.session.userId) {
+      const userId = req.session?.userId;
+      console.log("Admin check - userId:", userId);
+      if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
-      const user = await storage.getUser(req.session.userId);
+      const user = await storage.getUser(userId);
+      console.log("Admin check - user email:", user?.email);
       if (!user || user.email !== "wearesubsonic@gmail.com") {
         return res.status(403).json({ isAdmin: false });
       }
       res.json({ isAdmin: true });
     } catch (error) {
+      console.error("Admin check error:", error);
       res.status(500).json({ error: "Failed to check admin status" });
     }
   });
