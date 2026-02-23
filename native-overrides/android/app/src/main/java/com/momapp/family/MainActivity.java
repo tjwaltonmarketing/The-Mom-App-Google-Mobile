@@ -35,9 +35,12 @@ public class MainActivity extends BridgeActivity {
         }
 
         getWindow().setNavigationBarColor(android.graphics.Color.parseColor("#F3F4F6"));
+        getWindow().setStatusBarColor(android.graphics.Color.parseColor("#F3F4F6"));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             getWindow().getDecorView().setSystemUiVisibility(
-                getWindow().getDecorView().getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                getWindow().getDecorView().getSystemUiVisibility()
+                | View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             );
         }
 
