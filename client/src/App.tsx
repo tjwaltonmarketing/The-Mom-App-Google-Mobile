@@ -38,6 +38,7 @@ import AIAssistant from "@/pages/ai-assistant";
 import Upgrade from "@/pages/upgrade";
 import UpgradeSuccess from "@/pages/upgrade-success";
 import Subscription from "@/pages/subscription";
+import Admin from "@/pages/admin";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -344,6 +345,7 @@ function Router() {
               <Route path="/grocery-list" component={GroceryList} />
               <Route path="/ai-assistant" component={AIAssistant} />
               <Route path="/subscription" component={Subscription} />
+              <Route path="/admin" component={Admin} />
             </>
           )}
           <Route component={NotFound} />
