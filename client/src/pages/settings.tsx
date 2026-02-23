@@ -34,6 +34,9 @@ import { checkPushPermissionStatus, requestAndRegisterPush, openNotificationSett
 function PushNotificationSetting() {
   const [status, setStatus] = useState<"loading" | "granted" | "denied" | "prompt" | "not-native">("loading");
   const [enabling, setEnabling] = useState(false);
+  const [testingSend, setTestingSend] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) {
@@ -54,6 +57,25 @@ function PushNotificationSetting() {
       setStatus("denied");
     }
     setEnabling(false);
+  };
+
+  const handleTestPush = async () => {
+    setTestingSend(true);
+    setTestResult(null);
+    try {
+      const res = await fetch("/api/push-notifications/test", { method: "POST", credentials: "include" });
+      const data = await res.json();
+      setTestResult(data.message);
+      toast({
+        title: data.success ? "Test Sent" : "No Devices Found",
+        description: data.message,
+        variant: data.success ? "default" : "destructive",
+      });
+    } catch (e) {
+      setTestResult("Failed to send test notification");
+      toast({ title: "Error", description: "Failed to send test notification", variant: "destructive" });
+    }
+    setTestingSend(false);
   };
 
   return (
@@ -81,6 +103,16 @@ function PushNotificationSetting() {
           </Button>
         )}
       </div>
+      {status === "granted" && (
+        <div className="mt-2">
+          <Button size="sm" variant="outline" onClick={handleTestPush} disabled={testingSend} className="w-full">
+            {testingSend ? "Sending…" : "Send Test Notification"}
+          </Button>
+          {testResult && (
+            <p className="text-xs text-muted-foreground mt-1">{testResult}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

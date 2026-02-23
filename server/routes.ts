@@ -4137,6 +4137,34 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/push-notifications/test", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { sendPushNotification } = await import("./firebase-push");
+      const result = await sendPushNotification({
+        userId: req.session.userId,
+        title: "The Mom App",
+        body: "Push notifications are working! You're all set.",
+        data: { type: "test" },
+      });
+
+      res.json({ 
+        success: result.success, 
+        sentCount: result.sentCount,
+        failedCount: result.failedCount,
+        message: result.sentCount > 0 
+          ? "Test notification sent successfully!" 
+          : "No registered devices found. Make sure the app is installed and notifications are enabled."
+      });
+    } catch (error) {
+      console.error("Test push notification error:", error);
+      res.status(500).json({ error: "Failed to send test notification" });
+    }
+  });
+
   // Google Calendar Import Endpoints
   app.get("/api/calendar/connect", async (req, res) => {
     try {
