@@ -16,7 +16,7 @@ export default function MealPlanPage() {
     <div className="min-h-screen bg-neutral dark:bg-background blue-light-filter:bg-neutral">
       <Header onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-6">
         <MealPlanning />
       </main>
 

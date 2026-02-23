@@ -24,7 +24,7 @@ export default function Dashboard() {
       <Header onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
       <MobileNav />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-6">
         {/* Mobile: Trial Banner at top */}
         <div className="md:hidden mb-4">
           <TrialBanner />

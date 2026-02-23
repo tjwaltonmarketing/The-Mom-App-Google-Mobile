@@ -393,7 +393,7 @@ export default function Notes() {
     <div className="min-h-screen bg-gray-50 dark:bg-background">
       <Header onStartVoiceNote={() => {}} />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 lg:pb-6">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Notes</h1>
           <p className="text-gray-600 dark:text-gray-400">Voice notes and text notes for your family</p>
