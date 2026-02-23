@@ -1145,7 +1145,7 @@ export async function registerRoutes(app: Express) {
 
       if (preferredContact === "sms" && phone) {
         try {
-          const message = `You've been invited to join your family on The Mom App! Your invite code is: ${inviteCode}. Download the app and enter this code to get started: ${appUrl}/teen/invite`;
+          const message = `You've been invited to join your family on The Mom App! Your invite code is: ${inviteCode}. Download the app and enter this code to get started: ${appUrl}`;
           const smsSuccess = await sendSMS(phone, message);
           if (smsSuccess) {
             inviteResult = { success: true, method: "sms", error: "" };
@@ -1166,7 +1166,7 @@ export async function registerRoutes(app: Express) {
               <p>You've been invited to join your family. Your invite code is:</p>
               <h1 style="color: #EC4899; font-size: 32px; letter-spacing: 4px;">${inviteCode}</h1>
               <p>Click the link below to get started:</p>
-              <a href="${appUrl}/teen/invite" style="background: #EC4899; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Join Now</a>
+              <a href="${appUrl}" style="background: #EC4899; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Download The App</a>
             `
           });
           inviteResult = { success: true, method: "email", error: "" };
