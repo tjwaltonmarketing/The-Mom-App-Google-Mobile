@@ -169,12 +169,22 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
   }, [onTranscript, onError, requestMicrophonePermission]);
 
   const stopRecording = useCallback(async () => {
+    setIsRecording(false);
     if (isNativeRef.current) {
       try {
-        await SpeechRecognition.stop();
         SpeechRecognition.removeAllListeners();
+      } catch (e) {
+        console.error('Error removing listeners:', e);
+      }
+      try {
+        await SpeechRecognition.stop();
       } catch (error) {
         console.error('Error stopping speech recognition:', error);
+      }
+      if (Capacitor.getPlatform() === 'android') {
+        try {
+          await SpeechRecognition.stop();
+        } catch (e) {}
       }
     } else if (recognitionRef.current) {
       try {
@@ -191,7 +201,6 @@ export function useVoiceRecording({ onTranscript, onError }: UseVoiceRecordingOp
       }
       recognitionRef.current = null;
     }
-    setIsRecording(false);
   }, []);
 
   return {
