@@ -260,7 +260,7 @@ export function InviteTeenModal({ isOpen, onClose }: InviteTeenModalProps) {
                 <div>✓ Receive push notifications for assignments</div>
                 <div>✓ Basic profile management</div>
                 <div className="text-blue-600">✗ Cannot assign tasks to others</div>
-                <div className="text-blue-600">✗ Cannot access family passwords</div>
+                <div>✓ Can access shared passwords</div>
               </div>
             </div>
 
