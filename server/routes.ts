@@ -4143,8 +4143,7 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
       const user = await storage.getUser(req.session.userId);
-      const adminPhone = process.env.ADMIN_PHONE_NUMBER;
-      if (!user || !adminPhone || user.phone !== adminPhone) {
+      if (!user || user.email !== "wearesubsonic@gmail.com") {
         return res.status(403).json({ isAdmin: false });
       }
       res.json({ isAdmin: true });
@@ -4160,8 +4159,7 @@ export async function registerRoutes(app: Express) {
       }
 
       const user = await storage.getUser(req.session.userId);
-      const adminPhone = process.env.ADMIN_PHONE_NUMBER;
-      if (!user || !adminPhone || user.phone !== adminPhone) {
+      if (!user || user.email !== "wearesubsonic@gmail.com") {
         return res.status(403).json({ error: "Admin access only" });
       }
 
