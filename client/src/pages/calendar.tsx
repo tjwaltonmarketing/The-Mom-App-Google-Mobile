@@ -3,7 +3,8 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Plus, ChevronLeft, ChevronRight, ArrowLeft, Edit, List, Grid3X3 } from "lucide-react";
+import { Calendar, Clock, Plus, ChevronLeft, ChevronRight, ArrowLeft, Edit, List, Grid3X3, Globe } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { EventModal } from "@/components/event-modal";
@@ -31,7 +32,7 @@ import {
   getHours,
   getMinutes
 } from "date-fns";
-import { formatTimeInUserTimezone } from "@/lib/timezone";
+import { formatTimeInUserTimezone, getUserTimezone, COMMON_TIMEZONES, setSavedTimezone, getDeviceTimezone } from "@/lib/timezone";
 import { formatInTimeZone } from 'date-fns-tz';
 import { WeatherDisplay } from "@/components/weather-display";
 
@@ -96,10 +97,7 @@ export default function CalendarPage() {
       // Use the timezone utility to get proper local date
       const eventTime = new Date(event.startTime);
       
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      
-      // Format the date in user's timezone using formatInTimeZone
-      const date = formatInTimeZone(eventTime, userTimezone, 'yyyy-MM-dd');
+      const date = formatInTimeZone(eventTime, getUserTimezone(), 'yyyy-MM-dd');
       
       if (!groups[date]) {
         groups[date] = [];
@@ -563,6 +561,19 @@ export default function CalendarPage() {
                 <p className="text-gray-600 dark:text-gray-400 blue-light-filter:text-gray-700">
                   Manage your family's schedule and events
                 </p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <Globe size={12} className="text-muted-foreground" />
+                  <Select value={getUserTimezone()} onValueChange={(tz) => { setSavedTimezone(tz === getDeviceTimezone() ? null : tz); window.location.reload(); }}>
+                    <SelectTrigger className="h-6 text-xs border-none shadow-none p-0 w-auto gap-1 text-muted-foreground hover:text-foreground">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMON_TIMEZONES.map((tz) => (
+                        <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <div className="flex-shrink-0">

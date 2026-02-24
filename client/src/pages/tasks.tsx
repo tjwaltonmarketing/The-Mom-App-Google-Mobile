@@ -1,6 +1,8 @@
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
-import { CheckSquare } from "lucide-react";
+import { CheckSquare, Globe } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getUserTimezone, COMMON_TIMEZONES, setSavedTimezone, getDeviceTimezone } from "@/lib/timezone";
 import { useState, useEffect } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { ImportExportModal } from "@/components/import-export-modal";
@@ -75,6 +77,19 @@ export default function TasksPage() {
           <p className="text-gray-600 dark:text-gray-400 blue-light-filter:text-gray-700">
             Manage and assign tasks for the whole family
           </p>
+          <div className="flex items-center gap-1.5 mt-1">
+            <Globe size={12} className="text-muted-foreground" />
+            <Select value={getUserTimezone()} onValueChange={(tz) => { setSavedTimezone(tz === getDeviceTimezone() ? null : tz); window.location.reload(); }}>
+              <SelectTrigger className="h-6 text-xs border-none shadow-none p-0 w-auto gap-1 text-muted-foreground hover:text-foreground">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {COMMON_TIMEZONES.map((tz) => (
+                  <SelectItem key={tz.value} value={tz.value}>{tz.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="space-y-6">

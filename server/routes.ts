@@ -613,6 +613,7 @@ export async function registerRoutes(app: Express) {
           eventReminders: true,
           dailyDigest: true,
           dailyDigestTime: "09:00",
+          timezone: null,
           taskReminderOnAssign: true,
           taskReminderBeforeDue: "2h",
           taskOverdueReminder: true,
@@ -631,6 +632,7 @@ export async function registerRoutes(app: Express) {
         eventReminders: prefs.eventReminders ?? true,
         dailyDigest: prefs.dailyDigest ?? true,
         dailyDigestTime: prefs.dailyDigestTime || "09:00",
+        timezone: prefs.timezone || null,
         taskReminderOnAssign: prefs.taskReminderOnAssign ?? true,
         taskReminderBeforeDue: prefs.taskReminderBeforeDue || "2h",
         taskOverdueReminder: prefs.taskOverdueReminder ?? true,
@@ -659,6 +661,7 @@ export async function registerRoutes(app: Express) {
         eventReminders,
         dailyDigest,
         dailyDigestTime,
+        timezone,
         taskReminderOnAssign,
         taskReminderBeforeDue,
         taskOverdueReminder,
@@ -676,6 +679,7 @@ export async function registerRoutes(app: Express) {
       if (eventReminders !== undefined) updates.eventReminders = eventReminders;
       if (dailyDigest !== undefined) updates.dailyDigest = dailyDigest;
       if (dailyDigestTime !== undefined) updates.dailyDigestTime = dailyDigestTime;
+      if (timezone !== undefined) updates.timezone = timezone;
       if (taskReminderOnAssign !== undefined) updates.taskReminderOnAssign = taskReminderOnAssign;
       if (taskReminderBeforeDue !== undefined) updates.taskReminderBeforeDue = taskReminderBeforeDue;
       if (taskOverdueReminder !== undefined) updates.taskOverdueReminder = taskOverdueReminder;
@@ -696,6 +700,7 @@ export async function registerRoutes(app: Express) {
           eventReminders: prefs.eventReminders,
           dailyDigest: prefs.dailyDigest,
           dailyDigestTime: prefs.dailyDigestTime,
+          timezone: prefs.timezone || null,
           taskReminderOnAssign: prefs.taskReminderOnAssign,
           taskReminderBeforeDue: prefs.taskReminderBeforeDue,
           taskOverdueReminder: prefs.taskOverdueReminder,
