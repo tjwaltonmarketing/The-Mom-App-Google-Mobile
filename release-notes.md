@@ -1,5 +1,31 @@
 # THE MOM APP - Release Notes
 
+## Version 1.0.85 - February 2026
+
+### Adaptive Time Zone Support
+- **Automatic Detection**: The app now detects your device's time zone automatically
+- **Quick Timezone Selector**: Change time zones directly from the Calendar or Tasks page using the globe icon
+- **Settings Persistence**: Set your preferred time zone in Settings > General — saved to your account and works across all devices
+- **Travel-Friendly**: Easily switch time zones when traveling, or let the app auto-detect your location
+- **All Calendar Views Updated**: Month, week, day, and list views all respect your selected time zone
+- **Teen Support**: Teen dashboard and calendar also support dynamic time zone selection
+
+### Updated Tutorials & Guides
+- **New Time Zone Tutorial**: Step-by-step guide for setting up and using the time zone feature
+- **Teen Tutorial Updated**: Now reflects the points and streaks gamification system
+- **Pricing Corrected**: All tutorials updated with current pricing ($5.99/month Individual, $9.99/month Family)
+
+### Pricing Consistency Fixes
+- Corrected pricing across all in-app pages: Settings, Terms of Service, FAQ, and Tutorials
+- **Individual Plan**: $5.99/month or $59.99/year
+- **Family Plan**: $9.99/month or $99.99/year
+- Annual billing options now shown where applicable
+
+### Calendar Bug Fix
+- Fixed month view not adjusting event times when switching time zones (week, day, and list views were already working correctly)
+
+---
+
 ## Version 1.0.0 - Initial Release
 
 ### 🎉 Welcome to THE MOM APP
@@ -48,8 +74,8 @@ The complete family command center designed to reduce mental load and streamline
 - Families seeking better organization and reduced mental load
 
 ### 💰 Pricing Plans
-- **Individual Plan**: $9.99/month - Perfect for single users
-- **Family Plan**: $19.99/month - Up to 4 users with unique logins
+- **Individual Plan**: $5.99/month or $59.99/year - Perfect for single users
+- **Family Plan**: $9.99/month or $99.99/year - Up to 4 users with unique logins
 - **14-Day Free Trial**: Experience all features risk-free
 
 ### 🔒 Privacy & Security
