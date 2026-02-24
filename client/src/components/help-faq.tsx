@@ -157,14 +157,14 @@ const faqItems: FAQItem[] = [
   {
     id: "family-merge-process",
     question: "How do I merge accounts when both parents already use the app?",
-    answer: "Go to Settings > Family and click 'Merge Families'. Enter your partner's email to send a merge request. When they accept, you'll see a billing decision dialog with three options: Keep Your Billing, Keep Their Billing, or Upgrade to Family Plan ($19.99/month). The app recommends the best option based on trial status and existing subscriptions. After merging, both parents have equal access to all family data.",
+    answer: "Go to Settings > Family and click 'Merge Families'. Enter your partner's email to send a merge request. When they accept, you'll see a billing decision dialog with three options: Keep Your Billing, Keep Their Billing, or Upgrade to Family Plan ($9.99/month). The app recommends the best option based on trial status and existing subscriptions. After merging, both parents have equal access to all family data.",
     category: "billing",
     tags: ["merge", "families", "accounts", "billing", "parents"]
   },
   {
     id: "billing-plans-overview",
     question: "What are the billing options and pricing?",
-    answer: "Individual Plan: $9.99/month for 1 user with full family coordination features. Family Plan: $19.99/month for up to 4 users including teen accounts and advanced family features. Every new account gets a 14-day free trial with full access. No credit card required to start. Monthly billing only, cancel anytime.",
+    answer: "Individual Plan: $5.99/month or $59.99/year for 1 user with full family coordination features. Family Plan: $9.99/month or $99.99/year for up to 4 users including teen accounts and advanced family features. Every new account gets a 14-day free trial with full access. No credit card required to start. Cancel anytime.",
     category: "billing",
     tags: ["pricing", "plans", "trial", "billing", "individual", "family"]
   },

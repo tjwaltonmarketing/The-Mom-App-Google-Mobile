@@ -325,7 +325,7 @@ const tutorials: Tutorial[] = [
       {
         title: "Choose Billing Management",
         description: "When merging, you'll see a billing decision dialog with three options: Keep Your Billing, Keep Partner's Billing, or Upgrade to Family Plan.",
-        tips: ["Family plan supports up to 4 users for $19.99/month", "Individual plans are $9.99/month", "Trial status affects billing recommendations"]
+        tips: ["Family plan supports up to 4 users for $9.99/month", "Individual plans are $5.99/month", "Trial status affects billing recommendations"]
       },
       {
         title: "Billing Decision Guide",
@@ -366,8 +366,8 @@ const tutorials: Tutorial[] = [
       },
       {
         title: "Billing Plans",
-        description: "Choose between Individual Plan ($9.99/month for 1 user) or Family Plan ($19.99/month for up to 4 users including teens).",
-        tips: ["Family plan includes teen accounts", "Monthly billing only", "Cancel anytime"]
+        description: "Choose between Individual Plan ($5.99/month or $59.99/year) or Family Plan ($9.99/month or $99.99/year for up to 4 users including teens).",
+        tips: ["Family plan includes teen accounts", "Monthly or yearly billing available", "Cancel anytime"]
       },
       {
         title: "Upgrade Options",
@@ -560,6 +560,39 @@ const tutorials: Tutorial[] = [
         title: "Automatic Updates",
         description: "Changes in Google Calendar appear in The Mom App and vice versa.",
         tips: ["Turn on automatic sync for real-time updates", "Manual sync gives you more control"]
+      }
+    ]
+  },
+  {
+    id: "timezone-settings",
+    title: "Time Zone Settings",
+    description: "Set your time zone so events and tasks show the right times wherever you are",
+    duration: "2 min",
+    difficulty: "beginner",
+    icon: Clock,
+    category: "getting-started",
+    steps: [
+      {
+        title: "Automatic Detection",
+        description: "By default, the app detects your device's time zone automatically. If you're in New York, you'll see Eastern Time; in Denver, you'll see Mountain Time.",
+        tips: ["No setup needed if your phone's time zone is correct", "Works automatically for most users", "Times adjust when you travel to a new time zone"]
+      },
+      {
+        title: "Change Time Zone on Calendar or Tasks",
+        description: "On the Calendar or Tasks page, you'll see a small globe icon under the page title showing your current time zone. Tap it to switch to a different one.",
+        action: "Go to Calendar and look for the globe icon below 'Family Calendar'",
+        tips: ["Useful when planning events in another time zone", "Event times adjust immediately", "Your choice is remembered until you change it"]
+      },
+      {
+        title: "Set a Permanent Time Zone in Settings",
+        description: "Go to Settings > General to find the Time Zone card. Pick your preferred time zone from the dropdown and click 'Save Settings' to lock it in across all your devices.",
+        action: "Navigate to Settings and find the Time Zone section at the top",
+        tips: ["Saved to your account so it works on any device", "Overrides automatic detection", "Use 'Reset to device time zone' to go back to auto-detect"]
+      },
+      {
+        title: "Traveling? No Problem",
+        description: "If you travel, you can either let the app auto-detect your new location or keep your home time zone. Change it back anytime from Settings or the Calendar page.",
+        tips: ["Great for coordinating across different time zones", "Family members can each set their own time zone", "Teen accounts also support time zone selection"]
       }
     ]
   },

@@ -68,8 +68,8 @@ export default function Terms() {
 
             <h3>Paid Subscriptions</h3>
             <ul>
-              <li><strong>Individual Plan:</strong> $9.99/month - Single user account</li>
-              <li><strong>Family Plan:</strong> $19.99/month - Up to 4 coordinating adults</li>
+              <li><strong>Individual Plan:</strong> $5.99/month or $59.99/year - Single user account</li>
+              <li><strong>Family Plan:</strong> $9.99/month or $99.99/year - Up to 4 coordinating adults</li>
               <li>Subscriptions are billed monthly or annually</li>
               <li>Payment processed through Stripe</li>
               <li>Automatic renewal unless cancelled</li>

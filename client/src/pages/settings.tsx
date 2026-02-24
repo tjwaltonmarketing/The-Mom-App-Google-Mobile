@@ -1559,11 +1559,11 @@ export default function SettingsPage() {
                       onClick={() => {
                         toast({
                           title: "Individual Plan",
-                          description: "$9.99/month - Perfect for single parents",
+                          description: "$5.99/month - Perfect for single parents",
                         });
                       }}
                     >
-                      Individual Plan - $9.99/month
+                      Individual Plan - $5.99/month
                     </Button>
                     <Button 
                       variant="default" 
@@ -1571,11 +1571,11 @@ export default function SettingsPage() {
                       onClick={() => {
                         toast({
                           title: "Family Plan",
-                          description: "$19.99/month - Up to 4 family members",
+                          description: "$9.99/month - Up to 4 family members",
                         });
                       }}
                     >
-                      Family Plan - $19.99/month
+                      Family Plan - $9.99/month
                     </Button>
                   </div>
                 </CardContent>

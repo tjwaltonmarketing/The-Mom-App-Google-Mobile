@@ -82,14 +82,14 @@ const tutorialSteps: TutorialStep[] = [
   },
   {
     id: 5,
-    title: "Task Completion",
-    description: "Mark tasks complete when you finish them. Simple and straightforward - no complex scoring needed!",
+    title: "Tasks & Points",
+    description: "Complete tasks to earn points and build streaks! Your parents assign tasks and you earn rewards for finishing them.",
     icon: <CheckCircle className="h-8 w-8 text-green-500" />,
     tips: [
       "Mark tasks complete when you finish them",
-      "Parents get notified automatically",
-      "No complex points system - just simple completion",
-      "Focus on helping family rather than earning scores"
+      "Earn points for each completed task",
+      "Build daily streaks by completing tasks consistently",
+      "Parents get notified when you finish tasks"
     ]
   },
   {
