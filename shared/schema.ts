@@ -56,6 +56,7 @@ export const userPreferences = pgTable("user_preferences", {
   taskReminders: boolean("task_reminders").default(true),
   eventReminders: boolean("event_reminders").default(true),
   dailyDigest: boolean("daily_digest").default(true),
+  timezone: text("timezone"), // IANA timezone string e.g. 'America/Denver', null = use device default
   dailyDigestTime: text("daily_digest_time").default("09:00"), // HH:MM format
   taskReminderOnAssign: boolean("task_reminder_on_assign").default(true),
   taskReminderBeforeDue: text("task_reminder_before_due").default("2h"), // '30m', '1h', '2h', '4h'

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, authFetch } from "@/lib/queryClient";
 import { useLocation } from "wouter";
+import { getUserTimezone } from "@/lib/timezone";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -341,15 +342,14 @@ export default function TeenDashboard() {
               ) : (
                 <div className="space-y-3">
                   {futureEvents.map((event) => {
-                    // Display stored UTC time as local MST time
                     const startTime = new Date(event.startTime);
                     const dateStr = startTime.toLocaleDateString('en-US', { 
-                      timeZone: 'America/Denver', // Force MST timezone
+                      timeZone: getUserTimezone(),
                       month: 'short', 
                       day: 'numeric' 
                     });
                     const timeStr = startTime.toLocaleTimeString('en-US', { 
-                      timeZone: 'America/Denver', // Force MST timezone
+                      timeZone: getUserTimezone(),
                       hour: 'numeric', 
                       minute: '2-digit', 
                       hour12: true

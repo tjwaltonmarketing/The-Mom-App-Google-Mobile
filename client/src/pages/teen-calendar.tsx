@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, authFetch } from "@/lib/queryClient";
+import { getUserTimezone } from "@/lib/timezone";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -207,9 +208,9 @@ export default function TeenCalendar() {
     },
   });
 
-  // Helper function to display stored UTC time as local MST
-  const displayAsLocalMST = (utcDate: Date) => {
-    // The UTC time should display as local time (browser will handle MST conversion)
+  // Helper function to display stored UTC time in user timezone
+  const displayAsLocal = (utcDate: Date) => {
+    // The UTC time should display as local time (browser will handle timezone conversion)
     return utcDate;
   };
 
@@ -220,18 +221,18 @@ export default function TeenCalendar() {
     const startTimeUTC = new Date(event.startTime);
     const endTimeUTC = event.endTime ? new Date(event.endTime) : null;
     
-    // Display stored UTC time as local MST time
-    const startTime = displayAsLocalMST(startTimeUTC);
-    const endTime = endTimeUTC ? displayAsLocalMST(endTimeUTC) : null;
+    // Display stored UTC time in user timezone
+    const startTime = displayAsLocal(startTimeUTC);
+    const endTime = endTimeUTC ? displayAsLocal(endTimeUTC) : null;
     
-    // Determine relative date label using MST timezone
+    // Determine relative date label using user timezone
     const today = new Date();
-    const todayMST = new Date(today.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+    const todayMST = new Date(today.toLocaleString('en-US', {timeZone: getUserTimezone()}));
     todayMST.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
     const tomorrow = new Date(todayMST);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
-    const eventDateMST = new Date(startTime.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+    const eventDateMST = new Date(startTime.toLocaleString('en-US', {timeZone: getUserTimezone()}));
     eventDateMST.setHours(0, 0, 0, 0); // Set to start of day for accurate comparison
     
     // Calculate current week boundaries (Sunday to Saturday)
@@ -249,23 +250,23 @@ export default function TeenCalendar() {
       dateLabel = "This Week";
     }
     
-    // Format the full date display in MST timezone
+    // Format the full date display in user timezone
     const fullDateStr = startTime.toLocaleDateString('en-US', { 
-      timeZone: 'America/Denver', // Force MST timezone
+      timeZone: getUserTimezone(), // Force user timezone
       weekday: 'short',
       month: 'short', 
       day: 'numeric' 
     });
 
-    // Format time display - convert UTC back to MST for display
+    // Format time display - convert UTC back to user timezone for display
     const timeStr = startTime.toLocaleTimeString('en-US', { 
-      timeZone: 'America/Denver', // Force MST timezone
+      timeZone: getUserTimezone(), // Force user timezone
       hour: 'numeric', 
       minute: '2-digit', 
       hour12: true
     });
     const endTimeStr = endTime ? endTime.toLocaleTimeString('en-US', { 
-      timeZone: 'America/Denver', // Force MST timezone
+      timeZone: getUserTimezone(), // Force user timezone
       hour: 'numeric', 
       minute: '2-digit', 
       hour12: true
@@ -355,8 +356,8 @@ export default function TeenCalendar() {
     // Get events for this day with proper timezone handling
     const dayEvents = allEvents.filter(event => {
       const eventDate = new Date(event.fullDate);
-      const eventDateMST = new Date(eventDate.toLocaleString('en-US', {timeZone: 'America/Denver'}));
-      const clickedDateMST = new Date(date.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+      const eventDateMST = new Date(eventDate.toLocaleString('en-US', {timeZone: getUserTimezone()}));
+      const clickedDateMST = new Date(date.toLocaleString('en-US', {timeZone: getUserTimezone()}));
       
       // Compare just the date parts (ignore time)
       eventDateMST.setHours(0, 0, 0, 0);
@@ -651,10 +652,10 @@ export default function TeenCalendar() {
               
               const isToday = date.toDateString() === today.toDateString();
               const dayEvents = allEvents.filter(event => {
-                // Convert both event date and calendar date to MST timezone for accurate comparison
+                // Convert both event date and calendar date to user timezone for accurate comparison
                 const eventDate = new Date(event.fullDate);
-                const eventDateMST = new Date(eventDate.toLocaleString('en-US', {timeZone: 'America/Denver'}));
-                const calendarDateMST = new Date(date.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+                const eventDateMST = new Date(eventDate.toLocaleString('en-US', {timeZone: getUserTimezone()}));
+                const calendarDateMST = new Date(date.toLocaleString('en-US', {timeZone: getUserTimezone()}));
                 
                 // Compare just the date parts (ignore time)
                 eventDateMST.setHours(0, 0, 0, 0);
@@ -666,8 +667,8 @@ export default function TeenCalendar() {
                 if (date.getDate() === 9 && date.getMonth() === 7) { // August 9th
                   const matchingEvents = allEvents.filter(event => {
                     const eventDate = new Date(event.fullDate);
-                    const eventDateMST = new Date(eventDate.toLocaleString('en-US', {timeZone: 'America/Denver'}));
-                    const calendarDateMST = new Date(date.toLocaleString('en-US', {timeZone: 'America/Denver'}));
+                    const eventDateMST = new Date(eventDate.toLocaleString('en-US', {timeZone: getUserTimezone()}));
+                    const calendarDateMST = new Date(date.toLocaleString('en-US', {timeZone: getUserTimezone()}));
                     
                     eventDateMST.setHours(0, 0, 0, 0);
                     calendarDateMST.setHours(0, 0, 0, 0);

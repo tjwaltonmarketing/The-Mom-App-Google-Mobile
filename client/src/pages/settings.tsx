@@ -29,6 +29,7 @@ import { ParentInviteModal } from "@/components/parent-invite-modal";
 import { KidPointManager } from "@/components/family/kid-point-manager";
 import { useSubscription } from "@/hooks/use-subscription";
 import { Capacitor } from "@capacitor/core";
+import { getUserTimezone, getDeviceTimezone, setSavedTimezone, COMMON_TIMEZONES } from "@/lib/timezone";
 import { checkPushPermissionStatus, requestAndRegisterPush, openNotificationSettings } from "@/services/push-notifications";
 
 function PushNotificationSetting() {
@@ -213,6 +214,7 @@ export default function SettingsPage() {
   const [eventReminders, setEventReminders] = useState(true);
   const [dailyDigest, setDailyDigest] = useState(true);
   const [dailyDigestTime, setDailyDigestTime] = useState("09:00");
+  const [selectedTimezone, setSelectedTimezone] = useState(getUserTimezone());
   const [taskReminderOnAssign, setTaskReminderOnAssign] = useState(true);
   const [taskReminderBeforeDue, setTaskReminderBeforeDue] = useState("2h");
   const [taskOverdueReminder, setTaskOverdueReminder] = useState(true);
@@ -530,6 +532,7 @@ export default function SettingsPage() {
     eventReminders: boolean;
     dailyDigest: boolean;
     dailyDigestTime: string;
+    timezone: string | null;
     taskReminderOnAssign: boolean;
     taskReminderBeforeDue: string;
     taskOverdueReminder: boolean;
@@ -551,6 +554,10 @@ export default function SettingsPage() {
       setEventReminders(userPrefs.eventReminders ?? true);
       setDailyDigest(userPrefs.dailyDigest ?? true);
       setDailyDigestTime(userPrefs.dailyDigestTime || "09:00");
+      if (userPrefs.timezone) {
+        setSelectedTimezone(userPrefs.timezone);
+        setSavedTimezone(userPrefs.timezone);
+      }
       setTaskReminderOnAssign(userPrefs.taskReminderOnAssign ?? true);
       setTaskReminderBeforeDue(userPrefs.taskReminderBeforeDue || "2h");
       setTaskOverdueReminder(userPrefs.taskOverdueReminder ?? true);
@@ -636,10 +643,15 @@ export default function SettingsPage() {
       dailyLimit: dailyLimit[0],
       notifications
     }));
-    // Theme is automatically saved by the theme provider
+    setSavedTimezone(selectedTimezone === getDeviceTimezone() ? null : selectedTimezone);
+    updatePrivacyMutation.mutate({
+      marketingEmails,
+      usageAnalytics,
+      timezone: selectedTimezone,
+    } as any);
     toast({
       title: "Settings Saved",
-      description: "Your preferences have been saved to this device.",
+      description: "Your preferences have been saved.",
     });
   };
 
@@ -825,6 +837,47 @@ export default function SettingsPage() {
 {/* Google Calendar Sync - Disabled until Google OAuth verification is complete
             <CalendarSync />
 */}
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-primary" />
+                  Time Zone
+                </CardTitle>
+                <CardDescription>
+                  Set your time zone for calendar events and task due dates. Defaults to your device's current time zone.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Current time zone</Label>
+                  <Select value={selectedTimezone} onValueChange={setSelectedTimezone}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select time zone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMON_TIMEZONES.map((tz) => (
+                        <SelectItem key={tz.value} value={tz.value}>
+                          {tz.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Your device detected: {getDeviceTimezone()}
+                  </p>
+                  {selectedTimezone !== getDeviceTimezone() && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setSelectedTimezone(getDeviceTimezone())}
+                    >
+                      Reset to device time zone
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
             <Card>
               <CardHeader>
