@@ -321,7 +321,7 @@ export default function CalendarPage() {
                         style={{ backgroundColor: member?.color ? `${member.color}20` : undefined }}
                       >
                         <div className="flex items-center justify-between">
-                          <span>{format(new Date(event.startTime), 'h:mm a')} {event.title}</span>
+                          <span>{formatTimeInUserTimezone(event.startTime)} {event.title}</span>
                           <EventEditModal 
                             event={event}
                             trigger={
