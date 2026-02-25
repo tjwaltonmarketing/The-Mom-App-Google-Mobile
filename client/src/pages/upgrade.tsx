@@ -4,11 +4,21 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Users, Sparkles, ArrowLeft } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { Check, Crown, Users, Sparkles, ArrowLeft, Apple, Loader2, RotateCcw } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Capacitor } from "@capacitor/core";
 import { useToast } from "@/hooks/use-toast";
 import type { UserSubscription } from "@shared/schema";
+import {
+  isRevenueCatAvailable,
+  initRevenueCat,
+  revenueCatLogIn,
+  getOfferings,
+  purchasePackage,
+  restorePurchases,
+  getPackageForPlan,
+  type RCPackage,
+} from "@/services/revenuecat";
 
 const plans = {
   individual: {
@@ -50,6 +60,9 @@ export default function Upgrade() {
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<"individual" | "family">("family");
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("yearly");
+  const [rcPackages, setRcPackages] = useState<RCPackage[]>([]);
+  const [rcLoading, setRcLoading] = useState(false);
+  const [rcPurchasing, setRcPurchasing] = useState(false);
   const isIOS = Capacitor.getPlatform() === "ios";
 
   const cancelled = search.includes("cancelled=true");
@@ -63,6 +76,104 @@ export default function Upgrade() {
     queryKey: ["/api/subscription"],
     enabled: !!authUser,
   });
+
+  useEffect(() => {
+    if (isIOS && isRevenueCatAvailable() && authUser) {
+      setRcLoading(true);
+      initRevenueCat()
+        .then(async (ok) => {
+          if (!ok) return;
+          const user = authUser as any;
+          if (user?.id) {
+            await revenueCatLogIn(String(user.id));
+          }
+          const pkgs = await getOfferings();
+          setRcPackages(pkgs);
+        })
+        .catch(console.error)
+        .finally(() => setRcLoading(false));
+    }
+  }, [isIOS, authUser]);
+
+  const handleIOSPurchase = async () => {
+    const pkg = getPackageForPlan(rcPackages, selectedPlan, billingInterval);
+    if (!pkg) {
+      toast({
+        title: "Product unavailable",
+        description: "This subscription is not available right now. Please try again later.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRcPurchasing(true);
+    try {
+      const result = await purchasePackage(pkg.identifier);
+      if (result.cancelled) return;
+      if (result.success) {
+        await apiRequest("POST", "/api/subscription/apple-purchase", {
+          productIdentifier: pkg.productIdentifier,
+          plan: selectedPlan,
+          interval: billingInterval,
+          activeEntitlements: result.customerInfo?.activeEntitlements || [],
+          expirationDate: result.customerInfo?.latestExpirationDate,
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+        toast({
+          title: "Subscription activated!",
+          description: `Your ${selectedPlan === "family" ? "Family" : "Individual"} plan is now active.`,
+        });
+        setLocation("/");
+      } else {
+        toast({
+          title: "Purchase failed",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch {
+      toast({
+        title: "Purchase error",
+        description: "Unable to complete purchase. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setRcPurchasing(false);
+    }
+  };
+
+  const handleRestorePurchases = async () => {
+    setRcLoading(true);
+    try {
+      const info = await restorePurchases();
+      if (info && info.activeEntitlements.length > 0) {
+        await apiRequest("POST", "/api/subscription/apple-restore", {
+          activeEntitlements: info.activeEntitlements,
+          activeSubscriptions: info.activeSubscriptions,
+          expirationDate: info.latestExpirationDate,
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+        toast({
+          title: "Purchases restored",
+          description: "Your subscription has been restored successfully.",
+        });
+        setLocation("/");
+      } else {
+        toast({
+          title: "No purchases found",
+          description: "No active subscriptions were found for your Apple ID.",
+        });
+      }
+    } catch {
+      toast({
+        title: "Restore failed",
+        description: "Unable to restore purchases. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setRcLoading(false);
+    }
+  };
 
   const checkoutMutation = useMutation({
     mutationFn: async ({ plan, interval }: { plan: string; interval: string }) => {
@@ -226,13 +337,47 @@ export default function Upgrade() {
 
         <div className="text-center">
           {isIOS ? (
-            <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
-              <p className="text-gray-700 dark:text-gray-300 mb-2">
-                Subscriptions on iOS are managed through the App Store.
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Go to Settings &gt; Apple ID &gt; Subscriptions to manage your plan.
-              </p>
+            <div className="space-y-4">
+              {(() => {
+                const pkg = getPackageForPlan(rcPackages, selectedPlan, billingInterval);
+                return (
+                  <>
+                    {pkg?.introPrice?.paymentMode === "freeTrial" && (
+                      <p className="text-sm text-green-600 font-medium">
+                        Includes {pkg.introPrice.periodDays}-day free trial
+                      </p>
+                    )}
+                    <Button
+                      onClick={handleIOSPurchase}
+                      disabled={rcPurchasing || rcLoading}
+                      className="w-full md:w-auto px-12 py-6 text-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
+                    >
+                      {rcPurchasing ? (
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      ) : (
+                        <Apple className="mr-2 h-5 w-5" />
+                      )}
+                      {rcPurchasing
+                        ? "PROCESSING..."
+                        : pkg
+                          ? `SUBSCRIBE ${pkg.priceString}/${billingInterval === "monthly" ? "MO" : "YR"}`
+                          : `SUBSCRIBE TO ${selectedPlan.toUpperCase()}`}
+                    </Button>
+                    <p className="mt-2 text-sm text-gray-500">
+                      Subscription managed by Apple. Cancel anytime.
+                    </p>
+                    <Button
+                      variant="ghost"
+                      onClick={handleRestorePurchases}
+                      disabled={rcLoading}
+                      className="text-gray-500"
+                    >
+                      <RotateCcw className="mr-2 h-4 w-4" />
+                      {rcLoading ? "Restoring..." : "Restore Purchases"}
+                    </Button>
+                  </>
+                );
+              })()}
             </div>
           ) : (
             <>

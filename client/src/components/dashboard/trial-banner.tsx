@@ -7,6 +7,7 @@ import { Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, authFetch } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Capacitor } from "@capacitor/core";
 
 export function TrialBanner() {
   const [isVisible, setIsVisible] = useState(true);
@@ -161,7 +162,7 @@ export function TrialBanner() {
   return (
     <Card className={`${bannerStyle.gradient} ${bannerStyle.border}`}>
       <CardContent className="p-4">
-        {showShareOption ? (
+        {showShareOption && Capacitor.getPlatform() !== "ios" ? (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

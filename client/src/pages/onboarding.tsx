@@ -5,6 +5,7 @@ import { OnboardingFlow } from "@/components/onboarding-flow";
 import { ShareModal } from "@/components/share-modal";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Capacitor } from "@capacitor/core";
 
 export default function Onboarding() {
   const [, setLocation] = useLocation();
@@ -18,7 +19,12 @@ export default function Onboarding() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
       localStorage.setItem("onboarding_completed", "true");
-      setShowShareModal(true);
+      if (Capacitor.getPlatform() === "ios") {
+        toast({ title: "Welcome to The Mom App!", description: "Your free trial has started." });
+        window.location.href = "/";
+      } else {
+        setShowShareModal(true);
+      }
     },
     onError: (error: any) => {
       console.error("Start trial error:", error);
@@ -28,7 +34,11 @@ export default function Onboarding() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
       localStorage.setItem("onboarding_completed", "true");
-      setShowShareModal(true);
+      if (Capacitor.getPlatform() === "ios") {
+        window.location.href = "/";
+      } else {
+        setShowShareModal(true);
+      }
     },
   });
 
@@ -86,7 +96,9 @@ export default function Onboarding() {
     setLocation("/");
   };
 
-  if (showShareModal) {
+  const isIOS = Capacitor.getPlatform() === "ios";
+
+  if (showShareModal && !isIOS) {
     return (
       <ShareModal
         onShare={handleShare}
