@@ -2,7 +2,7 @@ import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { AIAssistant } from "@/components/ai-assistant";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, Lightbulb, Zap, Clock } from "lucide-react";
+import { Bot, Lightbulb, Zap, Clock, Shield } from "lucide-react";
 import { useState } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 
@@ -99,6 +99,31 @@ export default function AIAssistantPage() {
                     Include context for troubleshooting issues effectively
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="text-blue-500" size={20} />
+                  AI Data & Privacy
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  This assistant is powered by <strong>OpenAI</strong>. When you send a message, the following data may be sent to OpenAI for processing:
+                </p>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc pl-4">
+                  <li>Your message text</li>
+                  <li>Family member names (for task assignment)</li>
+                  <li>Voice note transcriptions</li>
+                </ul>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  OpenAI does not use your data to train their models. Your conversations are not stored by OpenAI beyond processing your request.
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  See our <a href="/privacy" className="text-primary underline">Privacy Policy</a> for full details.
+                </p>
               </CardContent>
             </Card>
           </div>

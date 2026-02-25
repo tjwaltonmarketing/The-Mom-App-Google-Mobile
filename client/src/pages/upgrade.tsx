@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Crown, Users, Sparkles, ArrowLeft } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { Capacitor } from "@capacitor/core";
 import { useToast } from "@/hooks/use-toast";
 import type { UserSubscription } from "@shared/schema";
 
@@ -49,6 +50,7 @@ export default function Upgrade() {
   const { toast } = useToast();
   const [selectedPlan, setSelectedPlan] = useState<"individual" | "family">("family");
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("yearly");
+  const isIOS = Capacitor.getPlatform() === "ios";
 
   const cancelled = search.includes("cancelled=true");
 
@@ -223,16 +225,29 @@ export default function Upgrade() {
         </div>
 
         <div className="text-center">
-          <Button
-            onClick={handleUpgrade}
-            disabled={checkoutMutation.isPending}
-            className="w-full md:w-auto px-12 py-6 text-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
-          >
-            {checkoutMutation.isPending ? "REDIRECTING TO CHECKOUT..." : `SUBSCRIBE TO ${selectedPlan.toUpperCase()}`}
-          </Button>
-          <p className="mt-4 text-sm text-gray-500">
-            Secure payment powered by Stripe. Cancel anytime.
-          </p>
+          {isIOS ? (
+            <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-xl">
+              <p className="text-gray-700 dark:text-gray-300 mb-2">
+                Subscriptions on iOS are managed through the App Store.
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Go to Settings &gt; Apple ID &gt; Subscriptions to manage your plan.
+              </p>
+            </div>
+          ) : (
+            <>
+              <Button
+                onClick={handleUpgrade}
+                disabled={checkoutMutation.isPending}
+                className="w-full md:w-auto px-12 py-6 text-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
+              >
+                {checkoutMutation.isPending ? "REDIRECTING TO CHECKOUT..." : `SUBSCRIBE TO ${selectedPlan.toUpperCase()}`}
+              </Button>
+              <p className="mt-4 text-sm text-gray-500">
+                Secure payment powered by Stripe. Cancel anytime.
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

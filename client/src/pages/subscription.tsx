@@ -3,8 +3,9 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Check, Calendar, CreditCard, Gift, Settings, AlertTriangle, XCircle, ExternalLink } from "lucide-react";
+import { Crown, Check, Calendar, CreditCard, Gift, Settings, AlertTriangle, XCircle, ExternalLink, Apple } from "lucide-react";
 import { useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { authFetch, apiRequest, queryClient } from "@/lib/queryClient";
@@ -25,6 +26,7 @@ export default function SubscriptionPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const { toast } = useToast();
+  const isIOS = Capacitor.getPlatform() === "ios";
 
   const { data: subscription, isLoading: subscriptionLoading } = useQuery({
     queryKey: ["/api/subscription"],
@@ -119,8 +121,8 @@ export default function SubscriptionPage() {
     individual: {
       name: "Individual",
       description: "Perfect for single parents",
-      monthly: 9.99,
-      yearly: 99.99,
+      monthly: 5.99,
+      yearly: 59.99,
       features: [
         "1 user account",
         "All core features",
@@ -132,8 +134,8 @@ export default function SubscriptionPage() {
     family: {
       name: "Family Plan",
       description: "Up to 4 users: Mom, Dad, Grandma, Grandpa",
-      monthly: 19.99,
-      yearly: 199.99,
+      monthly: 9.99,
+      yearly: 99.99,
       features: [
         "Up to 4 unique user accounts with separate logins",
         "Shared family calendar with privacy controls",
@@ -403,16 +405,27 @@ export default function SubscriptionPage() {
                 ))}
               </ul>
 
-              <Button
-                className="w-full"
-                variant="outline"
-                size="lg"
-                onClick={() => checkoutMutation.mutate("individual")}
-                disabled={checkoutMutation.isPending}
-              >
-                <CreditCard size={18} className="mr-2" />
-                {checkoutMutation.isPending ? "Loading..." : "Start Individual Plan"}
-              </Button>
+              {isIOS ? (
+                <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Subscriptions on iOS are managed through the App Store.
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Go to Settings &gt; Apple ID &gt; Subscriptions to manage your plan.
+                  </p>
+                </div>
+              ) : (
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  size="lg"
+                  onClick={() => checkoutMutation.mutate("individual")}
+                  disabled={checkoutMutation.isPending}
+                >
+                  <CreditCard size={18} className="mr-2" />
+                  {checkoutMutation.isPending ? "Loading..." : "Start Individual Plan"}
+                </Button>
+              )}
             </CardContent>
           </Card>
 
@@ -458,15 +471,26 @@ export default function SubscriptionPage() {
                 ))}
               </ul>
 
-              <Button
-                className="w-full bg-primary hover:bg-primary/90"
-                size="lg"
-                onClick={() => checkoutMutation.mutate("family")}
-                disabled={checkoutMutation.isPending}
-              >
-                <CreditCard size={18} className="mr-2" />
-                {checkoutMutation.isPending ? "Loading..." : "Start Family Plan"}
-              </Button>
+              {isIOS ? (
+                <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                    Subscriptions on iOS are managed through the App Store.
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Go to Settings &gt; Apple ID &gt; Subscriptions to manage your plan.
+                  </p>
+                </div>
+              ) : (
+                <Button
+                  className="w-full bg-primary hover:bg-primary/90"
+                  size="lg"
+                  onClick={() => checkoutMutation.mutate("family")}
+                  disabled={checkoutMutation.isPending}
+                >
+                  <CreditCard size={18} className="mr-2" />
+                  {checkoutMutation.isPending ? "Loading..." : "Start Family Plan"}
+                </Button>
+              )}
 
               <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-3">
                 Cancel anytime. No hidden fees.
