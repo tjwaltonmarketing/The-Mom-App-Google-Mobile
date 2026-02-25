@@ -77,15 +77,14 @@ public class RevenueCatPlugin: CAPPlugin, CAPBridgedPlugin {
                 return
             }
 
+            var allPackages: [JSObject] = []
             guard let allOfferings = offerings else {
                 print("[RevenueCatPlugin] No offerings found")
-                call.resolve(["offerings": JSObject()])
+                call.resolve(["packages": []])
                 return
             }
 
-            var offeringsDict = JSObject()
-            for (key, offering) in allOfferings.all {
-                var packagesArray: [JSObject] = []
+            for (_, offering) in allOfferings.all {
                 for package in offering.availablePackages {
                     var pkg = JSObject()
                     pkg["identifier"] = package.identifier
@@ -105,23 +104,20 @@ public class RevenueCatPlugin: CAPPlugin, CAPBridgedPlugin {
                         pkg["introPrice"] = intro
                     }
 
-                    packagesArray.append(pkg)
+                    allPackages.append(pkg)
                 }
-                offeringsDict[key] = packagesArray
             }
 
-            print("[RevenueCatPlugin] Found offerings: \(offeringsDict.keys)")
-            call.resolve(["offerings": offeringsDict])
+            print("[RevenueCatPlugin] Found \(allPackages.count) packages across all offerings")
+            call.resolve(["packages": allPackages])
         }
     }
 
     @objc public func purchasePackage(_ call: CAPPluginCall) {
-        guard let packageIdentifier = call.getString("packageIdentifier") else {
-            call.reject("Missing packageIdentifier")
+        guard let productIdentifier = call.getString("productIdentifier") else {
+            call.reject("Missing productIdentifier")
             return
         }
-
-        let offeringIdentifier = call.getString("offeringIdentifier")
 
         Purchases.shared.getOfferings { offerings, error in
             if let error = error {
@@ -130,21 +126,15 @@ public class RevenueCatPlugin: CAPPlugin, CAPBridgedPlugin {
             }
 
             var foundPackage: Package?
-
-            if let offeringId = offeringIdentifier,
-               let offering = offerings?.all[offeringId] {
-                foundPackage = offering.availablePackages.first(where: { $0.identifier == packageIdentifier })
-            } else {
-                for (_, offering) in offerings?.all ?? [:] {
-                    if let pkg = offering.availablePackages.first(where: { $0.identifier == packageIdentifier }) {
-                        foundPackage = pkg
-                        break
-                    }
+            for (_, offering) in offerings?.all ?? [:] {
+                if let pkg = offering.availablePackages.first(where: { $0.storeProduct.productIdentifier == productIdentifier }) {
+                    foundPackage = pkg
+                    break
                 }
             }
 
             guard let package = foundPackage else {
-                call.reject("Package not found: \(packageIdentifier)")
+                call.reject("Package not found for product: \(productIdentifier)")
                 return
             }
 

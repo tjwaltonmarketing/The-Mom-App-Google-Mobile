@@ -15,7 +15,7 @@ import {
   initRevenueCat,
   revenueCatLogIn,
   getOfferings,
-  purchasePackage,
+  purchaseProduct,
   restorePurchases,
   getPackageForPlan,
   type RCPackage,
@@ -143,7 +143,7 @@ export default function SubscriptionPage() {
 
     setRcPurchasing(true);
     try {
-      const result = await purchasePackage(pkg.identifier);
+      const result = await purchaseProduct(pkg.productIdentifier);
       if (result.cancelled) {
         return;
       }

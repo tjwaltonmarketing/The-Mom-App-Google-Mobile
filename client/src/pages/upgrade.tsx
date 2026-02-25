@@ -14,7 +14,7 @@ import {
   initRevenueCat,
   revenueCatLogIn,
   getOfferings,
-  purchasePackage,
+  purchaseProduct,
   restorePurchases,
   getPackageForPlan,
   type RCPackage,
@@ -108,7 +108,7 @@ export default function Upgrade() {
 
     setRcPurchasing(true);
     try {
-      const result = await purchasePackage(pkg.identifier);
+      const result = await purchaseProduct(pkg.productIdentifier);
       if (result.cancelled) return;
       if (result.success) {
         await apiRequest("POST", "/api/subscription/apple-purchase", {

@@ -4,8 +4,8 @@ interface RevenueCatPluginInterface {
   configure(options: { apiKey: string }): Promise<{ success: boolean; alreadyConfigured?: boolean }>;
   logIn(options: { appUserID: string }): Promise<{ success: boolean; created: boolean; customerInfo: CustomerInfo }>;
   logOut(): Promise<{ success: boolean }>;
-  getOfferings(): Promise<{ offerings: Record<string, RCPackage[]> }>;
-  purchasePackage(options: { packageIdentifier: string; offeringIdentifier?: string }): Promise<{ success: boolean; cancelled: boolean; customerInfo: CustomerInfo }>;
+  getOfferings(): Promise<{ packages: RCPackage[] }>;
+  purchasePackage(options: { productIdentifier: string }): Promise<{ success: boolean; cancelled: boolean; customerInfo: CustomerInfo }>;
   restorePurchases(): Promise<{ success: boolean; customerInfo: CustomerInfo }>;
   getCustomerInfo(): Promise<{ success: boolean; customerInfo: CustomerInfo }>;
 }
@@ -102,7 +102,7 @@ export async function getOfferings(): Promise<RCPackage[]> {
   }
 }
 
-export async function purchasePackage(packageIdentifier: string): Promise<{
+export async function purchaseProduct(productIdentifier: string): Promise<{
   success: boolean;
   cancelled: boolean;
   customerInfo?: CustomerInfo;
@@ -112,7 +112,7 @@ export async function purchasePackage(packageIdentifier: string): Promise<{
   }
 
   try {
-    const result = await RevenueCatNative.purchasePackage({ packageIdentifier });
+    const result = await RevenueCatNative.purchasePackage({ productIdentifier });
     return result;
   } catch (error: any) {
     console.error("[RevenueCat] Purchase failed:", error);
