@@ -761,17 +761,23 @@ export class DatabaseStorage implements IStorage {
 
   async deleteFamilyMember(id: number): Promise<boolean> {
     try {
-      // First, delete related records to avoid foreign key constraint violations
       await db.delete(deadlines).where(eq(deadlines.relatedTo, id));
       await db.delete(notifications).where(eq(notifications.recipientId, id));
-      await db.delete(tasks).where(eq(tasks.assignedTo, id));
-      await db.delete(tasks).where(eq(tasks.completedBy, id));
-      await db.delete(childProfiles).where(eq(childProfiles.familyMemberId, id));
       await db.delete(parentTaskCompletions).where(eq(parentTaskCompletions.completedByParent, id));
-      // Skip deleting events - they can remain with the member ID in assignedTo array
+      await db.delete(teenProfiles).where(eq(teenProfiles.familyMemberId, id));
+      await db.delete(childProfiles).where(eq(childProfiles.familyMemberId, id));
+      await db.delete(childProfiles).where(eq(childProfiles.createdBy, id));
+      await db.delete(pushTokens).where(eq(pushTokens.familyMemberId, id));
       await db.delete(voiceNotes).where(eq(voiceNotes.createdBy, id));
-      
-      // Now delete the family member
+      await db.delete(passwords).where(eq(passwords.createdBy, id));
+      await db.delete(groceryItems).where(eq(groceryItems.addedBy, id));
+      await db.update(events).set({ createdBy: null }).where(eq(events.createdBy, id));
+      await db.update(mealPlans).set({ createdBy: null }).where(eq(mealPlans.createdBy, id));
+      await db.update(tasks).set({ completedBy: null }).where(eq(tasks.completedBy, id));
+      await db.update(tasks).set({ createdBy: null }).where(eq(tasks.createdBy, id));
+      await db.delete(tasks).where(eq(tasks.assignedTo, id));
+      await db.delete(userSubscriptions).where(eq(userSubscriptions.familyId, id));
+
       const result = await db.delete(familyMembers).where(eq(familyMembers.id, id));
       console.log(`Successfully deleted family member ${id} and all related records`);
       return true;
