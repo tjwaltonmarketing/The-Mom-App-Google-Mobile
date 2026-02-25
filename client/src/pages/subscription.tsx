@@ -243,7 +243,7 @@ export default function SubscriptionPage() {
     },
     family: {
       name: "Family Plan",
-      description: "Up to 6 users: Mom, Dad, Grandma, Grandpa & more",
+      description: "Up to 6 users: Mom, Dad, Grandma, Grandpa, Teens & more",
       monthly: 9.99,
       yearly: 99.99,
       features: [
