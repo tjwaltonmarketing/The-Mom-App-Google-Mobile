@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Mic, Quote, ChevronDown, ChevronUp, Search, Plus, FileText, Edit, Trash2, Save, X } from "lucide-react";
+import { Mic, Quote, ChevronDown, ChevronUp, Search, Plus, FileText, Edit, Trash2, Save, X, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,9 +30,9 @@ export default function Notes() {
 
   // Voice Notes Query
   const { data: voiceNotes = [], isLoading: voiceNotesLoading } = useQuery<VoiceNote[]>({
-    queryKey: ["/api/voice-notes/recent"],
+    queryKey: ["/api/voice-notes/all"],
     queryFn: async () => {
-      const response = await authFetch('/api/voice-notes/recent');
+      const response = await authFetch('/api/voice-notes/all');
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -143,6 +143,72 @@ export default function Notes() {
       });
     },
   });
+
+  const deleteVoiceNoteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await authFetch(`/api/voice-notes/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete voice note');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/voice-notes/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/voice-notes/recent"] });
+      toast({
+        title: "Voice Note Deleted",
+        description: "Your voice note has been deleted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete voice note. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteAllVoiceNotesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await authFetch('/api/voice-notes', {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete all voice notes');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/voice-notes/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/voice-notes/recent"] });
+      toast({
+        title: "All Voice Notes Deleted",
+        description: "All voice notes have been deleted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete voice notes. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteVoiceNote = (id: number) => {
+    if (confirm("Are you sure you want to delete this voice note?")) {
+      deleteVoiceNoteMutation.mutate(id);
+    }
+  };
+
+  const handleDeleteAllVoiceNotes = () => {
+    if (confirm("Are you sure you want to delete ALL voice notes? This cannot be undone.")) {
+      deleteAllVoiceNotesMutation.mutate();
+    }
+  };
 
   const getMemberById = (id: number | null) => {
     return familyMembers.find(member => member.id === id);
@@ -313,9 +379,20 @@ export default function Notes() {
                   {member?.name || 'Unknown'}
                 </span>
               </div>
-              <Button variant="link" className="text-xs text-primary hover:text-primary/80 p-0 h-auto">
-                Create Tasks
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button variant="link" className="text-xs text-primary hover:text-primary/80 p-0 h-auto">
+                  Create Tasks
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  onClick={() => handleDeleteVoiceNote(note.id)}
+                  className="h-7 px-2 text-red-600 hover:text-red-700"
+                  disabled={deleteVoiceNoteMutation.isPending}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -498,13 +575,25 @@ export default function Notes() {
           </TabsContent>
 
           <TabsContent value="voice" className="mt-6">
-            <Button
-              onClick={() => setIsVoiceModalOpen(true)}
-              className="w-full mb-6 bg-primary hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create New Voice Note
-            </Button>
+            <div className="flex gap-2 mb-6">
+              <Button
+                onClick={() => setIsVoiceModalOpen(true)}
+                className="flex-1 bg-primary hover:bg-primary/90"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create New Voice Note
+              </Button>
+              {voiceNotes.length > 0 && (
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteAllVoiceNotes}
+                  disabled={deleteAllVoiceNotesMutation.isPending}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete All
+                </Button>
+              )}
+            </div>
             
             {voiceNotesLoading ? (
               <div className="flex items-center justify-center py-12">

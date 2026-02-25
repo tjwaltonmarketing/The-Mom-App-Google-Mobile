@@ -3918,6 +3918,67 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.get("/api/voice-notes/all", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const allVoiceNotes = await storage.getVoiceNotesByFamily(familyMembership.familyId);
+      res.json(allVoiceNotes);
+    } catch (error) {
+      console.error("All voice notes fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch voice notes" });
+    }
+  });
+
+  app.delete("/api/voice-notes/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const noteId = parseInt(req.params.id);
+      if (isNaN(noteId)) {
+        return res.status(400).json({ error: "Invalid note ID" });
+      }
+
+      const success = await storage.deleteVoiceNote(noteId);
+      if (success) {
+        res.json({ success: true });
+      } else {
+        res.status(500).json({ error: "Failed to delete voice note" });
+      }
+    } catch (error) {
+      console.error("Voice note deletion error:", error);
+      res.status(500).json({ error: "Failed to delete voice note" });
+    }
+  });
+
+  app.delete("/api/voice-notes", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const deletedCount = await storage.deleteAllVoiceNotesByFamily(familyMembership.familyId);
+      res.json({ success: true, deletedCount });
+    } catch (error) {
+      console.error("Delete all voice notes error:", error);
+      res.status(500).json({ error: "Failed to delete all voice notes" });
+    }
+  });
+
   // Text Notes Endpoints
   app.get("/api/text-notes", async (req, res) => {
     try {

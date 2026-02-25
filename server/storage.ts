@@ -216,6 +216,9 @@ export interface IStorage {
   getRecentVoiceNotes(): Promise<VoiceNote[]>;
   getRecentVoiceNotesByFamily(familyId: number): Promise<VoiceNote[]>;
   createVoiceNote(note: InsertVoiceNote): Promise<VoiceNote>;
+  getVoiceNotesByFamily(familyId: number): Promise<VoiceNote[]>;
+  deleteVoiceNote(id: number): Promise<boolean>;
+  deleteAllVoiceNotesByFamily(familyId: number): Promise<number>;
   
   // Text Notes
   getTextNotes(): Promise<TextNote[]>;
@@ -1397,6 +1400,43 @@ export class DatabaseStorage implements IStorage {
     .where(eq(familyMembers.familyId, familyId))
     .orderBy(desc(voiceNotes.createdAt))
     .limit(5);
+  }
+
+  async getVoiceNotesByFamily(familyId: number): Promise<VoiceNote[]> {
+    return await db.select({
+      id: voiceNotes.id,
+      content: voiceNotes.content,
+      transcription: voiceNotes.transcription,
+      createdBy: voiceNotes.createdBy,
+      createdAt: voiceNotes.createdAt,
+      isProcessed: voiceNotes.isProcessed
+    })
+    .from(voiceNotes)
+    .innerJoin(familyMembers, eq(voiceNotes.createdBy, familyMembers.id))
+    .where(eq(familyMembers.familyId, familyId))
+    .orderBy(desc(voiceNotes.createdAt));
+  }
+
+  async deleteVoiceNote(id: number): Promise<boolean> {
+    try {
+      await db.delete(voiceNotes).where(eq(voiceNotes.id, id));
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete voice note ${id}:`, error);
+      return false;
+    }
+  }
+
+  async deleteAllVoiceNotesByFamily(familyId: number): Promise<number> {
+    const familyMemberIds = await db.select({ id: familyMembers.id })
+      .from(familyMembers)
+      .where(eq(familyMembers.familyId, familyId));
+    
+    if (familyMemberIds.length === 0) return 0;
+
+    const ids = familyMemberIds.map(m => m.id);
+    const result = await db.delete(voiceNotes).where(inArray(voiceNotes.createdBy, ids));
+    return ids.length;
   }
 
   async createVoiceNote(insertNote: InsertVoiceNote): Promise<VoiceNote> {
