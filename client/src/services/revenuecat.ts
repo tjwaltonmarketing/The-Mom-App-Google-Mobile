@@ -4,8 +4,8 @@ interface RevenueCatPluginInterface {
   configure(options: { apiKey: string }): Promise<{ success: boolean; alreadyConfigured?: boolean }>;
   logIn(options: { appUserID: string }): Promise<{ success: boolean; created: boolean; customerInfo: CustomerInfo }>;
   logOut(): Promise<{ success: boolean }>;
-  getOfferings(): Promise<{ packages: RCPackage[] }>;
-  purchasePackage(options: { packageIdentifier: string }): Promise<{ success: boolean; cancelled: boolean; customerInfo: CustomerInfo }>;
+  getOfferings(): Promise<{ offerings: Record<string, RCPackage[]> }>;
+  purchasePackage(options: { packageIdentifier: string; offeringIdentifier?: string }): Promise<{ success: boolean; cancelled: boolean; customerInfo: CustomerInfo }>;
   restorePurchases(): Promise<{ success: boolean; customerInfo: CustomerInfo }>;
   getCustomerInfo(): Promise<{ success: boolean; customerInfo: CustomerInfo }>;
 }

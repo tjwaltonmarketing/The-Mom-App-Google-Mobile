@@ -77,37 +77,41 @@ public class RevenueCatPlugin: CAPPlugin, CAPBridgedPlugin {
                 return
             }
 
-            guard let current = offerings?.current else {
-                print("[RevenueCatPlugin] No current offering found")
-                call.resolve(["packages": []])
+            guard let allOfferings = offerings else {
+                print("[RevenueCatPlugin] No offerings found")
+                call.resolve(["offerings": JSObject()])
                 return
             }
 
-            var packagesArray: [JSObject] = []
-            for package in current.availablePackages {
-                var pkg = JSObject()
-                pkg["identifier"] = package.identifier
-                pkg["packageType"] = self.packageTypeString(package.packageType)
-                pkg["productIdentifier"] = package.storeProduct.productIdentifier
-                pkg["localizedTitle"] = package.storeProduct.localizedTitle
-                pkg["localizedDescription"] = package.storeProduct.localizedDescription
-                pkg["priceString"] = package.storeProduct.localizedPriceString
-                pkg["price"] = package.storeProduct.price as NSDecimalNumber
+            var offeringsDict = JSObject()
+            for (key, offering) in allOfferings.all {
+                var packagesArray: [JSObject] = []
+                for package in offering.availablePackages {
+                    var pkg = JSObject()
+                    pkg["identifier"] = package.identifier
+                    pkg["packageType"] = self.packageTypeString(package.packageType)
+                    pkg["productIdentifier"] = package.storeProduct.productIdentifier
+                    pkg["localizedTitle"] = package.storeProduct.localizedTitle
+                    pkg["localizedDescription"] = package.storeProduct.localizedDescription
+                    pkg["priceString"] = package.storeProduct.localizedPriceString
+                    pkg["price"] = package.storeProduct.price as NSDecimalNumber
 
-                if let introPrice = package.storeProduct.introductoryDiscount {
-                    var intro = JSObject()
-                    intro["priceString"] = introPrice.localizedPriceString
-                    intro["price"] = introPrice.price as NSDecimalNumber
-                    intro["periodDays"] = self.subscriptionPeriodDays(introPrice.subscriptionPeriod)
-                    intro["paymentMode"] = self.paymentModeString(introPrice.paymentMode)
-                    pkg["introPrice"] = intro
+                    if let introPrice = package.storeProduct.introductoryDiscount {
+                        var intro = JSObject()
+                        intro["priceString"] = introPrice.localizedPriceString
+                        intro["price"] = introPrice.price as NSDecimalNumber
+                        intro["periodDays"] = self.subscriptionPeriodDays(introPrice.subscriptionPeriod)
+                        intro["paymentMode"] = self.paymentModeString(introPrice.paymentMode)
+                        pkg["introPrice"] = intro
+                    }
+
+                    packagesArray.append(pkg)
                 }
-
-                packagesArray.append(pkg)
+                offeringsDict[key] = packagesArray
             }
 
-            print("[RevenueCatPlugin] Found \(packagesArray.count) packages")
-            call.resolve(["packages": packagesArray])
+            print("[RevenueCatPlugin] Found offerings: \(offeringsDict.keys)")
+            call.resolve(["offerings": offeringsDict])
         }
     }
 
@@ -117,14 +121,29 @@ public class RevenueCatPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
 
+        let offeringIdentifier = call.getString("offeringIdentifier")
+
         Purchases.shared.getOfferings { offerings, error in
             if let error = error {
                 call.reject(error.localizedDescription)
                 return
             }
 
-            guard let current = offerings?.current,
-                  let package = current.availablePackages.first(where: { $0.identifier == packageIdentifier }) else {
+            var foundPackage: Package?
+
+            if let offeringId = offeringIdentifier,
+               let offering = offerings?.all[offeringId] {
+                foundPackage = offering.availablePackages.first(where: { $0.identifier == packageIdentifier })
+            } else {
+                for (_, offering) in offerings?.all ?? [:] {
+                    if let pkg = offering.availablePackages.first(where: { $0.identifier == packageIdentifier }) {
+                        foundPackage = pkg
+                        break
+                    }
+                }
+            }
+
+            guard let package = foundPackage else {
                 call.reject("Package not found: \(packageIdentifier)")
                 return
             }
