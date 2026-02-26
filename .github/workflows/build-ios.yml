@@ -37,6 +37,15 @@ jobs:
         npx cap add ios || true
         npx cap sync ios
         
+    - name: Restore custom native files
+      run: |
+        echo "Copying custom native overrides into iOS project..."
+        cp native-overrides/ios/App/App/*.swift ios/App/App/
+        cp native-overrides/ios/App/App/*.m ios/App/App/
+        cp native-overrides/ios/App/Podfile ios/App/Podfile
+        echo "Restored iOS native files:"
+        ls -la ios/App/App/*.swift ios/App/App/*.m
+        
     - name: Update iOS version
       run: |
         cd ios/App/App
