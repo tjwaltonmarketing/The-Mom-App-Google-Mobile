@@ -39,7 +39,7 @@ export interface CustomerInfo {
   }>;
 }
 
-const REVENUECAT_APPLE_API_KEY = import.meta.env.VITE_REVENUECAT_APPLE_API_KEY || "";
+const REVENUECAT_APPLE_API_KEY = import.meta.env.VITE_REVENUECAT_APPLE_API_KEY || "appl_jWnxLTGgndDEuLfvrDcnukFGGIp";
 
 const RevenueCatNative = Capacitor.getPlatform() === "ios"
   ? registerPlugin<RevenueCatPluginInterface>("RevenueCatPlugin")
