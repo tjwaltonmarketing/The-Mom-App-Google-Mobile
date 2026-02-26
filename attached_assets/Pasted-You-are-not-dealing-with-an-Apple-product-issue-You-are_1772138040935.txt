@@ -1,0 +1,158 @@
+You are not dealing with an Apple product issue.
+You are dealing with a Capacitor plugin registration issue.
+
+This line is the smoking gun:
+
+Error: "RevenueCatPlugin" plugin is not implemented on iOS
+
+That means:
+
+👉 Your JavaScript is calling RevenueCatPlugin
+👉 But iOS does not have that plugin registered
+👉 So RevenueCat never initializes
+👉 So getOfferings() returns 0 packages
+👉 So purchase fails
+👉 So StoreKit shows “Product unavailable”
+
+✅ What This Actually Means
+
+In Capacitor:
+
+When you call a plugin from JS:
+
+Plugins.RevenueCatPlugin.init()
+
+iOS must have:
+
+A native Swift/Obj-C class
+
+That class must be annotated with @objc(...)
+
+It must be registered with Capacitor
+
+It must be compiled into the target
+
+The class name must match what JS expects
+
+Right now, iOS does not recognize RevenueCatPlugin.
+
+🚨 This is NOT:
+
+A product ID issue
+
+A RevenueCat dashboard issue
+
+A subscription configuration issue
+
+A Paid Applications Agreement issue
+
+It is a native plugin wiring issue.
+
+🔎 Most Likely Causes
+1️⃣ The plugin is not registered in iOS
+
+In Capacitor 5/6, you typically:
+
+Either use automatic plugin discovery
+
+Or manually register in AppDelegate
+
+If your Android side works but iOS says “not implemented”, it means iOS never exposed it.
+
+2️⃣ The class name doesn’t match
+
+If JS calls:
+
+RevenueCatPlugin
+
+Then iOS must have:
+
+@objc(RevenueCatPlugin)
+public class RevenueCatPlugin: CAPPlugin {
+
+If the @objc name doesn’t match EXACTLY, Capacitor won’t find it.
+
+3️⃣ The file is not included in the iOS target
+
+In Xcode:
+
+Select RevenueCatPlugin.swift
+
+Right panel → Target Membership
+
+Make sure:
+
+✅ App target is checked
+
+If not → it compiles but isn’t linked → Capacitor says “not implemented”.
+
+4️⃣ You didn’t run npx cap sync ios
+
+After adding a plugin, you must:
+
+npx cap sync ios
+
+Otherwise iOS project doesn’t know about it.
+
+🎯 Why Packages Loaded = 0
+
+Because this line happens first:
+
+Init failed - stopping.
+
+So:
+
+RevenueCat never configures
+
+getOfferings() never truly executes
+
+packages loaded: 0
+
+Purchase fails
+
+Apple returns generic “Product unavailable”
+
+✅ The Fix Path
+
+Do this exactly:
+
+1️⃣ Confirm plugin class signature
+
+In RevenueCatPlugin.swift, ensure:
+
+import Capacitor
+import RevenueCat
+
+@objc(RevenueCatPlugin)
+public class RevenueCatPlugin: CAPPlugin {
+
+The string inside @objc() MUST match what JS calls.
+
+2️⃣ Confirm target membership
+
+In Xcode:
+
+Click RevenueCatPlugin.swift
+
+Right sidebar → Target Membership
+
+Make sure your App target is checked
+
+3️⃣ Clean + Rebuild
+
+In Xcode:
+
+Product → Clean Build Folder
+
+Delete Derived Data (optional but recommended)
+
+Or from terminal:
+
+rm -rf ~/Library/Developer/Xcode/DerivedData
+4️⃣ Re-sync Capacitor
+
+From project root:
+
+npx cap sync ios
+
+Then reopen Xcode.
