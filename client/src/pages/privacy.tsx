@@ -108,7 +108,7 @@ export default function Privacy() {
             <p>If you have questions about this Privacy Policy, please contact us at:</p>
             <ul>
               <li><strong>Email:</strong> themomapp.us@gmail.com</li>
-              <li><strong>Website:</strong> https://themomapp.com/contact</li>
+              <li><strong>Website:</strong> https://themom.app</li>
             </ul>
 
             <h2>Changes to This Policy</h2>
