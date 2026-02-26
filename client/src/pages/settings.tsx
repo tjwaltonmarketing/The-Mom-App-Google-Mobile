@@ -1151,7 +1151,7 @@ export default function SettingsPage() {
                           <p className="text-sm text-pink-700 dark:text-pink-300 mb-3">
                             Add family members, share calendars, and assign tasks by upgrading to the Family plan for just $9.99/month.
                           </p>
-                          <Link href="/plans">
+                          <Link href="/upgrade">
                             <Button size="sm" className="bg-pink-500 hover:bg-pink-600">
                               <Crown className="h-3 w-3 mr-2" />
                               Upgrade Now

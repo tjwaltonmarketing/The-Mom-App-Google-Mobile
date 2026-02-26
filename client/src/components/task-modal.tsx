@@ -219,7 +219,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
                     <Crown className="h-4 w-4 text-pink-500" />
                     <span>Task assignment requires Family Plan</span>
                   </div>
-                  <Link href="/plans">
+                  <Link href="/upgrade">
                     <Button variant="link" size="sm" className="text-pink-500 p-0 h-auto mt-1">
                       Upgrade to assign tasks
                     </Button>

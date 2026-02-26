@@ -312,7 +312,7 @@ export function PasswordModal({ trigger, onPasswordAdded }: PasswordModalProps) 
                   <Crown className="h-4 w-4 text-amber-500" />
                   <span>Password sharing requires a Family Plan</span>
                 </div>
-                <Link href="/plans" className="text-xs text-pink-500 hover:underline">
+                <Link href="/upgrade" className="text-xs text-pink-500 hover:underline">
                   Upgrade to share passwords with family members
                 </Link>
               </div>
