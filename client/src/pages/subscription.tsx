@@ -18,6 +18,7 @@ import {
   purchaseProduct,
   restorePurchases,
   getPackageForPlan,
+  lastInitError,
   type RCPackage,
 } from "@/services/revenuecat";
 import {
@@ -124,7 +125,7 @@ export default function SubscriptionPage() {
       initRevenueCat()
         .then(async (ok) => {
           log(`Init result: ${ok}`);
-          if (!ok) { log("Init failed - stopping"); return; }
+          if (!ok) { log(`Init failed - stopping. Error: ${lastInitError}`); return; }
           if (subscription?.userId) {
             log(`Logging in user: ${subscription.userId}`);
             await revenueCatLogIn(String(subscription.userId));
@@ -758,10 +759,12 @@ export default function SubscriptionPage() {
             {showDebug ? "Hide Debug" : "RC Debug"}
           </button>
           {showDebug && (
-            <div className="mt-2 bg-black text-green-400 text-[10px] p-3 rounded-lg max-w-[300px] max-h-[250px] overflow-y-auto font-mono">
+            <div className="mt-2 bg-black text-green-400 text-[10px] p-3 rounded-lg max-w-[320px] max-h-[300px] overflow-y-auto font-mono">
               <div className="text-white font-bold mb-1">RevenueCat Debug</div>
-              <div>API Key: {import.meta.env.VITE_REVENUECAT_APPLE_API_KEY ? "SET (" + import.meta.env.VITE_REVENUECAT_APPLE_API_KEY.substring(0, 8) + "...)" : "MISSING"}</div>
+              <div>Platform: {Capacitor.getPlatform()}</div>
+              <div>RC Available: {String(isRevenueCatAvailable())}</div>
               <div>Packages loaded: {rcPackages.length}</div>
+              {lastInitError && <div className="text-red-400">Error: {lastInitError}</div>}
               <div className="border-t border-gray-700 mt-1 pt-1">
                 {rcDebugLog.length === 0 ? "No logs yet..." : rcDebugLog.map((line, i) => (
                   <div key={i}>{line}</div>

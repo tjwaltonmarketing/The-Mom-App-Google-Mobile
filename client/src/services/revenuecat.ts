@@ -51,16 +51,23 @@ export function isRevenueCatAvailable(): boolean {
   return Capacitor.getPlatform() === "ios" && !!REVENUECAT_APPLE_API_KEY;
 }
 
+export let lastInitError: string = "";
+
 export async function initRevenueCat(): Promise<boolean> {
-  if (!isRevenueCatAvailable() || !RevenueCatNative) return false;
+  if (!isRevenueCatAvailable() || !RevenueCatNative) {
+    lastInitError = `Not available: platform=${Capacitor.getPlatform()}, hasKey=${!!REVENUECAT_APPLE_API_KEY}, hasNative=${!!RevenueCatNative}`;
+    return false;
+  }
   if (initialized) return true;
 
   try {
     const result = await RevenueCatNative.configure({ apiKey: REVENUECAT_APPLE_API_KEY });
     initialized = result.success;
     console.log("[RevenueCat] Initialized:", result);
+    if (!result.success) lastInitError = "configure returned success=false";
     return initialized;
-  } catch (error) {
+  } catch (error: any) {
+    lastInitError = error?.message || error?.toString() || "Unknown error";
     console.error("[RevenueCat] Init failed:", error);
     return false;
   }
