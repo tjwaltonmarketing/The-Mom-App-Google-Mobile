@@ -325,10 +325,10 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
                   className={`cursor-pointer transition-all relative ${selectedPlan === "family" ? "ring-2 ring-pink-500 bg-pink-50" : "hover:bg-gray-50"}`}
                   onClick={() => setSelectedPlan("family")}
                 >
-                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-pink-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  <div className="absolute -top-3 right-2 bg-pink-500 text-white text-[10px] px-2 py-0.5 rounded-full z-10">
                     Most Popular
                   </div>
-                  <CardContent className="p-4 text-center">
+                  <CardContent className="p-4 pt-5 text-center">
                     <h3 className="font-semibold text-gray-900">Family</h3>
                     <p className="text-2xl font-bold text-pink-500">{getPrice("family")}</p>
                     <p className="text-xs text-gray-500">{getPeriod()}</p>

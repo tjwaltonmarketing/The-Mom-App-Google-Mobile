@@ -58,11 +58,10 @@ export function TrialBanner() {
 
   const trialDaysLeft = subscription?.trialDaysLeft || 0;
   const alreadyReceivedBonus = !!subscription?.bonusClaimed;
+  const userId = subscription?.userId;
 
-  // Smart reminder schedule:
-  // - 8+ days left: If dismissed, don't show until 7 days
-  // - 7 days: Show "1 week left" reminder
-  // - 3 days: Show urgent "3 days left" reminder
+  const getStorageKey = () => `trialBannerDismissedAt_${userId || 'unknown'}`;
+
   const getReminderThreshold = (daysLeft: number): string => {
     if (daysLeft <= 3) return "3days";
     if (daysLeft <= 7) return "7days";
@@ -70,31 +69,28 @@ export function TrialBanner() {
   };
 
   useEffect(() => {
-    if (!subscription || !subscription.isOnTrial) return;
+    if (!subscription || !subscription.isOnTrial || !userId) return;
     
     const currentThreshold = getReminderThreshold(trialDaysLeft);
-    const dismissedAt = localStorage.getItem('trialBannerDismissedAt');
+    const dismissedAt = localStorage.getItem(getStorageKey());
     
-    // If dismissed at a higher threshold, show again at lower thresholds
     if (dismissedAt) {
       if (dismissedAt === "initial" && (currentThreshold === "7days" || currentThreshold === "3days")) {
-        // Time to show the 7-day or 3-day reminder
         setIsVisible(true);
       } else if (dismissedAt === "7days" && currentThreshold === "3days") {
-        // Time to show the 3-day reminder
         setIsVisible(true);
       } else if (dismissedAt === currentThreshold) {
-        // Already dismissed at this threshold
         setIsVisible(false);
       }
+    } else {
+      setIsVisible(true);
     }
-  }, [subscription, trialDaysLeft]);
+  }, [subscription, trialDaysLeft, userId]);
 
   const handleClose = () => {
     setIsVisible(false);
-    // Store which threshold they dismissed at
     const currentThreshold = getReminderThreshold(trialDaysLeft);
-    localStorage.setItem('trialBannerDismissedAt', currentThreshold);
+    localStorage.setItem(getStorageKey(), currentThreshold);
   };
 
   // Get banner style and message based on days left
