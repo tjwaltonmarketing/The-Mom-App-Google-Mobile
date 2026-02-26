@@ -3142,6 +3142,58 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.patch("/api/family-members/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const memberId = parseInt(req.params.id);
+      if (isNaN(memberId)) {
+        return res.status(400).json({ error: "Invalid member ID" });
+      }
+
+      const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!familyMembership) {
+        return res.status(404).json({ error: "Family not found" });
+      }
+
+      const existingMember = await storage.getFamilyMember(memberId);
+      if (!existingMember || existingMember.familyId !== familyMembership.familyId) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      const { name, role, color, avatar, phone, email, notificationPreference } = req.body;
+
+      const updates: Record<string, any> = {};
+      if (name !== undefined) updates.name = name;
+      if (role !== undefined) updates.role = role;
+      if (color !== undefined) updates.color = color;
+      if (avatar !== undefined) updates.avatar = avatar;
+      if (phone !== undefined) updates.phone = phone;
+      if (email !== undefined) updates.email = email;
+      if (notificationPreference !== undefined) updates.notificationPreference = notificationPreference;
+
+      if (name && !avatar) {
+        updates.avatar = name.trim().charAt(0).toUpperCase();
+      }
+
+      const updatedMember = await storage.updateFamilyMember(memberId, updates);
+
+      if (existingMember.userId && name) {
+        const nameParts = name.trim().split(/\s+/);
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ") || "";
+        await storage.updateUserProfile(existingMember.userId, { firstName, lastName });
+      }
+
+      res.json(updatedMember);
+    } catch (error) {
+      console.error("Family member update error:", error);
+      res.status(500).json({ error: "Failed to update family member" });
+    }
+  });
+
   app.delete("/api/family-members/:id", async (req, res) => {
     try {
       if (!req.session.userId) {
