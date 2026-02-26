@@ -1,0 +1,184 @@
+#242:The-Mom-App-Google-Mobile user289897$ npx cap copy ios
+✔ Copying web assets from public to ios/App/App/public in 52.40ms
+✔ Creating capacitor.config.json in ios/App/App in 956.79μs
+✔ copy ios in 151.63ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap open ios
+✔ Opening the Xcode workspace... in 3.00s
+#242:The-Mom-App-Google-Mobile user289897$ git pull
+Already up to date.
+#242:The-Mom-App-Google-Mobile user289897$ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (1) index.htmlBrowserslist: browsers data (caniuse-lite) is 16 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3189 modules transformed.
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/config.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/useAuth.ts, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/queryClient.ts, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/login.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/register.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-login.tsx, dynamic import will not move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/queryClient.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/ai-assistant.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/advanced-task-management.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/meal-planning.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/quick-tasks.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/today-schedule.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/trial-banner.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/voice-notes.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/welcome-header.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/event-edit-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/event-form.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family-dishwasher.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family/invite-teen-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family/kid-point-manager.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/feedback-prompt-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/notification-bell.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/parent-invite-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/password-edit-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/password-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/task-edit-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/task-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/teen-task-detail-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/teen/teen-navigation.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/voice-note-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/weather-display.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/use-pull-to-refresh.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/useAuth.ts, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/admin.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/calendar.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/delete-account.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/grocery-list.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/login.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/notes.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/onboarding.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/register.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/reset-password.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/subscription.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/tasks.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-calendar.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-dashboard.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-login.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-onboarding.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-passwords.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-profile.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-tasks.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/upgrade-success.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/upgrade.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts, dynamic import will not move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/notification-prompt.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/web-access-tip-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, dynamic import will not move module into another chunk.
+
+../dist/public/index.html                                                              2.20 kB │ gzip:   0.80 kB
+../dist/public/assets/The Mom app_20250607_125224_0000_1749573727197-CXHC4Cic.png     25.37 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                          27.04 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                      82.76 kB
+../dist/public/assets/onboarding-slide-4-rHtayH7z.png                                356.97 kB
+../dist/public/assets/onboarding-slide-2-DOAnxM2R.png                                472.23 kB
+../dist/public/assets/onboarding-slide-1-WQCRwazH.png                                473.66 kB
+../dist/public/assets/onboarding-slide-family-EbBOjLQv.png                           578.29 kB
+../dist/public/assets/onboarding-slide-tasks-FJgrccnv.png                            860.62 kB
+../dist/public/assets/onboarding-slide-meals-a2IrNqzw.png                            928.19 kB
+../dist/public/assets/onboarding-slide-ai-Bxp1YDl6.png                               945.11 kB
+../dist/public/assets/onboarding-slide-calendar-CEeLQ3iz.png                       1,098.90 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                   4,686.94 kB
+../dist/public/assets/index-BWc9oYGE.css                                             133.61 kB │ gzip:  20.53 kB
+../dist/public/assets/web-DP9_OF2k.js                                                  0.35 kB │ gzip:   0.19 kB
+../dist/public/assets/web-Cj8ZtT8g.js                                                  0.80 kB │ gzip:   0.24 kB
+../dist/public/assets/index-DHVzfD91.js                                            1,754.78 kB │ gzip: 497.47 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.73s
+▲ [WARNING] Import "defineConfig" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    vite.config.ts:1:9:
+      1 │ import { defineConfig } from "vite";
+        ╵          ~~~~~~~~~~~~
+
+▲ [WARNING] Import "createServer" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    server/vite.ts:4:9:
+      4 │ import { createServer as createViteServer, createLogger } from "vite";
+        ╵          ~~~~~~~~~~~~
+
+▲ [WARNING] Import "createLogger" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    server/vite.ts:4:43:
+      4 │ import { createServer as createViteServer, createLogger } from "vite";
+        ╵                                            ~~~~~~~~~~~~
+
+3 warnings
+
+  dist/index.js  375.9kb
+
+⚡ Done in 16ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap sync ios
+✔ Copying web assets from public to ios/App/App/public in 29.96ms
+✔ Creating capacitor.config.json in ios/App/App in 781.79μs
+✔ copy ios in 77.27ms
+✔ Updating iOS plugins in 8.23ms
+✖ Updating iOS native dependencies with pod install - failed!
+✖ update ios - failed!
+[error] Command line invocation:
+        /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project App.xcodeproj clean
+        
+        User defaults from command line:
+        IDEPackageSupportUseBuiltinSCM = YES
+        
+        2026-02-26 02:19:32.237 xcodebuild[82173:20996444] Writing error result bundle to
+        /var/folders/12/lvx2p_216230x82zmfzdgcr40000nj/T/ResultBundle_2026-26-02_02-19-0032.xcresult
+        xcodebuild: error: 'App.xcodeproj' does not exist.
+        
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/RevenueCatPlugin.m ios/App/App/
+cp: native-overrides/ios/App/App/RevenueCatPlugin.m: No such file or directory
+#242:The-Mom-App-Google-Mobile user289897$ git fetch --all
+#242:The-Mom-App-Google-Mobile user289897$ git pull origin main
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+#242:The-Mom-App-Google-Mobile user289897$ ls -la native-overrides/ios/App/App/*.m
+ls: native-overrides/ios/App/App/*.m: No such file or directory
+#242:The-Mom-App-Google-Mobile user289897$ cat > native-overrides/ios/App/App/RevenueCatPlugin.m << 'EOF'
+> #import <Capacitor/Capacitor.h>
+> CAP_PLUGIN(RevenueCatPlugin, "RevenueCatPlugin",
+>     CAP_PLUGIN_METHOD(configure, CAPPluginReturnPromise);
+>     CAP_PLUGIN_METHOD(getOfferings, CAPPluginReturnPromise);
+>     CAP_PLUGIN_METHOD(purchasePackage, CAPPluginReturnPromise);
+>     CAP_PLUGIN_METHOD(restorePurchases, CAPPluginReturnPromise);
+>     CAP_PLUGIN_METHOD(getCustomerInfo, CAPPluginReturnPromise);
+>     CAP_PLUGIN_METHOD(logIn, CAPPluginReturnPromise);
+>     CAP_PLUGIN_METHOD(logOut, CAPPluginReturnPromise);
+> )
+> EOF
+#242:The-Mom-App-Google-Mobile user289897$ cat > native-overrides/ios/App/App/FCMPlugin.m << 'EOF'
+> #import <Capacitor/Capacitor.h>
+> CAP_PLUGIN(FCMPlugin, "FCMPlugin",
+>     CAP_PLUGIN_METHOD(getToken, CAPPluginReturnPromise);
+>     CAP_PLUGIN_METHOD(checkPermissions, CAPPluginReturnPromise);
+>     CAP_PLUGIN_METHOD(requestPermissions, CAPPluginReturnPromise);
+>     CAP_PLUGIN_METHOD(openNotificationSettings, CAPPluginReturnPromise);
+>     CAP_PLUGIN_METHOD(debugNotificationPermission, CAPPluginReturnPromise);
+> )
+> EOF
+#242:The-Mom-App-Google-Mobile user289897$ ls -la native-overrides/ios/App/App/*.m
+-rw-r--r--  1 user289897  _developer  407 Feb 26 02:30 native-overrides/ios/App/App/FCMPlugin.m
+-rw-r--r--  1 user289897  _developer  504 Feb 26 02:29 native-overrides/ios/App/App/RevenueCatPlugin.m
+#242:The-Mom-App-Google-Mobile user289897$ rm -rf ios
+#242:The-Mom-App-Google-Mobile user289897$ npx cap add ios
+✔ Adding native Xcode project in ios in 11.71ms
+✔ add in 11.94ms
+✔ Copying web assets from public to ios/App/App/public in 24.46ms
+✔ Creating capacitor.config.json in ios/App/App in 301.29μs
+✔ copy ios in 70.46ms
+✔ Updating iOS plugins in 8.09ms
+✔ Updating iOS native dependencies with pod install in 1.48s
+[warn] @capacitor/core@6.2.1 version doesn't match @capacitor/ios@6.1.2 version.
+       Consider updating to a matching version, e.g. w/ npm install @capacitor/core@6.1.2
+[info] Found 3 Capacitor plugins for ios:
+       @capacitor-community/speech-recognition@6.0.1
+       @capacitor/geolocation@6.1.1
+       capacitor-native-settings@6.0.6
+✔ update ios in 1.53s
+[success] ios platform added!
+Follow the Developer Workflow guide to get building:
+https://capacitorjs.com/docs/basics/workflow
+#242:The-Mom-App-Google-Mobile user289897$ npx cap sync ios
+✔ Copying web assets from public to ios/App/App/public in 27.48ms
+✔ Creating capacitor.config.json in ios/App/App in 649.50μs
+✔ copy ios in 71.57ms
+✔ Updating iOS plugins in 8.13ms
+✔ Updating iOS native dependencies with pod install in 1.38s
+[warn] @capacitor/core@6.2.1 version doesn't match @capacitor/ios@6.1.2 version.
+       Consider updating to a matching version, e.g. w/ npm install @capacitor/core@6.1.2
+[info] Found 3 Capacitor plugins for ios:
+       @capacitor-community/speech-recognition@6.0.1
+       @capacitor/geolocation@6.1.1
+       capacitor-native-settings@6.0.6
+✔ update ios in 1.42s
+[info] Sync finished in 1.674s
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/*.swift ios/App/App/
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/App/*.m ios/App/App/
+#242:The-Mom-App-Google-Mobile user289897$ cp native-overrides/ios/App/Podfile ios/App/Podfile
+#242:The-Mom-App-Google-Mobile user289897$ cd ios/App
+#242:App user289897$ pod install
+Analyzing dependencies
+Downloading dependencies
+Installing Firebase (11.15.0)
+Installing FirebaseAnalytics (11.15.0)
+Installing FirebaseCore (11.15.0)
+Installing FirebaseCoreInternal (11.15.0)
+Installing FirebaseInstallations (11.15.0)
+Installing FirebaseMessaging (11.15.0)
+Installing GoogleAdsOnDeviceConversion (2.1.0)
+Installing GoogleAppMeasurement (11.15.0)
+Installing GoogleDataTransport (10.1.0)
+Installing GoogleUtilities (8.1.0)
+Installing PromisesObjC (2.4.0)
+Installing RevenueCat (5.59.2)
+Installing nanopb (3.30910.0)
+Removing CapacitorGeolocation
+Generating Pods project
+Integrating client project
+Pod installation complete! There are 7 dependencies from the Podfile and 17 total pods installed.
+#242:App user289897$ cd ../..
+#242:The-Mom-App-Google-Mobile user289897$ open ios/App/App.xcworkspace
+#242:The-Mom-App-Google-Mobile user289897$ 
