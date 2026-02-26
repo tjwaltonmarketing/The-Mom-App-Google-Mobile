@@ -4609,10 +4609,9 @@ export async function registerRoutes(app: Express) {
         return res.json(null);
       }
 
-      // Calculate trial days remaining
-      // A user is on a trial if they have a trialEndDate but no Stripe subscription (haven't paid)
       let trialDaysLeft = 0;
-      const isOnTrial = subscription.trialEndDate && !subscription.stripeSubscriptionId;
+      const hasPaidSubscription = !!subscription.stripeSubscriptionId || !!subscription.appleProductId || subscription.subscriptionStatus === "active";
+      const isOnTrial = subscription.trialEndDate && !hasPaidSubscription;
       if (isOnTrial) {
         trialDaysLeft = Math.max(0, Math.ceil((subscription.trialEndDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
       }

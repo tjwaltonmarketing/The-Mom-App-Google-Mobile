@@ -133,7 +133,11 @@ export default function SubscriptionPage() {
     }
   }, [isIOS, subscription?.userId]);
 
+  const [purchaseCompleted, setPurchaseCompleted] = useState(false);
+
   const handleIOSPurchase = async (plan: "individual" | "family") => {
+    if (rcPurchasing || purchaseCompleted) return;
+
     const pkg = getPackageForPlan(rcPackages, plan, billingCycle);
     if (!pkg) {
       toast({
@@ -151,6 +155,7 @@ export default function SubscriptionPage() {
         return;
       }
       if (result.success) {
+        setPurchaseCompleted(true);
         await apiRequest("POST", "/api/subscription/apple-purchase", {
           productIdentifier: pkg.productIdentifier,
           plan,
@@ -158,7 +163,7 @@ export default function SubscriptionPage() {
           activeEntitlements: result.customerInfo?.activeEntitlements || [],
           expirationDate: result.customerInfo?.latestExpirationDate,
         });
-        queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+        await queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
         toast({
           title: "Subscription activated!",
           description: `Your ${plan === "family" ? "Family" : "Individual"} plan is now active.`,
@@ -534,7 +539,7 @@ export default function SubscriptionPage() {
                           variant="outline"
                           size="lg"
                           onClick={() => handleIOSPurchase("individual")}
-                          disabled={rcPurchasing || rcLoading}
+                          disabled={rcPurchasing || rcLoading || purchaseCompleted}
                         >
                           {rcPurchasing ? (
                             <Loader2 size={18} className="mr-2 animate-spin" />
@@ -619,7 +624,7 @@ export default function SubscriptionPage() {
                           className="w-full bg-primary hover:bg-primary/90"
                           size="lg"
                           onClick={() => handleIOSPurchase("family")}
-                          disabled={rcPurchasing || rcLoading}
+                          disabled={rcPurchasing || rcLoading || purchaseCompleted}
                         >
                           {rcPurchasing ? (
                             <Loader2 size={18} className="mr-2 animate-spin" />
