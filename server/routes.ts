@@ -4662,7 +4662,7 @@ export async function registerRoutes(app: Express) {
       }
 
       let trialDaysLeft = 0;
-      const hasPaidSubscription = !!subscription.stripeSubscriptionId || !!subscription.appleProductId || subscription.subscriptionStatus === "active";
+      const hasPaidSubscription = !!subscription.stripeSubscriptionId || !!subscription.appleProductId;
       const isOnTrial = subscription.trialEndDate && !hasPaidSubscription;
       if (isOnTrial) {
         trialDaysLeft = Math.max(0, Math.ceil((subscription.trialEndDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));

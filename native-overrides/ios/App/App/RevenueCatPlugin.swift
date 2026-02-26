@@ -17,6 +17,7 @@ public class RevenueCatPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     private var isConfigured = false
+    private var isPurchasing = false
 
     @objc public func configure(_ call: CAPPluginCall) {
         guard let apiKey = call.getString("apiKey") else {
@@ -119,8 +120,19 @@ public class RevenueCatPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
 
-        Purchases.shared.getOfferings { offerings, error in
+        guard !isPurchasing else {
+            print("[RevenueCatPlugin] Purchase already in progress, ignoring duplicate call")
+            call.resolve(["success": false, "cancelled": false])
+            return
+        }
+
+        isPurchasing = true
+
+        Purchases.shared.getOfferings { [weak self] offerings, error in
+            guard let self = self else { return }
+
             if let error = error {
+                self.isPurchasing = false
                 call.reject(error.localizedDescription)
                 return
             }
@@ -134,11 +146,14 @@ public class RevenueCatPlugin: CAPPlugin, CAPBridgedPlugin {
             }
 
             guard let package = foundPackage else {
+                self.isPurchasing = false
                 call.reject("Package not found for product: \(productIdentifier)")
                 return
             }
 
             Purchases.shared.purchase(package: package) { transaction, customerInfo, error, userCancelled in
+                self.isPurchasing = false
+
                 if userCancelled {
                     call.resolve(["success": false, "cancelled": true])
                     return
