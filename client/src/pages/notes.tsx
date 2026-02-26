@@ -210,6 +210,38 @@ export default function Notes() {
     }
   };
 
+  const deleteAllTextNotesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await authFetch('/api/text-notes', {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete all text notes');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/text-notes"] });
+      toast({
+        title: "All Text Notes Deleted",
+        description: "All text notes have been deleted successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete text notes. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteAllTextNotes = () => {
+    if (confirm("Are you sure you want to delete ALL text notes? This cannot be undone.")) {
+      deleteAllTextNotesMutation.mutate();
+    }
+  };
+
   const getMemberById = (id: number | null) => {
     return familyMembers.find(member => member.id === id);
   };
@@ -503,15 +535,25 @@ export default function Notes() {
           </TabsList>
 
           <TabsContent value="text" className="mt-6">
-            <div className="mb-4">
+            <div className="flex gap-2 mb-4">
               <Button 
-                className="w-full" 
+                className="flex-1" 
                 data-testid="create-text-note"
                 onClick={() => setShowFullScreenNewNote(true)}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Create New Text Note
               </Button>
+              {textNotes.length > 0 && (
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteAllTextNotes}
+                  disabled={deleteAllTextNotesMutation.isPending}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Clear All
+                </Button>
+              )}
             </div>
 
             {textNotesLoading ? (

@@ -103,6 +103,7 @@ export function FullScreenNoteEditor({
 
   return (
     <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 flex flex-col">
+      <div className="bg-white dark:bg-gray-900" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }} />
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <Button 

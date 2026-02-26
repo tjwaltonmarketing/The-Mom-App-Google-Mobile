@@ -4100,6 +4100,20 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.delete("/api/text-notes", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const deleted = await storage.deleteAllTextNotesByUser(req.session.userId);
+      res.json({ success: true, deletedCount: deleted });
+    } catch (error) {
+      console.error("Delete all text notes error:", error);
+      res.status(500).json({ error: "Failed to delete all text notes" });
+    }
+  });
+
   // Notifications Endpoints
   app.get("/api/notifications/pending", async (req, res) => {
     try {

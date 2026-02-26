@@ -227,6 +227,7 @@ export interface IStorage {
   createTextNote(note: InsertTextNote): Promise<TextNote>;
   updateTextNote(id: number, updates: Partial<InsertTextNote>, userId: number): Promise<TextNote | undefined>;
   deleteTextNote(id: number, userId: number): Promise<boolean>;
+  deleteAllTextNotesByUser(userId: number): Promise<number>;
   
   // Deadlines
   getDeadlines(): Promise<Deadline[]>;
@@ -1492,6 +1493,12 @@ export class DatabaseStorage implements IStorage {
     const result = await db.delete(textNotes)
       .where(eq(textNotes.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async deleteAllTextNotesByUser(userId: number): Promise<number> {
+    const result = await db.delete(textNotes)
+      .where(eq(textNotes.createdBy, userId));
+    return result.rowCount || 0;
   }
 
   async getDeadlines(): Promise<Deadline[]> {
