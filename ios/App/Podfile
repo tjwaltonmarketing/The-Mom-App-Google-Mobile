@@ -19,6 +19,7 @@ target 'App' do
   capacitor_pods
   pod 'Firebase/Core'
   pod 'Firebase/Messaging'
+  pod 'RevenueCat', '~> 5.0'
 end
 
 post_install do |installer|
