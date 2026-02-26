@@ -192,6 +192,7 @@ export default function SettingsPage() {
   const [showParentInviteModal, setShowParentInviteModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
+  const [showAIDisclosure, setShowAIDisclosure] = useState(false);
   const [selectedTeenForReset, setSelectedTeenForReset] = useState<{id: number, name: string, username?: string} | null>(null);
   
   // Profile settings state
@@ -1619,6 +1620,9 @@ export default function SettingsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                <Button variant="outline" className="w-full justify-start" onClick={() => setShowAIDisclosure(true)}>
+                  AI & Third-Party Data Usage
+                </Button>
                 <Button variant="outline" className="w-full justify-start" onClick={handleDownloadData}>
                   Download My Data
                 </Button>
@@ -2619,6 +2623,56 @@ export default function SettingsPage() {
                 </DialogFooter>
               </form>
             </Form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showAIDisclosure} onOpenChange={setShowAIDisclosure}>
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto top-[5%] sm:top-[50%] translate-y-0 sm:-translate-y-1/2">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                AI & Third-Party Data Usage
+              </DialogTitle>
+              <DialogDescription>
+                How your data is used with AI features
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 text-sm text-gray-700 dark:text-gray-300">
+              <div>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">AI Provider</h4>
+                <p>The Mom App uses OpenAI to power AI features including the voice assistant, smart task creation, and the family chat assistant.</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">What data is sent</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Your chat messages and voice transcriptions when using AI features</li>
+                  <li>Family member names and roles (for context in task assignment)</li>
+                  <li>Upcoming calendar event titles and times</li>
+                  <li>Pending task titles and due dates</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">What is NOT sent</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Your email address or password</li>
+                  <li>Payment or billing information</li>
+                  <li>Password vault entries</li>
+                  <li>Private calendar event details</li>
+                  <li>Photos or attachments</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Data handling</h4>
+                <p>Data sent to OpenAI is processed in real-time and is subject to OpenAI's data usage policies. OpenAI does not use API data to train their models. Common questions are answered locally without contacting OpenAI.</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Your control</h4>
+                <p>AI features are optional. You can use the app's calendar, tasks, notes, and other features without triggering any AI processing.</p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={() => setShowAIDisclosure(false)}>Close</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
 

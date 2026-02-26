@@ -389,8 +389,8 @@ export default function SubscriptionPage() {
             </CardContent>
           </Card>
 
-          {/* Manage Subscription Card - only for paying users */}
-          {isPaying && (
+          {/* Manage Subscription Card - only for paying users, hidden on iOS per Apple guidelines */}
+          {isPaying && !isIOS && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
