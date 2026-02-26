@@ -39,8 +39,6 @@ export default function SubscriptionPage() {
   const [rcPackages, setRcPackages] = useState<RCPackage[]>([]);
   const [rcLoading, setRcLoading] = useState(false);
   const [rcPurchasing, setRcPurchasing] = useState(false);
-  const [rcDebugLog, setRcDebugLog] = useState<string[]>([]);
-  const [showDebug, setShowDebug] = useState(false);
   const { toast } = useToast();
   const isIOS = Capacitor.getPlatform() === "ios";
 
@@ -118,31 +116,18 @@ export default function SubscriptionPage() {
 
   useEffect(() => {
     if (isIOS && isRevenueCatAvailable()) {
-      const logs: string[] = [];
-      const log = (msg: string) => { logs.push(msg); setRcDebugLog([...logs]); };
       setRcLoading(true);
-      log("Starting RevenueCat init...");
       initRevenueCat()
         .then(async (ok) => {
-          log(`Init result: ${ok}`);
-          if (!ok) { log(`Init failed - stopping. Error: ${lastInitError}`); return; }
+          if (!ok) return;
           if (subscription?.userId) {
-            log(`Logging in user: ${subscription.userId}`);
             await revenueCatLogIn(String(subscription.userId));
-            log("Login complete");
           }
-          log("Fetching offerings...");
           const pkgs = await getOfferings();
-          log(`Got ${pkgs.length} packages`);
-          pkgs.forEach((p, i) => log(`  [${i}] ${p.productIdentifier} - ${p.priceString}`));
-          if (pkgs.length === 0) {
-            log("WARNING: 0 packages returned. Check RevenueCat dashboard offerings config.");
-          }
           setRcPackages(pkgs);
         })
         .catch((err) => {
-          log(`ERROR: ${err?.message || err}`);
-          console.error(err);
+          console.error("[RevenueCat] Init error:", err);
         })
         .finally(() => setRcLoading(false));
     }
@@ -750,30 +735,6 @@ export default function SubscriptionPage() {
         onClose={() => setIsVoiceModalOpen(false)} 
       />
 
-      {isIOS && (
-        <div className="fixed bottom-20 right-4 z-50">
-          <button
-            onClick={() => setShowDebug(!showDebug)}
-            className="bg-gray-800 text-white text-xs px-3 py-1 rounded-full opacity-50"
-          >
-            {showDebug ? "Hide Debug" : "RC Debug"}
-          </button>
-          {showDebug && (
-            <div className="mt-2 bg-black text-green-400 text-[10px] p-3 rounded-lg max-w-[320px] max-h-[300px] overflow-y-auto font-mono">
-              <div className="text-white font-bold mb-1">RevenueCat Debug</div>
-              <div>Platform: {Capacitor.getPlatform()}</div>
-              <div>RC Available: {String(isRevenueCatAvailable())}</div>
-              <div>Packages loaded: {rcPackages.length}</div>
-              {lastInitError && <div className="text-red-400">Error: {lastInitError}</div>}
-              <div className="border-t border-gray-700 mt-1 pt-1">
-                {rcDebugLog.length === 0 ? "No logs yet..." : rcDebugLog.map((line, i) => (
-                  <div key={i}>{line}</div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
