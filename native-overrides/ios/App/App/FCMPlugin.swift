@@ -147,7 +147,11 @@ public class FCMPlugin: CAPPlugin, CAPBridgedPlugin, UNUserNotificationCenterDel
 
         notifyListeners("pushNotificationReceived", data: data)
 
-        completionHandler([.banner, .badge, .sound])
+        if #available(iOS 14.0, *) {
+            completionHandler([.banner, .badge, .sound])
+        } else {
+            completionHandler([.alert, .badge, .sound])
+        }
     }
 
     public func userNotificationCenter(_ center: UNUserNotificationCenter,
