@@ -1,0 +1,134 @@
+That specific message (“Product unavailable / subscription not available right now”) almost always means StoreKit couldn’t load that product from Apple (it’s not a RevenueCat “paywall” error yet). So think product discovery / StoreKit environment mismatch, not pricing/receipt.
+
+Here are the highest-probability causes + the fastest ways to prove which one it is.
+
+1) The build you’re running doesn’t match the App Store Connect app that owns those products
+
+This is #1 in Capacitor/Cordova-style setups.
+
+Symptoms: getOfferings() may look fine in RevenueCat dashboard, but on device Apple returns “product not available”.
+
+Check
+
+In Xcode: PRODUCT_BUNDLE_IDENTIFIER must be exactly the App Store Connect app’s bundle id (you said com.themomapp.ios).
+
+Make sure you’re not running a “dev” bundle id like com.themomapp.ios.dev or a different target.
+
+If the app’s bundle ID doesn’t match the App Store Connect app where the IAPs live, StoreKit won’t surface those products.
+
+2) You’re testing an App Store purchase, but the install method isn’t “StoreKit-safe”
+
+Best for subscription testing: TestFlight build on a physical device.
+
+Xcode-installed builds can work, but TestFlight removes a lot of edge cases.
+
+Do this once
+
+Install via TestFlight
+
+Use the same sandbox tester
+
+Try purchase again
+
+If it works on TestFlight but not Xcode install, your signing / bundle / environment differs.
+
+3) RevenueCat Offering/packages aren’t actually configured (or product IDs don’t match 1:1)
+
+This is the most common RevenueCat-side misconfig.
+
+What to verify in RevenueCat dashboard
+
+Products: all 4 product IDs exist exactly:
+
+com.momapp.individual.monthly
+
+com.momapp.individual.yearly
+
+com.momapp.family.monthly
+
+com.momapp.family.yearly
+
+They are attached to Entitlements
+
+They’re included in a default Offering
+
+The Offering has Packages pointing to those products
+
+If getOfferings() returns zero packages, you’ll see paywall issues; but “product unavailable” can also happen if your package maps to a product id Apple can’t resolve.
+
+4) StoreKit is returning “invalid product identifiers” (product not found / not returned)
+
+This is the key diagnostic.
+
+Turn on RevenueCat debug logs
+In iOS native init (or your Capacitor plugin), set:
+
+Purchases.logLevel = .debug
+
+Then reproduce the tap and look for logs like:
+
+Invalid product identifiers: [...]
+
+Fetched products: 0
+
+StoreKit error: SKErrorDomain code=...
+
+If you paste those lines, we’ll know instantly whether Apple is returning 0 products vs purchase failing later.
+
+5) App Store Connect status / agreements / propagation
+
+These can cause temporary unavailability, especially right after:
+
+enabling Paid Apps agreement,
+
+adding new IAPs,
+
+uploading a new build.
+
+Reality: propagation can take hours (sometimes up to ~24).
+But if it’s been more than a day, it’s usually #1–#3.
+
+6) In-App Purchase capability missing in the Xcode target
+
+If the iOS target doesn’t have In-App Purchase enabled, StoreKit can behave oddly.
+
+Check
+Xcode → Target → Signing & Capabilities → In-App Purchase should be present.
+
+7) Sandbox tester / device account gotcha
+
+On the device:
+
+Settings → App Store → Sandbox Account (or it prompts during purchase)
+
+Make sure you’re not trying to buy while the device is in a weird Apple ID state
+
+(Usually this causes login prompts, not “product unavailable,” but worth confirming.)
+
+Fastest “tell me which bucket you’re in” test (5 minutes)
+
+Install TestFlight build
+
+Enable RevenueCat debug logs (Purchases.logLevel = .debug)
+
+Tap subscribe once
+
+Copy/paste the console lines that mention:
+
+Invalid product identifiers
+
+Fetched products
+
+SKErrorDomain
+
+StoreKit
+
+If you paste those log lines (even 15–30 lines), I can tell you exactly whether it’s:
+
+bundle/app mismatch,
+
+RevenueCat offering config,
+
+or Apple not returning products yet.
+
+If you want, tell me how the build is installed right now (TestFlight vs Xcode vs ad-hoc) and I’ll point you to the single most likely fix path.
