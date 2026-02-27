@@ -196,7 +196,7 @@ export default function TeenDashboard() {
       {/* Navigation Header */}
       <TeenNavigation currentPath="/teen-dashboard" teenProfile={teenProfile} />
 
-      <div className="max-w-7xl mx-auto px-4 py-6 pb-28 lg:pb-6">
+      <div className="max-w-7xl mx-auto px-4 py-6 pb-36 lg:pb-6">
         {/* Personalized Greeting */}
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
           {getGreeting()}, {teenProfile?.firstName || 'there'}!

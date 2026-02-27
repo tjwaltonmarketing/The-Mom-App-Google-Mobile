@@ -720,7 +720,7 @@ export default function TeenCalendar() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-28 lg:pb-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-36 lg:pb-6">
       {/* Navigation */}
       <TeenNavigation currentPath="/teen-calendar" teenProfile={teenProfile} />
       

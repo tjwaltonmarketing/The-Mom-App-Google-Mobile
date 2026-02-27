@@ -278,7 +278,7 @@ export default function SubscriptionPage() {
       <Header onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
       <MobileNav />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-6">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-36 lg:pb-6">
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <Crown className="text-primary" size={28} />

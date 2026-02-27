@@ -819,7 +819,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-background">
       <Header onStartVoiceNote={() => {}} />
       
-      <main className="max-w-4xl mx-auto px-4 py-6 mb-28 md:mb-0">
+      <main className="max-w-4xl mx-auto px-4 py-6 mb-36 md:mb-0">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-foreground mb-2">Settings</h1>
           <p className="text-muted-foreground">Customize your family coordination experience</p>
