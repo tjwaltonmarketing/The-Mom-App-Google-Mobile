@@ -30,7 +30,7 @@ public class RevenueCatPlugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
 
-        Purchases.logLevel = .debug
+        Purchases.logLevel = .warn
         Purchases.configure(withAPIKey: apiKey)
         isConfigured = true
 
