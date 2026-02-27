@@ -38,7 +38,7 @@ export default function Privacy() {
             <ul>
               <li><strong>Calendar Integration:</strong> Google Calendar sync (with your permission)</li>
               <li><strong>AI Processing:</strong> OpenAI services for intelligent assistance</li>
-              <li><strong>Payment Processing:</strong> Stripe for subscription management</li>
+              <li><strong>Payment Processing:</strong> Apple In-App Purchase (on iOS) and Stripe (on web/Android) for subscription management</li>
             </ul>
 
             <h2>How We Use Your Information</h2>
@@ -70,7 +70,8 @@ export default function Privacy() {
             <p>We share data with trusted third-party providers who assist in app operation:</p>
             <ul>
               <li><strong>OpenAI:</strong> AI assistant and voice transcription (see "Third-Party AI Data Processing" above for details)</li>
-              <li><strong>Stripe:</strong> Payment processing for subscriptions</li>
+              <li><strong>Apple:</strong> In-App Purchase payment processing for iOS subscriptions</li>
+              <li><strong>Stripe:</strong> Payment processing for web and Android subscriptions</li>
               <li><strong>Google:</strong> Calendar synchronization (only with your explicit consent)</li>
               <li><strong>Cloud Infrastructure:</strong> Secure data storage and app hosting</li>
             </ul>

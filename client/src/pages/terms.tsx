@@ -71,7 +71,7 @@ export default function Terms() {
               <li><strong>Individual Plan:</strong> $5.99/month or $59.99/year - Single user account</li>
               <li><strong>Family Plan:</strong> $9.99/month or $99.99/year - Up to 4 coordinating adults</li>
               <li>Subscriptions are billed monthly or annually</li>
-              <li>Payment processed through Stripe</li>
+              <li>Payment processed through Apple In-App Purchase (iOS) or Stripe (web/Android)</li>
               <li>Automatic renewal unless cancelled</li>
             </ul>
 
