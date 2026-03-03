@@ -97,8 +97,8 @@ export default function Terms() {
             <h2>Contact Information</h2>
             <p>Questions about these Terms of Service should be directed to:</p>
             <ul>
-              <li><strong>Email:</strong> legal@themomapp.com</li>
-              <li><strong>Website:</strong> https://themomapp.com/contact</li>
+              <li><strong>Email:</strong> themomapp.us@gmail.com</li>
+              <li><strong>Website:</strong> https://themom.app</li>
             </ul>
 
             <h2>Changes to Terms</h2>
