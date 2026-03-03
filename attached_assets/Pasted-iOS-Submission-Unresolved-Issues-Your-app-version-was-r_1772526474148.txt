@@ -1,0 +1,90 @@
+iOS Submission
+Unresolved Issues
+
+Your app version was rejected and no other items submitted can be accepted or approved. You can make edits to your app version below.
+
+Items Submitted (1)
+You can review and make edits to your items below, or communicate with Apple. Accepted items won't be available for release until all items with issues are resubmitted and accepted. You can also remove those items and resubmit them later.
+Item
+Type
+Review Status
+Action
+iOS App 1.0
+
+1.0 (37)
+
+App Version
+Rejected
+3.1.2 Business: Payments - Subscriptions
+
+5.1.1 Legal: Privacy - Data Collection and Storage
+
+Screenshot-0303-121615.pngDownload
+Edit
+
+Messages (3)
+
+Apple2026-02-25 8:27 AM
+
+TJ Walton2026-02-26 8:30 PM
+
+AppleYesterday 9:20 PM
+Hello,
+
+Thank you for your resubmission. Upon further review, we identified additional issues that need your attention. See below for more information.
+
+If you have any questions, we are here to help. Reply to this message in App Store Connect and let us know.
+
+Review Environment
+Submission ID: 518065bd-90a5-4eab-b49a-93d1a27ffcb1
+Review date: March 03, 2026
+Review Device: iPad Air 11-inch (M3)
+Version reviewed: 1.0
+
+
+Guideline 3.1.2(c) - Business - Payments - Subscriptions
+Issue Description
+
+The submission did not include all the required information for apps offering auto-renewable subscriptions.
+
+The following information needs to be included in the App Store metadata:
+
+- A functional link to the Terms of Use (EULA). If you are using the standard Apple Terms of Use (EULA), include a link to the Terms of Use in the App Description. If you are using a custom EULA, add it in App Store Connect.
+
+Next Steps
+
+Update the App Store metadata to include the information specified above.
+
+
+Guidelines 5.1.1(i) - Legal - Privacy - Data Collection and 5.1.2(i) - Legal - Privacy - Data Use
+
+Issue Description
+
+The app appears to share the user’s personal data with a third-party AI service but the app does not clearly ask the user’s permission before sharing the data. 
+
+Apps may only use, transmit, or share personal data after they meet all of the following requirements: 
+
+- Disclose what data will be sent
+- Specify who the data is sent to
+- Obtain the user’s permission before sending data
+- Identify in the privacy policy what data the app collects, how it collects that data, all uses of that data, and confirm any third party the app shares data with provides the same or equal protection
+
+Next Steps
+
+If the app sends user data to a third-party AI service, revise the app to ask the user’s permission before sharing personal data with a third-party AI service.
+
+If it does not already, the app’s privacy policy must also identify what data the app collects, how it collects that data, and all uses of that data, including if it is shared with a third-party AI service.
+
+If the app does not send user data to a third-party AI service or does not include a third-party AI service, reply to this rejection to confirm and add this information to the App Review Information section of App Store Connect.
+
+Resources
+
+- Learn more about privacy policy requirements in guideline 5.1.1(i).
+- Learn more about data use and sharing requirements in guideline 5.1.2(i).
+- Learn more about providing information to App Review in App Store Connect.
+
+Support
+- Reply to this message in your preferred language if you need assistance. If you need additional support, use the Contact Us module.
+- Consult with fellow developers and Apple engineers on the Apple Developer Forums.
+- Request an App Review Appointment at Meet with Apple to discuss your app's review. Appointments subject to availability during your local business hours on Tuesdays and Thursdays.
+- Provide feedback on this message and your review experience by completing a short survey.

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils, ChevronDown, RotateCcw, ShoppingCart, User } from "lucide-react";
+import { Mic, Square, Check, Calendar, CheckSquare, Bot, Sparkles, Utensils, ChevronDown, RotateCcw, ShoppingCart, User, Shield } from "lucide-react";
+import { hasAIConsent, grantAIConsent } from "@/lib/ai-consent";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -194,8 +195,23 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
     startRecording();
   };
 
+  const [showAIConsentInModal, setShowAIConsentInModal] = useState(false);
+
   const handleStopRecording = () => {
     stopRecording();
+    if (transcript.trim()) {
+      if (!hasAIConsent()) {
+        setShowAIConsentInModal(true);
+        return;
+      }
+      setIsProcessingAI(true);
+      processAIMutation.mutate(transcript);
+    }
+  };
+
+  const handleAIConsentInModal = () => {
+    grantAIConsent();
+    setShowAIConsentInModal(false);
     if (transcript.trim()) {
       setIsProcessingAI(true);
       processAIMutation.mutate(transcript);
@@ -301,6 +317,26 @@ export function VoiceNoteModal({ isOpen, onClose }: VoiceNoteModalProps) {
           </DialogTitle>
         </DialogHeader>
         
+        {showAIConsentInModal && (
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg space-y-3 mb-4">
+            <div className="flex items-center gap-2 font-semibold text-sm">
+              <Shield className="text-blue-500" size={16} />
+              AI Data & Privacy Consent
+            </div>
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              To process your voice note with AI, your transcription and family member names will be sent to <strong>OpenAI</strong> (third-party). Your data is not used to train AI models and is not stored beyond processing.
+            </p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setShowAIConsentInModal(false)} className="text-xs">
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleAIConsentInModal} className="text-xs bg-primary">
+                I Agree — Process
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="text-center">
           <div className={`w-20 h-20 bg-accent rounded-full flex items-center justify-center mx-auto mb-4 ${isRecording ? 'animate-pulse' : ''}`}>
             <Mic className="text-white h-8 w-8" />
