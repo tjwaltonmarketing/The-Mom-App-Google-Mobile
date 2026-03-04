@@ -68,12 +68,12 @@ export default function AIAssistantPage() {
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <Button variant="outline" onClick={() => setShowConsentDialog(false)}>
-              No, go back
-            </Button>
-            <Button onClick={handleConsent} className="bg-primary">
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button onClick={handleConsent} className="bg-primary w-full">
               Yes, I agree
+            </Button>
+            <Button variant="outline" onClick={() => setShowConsentDialog(false)} className="w-full">
+              No, go back
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -181,30 +181,6 @@ export default function AIAssistantPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="text-blue-500" size={20} />
-                  AI Data & Privacy
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  This assistant is powered by <strong>OpenAI</strong>. When you send a message, the following data may be sent to OpenAI for processing:
-                </p>
-                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc pl-4">
-                  <li>Your message text</li>
-                  <li>Family member names (for task assignment)</li>
-                  <li>Voice note transcriptions</li>
-                </ul>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  OpenAI does not use your data to train their models. Your conversations are not stored by OpenAI beyond processing your request.
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  See our <a href="/privacy" className="text-primary underline">Privacy Policy</a> for full details.
-                </p>
-              </CardContent>
-            </Card>
           </div>
         </div>
         )}
