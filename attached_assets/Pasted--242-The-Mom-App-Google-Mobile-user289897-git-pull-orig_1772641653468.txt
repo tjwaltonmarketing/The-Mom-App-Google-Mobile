@@ -1,0 +1,124 @@
+#242:The-Mom-App-Google-Mobile user289897$ git pull origin main
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+ * branch            main       -> FETCH_HEAD
+Updating bf67e24..108522f
+error: Your local changes to the following files would be overwritten by merge:
+	ios/App/Podfile
+Please commit your changes or stash them before you merge.
+error: The following untracked working tree files would be overwritten by merge:
+	native-overrides/ios/App/App/FCMPlugin.m
+	native-overrides/ios/App/App/RevenueCatPlugin.m
+Please move or remove them before you merge.
+Aborting
+#242:The-Mom-App-Google-Mobile user289897$ npm install
+
+up to date, audited 934 packages in 5s
+
+122 packages are looking for funding
+  run `npm fund` for details
+
+39 vulnerabilities (6 low, 10 moderate, 21 high, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+#242:The-Mom-App-Google-Mobile user289897$ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (1) index.htmlBrowserslist: browsers data (caniuse-lite) is 17 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3189 modules transformed.
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/config.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/useAuth.ts, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/queryClient.ts, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/login.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/register.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-login.tsx, dynamic import will not move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/queryClient.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/ai-assistant.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/advanced-task-management.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/meal-planning.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/quick-tasks.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/today-schedule.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/trial-banner.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/voice-notes.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/welcome-header.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/event-edit-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/event-form.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family-dishwasher.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family/invite-teen-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family/kid-point-manager.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/feedback-prompt-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/notification-bell.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/parent-invite-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/password-edit-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/password-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/task-edit-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/task-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/teen-task-detail-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/teen/teen-navigation.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/voice-note-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/weather-display.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/use-pull-to-refresh.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/useAuth.ts, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/admin.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/calendar.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/delete-account.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/grocery-list.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/login.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/notes.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/onboarding.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/register.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/reset-password.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/subscription.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/tasks.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-calendar.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-dashboard.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-login.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-onboarding.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-passwords.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-profile.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-tasks.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/upgrade-success.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/upgrade.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts, dynamic import will not move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/notification-prompt.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/web-access-tip-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, dynamic import will not move module into another chunk.
+
+../dist/public/index.html                                                              2.20 kB │ gzip:   0.80 kB
+../dist/public/assets/The Mom app_20250607_125224_0000_1749573727197-CXHC4Cic.png     25.37 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                          27.04 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                      82.76 kB
+../dist/public/assets/onboarding-slide-4-rHtayH7z.png                                356.97 kB
+../dist/public/assets/onboarding-slide-2-DOAnxM2R.png                                472.23 kB
+../dist/public/assets/onboarding-slide-1-WQCRwazH.png                                473.66 kB
+../dist/public/assets/onboarding-slide-family-EbBOjLQv.png                           578.29 kB
+../dist/public/assets/onboarding-slide-tasks-FJgrccnv.png                            860.62 kB
+../dist/public/assets/onboarding-slide-meals-a2IrNqzw.png                            928.19 kB
+../dist/public/assets/onboarding-slide-ai-Bxp1YDl6.png                               945.11 kB
+../dist/public/assets/onboarding-slide-calendar-CEeLQ3iz.png                       1,098.90 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                   4,686.94 kB
+../dist/public/assets/index-BWc9oYGE.css                                             133.61 kB │ gzip:  20.53 kB
+../dist/public/assets/web-DP9_OF2k.js                                                  0.35 kB │ gzip:   0.19 kB
+../dist/public/assets/web-Cj8ZtT8g.js                                                  0.80 kB │ gzip:   0.24 kB
+../dist/public/assets/index-DHVzfD91.js                                            1,754.78 kB │ gzip: 497.47 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.67s
+▲ [WARNING] Import "defineConfig" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    vite.config.ts:1:9:
+      1 │ import { defineConfig } from "vite";
+        ╵          ~~~~~~~~~~~~
+
+▲ [WARNING] Import "createServer" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    server/vite.ts:4:9:
+      4 │ import { createServer as createViteServer, createLogger } from "vite";
+        ╵          ~~~~~~~~~~~~
+
+▲ [WARNING] Import "createLogger" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    server/vite.ts:4:43:
+      4 │ import { createServer as createViteServer, createLogger } from "vite";
+        ╵                                            ~~~~~~~~~~~~
+
+3 warnings
+
+  dist/index.js  375.9kb
+
+⚡ Done in 19ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap sync ios
+✔ Copying web assets from public to ios/App/App/public in 32.23ms
+✔ Creating capacitor.config.json in ios/App/App in 1.34ms
+✔ copy ios in 79.69ms
+✔ Updating iOS plugins in 8.23ms
+✔ Updating iOS native dependencies with pod install in 2.72s
+[warn] @capacitor/core@6.2.1 version doesn't match @capacitor/ios@6.1.2 version.
+       Consider updating to a matching version, e.g. w/ npm install @capacitor/core@6.1.2
+[info] Found 3 Capacitor plugins for ios:
+       @capacitor-community/speech-recognition@6.0.1
+       @capacitor/geolocation@6.1.1
+       capacitor-native-settings@6.0.6
+✔ update ios in 2.77s
+[info] Sync finished in 3.149s
+#242:The-Mom-App-Google-Mobile user289897$ sed -i '' 's/CAPBridgeViewController" customModule="Capacitor"/MyViewController" customModule="App"/' ios/App/App/Base.lproj/Main.storyboard
+#242:The-Mom-App-Google-Mobile user289897$ sed -i '' 's/CAPBridgeViewController" customModule="Capacitor"/MyViewController" customModule="App"/' ios/App/App/Base.lproj/Main.storyboard
+#242:The-Mom-App-Google-Mobile user289897$ npx cap open ios
+✔ Opening the Xcode workspace... in 3.01s
+#242:The-Mom-App-Google-Mobile user289897$ 
+  [Restored Mar 4, 2026 at 8:25:15 AM]
+Last login: Wed Mar  4 08:24:15 on console
+date: illegal time format
+usage: date [-jnRu] [-I[date|hours|minutes|seconds]] [-f input_fmt]
+            [-r filename|seconds] [-v[+|-]val[y|m|w|d|H|M|S]]
+            [[[[mm]dd]HH]MM[[cc]yy][.SS] | new_date] [+output_fmt]
+-bash: Saving: command not found
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+#242:~ user289897$ 
