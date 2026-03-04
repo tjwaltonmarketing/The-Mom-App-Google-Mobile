@@ -1,0 +1,323 @@
+#242:The-Mom-App-Google-Mobile user289897$ git stash
+Saved working directory and index state WIP on main: bf67e24 Improve subscription page debug panel to show RevenueCat initialization errors
+#242:The-Mom-App-Google-Mobile user289897$ git clean -f native-overrides/ios/App/App/FCMPlugin.m native-overrides/ios/App/App/RevenueCatPlugin.m
+Removing native-overrides/ios/App/App/FCMPlugin.m
+Removing native-overrides/ios/App/App/RevenueCatPlugin.m
+#242:The-Mom-App-Google-Mobile user289897$ git pull origin main
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+ * branch            main       -> FETCH_HEAD
+Updating bf67e24..108522f
+Fast-forward
+ .github/workflows/build-android.yml                                                  |   8 +-
+ .github/workflows/build-ios.yml                                                      |   9 +
+ attached_assets/IMG_0014_1772099783791.png                                           | Bin 0 -> 249261 bytes
+ attached_assets/IMG_0016_1772107490396.png                                           | Bin 0 -> 257227 bytes
+ attached_assets/IMG_0018_1772129225991.png                                           | Bin 0 -> 257207 bytes
+ attached_assets/IMG_0019_1772133446885.png                                           | Bin 0 -> 240423 bytes
+ attached_assets/IMG_0020_1772133446885.png                                           | Bin 0 -> 264074 bytes
+ attached_assets/IMG_0021_1772137970464.png                                           | Bin 0 -> 253643 bytes
+ attached_assets/IMG_0022_1772140458847.png                                           | Bin 0 -> 363949 bytes
+ attached_assets/IMG_0022_1772140922769.png                                           | Bin 0 -> 363949 bytes
+ attached_assets/IMG_0023_1772140922769.png                                           | Bin 0 -> 357487 bytes
+ attached_assets/IMG_0024_1772140922769.png                                           | Bin 0 -> 393523 bytes
+ .../Pasted--242-The-Mom-App-Google-Mobile-user289897-npx-cap-copy-_1772102394325.txt | 184 +++++++++++++
+ .../Pasted-Does-this-conversation-and-solution-make-sense-This-is-_1772140192728.txt | 584 ++++++++++++++++++++++++++++++++++++++++
+ .../Pasted-You-are-not-dealing-with-an-Apple-product-issue-You-are_1772138040935.txt | 158 +++++++++++
+ .../Pasted-iOS-Submission-Unresolved-Issues-Your-app-version-was-r_1772150846555.txt |  86 ++++++
+ .../Pasted-iOS-Submission-Unresolved-Issues-Your-app-version-was-r_1772526474148.txt |  90 +++++++
+ attached_assets/Screenshot_20260226_224258_The_Mom_App_1772171128071.jpg             | Bin 0 -> 342303 bytes
+ attached_assets/Screenshot_20260226_224304_The_Mom_App_1772171128106.jpg             | Bin 0 -> 307205 bytes
+ attached_assets/Screenshot_20260226_224315_The_Mom_App_1772171128123.jpg             | Bin 0 -> 319451 bytes
+ attached_assets/Screenshot_20260226_224359_The_Mom_App_1772171128140.jpg             | Bin 0 -> 454327 bytes
+ attached_assets/image_1772101259802.png                                              | Bin 0 -> 44275 bytes
+ attached_assets/image_1772101727324.png                                              | Bin 0 -> 83243 bytes
+ attached_assets/image_1772102473587.png                                              | Bin 0 -> 253048 bytes
+ attached_assets/image_1772103335862.png                                              | Bin 0 -> 72724 bytes
+ attached_assets/image_1772103447316.png                                              | Bin 0 -> 306257 bytes
+ attached_assets/image_1772103977497.png                                              | Bin 0 -> 179782 bytes
+ attached_assets/image_1772104073838.png                                              | Bin 0 -> 180965 bytes
+ attached_assets/image_1772104321715.png                                              | Bin 0 -> 35086 bytes
+ attached_assets/image_1772104637588.png                                              | Bin 0 -> 35291 bytes
+ attached_assets/image_1772104918778.png                                              | Bin 0 -> 214212 bytes
+ attached_assets/image_1772104951108.png                                              | Bin 0 -> 200408 bytes
+ attached_assets/image_1772105105502.png                                              | Bin 0 -> 257774 bytes
+ attached_assets/image_1772105340711.png                                              | Bin 0 -> 344001 bytes
+ attached_assets/image_1772105671711.png                                              | Bin 0 -> 98168 bytes
+ attached_assets/image_1772105913414.png                                              | Bin 0 -> 218380 bytes
+ attached_assets/image_1772124216830.png                                              | Bin 0 -> 174720 bytes
+ attached_assets/image_1772124251060.png                                              | Bin 0 -> 137988 bytes
+ attached_assets/image_1772124296254.png                                              | Bin 0 -> 158316 bytes
+ attached_assets/image_1772124335881.png                                              | Bin 0 -> 450533 bytes
+ attached_assets/image_1772124406984.png                                              | Bin 0 -> 465515 bytes
+ attached_assets/image_1772124743940.png                                              | Bin 0 -> 282260 bytes
+ attached_assets/image_1772125014836.png                                              | Bin 0 -> 243199 bytes
+ attached_assets/image_1772125123651.png                                              | Bin 0 -> 267184 bytes
+ attached_assets/image_1772125522912.png                                              | Bin 0 -> 287850 bytes
+ attached_assets/image_1772125633055.png                                              | Bin 0 -> 282022 bytes
+ attached_assets/image_1772126184933.png                                              | Bin 0 -> 571243 bytes
+ attached_assets/image_1772126320388.png                                              | Bin 0 -> 226893 bytes
+ attached_assets/image_1772126480073.png                                              | Bin 0 -> 136235 bytes
+ attached_assets/image_1772126530173.png                                              | Bin 0 -> 194379 bytes
+ attached_assets/image_1772127288829.png                                              | Bin 0 -> 476953 bytes
+ attached_assets/image_1772127384639.png                                              | Bin 0 -> 271635 bytes
+ attached_assets/image_1772127416917.png                                              | Bin 0 -> 260151 bytes
+ attached_assets/image_1772131206253.png                                              | Bin 0 -> 369261 bytes
+ attached_assets/image_1772131722803.png                                              | Bin 0 -> 488949 bytes
+ attached_assets/image_1772132684881.png                                              | Bin 0 -> 286270 bytes
+ attached_assets/image_1772132748140.png                                              | Bin 0 -> 306270 bytes
+ attached_assets/image_1772132807157.png                                              | Bin 0 -> 300539 bytes
+ attached_assets/image_1772134620938.png                                              | Bin 0 -> 132500 bytes
+ attached_assets/image_1772134782497.png                                              | Bin 0 -> 165349 bytes
+ attached_assets/image_1772138362501.png                                              | Bin 0 -> 174966 bytes
+ attached_assets/image_1772138435946.png                                              | Bin 0 -> 175116 bytes
+ attached_assets/image_1772150784473.png                                              | Bin 0 -> 222518 bytes
+ client/src/components/event-form.tsx                                                 |   2 +-
+ client/src/components/password-modal.tsx                                             |   2 +-
+ client/src/components/task-modal.tsx                                                 |   2 +-
+ client/src/components/voice-note-modal.tsx                                           |  38 ++-
+ client/src/lib/ai-consent.ts                                                         |   9 +
+ client/src/pages/admin.tsx                                                           |   2 +-
+ client/src/pages/ai-assistant.tsx                                                    | 110 ++++++--
+ client/src/pages/calendar.tsx                                                        |   2 +-
+ client/src/pages/dashboard.tsx                                                       |   2 +-
+ client/src/pages/family-chat.tsx                                                     |   2 +-
+ client/src/pages/grocery-list.tsx                                                    |   2 +-
+ client/src/pages/meal-plan.tsx                                                       |   2 +-
+ client/src/pages/notes.tsx                                                           |   2 +-
+ client/src/pages/privacy.tsx                                                         |   5 +-
+ client/src/pages/settings.tsx                                                        |   5 +-
+ client/src/pages/subscription.tsx                                                    |  56 +---
+ client/src/pages/tasks.tsx                                                           |   2 +-
+ client/src/pages/teen-calendar.tsx                                                   |   2 +-
+ client/src/pages/teen-dashboard.tsx                                                  |   2 +-
+ client/src/pages/terms.tsx                                                           |   6 +-
+ client/src/pages/tutorials.tsx                                                       |   2 +-
+ ios/App/Podfile                                                                      |   1 +
+ native-overrides/ios/App/App/FCMPlugin.m                                             |   9 +
+ native-overrides/ios/App/App/FCMPlugin.swift                                         |   6 +-
+ native-overrides/ios/App/App/GoogleService-Info.plist                                |  30 +++
+ native-overrides/ios/App/App/MyViewController.swift                                  |   2 +
+ native-overrides/ios/App/App/RevenueCatPlugin.m                                      |  11 +
+ native-overrides/ios/App/App/RevenueCatPlugin.swift                                  |  19 +-
+ server/routes.ts                                                                     |  57 +++-
+ 92 files changed, 1407 insertions(+), 104 deletions(-)
+ create mode 100644 attached_assets/IMG_0014_1772099783791.png
+ create mode 100644 attached_assets/IMG_0016_1772107490396.png
+ create mode 100644 attached_assets/IMG_0018_1772129225991.png
+ create mode 100644 attached_assets/IMG_0019_1772133446885.png
+ create mode 100644 attached_assets/IMG_0020_1772133446885.png
+ create mode 100644 attached_assets/IMG_0021_1772137970464.png
+ create mode 100644 attached_assets/IMG_0022_1772140458847.png
+ create mode 100644 attached_assets/IMG_0022_1772140922769.png
+ create mode 100644 attached_assets/IMG_0023_1772140922769.png
+ create mode 100644 attached_assets/IMG_0024_1772140922769.png
+ create mode 100644 attached_assets/Pasted--242-The-Mom-App-Google-Mobile-user289897-npx-cap-copy-_1772102394325.txt
+ create mode 100644 attached_assets/Pasted-Does-this-conversation-and-solution-make-sense-This-is-_1772140192728.txt
+ create mode 100644 attached_assets/Pasted-You-are-not-dealing-with-an-Apple-product-issue-You-are_1772138040935.txt
+ create mode 100644 attached_assets/Pasted-iOS-Submission-Unresolved-Issues-Your-app-version-was-r_1772150846555.txt
+ create mode 100644 attached_assets/Pasted-iOS-Submission-Unresolved-Issues-Your-app-version-was-r_1772526474148.txt
+ create mode 100644 attached_assets/Screenshot_20260226_224258_The_Mom_App_1772171128071.jpg
+ create mode 100644 attached_assets/Screenshot_20260226_224304_The_Mom_App_1772171128106.jpg
+ create mode 100644 attached_assets/Screenshot_20260226_224315_The_Mom_App_1772171128123.jpg
+ create mode 100644 attached_assets/Screenshot_20260226_224359_The_Mom_App_1772171128140.jpg
+ create mode 100644 attached_assets/image_1772101259802.png
+ create mode 100644 attached_assets/image_1772101727324.png
+ create mode 100644 attached_assets/image_1772102473587.png
+ create mode 100644 attached_assets/image_1772103335862.png
+ create mode 100644 attached_assets/image_1772103447316.png
+ create mode 100644 attached_assets/image_1772103977497.png
+ create mode 100644 attached_assets/image_1772104073838.png
+ create mode 100644 attached_assets/image_1772104321715.png
+ create mode 100644 attached_assets/image_1772104637588.png
+ create mode 100644 attached_assets/image_1772104918778.png
+ create mode 100644 attached_assets/image_1772104951108.png
+ create mode 100644 attached_assets/image_1772105105502.png
+ create mode 100644 attached_assets/image_1772105340711.png
+ create mode 100644 attached_assets/image_1772105671711.png
+ create mode 100644 attached_assets/image_1772105913414.png
+ create mode 100644 attached_assets/image_1772124216830.png
+ create mode 100644 attached_assets/image_1772124251060.png
+ create mode 100644 attached_assets/image_1772124296254.png
+ create mode 100644 attached_assets/image_1772124335881.png
+ create mode 100644 attached_assets/image_1772124406984.png
+ create mode 100644 attached_assets/image_1772124743940.png
+ create mode 100644 attached_assets/image_1772125014836.png
+ create mode 100644 attached_assets/image_1772125123651.png
+ create mode 100644 attached_assets/image_1772125522912.png
+ create mode 100644 attached_assets/image_1772125633055.png
+ create mode 100644 attached_assets/image_1772126184933.png
+ create mode 100644 attached_assets/image_1772126320388.png
+ create mode 100644 attached_assets/image_1772126480073.png
+ create mode 100644 attached_assets/image_1772126530173.png
+ create mode 100644 attached_assets/image_1772127288829.png
+ create mode 100644 attached_assets/image_1772127384639.png
+ create mode 100644 attached_assets/image_1772127416917.png
+ create mode 100644 attached_assets/image_1772131206253.png
+ create mode 100644 attached_assets/image_1772131722803.png
+ create mode 100644 attached_assets/image_1772132684881.png
+ create mode 100644 attached_assets/image_1772132748140.png
+ create mode 100644 attached_assets/image_1772132807157.png
+ create mode 100644 attached_assets/image_1772134620938.png
+ create mode 100644 attached_assets/image_1772134782497.png
+ create mode 100644 attached_assets/image_1772138362501.png
+ create mode 100644 attached_assets/image_1772138435946.png
+ create mode 100644 attached_assets/image_1772150784473.png
+ create mode 100644 client/src/lib/ai-consent.ts
+ create mode 100644 native-overrides/ios/App/App/FCMPlugin.m
+ create mode 100644 native-overrides/ios/App/App/GoogleService-Info.plist
+ create mode 100644 native-overrides/ios/App/App/RevenueCatPlugin.m
+#242:The-Mom-App-Google-Mobile user289897$ git stash pop
+Auto-merging ios/App/Podfile
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   ios/App/App-Bridging-Header.h
+	new file:   ios/App/App.xcodeproj/project.pbxproj
+	new file:   ios/App/App/AppRelease.entitlements
+	new file:   ios/App/FCMPlugin.swift
+	new file:   ios/App/RevenueCatPlugin.swift
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   ios/App/App.xcworkspace/contents.xcworkspacedata
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/100.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/102.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/1024.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/108.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/114.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/120.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/128.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/144.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/152.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/16.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/167.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/172.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/180.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/196.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/20.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/216.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/234.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/256.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/258.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/29.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/32.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/40.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/48.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/50.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/512.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/55.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/57.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/58.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/60.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/64.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/66.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/72.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/76.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/80.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/87.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/88.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/92.png
+	deleted:    ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon.appiconset/Contents.json
+	modified:   ios/App/App/GoogleService-Info.plist
+	modified:   ios/App/App/Info.plist
+	modified:   ios/App/App/MyViewController.swift
+	modified:   ios/App/Podfile
+	modified:   ios/App/Podfile.lock
+	deleted:    ios/App/The Mom App (Official).xcodeproj/project.pbxproj
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	280915
+	ios/App/App/FCMPlugin.m
+	ios/App/App/RevenueCatPlugin.m
+	ios/App/App/RevenueCatPlugin.swift
+	ios/App/FCMPlugin.m
+	ios/App/MyViewController.swift
+	ios/App/RevenueCatPlugin.m
+	rest-express@1.0.0
+	vite
+
+Dropped refs/stash@{0} (495d28a483dfac20d26f20da7f2f86f24d504893)
+#242:The-Mom-App-Google-Mobile user289897$ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (1) index.htmlBrowserslist: browsers data (caniuse-lite) is 17 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3190 modules transformed.
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/config.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/useAuth.ts, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/queryClient.ts, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/login.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/register.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-login.tsx, dynamic import will not move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/queryClient.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/ai-assistant.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/advanced-task-management.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/meal-planning.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/quick-tasks.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/today-schedule.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/trial-banner.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/voice-notes.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/welcome-header.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/event-edit-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/event-form.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family-dishwasher.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family/invite-teen-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family/kid-point-manager.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/feedback-prompt-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/notification-bell.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/parent-invite-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/password-edit-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/password-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/task-edit-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/task-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/teen-task-detail-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/teen/teen-navigation.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/voice-note-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/weather-display.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/use-pull-to-refresh.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/useAuth.ts, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/admin.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/calendar.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/delete-account.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/grocery-list.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/login.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/notes.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/onboarding.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/register.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/reset-password.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/subscription.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/tasks.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-calendar.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-dashboard.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-login.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-onboarding.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-passwords.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-profile.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-tasks.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/upgrade-success.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/upgrade.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts, dynamic import will not move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts is dynamically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx but also statically imported by /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/notification-prompt.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/web-access-tip-modal.tsx, /Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, dynamic import will not move module into another chunk.
+
+../dist/public/index.html                                                              2.20 kB │ gzip:   0.80 kB
+../dist/public/assets/The Mom app_20250607_125224_0000_1749573727197-CXHC4Cic.png     25.37 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                          27.04 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                      82.76 kB
+../dist/public/assets/onboarding-slide-4-rHtayH7z.png                                356.97 kB
+../dist/public/assets/onboarding-slide-2-DOAnxM2R.png                                472.23 kB
+../dist/public/assets/onboarding-slide-1-WQCRwazH.png                                473.66 kB
+../dist/public/assets/onboarding-slide-family-EbBOjLQv.png                           578.29 kB
+../dist/public/assets/onboarding-slide-tasks-FJgrccnv.png                            860.62 kB
+../dist/public/assets/onboarding-slide-meals-a2IrNqzw.png                            928.19 kB
+../dist/public/assets/onboarding-slide-ai-Bxp1YDl6.png                               945.11 kB
+../dist/public/assets/onboarding-slide-calendar-CEeLQ3iz.png                       1,098.90 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                   4,686.94 kB
+../dist/public/assets/index-CUkfZI3R.css                                             133.11 kB │ gzip:  20.45 kB
+../dist/public/assets/web-KIhDvqXn.js                                                  0.35 kB │ gzip:   0.19 kB
+../dist/public/assets/web-CpHCPJ8w.js                                                  0.80 kB │ gzip:   0.24 kB
+../dist/public/assets/index-CIuTfqtr.js                                            1,756.14 kB │ gzip: 497.69 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.01s
+▲ [WARNING] Import "defineConfig" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    vite.config.ts:1:9:
+      1 │ import { defineConfig } from "vite";
+        ╵          ~~~~~~~~~~~~
+
+▲ [WARNING] Import "createServer" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    server/vite.ts:4:9:
+      4 │ import { createServer as createViteServer, createLogger } from "vite";
+        ╵          ~~~~~~~~~~~~
+
+▲ [WARNING] Import "createLogger" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    server/vite.ts:4:43:
+      4 │ import { createServer as createViteServer, createLogger } from "vite";
+        ╵                                            ~~~~~~~~~~~~
+
+3 warnings
+
+  dist/index.js  378.0kb
+
+⚡ Done in 18ms
+#242:The-Mom-App-Google-Mobile user289897$ npx cap sync ios
+✔ Copying web assets from public to ios/App/App/public in 50.24ms
+✔ Creating capacitor.config.json in ios/App/App in 1.35ms
+✔ copy ios in 101.04ms
+✔ Updating iOS plugins in 9.23ms
+✔ Updating iOS native dependencies with pod install in 3.62s
+[warn] @capacitor/core@6.2.1 version doesn't match @capacitor/ios@6.1.2 version.
+       Consider updating to a matching version, e.g. w/ npm install @capacitor/core@6.1.2
+[info] Found 3 Capacitor plugins for ios:
+       @capacitor-community/speech-recognition@6.0.1
+       @capacitor/geolocation@6.1.1
+       capacitor-native-settings@6.0.6
+✔ update ios in 3.68s
+[info] Sync finished in 4.113s
+#242:The-Mom-App-Google-Mobile user289897$ sed -i '' 's/CAPBridgeViewController" customModule="Capacitor"/MyViewController" customModule="App"/' ios/App/App/Base.lproj/Main.storyboard
