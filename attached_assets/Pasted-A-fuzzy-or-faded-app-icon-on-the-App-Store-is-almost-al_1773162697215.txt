@@ -1,0 +1,35 @@
+A fuzzy or faded app icon on the App Store is almost always caused by using a low-resolution image, incorrect image format, or neglecting the new "Liquid Glass" design standards in iOS 26. 
+Reddit
+Reddit
+ +4
+Here is a checklist of fixes based on the latest 2026 App Store requirements to make your icon look crisp:
+1. Fix Resolution and Dimensions
+Use 1024 x 1024 px: The master app icon must be exactly 1024 x 1024 pixels.
+Avoid Upscaling: Ensure the original design was created at this size. Stretching a smaller image (e.g., 512x512) will create a blurry or pixelated result.
+Use High Resolution: Use high-resolution PNG, vector (SVG, EPS, AI), or PDF files. 
+SplitMetrics
+SplitMetrics
+ +3
+2. Adhere to Apple’s 2026 "Liquid Glass" Guidelines 
+As of iOS 26, Apple uses a "Liquid Glass" design language that adds depth, shadows, and transparency. 
+Layer Your Artwork: Instead of a single flattened image, provide layered artwork (using Apple's Icon Composer) to ensure the icon looks sharp and interacts with light correctly, rather than appearing blurry.
+Remove Pre-applied Effects: Do not add your own shadows or rounded corners. Apple automatically applies a "squircle" mask and system-level effects.
+Avoid Transparency: Your icon must be fully opaque. Do not leave empty (transparent) areas in the PNG, as they can cause rendering issues or display as black. 
+Apple Developer
+Apple Developer
+ +4
+3. Check Design and Color
+Keep it Simple: Complex, detailed logos look messy at small sizes (like 29x29 for Settings). Focus on a bold, simple symbol.
+High Contrast: Use strong contrast between foreground and background for better visibility.
+Check Safe Zones: Ensure your logo isn't too close to the edge, or it may be cut off by the rounded corner mask. 
+SplitMetrics
+SplitMetrics
+ +4
+4. Technical Checklist
+Re-upload to App Store Connect: Sometimes an old, low-res image is cached. Re-uploading a fresh 1024x1024 png file usually fixes this.
+Clear Local Cache: Delete the app from your device and re-download it to check the actual quality, as the simulator or old builds may show cached, low-quality icons. 
+Apple Discussions
+Apple Discussions
+ +4
+If you are seeing the issue on your phone, try these settings to make them look better:
+Go to Settings > Accessibility > Display & Text Size and set Reduce Transparency to ON. 
