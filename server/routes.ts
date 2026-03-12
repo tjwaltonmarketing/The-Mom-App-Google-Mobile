@@ -4703,7 +4703,7 @@ export async function registerRoutes(app: Express) {
         // Update existing subscription with new plan
         const updated = await storage.updateUserSubscription(req.session.userId, {
           subscriptionPlan: plan,
-          subscriptionStatus: "active",
+          subscriptionStatus: "trial",
           trialStartDate: new Date(),
           trialEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
         });
@@ -4714,7 +4714,7 @@ export async function registerRoutes(app: Express) {
       const newSubscription = await storage.createUserSubscription({
         userId: req.session.userId,
         subscriptionPlan: plan,
-        subscriptionStatus: "active",
+        subscriptionStatus: "trial",
         trialStartDate: new Date(),
         trialEndDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
       });
