@@ -10,7 +10,18 @@ import { Capacitor } from "@capacitor/core";
 export default function Onboarding() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [showShareModal, setShowShareModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(
+    () => localStorage.getItem("pending_share_claim") === "true"
+  );
+
+  const showShare = () => {
+    localStorage.setItem("pending_share_claim", "true");
+    setShowShareModal(true);
+  };
+
+  const clearShare = () => {
+    localStorage.removeItem("pending_share_claim");
+  };
 
   const startTrialMutation = useMutation({
     mutationFn: async (plan: "individual" | "family") => {
@@ -23,7 +34,7 @@ export default function Onboarding() {
         toast({ title: "Welcome to The Mom App!", description: "Your free trial has started." });
         window.location.href = "/";
       } else {
-        setShowShareModal(true);
+        showShare();
       }
     },
     onError: (error: any) => {
@@ -37,7 +48,7 @@ export default function Onboarding() {
       if (Capacitor.getPlatform() === "ios") {
         window.location.href = "/";
       } else {
-        setShowShareModal(true);
+        showShare();
       }
     },
   });
@@ -48,6 +59,7 @@ export default function Onboarding() {
       return response.json();
     },
     onSuccess: (data: any) => {
+      clearShare();
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
       localStorage.setItem("onboarding_completed", "true");
       if (data.bonusAwarded) {
@@ -64,6 +76,7 @@ export default function Onboarding() {
       window.location.href = "/";
     },
     onError: () => {
+      clearShare();
       localStorage.setItem("onboarding_completed", "true");
       toast({
         title: "Welcome to The Mom App!",
@@ -82,6 +95,7 @@ export default function Onboarding() {
   };
 
   const handleSkip = () => {
+    clearShare();
     apiRequest("POST", "/api/referral/share", { platform: "skip" }).catch(() => {});
     queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
     localStorage.setItem("onboarding_completed", "true");
