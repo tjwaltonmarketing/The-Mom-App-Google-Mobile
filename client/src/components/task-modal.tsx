@@ -213,7 +213,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
 
             <div>
               <label className="text-sm font-medium">Assign To</label>
-              {isIndividualPlan ? (
+              {!canAssignTasks ? (
                 <div className="mt-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-md border">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Crown className="h-4 w-4 text-pink-500" />

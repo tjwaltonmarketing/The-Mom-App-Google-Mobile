@@ -67,7 +67,7 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
       location: "",
       assignedTo: [],
       isAllDay: false,
-      visibilityType: isIndividualPlan ? "private" : "shared",
+      visibilityType: !canShareCalendar ? "private" : "shared",
       sharedWith: [],
       startDate: format(defaultDate, "yyyy-MM-dd"),
       startTime: "09:00",
@@ -79,13 +79,13 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
     },
   });
 
-  // Force private visibility for individual plan users
+  // Force private visibility for non-sharing users
   useEffect(() => {
-    if (isIndividualPlan) {
+    if (!canShareCalendar) {
       form.setValue("visibilityType", "private");
       form.setValue("sharedWith", []);
     }
-  }, [isIndividualPlan, form]);
+  }, [canShareCalendar, form]);
 
   const createEventMutation = useMutation({
     mutationFn: async (data: EventFormData) => {
@@ -396,7 +396,7 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
               <Label className="text-sm font-medium">Privacy & Sharing</Label>
             </div>
             
-            {isIndividualPlan && (
+            {!canShareCalendar && (
               <div className="p-3 bg-pink-50 dark:bg-pink-900/20 rounded-md border border-pink-200 dark:border-pink-800">
                 <div className="flex items-center gap-2 text-sm text-pink-700 dark:text-pink-300">
                   <Crown className="h-4 w-4 text-pink-500" />
@@ -413,23 +413,23 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
             <div>
               <Label htmlFor="visibilityType" className="text-sm">Visibility</Label>
               <Select
-                value={isIndividualPlan ? "private" : form.watch("visibilityType")}
+                value={!canShareCalendar ? "private" : form.watch("visibilityType")}
                 onValueChange={(value: "shared" | "private" | "busy") => 
                   form.setValue("visibilityType", value)
                 }
-                disabled={isIndividualPlan}
+                disabled={!canShareCalendar}
               >
-                <SelectTrigger className={isIndividualPlan ? "opacity-50" : ""}>
+                <SelectTrigger className={!canShareCalendar ? "opacity-50" : ""}>
                   <SelectValue placeholder="Select visibility" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="shared" disabled={isIndividualPlan}>
+                  <SelectItem value="shared" disabled={!canShareCalendar}>
                     <div className="flex items-center gap-2">
                       <Users size={16} />
                       <span>Shared - Everyone can see details</span>
                     </div>
                   </SelectItem>
-                  <SelectItem value="busy" disabled={isIndividualPlan}>
+                  <SelectItem value="busy" disabled={!canShareCalendar}>
                     <div className="flex items-center gap-2">
                       <Eye size={16} />
                       <span>Busy - Time blocked, no details shown</span>
@@ -450,7 +450,7 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
               </p>
             </div>
 
-            {form.watch("visibilityType") === "shared" && familyMembers.length > 1 && !isIndividualPlan && (
+            {form.watch("visibilityType") === "shared" && familyMembers.length > 1 && canShareCalendar && (
               <div>
                 <Label className="text-sm">Share with specific family members (optional)</Label>
                 <div className="mt-2 space-y-2">
