@@ -1143,7 +1143,7 @@ export default function SettingsPage() {
                   <h4 className="font-medium text-sm text-muted-foreground">Add New Family Members</h4>
                   
                   {/* Individual Plan Upgrade Banner */}
-                  {isIndividualPlan && (
+                  {!canAddFamilyMembers && (
                     <div className="p-4 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-lg border border-pink-200 dark:border-pink-800">
                       <div className="flex items-start gap-3">
                         <Crown className="h-5 w-5 text-pink-500 mt-0.5" />
@@ -1164,7 +1164,7 @@ export default function SettingsPage() {
                   )}
                   
                   {/* Option 1: Add Child/Teen Profile */}
-                  <div className={`border rounded-lg p-4 space-y-3 ${isIndividualPlan ? 'opacity-50' : ''}`}>
+                  <div className={`border rounded-lg p-4 space-y-3 ${!canAddFamilyMembers ? 'opacity-50' : ''}`}>
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                         <Plus className="h-4 w-4 text-blue-600" />
@@ -1178,17 +1178,17 @@ export default function SettingsPage() {
                           variant="outline" 
                           size="sm" 
                           onClick={handleAddFamilyMember}
-                          disabled={isIndividualPlan}
+                          disabled={!canAddFamilyMembers}
                         >
                           <Plus className="h-3 w-3 mr-2" />
-                          {isIndividualPlan ? "Family Plan Required" : "Add Profile"}
+                          {!canAddFamilyMembers ? "Family Plan Required" : "Add Profile"}
                         </Button>
                       </div>
                     </div>
                   </div>
 
                   {/* Option 2: Invite New Parent */}
-                  <div className={`border rounded-lg p-4 space-y-3 ${isIndividualPlan ? 'opacity-50' : ''}`}>
+                  <div className={`border rounded-lg p-4 space-y-3 ${!canAddFamilyMembers ? 'opacity-50' : ''}`}>
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                         <UserPlus className="h-4 w-4 text-green-600" />
@@ -1202,17 +1202,17 @@ export default function SettingsPage() {
                           variant="outline" 
                           size="sm" 
                           onClick={() => setShowParentInviteModal(true)}
-                          disabled={isIndividualPlan}
+                          disabled={!canAddFamilyMembers}
                         >
                           <Mail className="h-3 w-3 mr-2" />
-                          {isIndividualPlan ? "Family Plan Required" : "Send Invitation"}
+                          {!canAddFamilyMembers ? "Family Plan Required" : "Send Invitation"}
                         </Button>
                       </div>
                     </div>
                   </div>
 
                   {/* Teen Invite (keeping separate for clarity) */}
-                  <div className={`border rounded-lg p-4 space-y-3 ${isIndividualPlan ? 'opacity-50' : ''}`}>
+                  <div className={`border rounded-lg p-4 space-y-3 ${!canAddFamilyMembers ? 'opacity-50' : ''}`}>
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                         <Users className="h-4 w-4 text-orange-600" />
@@ -1226,10 +1226,10 @@ export default function SettingsPage() {
                           variant="outline" 
                           size="sm" 
                           onClick={() => setShowInviteTeenModal(true)}
-                          disabled={isIndividualPlan}
+                          disabled={!canAddFamilyMembers}
                         >
                           <Users className="h-3 w-3 mr-2" />
-                          {isIndividualPlan ? "Family Plan Required" : "Create Teen Account"}
+                          {!canAddFamilyMembers ? "Family Plan Required" : "Create Teen Account"}
                         </Button>
                       </div>
                     </div>
