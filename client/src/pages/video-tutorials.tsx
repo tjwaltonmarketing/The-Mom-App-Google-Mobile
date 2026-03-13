@@ -17,7 +17,7 @@ export default function VideoTutorials() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Getting Started</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Watch this short video to get the most out of The Mom App</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Watch this video to get the most out of The Mom App</p>
           </div>
         </div>
 

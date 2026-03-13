@@ -20,8 +20,7 @@ export function VideoBanner() {
         <Play className="w-4 h-4 fill-white text-white" />
       </div>
       <Link href="/video-tutorials" className="flex-1 min-w-0">
-        <p className="font-semibold text-sm">New here? Watch this video to get started!</p>
-        <p className="text-xs text-white/80">Learn how to get the most out of The Mom App</p>
+        <p className="font-semibold text-sm">Not sure where to start? Watch this video to learn how to use the app!</p>
       </Link>
       <button
         onClick={handleDismiss}
