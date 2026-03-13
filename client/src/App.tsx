@@ -153,7 +153,8 @@ function Router() {
   // Only show onboarding if subscription query completed and returned no data
   // Also skip onboarding if user already completed it (localStorage fallback for mobile)
   const onboardingCompleted = typeof window !== 'undefined' && localStorage.getItem("onboarding_completed") === "true";
-  const needsOnboarding = isAuthenticated && subscriptionReady && !subscriptionData && !onboardingCompleted;
+  const pendingShareClaim = typeof window !== 'undefined' && localStorage.getItem("pending_share_claim") === "true";
+  const needsOnboarding = isAuthenticated && subscriptionReady && (!subscriptionData && !onboardingCompleted || pendingShareClaim);
 
   // Determine if user needs to upgrade (expired trial or cancelled subscription)
   const needsUpgrade = isAuthenticated && !subscriptionLoading && subscriptionData && (

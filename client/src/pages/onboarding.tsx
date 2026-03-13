@@ -29,8 +29,8 @@ export default function Onboarding() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-      localStorage.setItem("onboarding_completed", "true");
       if (Capacitor.getPlatform() === "ios") {
+        localStorage.setItem("onboarding_completed", "true");
         toast({ title: "Welcome to The Mom App!", description: "Your free trial has started." });
         window.location.href = "/";
       } else {
@@ -44,8 +44,8 @@ export default function Onboarding() {
         description: "Your free trial has started.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-      localStorage.setItem("onboarding_completed", "true");
       if (Capacitor.getPlatform() === "ios") {
+        localStorage.setItem("onboarding_completed", "true");
         window.location.href = "/";
       } else {
         showShare();
