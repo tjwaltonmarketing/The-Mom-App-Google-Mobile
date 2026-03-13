@@ -2,7 +2,7 @@ import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { Play } from "lucide-react";
 
-const TUTORIAL_VIDEO_URL = "https://www.youtube.com/embed/YOUR_VIDEO_ID";
+const TUTORIAL_VIDEO_URL = "https://www.youtube.com/embed/cmLFuM73wco";
 
 export default function VideoTutorials() {
   return (
