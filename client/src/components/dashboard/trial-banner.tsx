@@ -135,7 +135,7 @@ export function TrialBanner() {
 
   const openFacebookShare = () => {
     setHasShared(true);
-    const shareUrl = "https://app.themom.app";
+    const shareUrl = "https://themom.app";
     const shareText = "I just discovered The Mom App - it's like having a personal assistant for all the family chaos! Check it out:";
     window.open(
       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
