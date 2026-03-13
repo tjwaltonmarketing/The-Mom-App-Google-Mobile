@@ -34,6 +34,7 @@ import MealPlan from "@/pages/meal-plan";
 import GroceryList from "@/pages/grocery-list";
 import Notes from "@/pages/notes";
 import Tutorials from "@/pages/tutorials";
+import VideoTutorials from "@/pages/video-tutorials";
 import AIAssistant from "@/pages/ai-assistant";
 import Upgrade from "@/pages/upgrade";
 import UpgradeSuccess from "@/pages/upgrade-success";
@@ -342,6 +343,7 @@ function Router() {
               <Route path="/tasks" component={Tasks} />
               <Route path="/notes" component={Notes} />
               <Route path="/tutorials" component={Tutorials} />
+              <Route path="/video-tutorials" component={VideoTutorials} />
               <Route path="/meal-plan" component={MealPlan} />
               <Route path="/grocery-list" component={GroceryList} />
               <Route path="/ai-assistant" component={AIAssistant} />

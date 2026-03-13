@@ -8,6 +8,7 @@ import { WeatherWidget } from "@/components/dashboard/weather-widget";
 import { FamilyPoints } from "@/components/dashboard/family-points";
 import { PasswordVault } from "@/components/dashboard/password-vault";
 import { TrialBanner } from "@/components/dashboard/trial-banner";
+import { VideoBanner } from "@/components/dashboard/video-banner";
 import { FamilyDishwasher } from "@/components/family-dishwasher";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { MindfulUsage } from "@/components/mindful-usage";
@@ -25,8 +26,9 @@ export default function Dashboard() {
       <MobileNav />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-36 lg:pb-6">
-        {/* Mobile: Trial Banner at top */}
-        <div className="md:hidden mb-4">
+        {/* Mobile: Video + Trial Banners at top */}
+        <div className="md:hidden">
+          <VideoBanner />
           <TrialBanner />
         </div>
         
@@ -42,8 +44,9 @@ export default function Dashboard() {
           </TabsList>
           
           <TabsContent value="dashboard">
-            {/* Desktop: Trial Banner */}
+            {/* Desktop: Video + Trial Banners */}
             <div className="hidden md:block mb-6">
+              <VideoBanner />
               <TrialBanner />
             </div>
             
