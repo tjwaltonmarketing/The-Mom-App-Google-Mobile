@@ -17,7 +17,7 @@ import { OAuth2Client } from "google-auth-library";
 
 const storage = new DatabaseStorage();
 
-// Helper function to check if user is on Individual plan
+// Helper function to check if user is on Individual plan (trial users always have full access)
 async function isUserOnIndividualPlan(userId: number): Promise<boolean> {
   const subscription = await storage.getUserSubscription(userId);
   if (!subscription) {
@@ -25,10 +25,16 @@ async function isUserOnIndividualPlan(userId: number): Promise<boolean> {
     const family = await storage.getFamilyByUserId(userId);
     if (family && family.ownerId !== userId) {
       const ownerSubscription = await storage.getUserSubscription(family.ownerId);
-      return ownerSubscription?.subscriptionPlan === "individual";
+      if (!ownerSubscription) return false;
+      const ownerOnTrial = ownerSubscription.trialEndDate && new Date(ownerSubscription.trialEndDate) > new Date() && !ownerSubscription.stripeSubscriptionId && !ownerSubscription.appleProductId;
+      if (ownerOnTrial) return false;
+      return ownerSubscription.subscriptionPlan === "individual";
     }
     return false;
   }
+  // Trial users have full access — not restricted to individual plan limits
+  const isOnTrial = subscription.trialEndDate && new Date(subscription.trialEndDate) > new Date() && !subscription.stripeSubscriptionId && !subscription.appleProductId;
+  if (isOnTrial) return false;
   return subscription.subscriptionPlan === "individual";
 }
 
