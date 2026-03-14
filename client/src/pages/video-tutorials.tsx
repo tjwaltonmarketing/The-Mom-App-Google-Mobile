@@ -1,10 +1,20 @@
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
-import { Play } from "lucide-react";
+import { Play, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Capacitor } from "@capacitor/core";
 
-const TUTORIAL_VIDEO_URL = "https://www.youtube.com/embed/cmLFuM73wco";
+const VIDEO_ID = "cmLFuM73wco";
+const TUTORIAL_VIDEO_EMBED = `https://www.youtube.com/embed/${VIDEO_ID}`;
+const TUTORIAL_VIDEO_WATCH = `https://www.youtube.com/watch?v=${VIDEO_ID}`;
 
 export default function VideoTutorials() {
+  const isNative = Capacitor.getPlatform() !== "web";
+
+  const openInYouTube = () => {
+    window.open(TUTORIAL_VIDEO_WATCH, "_system");
+  };
+
   return (
     <div className="min-h-screen bg-neutral dark:bg-background">
       <Header onStartVoiceNote={() => {}} />
@@ -21,15 +31,28 @@ export default function VideoTutorials() {
           </div>
         </div>
 
-        <div className="rounded-2xl overflow-hidden shadow-lg aspect-video bg-black">
-          <iframe
-            src={TUTORIAL_VIDEO_URL}
-            title="The Mom App Tutorial"
-            className="w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-        </div>
+        {isNative ? (
+          <div className="rounded-2xl overflow-hidden shadow-lg bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30 p-10 flex flex-col items-center justify-center gap-5 aspect-video">
+            <div className="w-16 h-16 rounded-full bg-pink-500 flex items-center justify-center shadow-lg">
+              <Play className="w-8 h-8 fill-white text-white ml-1" />
+            </div>
+            <p className="text-gray-700 dark:text-gray-300 font-medium text-center">Tap below to watch the tutorial in YouTube</p>
+            <Button onClick={openInYouTube} className="bg-pink-500 hover:bg-pink-600 text-white gap-2">
+              <ExternalLink className="w-4 h-4" />
+              Watch on YouTube
+            </Button>
+          </div>
+        ) : (
+          <div className="rounded-2xl overflow-hidden shadow-lg aspect-video bg-black">
+            <iframe
+              src={TUTORIAL_VIDEO_EMBED}
+              title="The Mom App Tutorial"
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        )}
 
         <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
           Have questions? Visit the <a href="/tutorials" className="text-pink-500 font-medium hover:underline">Help & Tutorials</a> section for more tips.
