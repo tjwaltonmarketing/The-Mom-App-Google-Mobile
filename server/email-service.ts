@@ -81,6 +81,10 @@ export class SendGridProvider implements EmailProvider {
         subject,
         text: text || this.htmlToText(html),
         html,
+        trackingSettings: {
+          clickTracking: { enable: false, enableText: false },
+          openTracking: { enable: false },
+        },
       };
 
       const [response] = await sgMail.send(msg);
