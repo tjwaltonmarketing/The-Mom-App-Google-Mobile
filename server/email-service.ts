@@ -77,7 +77,7 @@ export class SendGridProvider implements EmailProvider {
     try {
       const msg = {
         to,
-        from: process.env.FROM_EMAIL || 'team@themom.app',
+        from: { name: 'The Mom App Team', email: process.env.FROM_EMAIL || 'team@themom.app' },
         subject,
         text: text || this.htmlToText(html),
         html,
