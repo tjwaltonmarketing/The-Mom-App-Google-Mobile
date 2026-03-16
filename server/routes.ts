@@ -96,6 +96,7 @@ export async function registerRoutes(app: Express) {
   app.post("/api/register", async (req, res) => {
     try {
       const { email, password, firstName, lastName, familyName, phoneNumber, inviteCode, familyId } = req.body;
+      console.log("Register: phoneNumber received:", phoneNumber);
       
       // If joining via invite, familyName is optional
       const isJoiningFamily = inviteCode && familyId;
