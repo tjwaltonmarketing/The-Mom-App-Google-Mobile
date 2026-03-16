@@ -95,7 +95,7 @@ export async function registerRoutes(app: Express) {
   // Parent Authentication Endpoints
   app.post("/api/register", async (req, res) => {
     try {
-      const { email, password, firstName, lastName, familyName, inviteCode, familyId } = req.body;
+      const { email, password, firstName, lastName, familyName, phoneNumber, inviteCode, familyId } = req.body;
       
       // If joining via invite, familyName is optional
       const isJoiningFamily = inviteCode && familyId;
@@ -133,6 +133,7 @@ export async function registerRoutes(app: Express) {
         passwordHash,
         firstName,
         lastName,
+        phoneNumber: phoneNumber || null,
         authMethod: 'email',
         isVerified: false
       });
@@ -5768,7 +5769,7 @@ export async function registerRoutes(app: Express) {
 
       res.json({
         success: true,
-        message: "Thank you for your feedback! We'll review it soon.",
+        message: "Thanks for your submission! Our team has been notified. If your feedback is constructive, you'll be notified if and when it's addressed. If it was a positive note — thank you so much! 💗",
         id: feedbackRequest.id,
       });
     } catch (error) {

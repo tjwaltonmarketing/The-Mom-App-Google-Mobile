@@ -22,6 +22,7 @@ const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   familyName: z.string().optional(),
+  phoneNumber: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -54,6 +55,7 @@ export default function Register() {
       firstName: "",
       lastName: "",
       familyName: familyName || "",
+      phoneNumber: "",
     },
   });
 
@@ -262,6 +264,24 @@ export default function Register() {
                   )}
                 />
               )}
+
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number <span className="text-gray-400 font-normal">(optional)</span></FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="tel"
+                        placeholder="e.g., +1 (555) 123-4567"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="flex items-start gap-3 py-2">
                 <Checkbox
