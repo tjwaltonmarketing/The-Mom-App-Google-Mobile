@@ -10,6 +10,7 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash"), // Make optional for Replit Auth users
   firstName: varchar("first_name", { length: 100 }),
   lastName: varchar("last_name", { length: 100 }),
+  phoneNumber: text("phone_number"),
   profileImageUrl: varchar("profile_image_url", { length: 500 }), // Add for Replit Auth
   replitUserId: varchar("replit_user_id", { length: 255 }).unique(), // Link to Replit Auth
   googleId: varchar("google_id", { length: 255 }).unique(), // Link to Google OAuth
