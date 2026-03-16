@@ -138,6 +138,7 @@ export interface IStorage {
   
   // SMS Password Reset for Parents
   createSMSPasswordResetToken(userId: number, phoneNumber: string, token: string): Promise<PasswordResetToken>;
+  createEmailPasswordResetToken(userId: number, token: string): Promise<PasswordResetToken>;
   getFamilyMemberPhoneNumber(userId: number): Promise<string | undefined>;
   
   // Family Management
@@ -588,6 +589,23 @@ export class DatabaseStorage implements IStorage {
         expiresAt: expiresAt,
         resetType: "sms",
         phoneNumber: phoneNumber,
+        isUsed: false,
+      })
+      .returning();
+    return resetToken;
+  }
+
+  async createEmailPasswordResetToken(userId: number, token: string): Promise<PasswordResetToken> {
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1);
+
+    const [resetToken] = await db
+      .insert(passwordResetTokens)
+      .values({
+        userId,
+        token,
+        expiresAt,
+        resetType: "email",
         isUsed: false,
       })
       .returning();

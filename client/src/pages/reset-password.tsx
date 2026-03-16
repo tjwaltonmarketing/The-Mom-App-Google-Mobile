@@ -50,7 +50,7 @@ export default function ResetPassword() {
       if (!token) {
         throw new Error("Invalid reset token");
       }
-      await apiRequest("POST", "/api/reset-password", {
+      await apiRequest("POST", "/api/auth/reset-password", {
         token,
         newPassword: data.newPassword,
       });

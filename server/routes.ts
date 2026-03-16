@@ -1,4 +1,5 @@
 import { Express } from "express";
+import crypto from "crypto";
 import { createServer } from "http";
 import { DatabaseStorage } from "./storage";
 import { smartTaskCreation } from "./ai";
@@ -11,7 +12,7 @@ import { GoogleCalendarService } from "./google-calendar-service";
 import { generateToken, verifyToken, extractTokenFromRequest, jwtSessionBridge } from "./auth";
 import bcrypt from "bcryptjs";
 import { createCheckoutSession, handleWebhookEvent, stripe, initializeStripeProducts } from "./stripe";
-import { emailService } from "./email-service";
+import { emailService, createBrandedEmailTemplate } from "./email-service";
 import { notificationService } from "./notification-service";
 import { OAuth2Client } from "google-auth-library";
 
@@ -1169,17 +1170,23 @@ export async function registerRoutes(app: Express) {
         }
       } else if (preferredContact === "email" && email) {
         try {
-          await emailService.sendEmail({
-            to: email,
-            subject: "You're invited to The Mom App!",
-            html: `
-              <h2>Welcome to The Mom App!</h2>
-              <p>You've been invited to join your family. Your invite code is:</p>
-              <h1 style="color: #EC4899; font-size: 32px; letter-spacing: 4px;">${inviteCode}</h1>
-              <p>Click the link below to get started:</p>
-              <a href="${appUrl}" style="background: #EC4899; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">Download The App</a>
-            `
-          });
+          await emailService.sendEmail(
+            email,
+            "You're invited to The Mom App!",
+            createBrandedEmailTemplate(`
+              <h2 style="margin:0 0 16px;color:#1a1a2e;font-size:22px;font-weight:700;">You're Invited!</h2>
+              <p style="margin:0 0 24px;color:#555;font-size:15px;line-height:1.6;">
+                You've been invited to join your family on The Mom App — the all-in-one family coordination app. Your invite code is:
+              </p>
+              <div style="text-align:center;margin:24px 0;">
+                <span style="background:#fdf4fb;border:2px dashed #EC4899;color:#EC4899;font-size:32px;font-weight:700;letter-spacing:8px;padding:16px 32px;border-radius:8px;display:inline-block;">${inviteCode}</span>
+              </div>
+              <div style="text-align:center;margin:32px 0;">
+                <a href="${appUrl}" style="background:linear-gradient(135deg,#EC4899,#A855F7);color:#ffffff;padding:14px 32px;text-decoration:none;border-radius:8px;font-size:15px;font-weight:600;display:inline-block;">Get Started</a>
+              </div>
+              <p style="margin:24px 0 0;color:#888;font-size:13px;text-align:center;">Download The Mom App and enter your invite code to join your family.</p>
+            `)
+          );
           inviteResult = { success: true, method: "email", error: "" };
         } catch (emailError: any) {
           console.error("Email send error:", emailError);
@@ -5443,32 +5450,50 @@ export async function registerRoutes(app: Express) {
           error: "Please ask your parent to reset your password from Family Settings → Family Members." 
         });
       } else {
-        // For parents, send SMS reset token
+        // For parents, try SMS first, fall back to email
         const phoneNumber = await storage.getFamilyMemberPhoneNumber(user.id);
-        if (!phoneNumber) {
+        
+        if (phoneNumber) {
+          // Send SMS reset code
+          const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+          await storage.createSMSPasswordResetToken(user.id, phoneNumber, resetCode);
+          const message = `Your Mom App password reset code is: ${resetCode}. This code expires in 1 hour.`;
+          const smsSent = await sendSMS(phoneNumber, message);
+          if (!smsSent) {
+            return res.status(500).json({ error: "Failed to send SMS. Please try again." });
+          }
+          res.json({ resetType: "sms", message: "Password reset code sent to your phone." });
+        } else if (user.email) {
+          // Fall back to email reset
+          const resetToken = crypto.randomBytes(32).toString("hex");
+          await storage.createEmailPasswordResetToken(user.id, resetToken);
+          const appUrl = process.env.APP_URL || "https://app.themom.app";
+          const resetUrl = `${appUrl}/reset-password?token=${resetToken}`;
+          const html = createBrandedEmailTemplate(`
+            <h2 style="margin:0 0 16px;color:#1a1a2e;font-size:22px;font-weight:700;">Reset Your Password</h2>
+            <p style="margin:0 0 24px;color:#555;font-size:15px;line-height:1.6;">
+              We received a request to reset the password for your Mom App account. Click the button below to choose a new password.
+            </p>
+            <div style="text-align:center;margin:32px 0;">
+              <a href="${resetUrl}" style="background:linear-gradient(135deg,#EC4899,#A855F7);color:#ffffff;padding:14px 32px;text-decoration:none;border-radius:8px;font-size:15px;font-weight:600;display:inline-block;">Reset My Password</a>
+            </div>
+            <p style="margin:24px 0 0;color:#888;font-size:13px;line-height:1.6;">
+              This link expires in <strong>1 hour</strong>. If you didn't request a password reset, you can safely ignore this email — your password won't be changed.
+            </p>
+            <p style="margin:8px 0 0;color:#aaa;font-size:12px;">
+              Or copy this link: <a href="${resetUrl}" style="color:#EC4899;word-break:break-all;">${resetUrl}</a>
+            </p>
+          `);
+          const emailResult = await emailService.sendEmail(user.email, "Reset Your Password – The Mom App", html);
+          if (!emailResult.success) {
+            return res.status(500).json({ error: "Failed to send reset email. Please try again." });
+          }
+          res.json({ resetType: "email", message: "Password reset link sent to your email." });
+        } else {
           return res.status(400).json({ 
-            error: "No phone number on file. Please contact support for help." 
+            error: "No phone number or email on file. Please contact support for help." 
           });
         }
-        
-        // Generate 6-digit reset code
-        const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-        
-        // Store the token
-        await storage.createSMSPasswordResetToken(user.id, phoneNumber, resetCode);
-        
-        // Send SMS
-        const message = `Your Mom App password reset code is: ${resetCode}. This code expires in 1 hour.`;
-        const smsSent = await sendSMS(phoneNumber, message);
-        
-        if (!smsSent) {
-          return res.status(500).json({ error: "Failed to send SMS. Please try again." });
-        }
-        
-        res.json({
-          resetType: "sms",
-          message: "Password reset code sent to your phone."
-        });
       }
     } catch (error) {
       console.error("Password reset request error:", error);
@@ -5718,17 +5743,18 @@ export async function registerRoutes(app: Express) {
 
       // Send email notification
       const typeLabel = type === "feature_request" ? "Feature Request" : type === "bug_report" ? "Bug Report" : "Feedback";
-      const emailHtml = `
-        <h2>New ${typeLabel} from The Mom App</h2>
-        <p><strong>From:</strong> ${user.firstName} ${user.lastName} (${user.email})</p>
-        <p><strong>Type:</strong> ${typeLabel}</p>
-        <p><strong>Subject:</strong> ${subject}</p>
-        <hr>
-        <p><strong>Message:</strong></p>
-        <p>${message.replace(/\n/g, '<br>')}</p>
-        <hr>
-        <p><small>User ID: ${user.id} | Submitted: ${new Date().toLocaleString()}</small></p>
-      `;
+      const emailHtml = createBrandedEmailTemplate(`
+        <h2 style="margin:0 0 16px;color:#1a1a2e;font-size:20px;font-weight:700;">New ${typeLabel}</h2>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+          <tr><td style="padding:8px 0;color:#888;font-size:13px;width:80px;">From</td><td style="padding:8px 0;color:#333;font-size:14px;">${user.firstName} ${user.lastName} (${user.email})</td></tr>
+          <tr><td style="padding:8px 0;color:#888;font-size:13px;">Type</td><td style="padding:8px 0;color:#333;font-size:14px;"><span style="background:#fdf4fb;color:#EC4899;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;">${typeLabel}</span></td></tr>
+          <tr><td style="padding:8px 0;color:#888;font-size:13px;">Subject</td><td style="padding:8px 0;color:#333;font-size:14px;font-weight:600;">${subject}</td></tr>
+        </table>
+        <div style="background:#f9f9f9;border-left:3px solid #EC4899;padding:16px;border-radius:0 8px 8px 0;margin-bottom:16px;">
+          <p style="margin:0;color:#444;font-size:14px;line-height:1.7;">${message.replace(/\n/g, '<br>')}</p>
+        </div>
+        <p style="margin:0;color:#bbb;font-size:11px;">User ID: ${user.id} · ${new Date().toLocaleString()}</p>
+      `);
 
       const emailResult = await emailService.sendEmail(
         "themomapp.us@gmail.com",
