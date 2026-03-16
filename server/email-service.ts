@@ -25,7 +25,7 @@ export class SendGridProvider implements EmailProvider {
     try {
       const msg = {
         to,
-        from: process.env.FROM_EMAIL || 'themomapp.us@gmail.com',
+        from: process.env.FROM_EMAIL || 'noreply@themom.app',
         subject,
         text: text || this.htmlToText(html),
         html,
