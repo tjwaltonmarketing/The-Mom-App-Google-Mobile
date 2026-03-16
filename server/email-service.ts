@@ -23,8 +23,8 @@ export function createBrandedEmailTemplate(content: string): string {
           <tr>
             <td style="background:linear-gradient(135deg,#EC4899,#A855F7);padding:32px 40px;text-align:center;">
               <img src="https://app.themom.app/favicon.png" alt="The Mom App" width="56" height="56" style="border-radius:12px;margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;" />
-              <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:-0.5px;">The Mom App</h1>
-              <p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Family Coordination Made Simple</p>
+              <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;letter-spacing:2px;">THE MOM APP</h1>
+              <p style="margin:4px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Mom Life. Made Easy.</p>
             </td>
           </tr>
 
