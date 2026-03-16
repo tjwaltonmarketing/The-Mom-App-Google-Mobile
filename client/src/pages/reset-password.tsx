@@ -31,8 +31,7 @@ export default function ResetPassword() {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    // Extract token from URL parameters
-    const urlParams = new URLSearchParams(location.split('?')[1] || '');
+    const urlParams = new URLSearchParams(window.location.search);
     const tokenParam = urlParams.get('token');
     setToken(tokenParam);
   }, [location]);
