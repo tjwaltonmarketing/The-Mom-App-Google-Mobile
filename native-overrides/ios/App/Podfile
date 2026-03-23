@@ -20,6 +20,7 @@ target 'App' do
   pod 'Firebase/Core'
   pod 'Firebase/Messaging'
   pod 'RevenueCat', '~> 5.0'
+  pod 'FBSDKCoreKit'
 end
 
 post_install do |installer|
