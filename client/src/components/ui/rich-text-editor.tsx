@@ -51,7 +51,7 @@ export function RichTextEditor({ content, onChange, placeholder, className }: Ri
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[120px] p-3',
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[120px] p-3 [&_p]:my-0 [&_p]:leading-relaxed',
       },
     },
   });
@@ -213,7 +213,7 @@ export function RichTextDisplay({ content, className, truncate = false, maxLengt
   
   return (
     <div 
-      className={`prose prose-sm max-w-none dark:prose-invert ${className || ''}`}
+      className={`prose prose-sm max-w-none dark:prose-invert [&_p]:my-0 [&_p]:leading-relaxed ${className || ''}`}
       dangerouslySetInnerHTML={{ __html: content }}
     />
   );
