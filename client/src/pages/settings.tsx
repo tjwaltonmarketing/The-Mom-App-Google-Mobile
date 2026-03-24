@@ -1392,6 +1392,32 @@ export default function SettingsPage() {
                         {subscriptionData.isOnTrial ? "Upgrade Now" : "Change Plan"}
                       </Link>
                     </Button>
+
+                    {subscriptionData.subscriptionStatus === "active" && !subscriptionData.isOnTrial && (
+                      <div className="pt-2">
+                        {subscriptionData.appleProductId ? (
+                          <p className="text-sm text-muted-foreground text-center">
+                            To manage or cancel your subscription, go to <strong>iPhone Settings → Apple ID → Subscriptions → The Mom App</strong>.
+                          </p>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            className="w-full text-muted-foreground"
+                            onClick={async () => {
+                              try {
+                                const res = await apiRequest("POST", "/api/subscription/portal");
+                                const data = await res.json();
+                                if (data.url) window.open(data.url, "_blank");
+                              } catch {
+                                toast({ title: "Error", description: "Could not open billing portal. Please try again.", variant: "destructive" });
+                              }
+                            }}
+                          >
+                            Manage or Cancel Subscription
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
                 {!subscriptionData && (
