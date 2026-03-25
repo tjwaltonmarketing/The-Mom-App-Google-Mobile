@@ -69,6 +69,10 @@ jobs:
         echo ""
         echo "AndroidManifest.xml POST_NOTIFICATIONS check:"
         grep -c "POST_NOTIFICATIONS" android/app/src/main/AndroidManifest.xml && echo "FOUND" || echo "MISSING"
+        echo "AndroidManifest.xml AD_ID check:"
+        grep -c "AD_ID" android/app/src/main/AndroidManifest.xml && echo "AD_ID FOUND" || echo "AD_ID MISSING"
+        echo "Full permissions in manifest:"
+        grep "uses-permission" android/app/src/main/AndroidManifest.xml
         echo ""
         echo "google-services.json check:"
         ls -la android/app/google-services.json
