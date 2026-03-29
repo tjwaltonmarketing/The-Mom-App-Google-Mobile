@@ -836,7 +836,9 @@ export default function SettingsPage() {
 
           <TabsContent value="general" className="space-y-6">
 
-<CalendarSync />
+{['emmett0823@gmail.com', 'wearesubsonic@gmail.com'].includes(userData?.email || '') && (
+  <CalendarSync />
+)}
 
             <Card>
               <CardHeader>
