@@ -5,14 +5,14 @@ export class GoogleCalendarService {
   private oauth2Client: any;
 
   constructor() {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    const clientId = process.env.GOOGLE_CALENDAR_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CALENDAR_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
     const redirectUri = process.env.NODE_ENV === 'production'
-      ? 'https://the-mom-app.replit.app/api/calendar/callback'
+      ? 'https://app.themom.app/api/calendar/callback'
       : 'http://localhost:5000/api/calendar/callback';
 
     if (!clientId || !clientSecret) {
-      console.warn('Google Calendar integration: Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET');
+      console.warn('Google Calendar integration: Missing GOOGLE_CALENDAR_CLIENT_ID or GOOGLE_CALENDAR_CLIENT_SECRET');
     }
 
     this.oauth2Client = new google.auth.OAuth2(
