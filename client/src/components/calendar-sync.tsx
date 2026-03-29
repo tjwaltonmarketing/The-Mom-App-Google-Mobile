@@ -17,6 +17,7 @@ interface GoogleCalendar {
 
 export function CalendarSync() {
   const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [calendars, setCalendars] = useState<GoogleCalendar[]>([]);
   const [selectedCalendar, setSelectedCalendar] = useState("");
   const { toast } = useToast();
