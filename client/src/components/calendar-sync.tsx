@@ -22,15 +22,17 @@ export function CalendarSync() {
   const [selectedCalendar, setSelectedCalendar] = useState("");
   const { toast } = useToast();
 
+  // Always check current connection state on load
+  useEffect(() => {
+    fetchConnectedCalendars();
+  }, []);
+
   // Check for OAuth callback success
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('calendar_connected') === 'true') {
       // Clear the URL parameter
       window.history.replaceState({}, '', window.location.pathname);
-      
-      // Fetch connected calendars
-      fetchConnectedCalendars();
       
       toast({
         title: "Google Calendar Connected",
@@ -179,35 +181,9 @@ export function CalendarSync() {
             </Button>
             
             <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg text-left">
-              <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
-                🔐 OAuth Authentication Process
-              </h4>
-              <ol className="text-xs text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
-                <li>Click "Sign in with Google" above</li>
-                <li>Redirects to Google's secure login page ✅</li>
-                <li>Sign in with your Google account</li>
-                <li>Grant calendar access permissions</li>
-                <li>Return here with calendars connected</li>
-              </ol>
-              <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
-                The redirect is working perfectly! Just needs real Google API credentials.
+              <p className="text-xs text-blue-800 dark:text-blue-200">
+                Sign in with your Google account and grant calendar access. Your events will be imported into The Mom App.
               </p>
-            </div>
-            
-            <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg text-left">
-              <p className="text-xs text-green-800 dark:text-green-200 mb-2">
-                <strong>✅ OAuth Flow Working!</strong> You just saw Google's authentication page.
-              </p>
-              <p className="text-xs text-green-700 dark:text-green-300 mb-2">
-                To complete setup, configure Google Calendar API credentials:
-              </p>
-              <ol className="text-xs text-green-700 dark:text-green-300 space-y-1 list-decimal list-inside">
-                <li>Visit <a href="https://console.cloud.google.com" target="_blank" className="underline hover:text-green-900 dark:hover:text-green-100">Google Cloud Console</a></li>
-                <li>Create project → Enable Google Calendar API</li>
-                <li>Create OAuth 2.0 client credentials</li>
-                <li>Set GOOGLE_CLIENT_ID environment variable</li>
-                <li>Add redirect URI: your-domain.com/auth/google/callback</li>
-              </ol>
             </div>
           </div>
         ) : (
