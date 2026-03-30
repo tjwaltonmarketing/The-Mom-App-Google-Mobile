@@ -3,16 +3,17 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Plus, ChevronLeft, ChevronRight, ArrowLeft, Edit, List, Grid3X3, Globe } from "lucide-react";
+import { Calendar, Clock, Plus, ChevronLeft, ChevronRight, ArrowLeft, Edit, List, Grid3X3, Globe, RefreshCw, Link2, CheckCircle2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { EventModal } from "@/components/event-modal";
 import { EventEditModal } from "@/components/event-edit-modal";
-// import { CalendarSync } from "@/components/calendar-sync"; // Disabled until Google OAuth verification
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest, authFetch } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Event, FamilyMember } from "@shared/schema";
-import { authFetch } from "@/lib/queryClient";
 import { 
   format, 
   startOfMonth, 
@@ -44,6 +45,56 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [view, setView] = useState<CalendarView>("month");
   const [showEventModal, setShowEventModal] = useState(false);
+  const [icalUrl, setIcalUrl] = useState("");
+  const [showIcalInput, setShowIcalInput] = useState(false);
+  const [isGoogleConnected, setIsGoogleConnected] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Check Google Calendar connection on mount
+  useEffect(() => {
+    authFetch('/api/calendar/calendars').then(async (res) => {
+      if (res.ok) {
+        const data = await res.json();
+        setIsGoogleConnected(data.calendars && data.calendars.length > 0);
+      }
+    }).catch(() => {});
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('calendar_connected') === 'true') {
+      window.history.replaceState({}, '', window.location.pathname);
+      setIsGoogleConnected(true);
+      toast({ title: "Google Calendar Connected", description: "You can now import your events." });
+    }
+  }, []);
+
+  const googleImportMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/calendar/import", { calendarId: 'primary', daysToImport: 365 });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Import failed'); }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      toast({ title: "Google Calendar Imported", description: `${data.imported} events added to your calendar.` });
+    },
+    onError: (err: any) => toast({ title: "Import Failed", description: err.message, variant: "destructive" }),
+  });
+
+  const icalImportMutation = useMutation({
+    mutationFn: async (url: string) => {
+      const res = await apiRequest("POST", "/api/calendar/ical-import", { url });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Import failed'); }
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      setIcalUrl("");
+      setShowIcalInput(false);
+      toast({ title: "iCal Imported", description: `${data.imported} events added to your calendar.` });
+    },
+    onError: (err: any) => toast({ title: "Import Failed", description: err.message, variant: "destructive" }),
+  });
 
   // Remove automatic scroll to avoid conflicts with quick actions
   // Quick actions handle their own scrolling
@@ -706,9 +757,83 @@ export default function CalendarPage() {
               </CardContent>
             </Card>
 
-            {/* Google Calendar Sync - Disabled until Google OAuth verification is complete
-            <CalendarSync />
-            */}
+            {/* Import Calendars */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <RefreshCw size={16} />
+                  Import Calendars
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {/* Google Calendar */}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                    {isGoogleConnected
+                      ? <CheckCircle2 size={14} className="text-green-500" />
+                      : <Calendar size={14} />}
+                    Google
+                  </span>
+                  {isGoogleConnected ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs px-2"
+                      disabled={googleImportMutation.isPending}
+                      onClick={() => googleImportMutation.mutate()}
+                    >
+                      {googleImportMutation.isPending ? <RefreshCw size={12} className="animate-spin" /> : "Import"}
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs px-2"
+                      onClick={() => window.location.href = '/api/calendar/connect'}
+                    >
+                      Connect
+                    </Button>
+                  )}
+                </div>
+
+                {/* iCal */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                      <Link2 size={14} />
+                      iCal URL
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs px-2"
+                      onClick={() => setShowIcalInput(!showIcalInput)}
+                    >
+                      {showIcalInput ? "Cancel" : "Add"}
+                    </Button>
+                  </div>
+                  {showIcalInput && (
+                    <div className="flex gap-1.5">
+                      <Input
+                        className="h-7 text-xs"
+                        placeholder="Paste iCal URL…"
+                        value={icalUrl}
+                        onChange={(e) => setIcalUrl(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' && icalUrl.trim()) icalImportMutation.mutate(icalUrl.trim()); }}
+                      />
+                      <Button
+                        size="sm"
+                        className="h-7 text-xs px-2 flex-shrink-0"
+                        disabled={!icalUrl.trim() || icalImportMutation.isPending}
+                        onClick={() => icalImportMutation.mutate(icalUrl.trim())}
+                      >
+                        {icalImportMutation.isPending ? <RefreshCw size={12} className="animate-spin" /> : "Go"}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>

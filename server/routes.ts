@@ -4610,6 +4610,128 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/calendar/ical-import", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { url } = req.body;
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: "iCal URL is required" });
+      }
+
+      // Validate it looks like a URL
+      try { new URL(url); } catch { return res.status(400).json({ error: "Invalid URL format" }); }
+
+      // Fetch the iCal file
+      const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      if (!response.ok) {
+        return res.status(400).json({ error: `Could not fetch iCal feed (HTTP ${response.status}). Check the URL and try again.` });
+      }
+      const text = await response.text();
+
+      if (!text.includes('BEGIN:VCALENDAR')) {
+        return res.status(400).json({ error: "The URL does not appear to be a valid iCal feed." });
+      }
+
+      // Simple iCal parser
+      const parseIcalValue = (value: string): string => {
+        // Unfold lines (continuation lines start with space/tab)
+        return value.replace(/\r?\n[ \t]/g, '').replace(/\\n/g, '\n').replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\');
+      };
+
+      const parseIcalDate = (value: string): Date | null => {
+        try {
+          const clean = value.split(';').pop() || value; // handle VALUE=DATE etc
+          if (clean.includes('T')) {
+            // datetime
+            const m = clean.match(/(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?/);
+            if (!m) return null;
+            const [, yr, mo, dy, hr, min, sec, utc] = m;
+            const d = new Date(`${yr}-${mo}-${dy}T${hr}:${min}:${sec}${utc ? 'Z' : ''}`);
+            return isNaN(d.getTime()) ? null : d;
+          } else {
+            const m = clean.match(/(\d{4})(\d{2})(\d{2})/);
+            if (!m) return null;
+            const d = new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00`);
+            return isNaN(d.getTime()) ? null : d;
+          }
+        } catch { return null; }
+      };
+
+      // Get user's family
+      const user = await storage.getUser(req.session.userId);
+      if (!user?.familyId) {
+        return res.status(400).json({ error: "No family found" });
+      }
+
+      // Parse VEVENT blocks
+      const eventBlocks = text.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) || [];
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30); // import from 30 days ago onward
+      const future = new Date();
+      future.setFullYear(future.getFullYear() + 2);
+
+      let imported = 0;
+      let skipped = 0;
+
+      for (const block of eventBlocks) {
+        const lines: string[] = [];
+        // Unfold
+        block.split(/\r?\n/).forEach(line => {
+          if ((line.startsWith(' ') || line.startsWith('\t')) && lines.length > 0) {
+            lines[lines.length - 1] += line.slice(1);
+          } else {
+            lines.push(line);
+          }
+        });
+
+        const get = (key: string): string => {
+          for (const line of lines) {
+            const upper = line.toUpperCase();
+            if (upper.startsWith(key + ':') || upper.startsWith(key + ';')) {
+              return parseIcalValue(line.substring(line.indexOf(':') + 1).trim());
+            }
+          }
+          return '';
+        };
+
+        const summary = get('SUMMARY');
+        const dtstart = get('DTSTART');
+        const dtend = get('DTEND');
+        const description = get('DESCRIPTION');
+        const location = get('LOCATION');
+        const uid = get('UID');
+
+        if (!summary || !dtstart) { skipped++; continue; }
+
+        const startDate = parseIcalDate(dtstart);
+        if (!startDate || startDate < cutoff || startDate > future) { skipped++; continue; }
+
+        const endDate = dtend ? parseIcalDate(dtend) : null;
+
+        await storage.createEvent({
+          title: summary,
+          startTime: startDate,
+          endTime: endDate || undefined,
+          description: description || undefined,
+          location: location || undefined,
+          familyId: user.familyId,
+          createdBy: req.session.userId,
+          eventType: 'shared',
+          isAllDay: !dtstart.includes('T'),
+        });
+        imported++;
+      }
+
+      res.json({ success: true, imported, skipped, total: eventBlocks.length });
+    } catch (error: any) {
+      console.error("iCal import error:", error);
+      res.status(500).json({ error: error.message || "Failed to import iCal feed" });
+    }
+  });
+
   app.post("/api/calendar/disconnect", async (req, res) => {
     try {
       if (!req.session.userId) {
