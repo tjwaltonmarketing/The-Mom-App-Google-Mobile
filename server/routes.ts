@@ -4483,16 +4483,31 @@ export async function registerRoutes(app: Express) {
   // Google Calendar Import Endpoints
   app.get("/api/calendar/connect", async (req, res) => {
     try {
-      // Support JWT token passed as query param (needed for mobile/Capacitor)
+      // Support JWT token from multiple sources (needed for mobile/Capacitor)
       let userId = req.session.userId;
-      if (!userId && req.query.token) {
-        try {
-          const decoded = verifyToken(req.query.token as string);
-          if (decoded?.userId) {
-            userId = decoded.userId;
-            req.session.userId = userId;
-          }
-        } catch { /* invalid token */ }
+      if (!userId) {
+        // Try query param (new APK), cookie (all versions), or Authorization header
+        const tokenSources = [
+          req.query.token as string,
+          // Parse auth_token from raw Cookie header
+          (() => {
+            const cookieHeader = req.headers.cookie || '';
+            const match = cookieHeader.match(/(?:^|;\s*)auth_token=([^;]+)/);
+            return match ? decodeURIComponent(match[1]) : null;
+          })(),
+          (req.headers.authorization || '').replace('Bearer ', '')
+        ];
+        for (const token of tokenSources) {
+          if (!token) continue;
+          try {
+            const decoded = verifyToken(token);
+            if (decoded?.userId) {
+              userId = decoded.userId;
+              req.session.userId = userId;
+              break;
+            }
+          } catch { /* try next */ }
+        }
       }
 
       if (!userId) {
