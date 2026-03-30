@@ -6,7 +6,8 @@ import { smartTaskCreation } from "./ai";
 import { WeatherService } from "./weather-service";
 import { sendSMS } from "./sms-service";
 import { db } from "./db";
-import { sql } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
+import { users } from "@shared/schema";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { GoogleCalendarService } from "./google-calendar-service";
 import { generateToken, verifyToken, extractTokenFromRequest, jwtSessionBridge } from "./auth";
@@ -4514,10 +4515,17 @@ export async function registerRoutes(app: Express) {
       const calendarService = new GoogleCalendarService();
       const tokens = await calendarService.getTokensFromCode(code);
       
-      // Store tokens in session (in production, you'd store these in the database)
+      // Store tokens in DB (so they persist across sessions and work on mobile)
+      const userId = req.session.calendarOAuthUserId || req.session.userId;
+      if (userId) {
+        await db.update(users)
+          .set({ googleCalendarTokens: JSON.stringify(tokens) })
+          .where(eq(users.id, userId));
+      }
+      // Also keep in session as fallback
       req.session.googleCalendarTokens = tokens;
       
-      res.redirect('/settings?calendar_connected=true');
+      res.redirect('/calendar?calendar_connected=true');
     } catch (error) {
       console.error("Calendar callback error:", error);
       res.redirect('/?error=oauth_failed');
@@ -4530,12 +4538,23 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      if (!req.session.googleCalendarTokens) {
+      // Get tokens from DB first, fall back to session
+      let tokens = req.session.googleCalendarTokens;
+      if (!tokens) {
+        const [userRow] = await db.select({ googleCalendarTokens: users.googleCalendarTokens })
+          .from(users).where(eq(users.id, req.session.userId));
+        if (userRow?.googleCalendarTokens) {
+          tokens = JSON.parse(userRow.googleCalendarTokens);
+          req.session.googleCalendarTokens = tokens;
+        }
+      }
+
+      if (!tokens) {
         return res.json({ calendars: [] });
       }
 
       const calendarService = new GoogleCalendarService();
-      calendarService.setCredentials(req.session.googleCalendarTokens);
+      calendarService.setCredentials(tokens);
       
       const calendars = await calendarService.listCalendars();
       res.json({ calendars });
@@ -4551,7 +4570,18 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      if (!req.session.googleCalendarTokens) {
+      // Get tokens from DB first, fall back to session
+      let calTokens = req.session.googleCalendarTokens;
+      if (!calTokens) {
+        const [userRow] = await db.select({ googleCalendarTokens: users.googleCalendarTokens })
+          .from(users).where(eq(users.id, req.session.userId));
+        if (userRow?.googleCalendarTokens) {
+          calTokens = JSON.parse(userRow.googleCalendarTokens);
+          req.session.googleCalendarTokens = calTokens;
+        }
+      }
+
+      if (!calTokens) {
         return res.status(401).json({ error: "Not connected to Google Calendar" });
       }
 
@@ -4570,7 +4600,7 @@ export async function registerRoutes(app: Express) {
       }
 
       const calendarService = new GoogleCalendarService();
-      calendarService.setCredentials(req.session.googleCalendarTokens);
+      calendarService.setCredentials(calTokens);
       
       const googleEvents = await calendarService.importEvents(calendarId, daysToImport);
       
@@ -4738,7 +4768,10 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      // Clear the tokens from session
+      // Clear tokens from DB and session
+      await db.update(users)
+        .set({ googleCalendarTokens: null })
+        .where(eq(users.id, req.session.userId));
       delete req.session.googleCalendarTokens;
       delete req.session.calendarOAuthUserId;
       

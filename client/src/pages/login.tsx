@@ -395,7 +395,7 @@ export default function Login() {
       </div>
       </div>
       </div>
-      <footer className="text-center py-4 text-xs text-muted-foreground">
+      <footer className="text-center py-4 text-xs text-muted-foreground" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         <a href="/privacy" className="hover:underline">Privacy Policy</a>
         <span className="mx-2">·</span>
         <a href="/terms" className="hover:underline">Terms of Service</a>
