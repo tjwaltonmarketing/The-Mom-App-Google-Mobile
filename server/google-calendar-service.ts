@@ -11,12 +11,6 @@ export class GoogleCalendarService {
       ? 'https://app.themom.app/api/calendar/callback'
       : 'http://localhost:5000/api/calendar/callback';
 
-    console.log('Google Calendar OAuth init:', {
-      clientIdSource: process.env.GOOGLE_CALENDAR_CLIENT_ID ? 'GOOGLE_CALENDAR_CLIENT_ID' : (process.env.GOOGLE_CLIENT_ID ? 'GOOGLE_CLIENT_ID (fallback)' : 'MISSING'),
-      clientIdPreview: clientId ? clientId.substring(0, 30) + '...' : 'NOT SET',
-      redirectUri
-    });
-
     if (!clientId || !clientSecret) {
       console.warn('Google Calendar integration: Missing GOOGLE_CALENDAR_CLIENT_ID or GOOGLE_CALENDAR_CLIENT_SECRET');
     }
