@@ -790,11 +790,19 @@ export default function CalendarPage() {
                       size="sm"
                       variant="outline"
                       className="h-7 text-xs px-2"
-                      onClick={() => {
-                      const token = localStorage.getItem('auth_token');
-                      const base = getApiUrl('/api/calendar/connect');
-                      const url = token ? `${base}?token=${encodeURIComponent(token)}` : base;
-                      window.location.href = url;
+                      onClick={async () => {
+                      try {
+                        // Fetch the Google OAuth URL via authenticated API call,
+                        // then navigate directly to accounts.google.com so Android
+                        // App Links don't intercept the navigation.
+                        const data = await apiRequest('/api/calendar/auth-url');
+                        window.location.href = data.url;
+                      } catch (e) {
+                        // Fallback: open connect URL in current window
+                        const token = localStorage.getItem('auth_token');
+                        const base = getApiUrl('/api/calendar/connect');
+                        window.location.href = token ? `${base}?token=${encodeURIComponent(token)}` : base;
+                      }
                     }}
                     >
                       Connect

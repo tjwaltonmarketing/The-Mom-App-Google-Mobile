@@ -4480,6 +4480,21 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Returns Google OAuth URL as JSON — used by mobile to avoid App Links interception
+  app.get("/api/calendar/auth-url", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const calendarService = new GoogleCalendarService();
+      const authUrl = calendarService.generateAuthUrl(req.session.userId);
+      res.json({ url: authUrl });
+    } catch (error) {
+      console.error("Calendar auth-url error:", error);
+      res.status(500).json({ error: "Failed to generate auth URL" });
+    }
+  });
+
   // Google Calendar Import Endpoints
   app.get("/api/calendar/connect", async (req, res) => {
     try {
