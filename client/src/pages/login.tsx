@@ -194,7 +194,8 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 via-pink-100 to-rose-50 p-4">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 via-pink-100 to-rose-50">
+      <div className="flex-1 flex items-center justify-center p-4">
       <div className="flex w-full max-w-5xl items-center gap-8">
         {/* Login Card - Left Side */}
         <Card className="w-full max-w-md">
@@ -391,6 +392,7 @@ export default function Login() {
           alt="Before and After using The Mom App" 
           className="w-full h-auto rounded-2xl shadow-2xl"
         />
+      </div>
       </div>
       </div>
       <footer className="text-center py-4 text-xs text-muted-foreground">
