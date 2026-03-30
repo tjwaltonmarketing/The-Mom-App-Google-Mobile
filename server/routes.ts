@@ -4483,15 +4483,27 @@ export async function registerRoutes(app: Express) {
   // Google Calendar Import Endpoints
   app.get("/api/calendar/connect", async (req, res) => {
     try {
-      if (!req.session.userId) {
+      // Support JWT token passed as query param (needed for mobile/Capacitor)
+      let userId = req.session.userId;
+      if (!userId && req.query.token) {
+        try {
+          const decoded = verifyToken(req.query.token as string);
+          if (decoded?.userId) {
+            userId = decoded.userId;
+            req.session.userId = userId;
+          }
+        } catch { /* invalid token */ }
+      }
+
+      if (!userId) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
       const calendarService = new GoogleCalendarService();
       // Embed userId in OAuth state so callback works even when opened in external browser
-      const authUrl = calendarService.generateAuthUrl(req.session.userId);
+      const authUrl = calendarService.generateAuthUrl(userId);
       
-      req.session.calendarOAuthUserId = req.session.userId;
+      req.session.calendarOAuthUserId = userId;
       
       res.redirect(authUrl);
     } catch (error) {

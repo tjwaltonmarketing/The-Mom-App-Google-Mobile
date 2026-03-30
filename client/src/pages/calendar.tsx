@@ -789,7 +789,11 @@ export default function CalendarPage() {
                       size="sm"
                       variant="outline"
                       className="h-7 text-xs px-2"
-                      onClick={() => window.location.href = '/api/calendar/connect'}
+                      onClick={() => {
+                      const token = localStorage.getItem('auth_token');
+                      const url = token ? `/api/calendar/connect?token=${encodeURIComponent(token)}` : '/api/calendar/connect';
+                      window.location.href = url;
+                    }}
                     >
                       Connect
                     </Button>
