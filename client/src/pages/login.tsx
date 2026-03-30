@@ -393,6 +393,11 @@ export default function Login() {
         />
       </div>
       </div>
+      <footer className="text-center py-4 text-xs text-muted-foreground">
+        <a href="/privacy" className="hover:underline">Privacy Policy</a>
+        <span className="mx-2">·</span>
+        <a href="/terms" className="hover:underline">Terms of Service</a>
+      </footer>
     </div>
   );
 }
