@@ -12,6 +12,7 @@ import { EventModal } from "@/components/event-modal";
 import { EventEditModal } from "@/components/event-edit-modal";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest, authFetch } from "@/lib/queryClient";
+import { getApiUrl } from "@/lib/config";
 import { useToast } from "@/hooks/use-toast";
 import type { Event, FamilyMember } from "@shared/schema";
 import { 
@@ -791,7 +792,8 @@ export default function CalendarPage() {
                       className="h-7 text-xs px-2"
                       onClick={() => {
                       const token = localStorage.getItem('auth_token');
-                      const url = token ? `/api/calendar/connect?token=${encodeURIComponent(token)}` : '/api/calendar/connect';
+                      const base = getApiUrl('/api/calendar/connect');
+                      const url = token ? `${base}?token=${encodeURIComponent(token)}` : base;
                       window.location.href = url;
                     }}
                     >
