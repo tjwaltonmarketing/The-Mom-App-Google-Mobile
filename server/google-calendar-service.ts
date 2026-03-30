@@ -22,15 +22,20 @@ export class GoogleCalendarService {
     );
   }
 
-  generateAuthUrl(): string {
+  generateAuthUrl(userId?: number): string {
     const scopes = [
       'https://www.googleapis.com/auth/calendar.readonly'
     ];
 
+    const state = userId
+      ? Buffer.from(JSON.stringify({ userId, ts: Date.now() })).toString('base64')
+      : undefined;
+
     return this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: scopes,
-      prompt: 'consent'
+      prompt: 'consent',
+      ...(state ? { state } : {})
     });
   }
 

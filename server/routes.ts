@@ -4488,9 +4488,9 @@ export async function registerRoutes(app: Express) {
       }
 
       const calendarService = new GoogleCalendarService();
-      const authUrl = calendarService.generateAuthUrl();
+      // Embed userId in OAuth state so callback works even when opened in external browser
+      const authUrl = calendarService.generateAuthUrl(req.session.userId);
       
-      // Store the user ID in session for the callback
       req.session.calendarOAuthUserId = req.session.userId;
       
       res.redirect(authUrl);
@@ -4514,9 +4514,19 @@ export async function registerRoutes(app: Express) {
 
       const calendarService = new GoogleCalendarService();
       const tokens = await calendarService.getTokensFromCode(code);
-      
+
+      // Decode userId from state param (works even when callback fires in external browser)
+      let userIdFromState: number | null = null;
+      const stateParam = req.query.state as string | undefined;
+      if (stateParam) {
+        try {
+          const decoded = JSON.parse(Buffer.from(stateParam, 'base64').toString('utf8'));
+          if (decoded.userId) userIdFromState = decoded.userId;
+        } catch { /* ignore malformed state */ }
+      }
+
       // Store tokens in DB (so they persist across sessions and work on mobile)
-      const userId = req.session.calendarOAuthUserId || req.session.userId;
+      const userId = userIdFromState || req.session.calendarOAuthUserId || req.session.userId;
       if (userId) {
         await db.update(users)
           .set({ googleCalendarTokens: JSON.stringify(tokens) })
