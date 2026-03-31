@@ -767,7 +767,8 @@ export default function CalendarPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {/* Google Calendar */}
+                {/* Google Calendar — hidden until Google OAuth verification is approved */}
+                {false && (
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
                     {isGoogleConnected
@@ -792,13 +793,9 @@ export default function CalendarPage() {
                       className="h-7 text-xs px-2"
                       onClick={async () => {
                       try {
-                        // Fetch the Google OAuth URL via authenticated API call,
-                        // then navigate directly to accounts.google.com so Android
-                        // App Links don't intercept the navigation.
                         const data = await apiRequest('/api/calendar/auth-url');
                         window.location.href = data.url;
                       } catch (e) {
-                        // Fallback: open connect URL in current window
                         const token = localStorage.getItem('auth_token');
                         const base = getApiUrl('/api/calendar/connect');
                         window.location.href = token ? `${base}?token=${encodeURIComponent(token)}` : base;
@@ -809,6 +806,7 @@ export default function CalendarPage() {
                     </Button>
                   )}
                 </div>
+                )}
 
                 {/* iCal */}
                 <div className="space-y-1.5">
