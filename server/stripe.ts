@@ -85,7 +85,8 @@ export async function createCheckoutSession(
   plan: "individual" | "family",
   interval: "monthly" | "yearly",
   successUrl: string,
-  cancelUrl: string
+  cancelUrl: string,
+  trialDays?: number
 ) {
   await initializeStripeProducts();
   
@@ -109,6 +110,7 @@ export async function createCheckoutSession(
       interval,
     },
     subscription_data: {
+      trial_period_days: trialDays,
       metadata: {
         userId: userId.toString(),
         plan,

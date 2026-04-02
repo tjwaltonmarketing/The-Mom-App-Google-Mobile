@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { setAuthToken } from "@/lib/config";
-import { Eye, EyeOff, Users } from "lucide-react";
+import { Eye, EyeOff, Users, Crown, Check } from "lucide-react";
 import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
 
 const registerSchema = z.object({
@@ -30,6 +30,23 @@ const registerSchema = z.object({
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
+const plans = {
+  individual: {
+    name: "Individual",
+    icon: Crown,
+    monthly: "$5.99/mo",
+    yearly: "$59.99/yr",
+    description: "Perfect for one parent",
+  },
+  family: {
+    name: "Family",
+    icon: Users,
+    monthly: "$9.99/mo",
+    yearly: "$99.99/yr",
+    description: "Share with your whole family",
+  },
+};
+
 export default function Register() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -37,8 +54,9 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  
-  // Get invite params from URL
+  const [selectedPlan, setSelectedPlan] = useState<"individual" | "family">("family");
+  const [selectedInterval, setSelectedInterval] = useState<"monthly" | "yearly">("monthly");
+
   const searchString = useSearch();
   const searchParams = new URLSearchParams(searchString);
   const inviteCode = searchParams.get('inviteCode');
@@ -59,17 +77,12 @@ export default function Register() {
     },
   });
 
-
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterForm) => {
-      // Remove confirmPassword before sending to server
       const { confirmPassword, ...registerData } = data;
-      
-      // Add invite info if joining an existing family
-      const payload = isJoiningFamily 
+      const payload = isJoiningFamily
         ? { ...registerData, inviteCode, familyId: parseInt(familyId!) }
-        : registerData;
-      
+        : { ...registerData, plan: selectedPlan, interval: selectedInterval };
       const response = await apiRequest("POST", "/api/register", payload);
       return await response.json();
     },
@@ -78,15 +91,20 @@ export default function Register() {
       if (data.token) {
         setAuthToken(data.token);
       }
-      
-      toast({
-        title: isJoiningFamily ? "Welcome to the Family!" : "Account Created!",
-        description: isJoiningFamily 
-          ? `You've joined ${familyName || 'the family'}!`
-          : "Welcome to your family command center!",
-      });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      setLocation("/");
+
+      if (data.checkoutUrl && !isJoiningFamily) {
+        // Redirect to Stripe Checkout for payment setup
+        window.location.href = data.checkoutUrl;
+      } else {
+        toast({
+          title: isJoiningFamily ? "Welcome to the Family!" : "Account Created!",
+          description: isJoiningFamily
+            ? `You've joined ${familyName || 'the family'}!`
+            : "Welcome to The Mom App!",
+        });
+        setLocation("/");
+      }
     },
     onError: (error: any) => {
       toast({
@@ -106,9 +124,9 @@ export default function Register() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center -mb-8">
-            <img 
-              src={logoPath} 
-              alt="The Mom App Logo" 
+            <img
+              src={logoPath}
+              alt="The Mom App Logo"
               className="w-60 h-60 object-contain"
             />
           </div>
@@ -116,9 +134,9 @@ export default function Register() {
             {isJoiningFamily ? `Join ${familyName}` : "Join The Mom App"}
           </CardTitle>
           <CardDescription>
-            {isJoiningFamily 
-              ? "Create your account to join your family" 
-              : "Create your family command center"}
+            {isJoiningFamily
+              ? "Create your account to join your family"
+              : "14-day free trial · No charge until trial ends"}
           </CardDescription>
           {isJoiningFamily && (
             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
@@ -146,7 +164,6 @@ export default function Register() {
                     </FormItem>
                   )}
                 />
-                
                 <FormField
                   control={form.control}
                   name="lastName"
@@ -169,11 +186,7 @@ export default function Register() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="email" 
-                        placeholder="Enter your email"
-                        {...field} 
-                      />
+                      <Input type="email" placeholder="Enter your email" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -187,17 +200,13 @@ export default function Register() {
                   <FormItem>
                     <FormLabel>Phone Number</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="tel"
-                        placeholder="e.g., +1 (555) 123-4567"
-                        {...field} 
-                      />
+                      <Input type="tel" placeholder="e.g., +1 (555) 123-4567" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="password"
@@ -206,10 +215,10 @@ export default function Register() {
                     <FormLabel>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Input 
-                          type={showPassword ? "text" : "password"} 
+                        <Input
+                          type={showPassword ? "text" : "password"}
                           placeholder="Create a password"
-                          {...field} 
+                          {...field}
                         />
                         <Button
                           type="button"
@@ -218,11 +227,7 @@ export default function Register() {
                           className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                           onClick={() => setShowPassword(!showPassword)}
                         >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
                       </div>
                     </FormControl>
@@ -239,10 +244,10 @@ export default function Register() {
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Input 
-                          type={showConfirmPassword ? "text" : "password"} 
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
                           placeholder="Confirm your password"
-                          {...field} 
+                          {...field}
                         />
                         <Button
                           type="button"
@@ -251,11 +256,7 @@ export default function Register() {
                           className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </Button>
                       </div>
                     </FormControl>
@@ -272,15 +273,66 @@ export default function Register() {
                     <FormItem>
                       <FormLabel>Family Name</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="e.g., Smith Family"
-                          {...field} 
-                        />
+                        <Input placeholder="e.g., Smith Family" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+              )}
+
+              {/* Plan selector — only shown for new family creators */}
+              {!isJoiningFamily && (
+                <div className="space-y-3 pt-1">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-gray-700">Choose your plan</p>
+                    <div className="flex bg-gray-100 rounded-full p-0.5 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedInterval("monthly")}
+                        className={`px-3 py-1 rounded-full transition-all ${selectedInterval === "monthly" ? "bg-white shadow text-pink-600 font-medium" : "text-gray-500"}`}
+                      >
+                        Monthly
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedInterval("yearly")}
+                        className={`px-3 py-1 rounded-full transition-all ${selectedInterval === "yearly" ? "bg-white shadow text-pink-600 font-medium" : "text-gray-500"}`}
+                      >
+                        Yearly <span className="text-green-600 font-medium">–17%</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(Object.entries(plans) as [("individual" | "family"), typeof plans.individual][]).map(([key, plan]) => {
+                      const Icon = plan.icon;
+                      const isSelected = selectedPlan === key;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setSelectedPlan(key)}
+                          className={`relative p-3 rounded-xl border-2 text-left transition-all ${isSelected ? "border-pink-500 bg-pink-50" : "border-gray-200 bg-white hover:border-pink-200"}`}
+                        >
+                          {isSelected && (
+                            <div className="absolute top-2 right-2 w-4 h-4 bg-pink-500 rounded-full flex items-center justify-center">
+                              <Check className="h-2.5 w-2.5 text-white" />
+                            </div>
+                          )}
+                          <Icon className={`h-4 w-4 mb-1.5 ${isSelected ? "text-pink-500" : "text-gray-400"}`} />
+                          <p className={`text-sm font-semibold ${isSelected ? "text-pink-700" : "text-gray-700"}`}>{plan.name}</p>
+                          <p className={`text-xs font-bold ${isSelected ? "text-pink-600" : "text-gray-500"}`}>
+                            {selectedInterval === "monthly" ? plan.monthly : plan.yearly}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-0.5">{plan.description}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-center text-gray-400">
+                    Free for 14 days · Cancel anytime · Billed after trial
+                  </p>
+                </div>
               )}
 
               <div className="flex items-start gap-3 py-2">
@@ -292,22 +344,22 @@ export default function Register() {
                 />
                 <label htmlFor="register-terms" className="text-sm text-gray-700 leading-snug cursor-pointer">
                   I agree to the{" "}
-                  <a href="/terms" target="_blank" className="text-pink-500 underline hover:text-pink-600 font-medium">
-                    Terms of Service
-                  </a>{" "}
+                  <a href="/terms" target="_blank" className="text-pink-500 underline hover:text-pink-600 font-medium">Terms of Service</a>{" "}
                   and{" "}
-                  <a href="/privacy" target="_blank" className="text-pink-500 underline hover:text-pink-600 font-medium">
-                    Privacy Policy
-                  </a>
+                  <a href="/privacy" target="_blank" className="text-pink-500 underline hover:text-pink-600 font-medium">Privacy Policy</a>
                 </label>
               </div>
 
-              <Button 
-                type="submit" 
-                className="w-full" 
+              <Button
+                type="submit"
+                className="w-full"
                 disabled={registerMutation.isPending || !agreedToTerms}
               >
-                {registerMutation.isPending ? "Creating Account..." : "Create Account"}
+                {registerMutation.isPending
+                  ? "Creating Account..."
+                  : isJoiningFamily
+                    ? "Join Family"
+                    : "Start Free Trial"}
               </Button>
             </form>
           </Form>

@@ -96,7 +96,7 @@ export async function registerRoutes(app: Express) {
   // Parent Authentication Endpoints
   app.post("/api/register", async (req, res) => {
     try {
-      const { email, password, firstName, lastName, familyName, phoneNumber, inviteCode, familyId } = req.body;
+      const { email, password, firstName, lastName, familyName, phoneNumber, inviteCode, familyId, plan, interval } = req.body;
       
       // If joining via invite, familyName is optional
       const isJoiningFamily = inviteCode && familyId;
@@ -205,13 +205,36 @@ export async function registerRoutes(app: Express) {
           );
         } catch (smsError) {
           console.error("Failed to send admin signup notification:", smsError);
-          // Don't fail registration if SMS fails
+        }
+      }
+
+      // Create Stripe checkout session for new family creators (not joiners)
+      let checkoutUrl: string | null = null;
+      if (!isJoiningFamily) {
+        try {
+          const selectedPlan = (plan === "family" ? "family" : "individual") as "individual" | "family";
+          const selectedInterval = (interval === "yearly" ? "yearly" : "monthly") as "monthly" | "yearly";
+          const baseUrl = "https://app.themom.app";
+          const session = await createCheckoutSession(
+            newUser.id,
+            email,
+            selectedPlan,
+            selectedInterval,
+            `${baseUrl}/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
+            `${baseUrl}/?trial=true`,
+            14 // 14-day free trial
+          );
+          checkoutUrl = session.url;
+        } catch (stripeError) {
+          console.error("Failed to create checkout session at registration:", stripeError);
+          // Don't fail registration if Stripe fails — user gets trial
         }
       }
 
       res.json({
         success: true,
         token,
+        checkoutUrl,
         user: {
           id: newUser.id,
           email: newUser.email,
@@ -5112,8 +5135,11 @@ export async function registerRoutes(app: Express) {
 
       const session = await stripe.checkout.sessions.retrieve(req.params.sessionId);
 
-      if (session.payment_status === "paid" && session.metadata?.userId === req.session.userId.toString()) {
-        // Update subscription
+      // Accept both "paid" and "no_payment_required" (trial subscriptions)
+      const isComplete = session.status === "complete" &&
+        (session.payment_status === "paid" || session.payment_status === "no_payment_required");
+
+      if (isComplete && session.metadata?.userId === req.session.userId.toString()) {
         await storage.updateUserSubscription(req.session.userId, {
           subscriptionPlan: session.metadata.plan as "individual" | "family",
           subscriptionStatus: "active",
