@@ -24,32 +24,39 @@ export default function Onboarding() {
   };
 
   const startTrialMutation = useMutation({
-    mutationFn: async (plan: "individual" | "family") => {
-      return apiRequest("POST", "/api/subscription/start-trial", { plan });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+    mutationFn: async ({ plan, interval }: { plan: "individual" | "family"; interval: "monthly" | "yearly" }) => {
       if (Capacitor.getPlatform() === "ios") {
+        // iOS uses RevenueCat — start a local trial record
+        return apiRequest("POST", "/api/subscription/start-trial", { plan });
+      }
+      // Android/web — create Stripe checkout session with 14-day trial
+      const response = await apiRequest("POST", "/api/checkout/create-session", { plan, interval, trialDays: 14 });
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      if (Capacitor.getPlatform() === "ios") {
+        queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
         localStorage.setItem("onboarding_completed", "true");
         toast({ title: "Welcome to The Mom App!", description: "Your free trial has started." });
         window.location.href = "/";
+      } else if (data?.url) {
+        // Redirect to Stripe Checkout
+        localStorage.setItem("onboarding_completed", "true");
+        window.location.href = data.url;
       } else {
-        showShare();
+        // Fallback if Stripe URL missing
+        queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+        localStorage.setItem("onboarding_completed", "true");
+        toast({ title: "Welcome to The Mom App!", description: "Your free trial has started." });
+        window.location.href = "/";
       }
     },
     onError: (error: any) => {
       console.error("Start trial error:", error);
-      toast({
-        title: "Welcome to The Mom App!",
-        description: "Your free trial has started.",
-      });
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-      if (Capacitor.getPlatform() === "ios") {
-        localStorage.setItem("onboarding_completed", "true");
-        window.location.href = "/";
-      } else {
-        showShare();
-      }
+      localStorage.setItem("onboarding_completed", "true");
+      toast({ title: "Welcome to The Mom App!", description: "Your free trial has started." });
+      window.location.href = "/";
     },
   });
 
@@ -86,8 +93,8 @@ export default function Onboarding() {
     },
   });
 
-  const handleStartTrial = (plan: "individual" | "family") => {
-    startTrialMutation.mutate(plan);
+  const handleStartTrial = (plan: "individual" | "family", interval: "monthly" | "yearly") => {
+    startTrialMutation.mutate({ plan, interval });
   };
 
   const handleShare = (platform: "facebook" | "instagram") => {

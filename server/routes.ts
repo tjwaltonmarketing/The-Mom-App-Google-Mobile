@@ -208,33 +208,9 @@ export async function registerRoutes(app: Express) {
         }
       }
 
-      // Create Stripe checkout session for new family creators (not joiners)
-      let checkoutUrl: string | null = null;
-      if (!isJoiningFamily) {
-        try {
-          const selectedPlan = (plan === "family" ? "family" : "individual") as "individual" | "family";
-          const selectedInterval = (interval === "yearly" ? "yearly" : "monthly") as "monthly" | "yearly";
-          const baseUrl = "https://app.themom.app";
-          const session = await createCheckoutSession(
-            newUser.id,
-            email,
-            selectedPlan,
-            selectedInterval,
-            `${baseUrl}/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
-            `${baseUrl}/?trial=true`,
-            14 // 14-day free trial
-          );
-          checkoutUrl = session.url;
-        } catch (stripeError) {
-          console.error("Failed to create checkout session at registration:", stripeError);
-          // Don't fail registration if Stripe fails — user gets trial
-        }
-      }
-
       res.json({
         success: true,
         token,
-        checkoutUrl,
         user: {
           id: newUser.id,
           email: newUser.email,
@@ -5051,7 +5027,7 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const { plan, interval } = req.body;
+      const { plan, interval, trialDays } = req.body;
 
       if (!plan || !["individual", "family"].includes(plan)) {
         return res.status(400).json({ error: "Invalid plan" });
@@ -5066,9 +5042,7 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "User not found" });
       }
 
-      const baseUrl = process.env.REPLIT_DOMAINS 
-        ? `https://${process.env.REPLIT_DOMAINS.split(",")[0]}`
-        : "http://localhost:5000";
+      const baseUrl = "https://app.themom.app";
 
       const session = await createCheckoutSession(
         user.id,
@@ -5076,7 +5050,8 @@ export async function registerRoutes(app: Express) {
         plan as "individual" | "family",
         interval as "monthly" | "yearly",
         `${baseUrl}/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
-        `${baseUrl}/upgrade?cancelled=true`
+        `${baseUrl}/upgrade?cancelled=true`,
+        trialDays ? Number(trialDays) : undefined
       );
 
       res.json({ url: session.url });

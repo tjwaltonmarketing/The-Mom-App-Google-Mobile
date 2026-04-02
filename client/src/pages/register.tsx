@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { setAuthToken } from "@/lib/config";
-import { Eye, EyeOff, Users, Crown, Check } from "lucide-react";
+import { Eye, EyeOff, Users } from "lucide-react";
 import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
 
 const registerSchema = z.object({
@@ -30,23 +30,6 @@ const registerSchema = z.object({
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
-const plans = {
-  individual: {
-    name: "Individual",
-    icon: Crown,
-    monthly: "$5.99/mo",
-    yearly: "$59.99/yr",
-    description: "Perfect for one parent",
-  },
-  family: {
-    name: "Family",
-    icon: Users,
-    monthly: "$9.99/mo",
-    yearly: "$99.99/yr",
-    description: "Share with your whole family",
-  },
-};
-
 export default function Register() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -54,8 +37,6 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<"individual" | "family">("family");
-  const [selectedInterval, setSelectedInterval] = useState<"monthly" | "yearly">("monthly");
 
   const searchString = useSearch();
   const searchParams = new URLSearchParams(searchString);
@@ -82,7 +63,7 @@ export default function Register() {
       const { confirmPassword, ...registerData } = data;
       const payload = isJoiningFamily
         ? { ...registerData, inviteCode, familyId: parseInt(familyId!) }
-        : { ...registerData, plan: selectedPlan, interval: selectedInterval };
+        : { ...registerData };
       const response = await apiRequest("POST", "/api/register", payload);
       return await response.json();
     },
@@ -92,19 +73,13 @@ export default function Register() {
         setAuthToken(data.token);
       }
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-
-      if (data.checkoutUrl && !isJoiningFamily) {
-        // Redirect to Stripe Checkout for payment setup
-        window.location.href = data.checkoutUrl;
-      } else {
-        toast({
-          title: isJoiningFamily ? "Welcome to the Family!" : "Account Created!",
-          description: isJoiningFamily
-            ? `You've joined ${familyName || 'the family'}!`
-            : "Welcome to The Mom App!",
-        });
-        setLocation("/");
-      }
+      toast({
+        title: isJoiningFamily ? "Welcome to the Family!" : "Account Created!",
+        description: isJoiningFamily
+          ? `You've joined ${familyName || 'the family'}!`
+          : "Welcome to The Mom App!",
+      });
+      setLocation("/");
     },
     onError: (error: any) => {
       toast({
@@ -136,7 +111,7 @@ export default function Register() {
           <CardDescription>
             {isJoiningFamily
               ? "Create your account to join your family"
-              : "14-day free trial · No charge until trial ends"}
+              : "Create your account to get started"}
           </CardDescription>
           {isJoiningFamily && (
             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
@@ -281,60 +256,6 @@ export default function Register() {
                 />
               )}
 
-              {/* Plan selector — only shown for new family creators */}
-              {!isJoiningFamily && (
-                <div className="space-y-3 pt-1">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-700">Choose your plan</p>
-                    <div className="flex bg-gray-100 rounded-full p-0.5 text-xs">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedInterval("monthly")}
-                        className={`px-3 py-1 rounded-full transition-all ${selectedInterval === "monthly" ? "bg-white shadow text-pink-600 font-medium" : "text-gray-500"}`}
-                      >
-                        Monthly
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedInterval("yearly")}
-                        className={`px-3 py-1 rounded-full transition-all ${selectedInterval === "yearly" ? "bg-white shadow text-pink-600 font-medium" : "text-gray-500"}`}
-                      >
-                        Yearly <span className="text-green-600 font-medium">–17%</span>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(Object.entries(plans) as [("individual" | "family"), typeof plans.individual][]).map(([key, plan]) => {
-                      const Icon = plan.icon;
-                      const isSelected = selectedPlan === key;
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => setSelectedPlan(key)}
-                          className={`relative p-3 rounded-xl border-2 text-left transition-all ${isSelected ? "border-pink-500 bg-pink-50" : "border-gray-200 bg-white hover:border-pink-200"}`}
-                        >
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 w-4 h-4 bg-pink-500 rounded-full flex items-center justify-center">
-                              <Check className="h-2.5 w-2.5 text-white" />
-                            </div>
-                          )}
-                          <Icon className={`h-4 w-4 mb-1.5 ${isSelected ? "text-pink-500" : "text-gray-400"}`} />
-                          <p className={`text-sm font-semibold ${isSelected ? "text-pink-700" : "text-gray-700"}`}>{plan.name}</p>
-                          <p className={`text-xs font-bold ${isSelected ? "text-pink-600" : "text-gray-500"}`}>
-                            {selectedInterval === "monthly" ? plan.monthly : plan.yearly}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-0.5">{plan.description}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p className="text-xs text-center text-gray-400">
-                    Free for 14 days · Cancel anytime · Billed after trial
-                  </p>
-                </div>
-              )}
-
               <div className="flex items-start gap-3 py-2">
                 <Checkbox
                   id="register-terms"
@@ -359,7 +280,7 @@ export default function Register() {
                   ? "Creating Account..."
                   : isJoiningFamily
                     ? "Join Family"
-                    : "Start Free Trial"}
+                    : "Create Account"}
               </Button>
             </form>
           </Form>

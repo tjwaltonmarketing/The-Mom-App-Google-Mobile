@@ -14,7 +14,7 @@ import onboardingSlide4 from "@/assets/images/onboarding-slide-4.png";
 
 interface OnboardingFlowProps {
   onComplete: (plan?: "individual" | "family") => void;
-  onStartTrial: (plan: "individual" | "family") => void;
+  onStartTrial: (plan: "individual" | "family", interval: "monthly" | "yearly") => void;
   isLoading?: boolean;
 }
 
@@ -151,7 +151,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
 
   const handleNext = () => {
     if (isLastSlide) {
-      onStartTrial(selectedPlan);
+      onStartTrial(selectedPlan, billingCycle);
     } else {
       setCurrentSlide((prev) => prev + 1);
     }
