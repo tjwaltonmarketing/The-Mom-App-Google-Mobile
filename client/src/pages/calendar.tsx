@@ -184,7 +184,7 @@ export default function CalendarPage() {
                   const eventEnd = event.endTime ? new Date(event.endTime) : null;
                   const timeStr = formatTimeInUserTimezone(eventStart, 'h:mm a');
                   const endTimeStr = eventEnd ? formatTimeInUserTimezone(eventEnd, 'h:mm a') : null;
-                  const timeDisplay = endTimeStr ? `${timeStr} - ${endTimeStr}` : timeStr;
+                  const timeDisplay = event.isAllDay ? 'All day' : (endTimeStr ? `${timeStr} - ${endTimeStr}` : timeStr);
 
                   return (
                     <div 
