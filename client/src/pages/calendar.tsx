@@ -373,7 +373,7 @@ export default function CalendarPage() {
                         style={{ backgroundColor: member?.color ? `${member.color}20` : undefined }}
                       >
                         <div className="flex items-center justify-between">
-                          <span>{formatTimeInUserTimezone(event.startTime)} {event.title}</span>
+                          <span>{event.isAllDay ? 'All day' : formatTimeInUserTimezone(event.startTime)} {event.title}</span>
                           <EventEditModal 
                             event={event}
                             trigger={
@@ -448,7 +448,7 @@ export default function CalendarPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-xs truncate">
-                            {formatTimeInUserTimezone(event.startTime)}
+                            {event.isAllDay ? 'All day' : formatTimeInUserTimezone(event.startTime)}
                           </div>
                           <div className="text-xs truncate">
                             {event.title}
@@ -550,7 +550,7 @@ export default function CalendarPage() {
                         <div className="flex items-center justify-between mb-1">
                           <h3 className="font-medium text-gray-900 dark:text-white">{event.title}</h3>
                           <span className="text-sm text-gray-500">
-                            {formatTimeInUserTimezone(event.startTime)} - {event.endTime ? formatTimeInUserTimezone(event.endTime) : 'End time TBD'}
+                            {event.isAllDay ? 'All day' : `${formatTimeInUserTimezone(event.startTime)} - ${event.endTime ? formatTimeInUserTimezone(event.endTime) : 'End time TBD'}`}
                           </span>
                         </div>
                         {event.description && (
@@ -694,7 +694,7 @@ export default function CalendarPage() {
                             <h4 className="font-medium">{event.title}</h4>
                             <div className="flex items-center gap-2">
                               <span className="text-sm text-gray-500">
-                                {format(new Date(event.startTime), 'h:mm a')}
+                                {event.isAllDay ? 'All day' : format(new Date(event.startTime), 'h:mm a')}
                               </span>
                               <EventEditModal 
                                 event={event}

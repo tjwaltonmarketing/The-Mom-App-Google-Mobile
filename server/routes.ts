@@ -4657,13 +4657,27 @@ export async function registerRoutes(app: Express) {
       
       // Import events into the database
       let importedCount = 0;
+      // Parse a Google Calendar date string correctly.
+      // Date-only strings like "2025-03-15" (all-day events) must be treated as
+      // LOCAL midnight, not UTC midnight. new Date("2025-03-15") = UTC = wrong timezone.
+      // Adding T00:00:00 (no Z) forces JavaScript to use local time instead.
+      const parseGCalDate = (dateStr: string): Date => {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          // All-day events have date-only strings (no time, no timezone).
+          // Storing as noon UTC keeps the date correct in all US timezones —
+          // UTC midnight would appear as the PREVIOUS day at 6-7 PM locally.
+          return new Date(`${dateStr}T12:00:00Z`);
+        }
+        return new Date(dateStr);
+      };
+
       for (const googleEvent of googleEvents) {
         try {
           await storage.createEvent({
             title: googleEvent.title,
             description: googleEvent.description,
-            startTime: new Date(googleEvent.startTime),
-            endTime: googleEvent.endTime ? new Date(googleEvent.endTime) : null,
+            startTime: parseGCalDate(googleEvent.startTime),
+            endTime: googleEvent.endTime ? parseGCalDate(googleEvent.endTime) : null,
             location: googleEvent.location,
             familyId: familyMembership.familyId,
             assignedTo: [], // No specific assignments for imported events
@@ -4733,9 +4747,11 @@ export async function registerRoutes(app: Express) {
             const d = new Date(`${yr}-${mo}-${dy}T${hr}:${min}:${sec}${utc ? 'Z' : ''}`);
             return isNaN(d.getTime()) ? null : d;
           } else {
+            // Date-only = all-day event. Store as noon UTC to keep the correct
+            // date in all US timezones (midnight UTC shifts to previous day locally).
             const m = clean.match(/(\d{4})(\d{2})(\d{2})/);
             if (!m) return null;
-            const d = new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00`);
+            const d = new Date(`${m[1]}-${m[2]}-${m[3]}T12:00:00Z`);
             return isNaN(d.getTime()) ? null : d;
           }
         } catch { return null; }
