@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, RefreshCw, CheckCircle } from "lucide-react";
+import { Calendar, RefreshCw, CheckCircle, Eye, EyeOff, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -14,12 +14,36 @@ interface GoogleCalendar {
   backgroundColor: string;
 }
 
+type VisibilityType = "shared" | "busy" | "private";
+
+const visibilityOptions: { value: VisibilityType; label: string; description: string; icon: any }[] = [
+  {
+    value: "private",
+    label: "Private",
+    description: "Only you can see these events",
+    icon: EyeOff,
+  },
+  {
+    value: "busy",
+    label: "Busy only",
+    description: "Family sees the time is blocked, not the details",
+    icon: Clock,
+  },
+  {
+    value: "shared",
+    label: "Shared",
+    description: "Full details visible to your whole family",
+    icon: Eye,
+  },
+];
+
 export function CalendarSync() {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [calendars, setCalendars] = useState<GoogleCalendar[]>([]);
   const [selectedCalendar, setSelectedCalendar] = useState("");
+  const [visibility, setVisibility] = useState<VisibilityType>("private");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,7 +111,8 @@ export function CalendarSync() {
     try {
       const response = await apiRequest("POST", "/api/calendar/import", {
         calendarId: selectedCalendar,
-        daysToImport: 365
+        daysToImport: 365,
+        visibilityType: visibility,
       });
       if (response.ok) {
         const data = await response.json();
@@ -169,6 +194,36 @@ export function CalendarSync() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div>
+              <Label>Who can see these events?</Label>
+              <div className="mt-2 grid grid-cols-1 gap-2">
+                {visibilityOptions.map((option) => {
+                  const Icon = option.icon;
+                  const isSelected = visibility === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setVisibility(option.value)}
+                      className={`flex items-center gap-3 p-3 rounded-lg border-2 text-left transition-all ${
+                        isSelected
+                          ? "border-pink-500 bg-pink-50 dark:bg-pink-950"
+                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      }`}
+                    >
+                      <Icon className={`h-4 w-4 shrink-0 ${isSelected ? "text-pink-500" : "text-gray-400"}`} />
+                      <div>
+                        <p className={`text-sm font-medium ${isSelected ? "text-pink-700 dark:text-pink-300" : "text-gray-700 dark:text-gray-300"}`}>
+                          {option.label}
+                        </p>
+                        <p className="text-xs text-gray-500">{option.description}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="flex gap-2">

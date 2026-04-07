@@ -4636,7 +4636,7 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not connected to Google Calendar" });
       }
 
-      const { calendarId = 'primary', daysToImport = 365 } = req.body;
+      const { calendarId = 'primary', daysToImport = 365, visibilityType = 'private' } = req.body;
 
       // Get family membership
       const familyMembership = await storage.getUserFamilyMembership(req.session.userId);
@@ -4682,8 +4682,8 @@ export async function registerRoutes(app: Express) {
             familyId: familyMembership.familyId,
             assignedTo: [], // No specific assignments for imported events
             isAllDay: googleEvent.isAllDay,
-            isPrivate: false,
-            visibilityType: "shared",
+            isPrivate: visibilityType === "private",
+            visibilityType: visibilityType as "shared" | "busy" | "private",
             sharedWith: [],
             createdBy: familyMember.id
           });
