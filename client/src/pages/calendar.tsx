@@ -3,7 +3,8 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Clock, Plus, ChevronLeft, ChevronRight, ArrowLeft, Edit, List, Grid3X3, Globe, RefreshCw, Link2, CheckCircle2 } from "lucide-react";
+import { Calendar, Clock, Plus, ChevronLeft, ChevronRight, ArrowLeft, Edit, List, Grid3X3, Globe, RefreshCw, Link2, CheckCircle2, EyeOff, Eye } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
@@ -49,6 +50,8 @@ export default function CalendarPage() {
   const [icalUrl, setIcalUrl] = useState("");
   const [showIcalInput, setShowIcalInput] = useState(false);
   const [isGoogleConnected, setIsGoogleConnected] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [importVisibility, setImportVisibility] = useState<"private" | "busy" | "shared">("private");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -70,13 +73,14 @@ export default function CalendarPage() {
   }, []);
 
   const googleImportMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/calendar/import", { calendarId: 'primary', daysToImport: 365 });
+    mutationFn: async (visibilityType: "private" | "busy" | "shared") => {
+      const res = await apiRequest("POST", "/api/calendar/import", { calendarId: 'primary', daysToImport: 365, visibilityType });
       if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Import failed'); }
       return res.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
+      setShowImportDialog(false);
       toast({ title: "Google Calendar Imported", description: `${data.imported} events added to your calendar.` });
     },
     onError: (err: any) => toast({ title: "Import Failed", description: err.message, variant: "destructive" }),
@@ -782,7 +786,7 @@ export default function CalendarPage() {
                       variant="outline"
                       className="h-7 text-xs px-2"
                       disabled={googleImportMutation.isPending}
-                      onClick={() => googleImportMutation.mutate()}
+                      onClick={() => setShowImportDialog(true)}
                     >
                       {googleImportMutation.isPending ? <RefreshCw size={12} className="animate-spin" /> : "Import"}
                     </Button>
@@ -866,6 +870,50 @@ export default function CalendarPage() {
           setSelectedDate(null);
         }}
       />
+
+      {/* Google Calendar Import Visibility Dialog */}
+      <Dialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Who can see these events?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            {[
+              { value: "private" as const, label: "Private", description: "Only you can see these events", Icon: EyeOff },
+              { value: "busy" as const, label: "Busy only", description: "Family sees time blocked, not the details", Icon: Clock },
+              { value: "shared" as const, label: "Shared", description: "Full details visible to your whole family", Icon: Eye },
+            ].map(({ value, label, description, Icon }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setImportVisibility(value)}
+                className={`w-full flex items-center gap-3 p-3 rounded-lg border-2 text-left transition-all ${
+                  importVisibility === value
+                    ? "border-pink-500 bg-pink-50 dark:bg-pink-950"
+                    : "border-gray-200 dark:border-gray-700"
+                }`}
+              >
+                <Icon className={`h-4 w-4 shrink-0 ${importVisibility === value ? "text-pink-500" : "text-gray-400"}`} />
+                <div>
+                  <p className={`text-sm font-medium ${importVisibility === value ? "text-pink-700 dark:text-pink-300" : "text-gray-700 dark:text-gray-300"}`}>
+                    {label}
+                  </p>
+                  <p className="text-xs text-gray-500">{description}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowImportDialog(false)}>Cancel</Button>
+            <Button
+              disabled={googleImportMutation.isPending}
+              onClick={() => googleImportMutation.mutate(importVisibility)}
+            >
+              {googleImportMutation.isPending ? <><RefreshCw size={14} className="animate-spin mr-2" />Importing...</> : "Import"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
