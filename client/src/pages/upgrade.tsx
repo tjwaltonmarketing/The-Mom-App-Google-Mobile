@@ -179,7 +179,10 @@ export default function Upgrade() {
   const checkoutMutation = useMutation({
     mutationFn: async ({ plan, interval }: { plan: string; interval: string }) => {
       const pendingCoupon = localStorage.getItem('pendingCoupon') || undefined;
-      const response = await apiRequest("POST", "/api/checkout/create-session", { plan, interval, coupon: pendingCoupon });
+      // Win-back users who never completed a Stripe checkout get their 14-day trial
+      const hasHadStripeTrial = !!(subscription as any)?.stripeSubscriptionId;
+      const trialDays = (pendingCoupon && !hasHadStripeTrial) ? 14 : undefined;
+      const response = await apiRequest("POST", "/api/checkout/create-session", { plan, interval, coupon: pendingCoupon, trialDays });
       const data = await response.json();
       return data as { url: string };
     },
@@ -241,8 +244,8 @@ export default function Upgrade() {
           <div className="mb-6 bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-3">
             <span className="text-2xl">🎉</span>
             <div>
-              <p className="font-semibold text-green-800 text-sm">Special discount applied!</p>
-              <p className="text-green-700 text-sm">Code <strong>{pendingCoupon}</strong> — 25% off your first month will be applied at checkout.</p>
+              <p className="font-semibold text-green-800 text-sm">Special offer applied!</p>
+              <p className="text-green-700 text-sm">You'll get your <strong>14-day free trial</strong>, then <strong>25% off your first month</strong> — automatically applied at checkout.</p>
             </div>
           </div>
         )}
