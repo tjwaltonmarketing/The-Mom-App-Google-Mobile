@@ -771,8 +771,6 @@ export default function CalendarPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {/* Google Calendar — temporarily re-enabled to record OAuth demo video */}
-                {true && (
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
                     {isGoogleConnected
@@ -810,7 +808,6 @@ export default function CalendarPage() {
                     </Button>
                   )}
                 </div>
-                )}
 
                 {/* iCal */}
                 <div className="space-y-1.5">
