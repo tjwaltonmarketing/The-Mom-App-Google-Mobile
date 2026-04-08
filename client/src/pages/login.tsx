@@ -213,9 +213,17 @@ export default function Login() {
           <CardDescription>
             Sign in to your family command center
           </CardDescription>
-          
         </CardHeader>
         <CardContent>
+          {/* Trial callout */}
+          <div className="mb-5 flex items-center justify-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl px-4 py-3">
+            <span className="text-lg">🎉</span>
+            <div className="text-center">
+              <p className="text-sm font-semibold text-green-800">14-Day Free Trial</p>
+              <p className="text-xs text-green-600">No payment due today</p>
+            </div>
+          </div>
+
           {/* Google Sign-In - hidden until Google OAuth origins are configured
           {googleClientId && (
             <>
@@ -362,9 +370,9 @@ export default function Login() {
                 </Link>
               </p>
               <p className="text-sm text-gray-600">
-                Don't have an account?{" "}
-                <Link href="/register" className="text-pink-600 hover:text-pink-500 font-medium">
-                  Create one
+                New here?{" "}
+                <Link href="/register" className="text-pink-600 hover:text-pink-500 font-medium underline underline-offset-2">
+                  Start your free 14-day trial
                 </Link>
               </p>
             </div>
