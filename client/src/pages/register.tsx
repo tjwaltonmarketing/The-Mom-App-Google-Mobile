@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +50,18 @@ export default function Register() {
   if (couponParam) {
     localStorage.setItem('pendingCoupon', couponParam);
   }
+
+  // If already logged in, redirect to upgrade page (win-back flow)
+  const { data: authUser } = useQuery<{ id: number } | null>({
+    queryKey: ["/api/auth/user"],
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (authUser?.id && !isJoiningFamily) {
+      setLocation("/upgrade");
+    }
+  }, [authUser, isJoiningFamily, setLocation]);
 
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),

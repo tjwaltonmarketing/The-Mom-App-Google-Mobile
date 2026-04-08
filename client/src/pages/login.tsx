@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -32,6 +32,13 @@ export default function Login() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const googleButtonRef = useRef<HTMLDivElement>(null);
   const [gsiLoaded, setGsiLoaded] = useState(false);
+
+  // Capture win-back coupon from URL and persist it for checkout
+  const searchString = useSearch();
+  const couponParam = new URLSearchParams(searchString).get('coupon');
+  if (couponParam) {
+    localStorage.setItem('pendingCoupon', couponParam);
+  }
 
   // Force light mode on login page
   useEffect(() => {

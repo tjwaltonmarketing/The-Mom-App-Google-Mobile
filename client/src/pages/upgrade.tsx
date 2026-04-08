@@ -63,6 +63,7 @@ export default function Upgrade() {
   const [rcPackages, setRcPackages] = useState<RCPackage[]>([]);
   const [rcLoading, setRcLoading] = useState(false);
   const [rcPurchasing, setRcPurchasing] = useState(false);
+  const [pendingCoupon] = useState(() => localStorage.getItem('pendingCoupon'));
   const isIOS = Capacitor.getPlatform() === "ios";
 
   const cancelled = search.includes("cancelled=true");
@@ -235,6 +236,16 @@ export default function Upgrade() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to App
         </Button>
+
+        {pendingCoupon && (
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-3">
+            <span className="text-2xl">🎉</span>
+            <div>
+              <p className="font-semibold text-green-800 text-sm">Special discount applied!</p>
+              <p className="text-green-700 text-sm">Code <strong>{pendingCoupon}</strong> — 25% off your first month will be applied at checkout.</p>
+            </div>
+          </div>
+        )}
 
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-pink-100 rounded-full mb-4">
