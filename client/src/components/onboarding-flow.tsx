@@ -296,7 +296,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
                   <Check className="h-4 w-4 text-green-600 shrink-0" />
                   <span className="text-green-700 font-semibold text-sm">No Payment Due Now</span>
                 </div>
-                <p className="text-gray-500 text-sm">Enter your card to start your 14-day trial.<br/>You won't be charged a thing today.</p>
+                <p className="text-gray-500 text-sm">Start your 14-day trial.<br/>You won't be charged a thing today.</p>
               </div>
             </div>
           )}
