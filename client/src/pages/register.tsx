@@ -45,6 +45,12 @@ export default function Register() {
   const familyName = searchParams.get('familyName');
   const isJoiningFamily = !!inviteCode && !!familyId;
 
+  // Capture win-back coupon from URL and persist it for checkout
+  const couponParam = searchParams.get('coupon');
+  if (couponParam) {
+    localStorage.setItem('pendingCoupon', couponParam);
+  }
+
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     defaultValues: {

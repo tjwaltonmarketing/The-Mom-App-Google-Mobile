@@ -842,3 +842,15 @@ export const insertFeatureRequestSchema = createInsertSchema(featureRequests).om
 
 export type FeatureRequest = typeof featureRequests.$inferSelect;
 export type InsertFeatureRequest = z.infer<typeof insertFeatureRequestSchema>;
+
+// Win-back drip campaign tracking
+export const winbackDrip = pgTable("winback_drip", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  day: integer("day").notNull(), // 2, 5, or 10
+  sentAt: timestamp("sent_at").defaultNow().notNull(),
+});
+
+export const insertWinbackDripSchema = createInsertSchema(winbackDrip).omit({ id: true, sentAt: true });
+export type WinbackDrip = typeof winbackDrip.$inferSelect;
+export type InsertWinbackDrip = z.infer<typeof insertWinbackDripSchema>;

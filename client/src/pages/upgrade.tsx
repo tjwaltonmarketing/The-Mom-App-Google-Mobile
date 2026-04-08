@@ -177,12 +177,14 @@ export default function Upgrade() {
 
   const checkoutMutation = useMutation({
     mutationFn: async ({ plan, interval }: { plan: string; interval: string }) => {
-      const response = await apiRequest("POST", "/api/checkout/create-session", { plan, interval });
+      const pendingCoupon = localStorage.getItem('pendingCoupon') || undefined;
+      const response = await apiRequest("POST", "/api/checkout/create-session", { plan, interval, coupon: pendingCoupon });
       const data = await response.json();
       return data as { url: string };
     },
     onSuccess: (data) => {
       if (data.url) {
+        localStorage.removeItem("pendingCoupon");
         window.open(data.url, "_blank");
       }
     },

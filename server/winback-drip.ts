@@ -1,0 +1,84 @@
+import { storage } from "./storage";
+import { sendSMS } from "./sms-service";
+import { db } from "./db";
+import { winbackDrip, users, userSubscriptions } from "@shared/schema";
+import { eq, isNull, sql } from "drizzle-orm";
+
+const WINBACK_DAYS = [2, 5, 10];
+
+const MESSAGES: Record<number, (name: string) => string> = {
+  2: (_name) =>
+    `Hey, mama! 💕 You were so close to simplifying your family life. Your 14-day free trial is still waiting — no charge today. Ready? https://app.themom.app/register`,
+  5: (_name) =>
+    `Hey, mama! Still thinking it over? Here's 25% off your first month — only good for the next 48 hours. 👉 https://app.themom.app/register?coupon=WINBACK25`,
+  10: (_name) =>
+    `Last chance! Your 25% discount expires tonight. Thousands of moms are simplifying family life with The Mom App. Don't miss out 💕 https://app.themom.app/register?coupon=WINBACK25`,
+};
+
+export async function runWinbackDripCheck() {
+  try {
+    const now = new Date();
+
+    // Find users who:
+    // 1. Have a phone number
+    // 2. Never completed checkout (no stripeSubscriptionId and no appleProductId)
+    const candidates = await db
+      .select({
+        id: users.id,
+        firstName: users.firstName,
+        phoneNumber: users.phoneNumber,
+        createdAt: users.createdAt,
+        stripeSubId: userSubscriptions.stripeSubscriptionId,
+        appleProductId: userSubscriptions.appleProductId,
+      })
+      .from(users)
+      .leftJoin(userSubscriptions, eq(userSubscriptions.userId, users.id))
+      .where(sql`${users.phoneNumber} IS NOT NULL AND ${users.createdAt} IS NOT NULL`);
+
+    // Filter to non-paying users (no Stripe or Apple subscription)
+    const nonPaying = candidates.filter(
+      (u) => !u.stripeSubId && !u.appleProductId
+    );
+
+    // Get already-sent winback records
+    const sentRecords = await db.select().from(winbackDrip);
+    const sentSet = new Set(sentRecords.map((r) => `${r.userId}-${r.day}`));
+
+    for (const user of nonPaying) {
+      if (!user.createdAt || !user.phoneNumber) continue;
+
+      const daysSinceSignup = Math.floor(
+        (now.getTime() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      for (const day of WINBACK_DAYS) {
+        const key = `${user.id}-${day}`;
+
+        // Send within the 24h window of the target day
+        if (daysSinceSignup < day || daysSinceSignup >= day + 1) continue;
+        if (sentSet.has(key)) continue;
+
+        const message = MESSAGES[day](user.firstName || "");
+        const sent = await sendSMS(user.phoneNumber, message);
+
+        if (sent) {
+          await db.insert(winbackDrip).values({ userId: user.id, day });
+          console.log(`✅ Winback day ${day} SMS sent to user ${user.id}`);
+        } else {
+          console.log(`⚠️ Winback day ${day} SMS not sent to user ${user.id} (SMS not configured or failed)`);
+        }
+      }
+    }
+
+    console.log(`💌 Winback check complete — ${nonPaying.length} non-paying users checked`);
+  } catch (error) {
+    console.error("Winback drip check error:", error);
+  }
+}
+
+export function initWinbackDripScheduler() {
+  // Run once at startup, then every hour
+  runWinbackDripCheck();
+  setInterval(runWinbackDripCheck, 60 * 60 * 1000);
+  console.log("💌 Winback drip scheduler initialized");
+}

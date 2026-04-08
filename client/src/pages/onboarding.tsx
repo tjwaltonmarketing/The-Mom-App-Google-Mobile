@@ -30,7 +30,8 @@ export default function Onboarding() {
         return apiRequest("POST", "/api/subscription/start-trial", { plan });
       }
       // Android/web — create Stripe checkout session with 14-day trial
-      const response = await apiRequest("POST", "/api/checkout/create-session", { plan, interval, trialDays: 14 });
+      const pendingCoupon = localStorage.getItem('pendingCoupon') || undefined;
+      const response = await apiRequest("POST", "/api/checkout/create-session", { plan, interval, trialDays: 14, coupon: pendingCoupon });
       return response.json();
     },
     onSuccess: (data: any) => {
@@ -42,6 +43,7 @@ export default function Onboarding() {
       } else if (data?.url) {
         // Redirect to Stripe Checkout
         localStorage.setItem("onboarding_completed", "true");
+        localStorage.removeItem("pendingCoupon");
         window.location.href = data.url;
       } else {
         // Fallback if Stripe URL missing

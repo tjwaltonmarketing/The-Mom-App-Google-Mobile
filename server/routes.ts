@@ -5043,7 +5043,7 @@ export async function registerRoutes(app: Express) {
         return res.status(401).json({ error: "Not authenticated" });
       }
 
-      const { plan, interval, trialDays } = req.body;
+      const { plan, interval, trialDays, coupon } = req.body;
 
       if (!plan || !["individual", "family"].includes(plan)) {
         return res.status(400).json({ error: "Invalid plan" });
@@ -5067,7 +5067,8 @@ export async function registerRoutes(app: Express) {
         interval as "monthly" | "yearly",
         `${baseUrl}/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
         `${baseUrl}/upgrade?cancelled=true`,
-        trialDays ? Number(trialDays) : undefined
+        trialDays ? Number(trialDays) : undefined,
+        coupon || undefined
       );
 
       res.json({ url: session.url });
@@ -6029,6 +6030,10 @@ export async function registerRoutes(app: Express) {
   // Run daily digest check every hour
   setInterval(runDailyDigestCheck, 60 * 60 * 1000); // Every hour
   console.log("📅 Daily digest scheduler initialized");
+
+  // Win-back drip SMS campaign
+  const { initWinbackDripScheduler } = await import("./winback-drip");
+  initWinbackDripScheduler();
 
   return server;
 }
