@@ -1,22 +1,30 @@
-import { storage } from "./storage";
 import { sendSMS } from "./sms-service";
 import { db } from "./db";
 import { winbackDrip, users, userSubscriptions } from "@shared/schema";
-import { eq, isNull, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const WINBACK_DAYS = [2, 5, 10];
 
 const MESSAGES: Record<number, (name: string) => string> = {
   2: (_name) =>
-    `Hey, mama! 💕 You were so close to simplifying your family life. Your 14-day free trial is still waiting — no charge today. Ready? https://app.themom.app/register`,
+    `Hey, mama! 💕 You were so close to simplifying your family life. Your 14-day free trial is still waiting — no charge today. Ready? https://app.themom.app/login`,
   5: (_name) =>
-    `Hey, mama! Still thinking it over? Here's 25% off your first month — only good for the next 48 hours. 👉 https://app.themom.app/register?coupon=WINBACK25`,
+    `Hey, mama! Still thinking it over? Here's 25% off your first month — only good for the next 48 hours. 👉 https://app.themom.app/login?coupon=WINBACK25`,
   10: (_name) =>
-    `Last chance! Your 25% discount expires tonight. Thousands of moms are simplifying family life with The Mom App. Don't miss out 💕 https://app.themom.app/register?coupon=WINBACK25`,
+    `Last chance! Your 25% discount expires tonight. Thousands of moms are simplifying family life with The Mom App. Don't miss out 💕 https://app.themom.app/login?coupon=WINBACK25`,
 };
+
+// ─── KILL SWITCH ────────────────────────────────────────────────────────────
+// The campaign will NOT send real texts unless WINBACK_DRIP_ENABLED=true
+// is set as an environment variable. Remove this check only when ready to go live.
+const CAMPAIGN_LIVE = process.env.WINBACK_DRIP_ENABLED === "true";
 
 export async function runWinbackDripCheck() {
   try {
+    if (!CAMPAIGN_LIVE) {
+      console.log("💌 Winback drip: DRY RUN mode (set WINBACK_DRIP_ENABLED=true to go live)");
+    }
+
     const now = new Date();
 
     // Find users who:
@@ -59,26 +67,36 @@ export async function runWinbackDripCheck() {
         if (sentSet.has(key)) continue;
 
         const message = MESSAGES[day](user.firstName || "");
+
+        if (!CAMPAIGN_LIVE) {
+          // Dry run — log what would be sent, don't actually send or record
+          console.log(`💌 [DRY RUN] Would send day ${day} SMS to user ${user.id} (${user.phoneNumber}): "${message}"`);
+          continue;
+        }
+
         const sent = await sendSMS(user.phoneNumber, message);
 
         if (sent) {
           await db.insert(winbackDrip).values({ userId: user.id, day });
           console.log(`✅ Winback day ${day} SMS sent to user ${user.id}`);
         } else {
-          console.log(`⚠️ Winback day ${day} SMS not sent to user ${user.id} (SMS not configured or failed)`);
+          console.log(`⚠️ Winback day ${day} SMS failed for user ${user.id}`);
         }
       }
     }
 
-    console.log(`💌 Winback check complete — ${nonPaying.length} non-paying users checked`);
+    console.log(`💌 Winback check complete — ${nonPaying.length} non-paying users evaluated`);
   } catch (error) {
     console.error("Winback drip check error:", error);
   }
 }
 
 export function initWinbackDripScheduler() {
-  // Run once at startup, then every hour
   runWinbackDripCheck();
   setInterval(runWinbackDripCheck, 60 * 60 * 1000);
-  console.log("💌 Winback drip scheduler initialized");
+  if (CAMPAIGN_LIVE) {
+    console.log("💌 Winback drip scheduler initialized — LIVE MODE");
+  } else {
+    console.log("💌 Winback drip scheduler initialized — DRY RUN (no texts will be sent)");
+  }
 }

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +39,20 @@ export default function Login() {
   if (couponParam) {
     localStorage.setItem('pendingCoupon', couponParam);
   }
+
+  // If already logged in, redirect to upgrade page (win-back flow)
+  const { data: authUser } = useQuery<{ id: number } | null>({
+    queryKey: ["/api/auth/user"],
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (authUser?.id) {
+      // If there's a pending coupon, send them to upgrade; otherwise just go home
+      const pending = localStorage.getItem('pendingCoupon');
+      setLocation(pending ? "/upgrade" : "/");
+    }
+  }, [authUser, setLocation]);
 
   // Force light mode on login page
   useEffect(() => {
