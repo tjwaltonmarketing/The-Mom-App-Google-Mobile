@@ -38,14 +38,22 @@ export async function runWinbackDripCheck() {
         createdAt: users.createdAt,
         stripeSubId: userSubscriptions.stripeSubscriptionId,
         appleProductId: userSubscriptions.appleProductId,
+        subscriptionStatus: userSubscriptions.subscriptionStatus,
       })
       .from(users)
       .leftJoin(userSubscriptions, eq(userSubscriptions.userId, users.id))
       .where(sql`${users.phoneNumber} IS NOT NULL AND ${users.createdAt} IS NOT NULL`);
 
-    // Filter to non-paying users (no Stripe or Apple subscription)
+    // Filter to users who have never subscribed or trialled:
+    // - No Stripe subscription ID (never completed Stripe checkout)
+    // - No Apple product ID (never purchased via iOS)
+    // - No active/trial subscription status (excludes legacy trial users without a Stripe ID)
+    const ACTIVE_STATUSES = ["active", "trial"];
     const nonPaying = candidates.filter(
-      (u) => !u.stripeSubId && !u.appleProductId
+      (u) =>
+        !u.stripeSubId &&
+        !u.appleProductId &&
+        !ACTIVE_STATUSES.includes(u.subscriptionStatus || "")
     );
 
     // Get already-sent winback records
