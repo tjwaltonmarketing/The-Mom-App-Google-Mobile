@@ -628,11 +628,11 @@ export default function CalendarPage() {
               <p className="font-semibold text-gray-800 text-xs uppercase tracking-wide">How to import:</p>
               <div className="flex items-start gap-2">
                 <span className="font-bold text-pink-500 mt-0.5">1.</span>
-                <p>Tap the <strong>Sync</strong> button (🔄) in the top right of this page</p>
+                <p>Scroll down to the <strong>Import Calendars</strong> section (right sidebar on desktop, bottom on mobile)</p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="font-bold text-pink-500 mt-0.5">2.</span>
-                <p>Choose <strong>Google Calendar</strong> to connect your account, or paste an <strong>iCal link</strong></p>
+                <p>Connect <strong>Google Calendar</strong> or paste an <strong>iCal link</strong></p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="font-bold text-pink-500 mt-0.5">3.</span>
