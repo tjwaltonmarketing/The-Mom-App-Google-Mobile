@@ -111,7 +111,7 @@ export default function Register() {
           <CardDescription>
             {isJoiningFamily
               ? "Create your account to join your family"
-              : "Create your account to get started"}
+              : "Create your account to get started free"}
           </CardDescription>
           {isJoiningFamily && (
             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
@@ -280,7 +280,7 @@ export default function Register() {
                   ? "Creating Account..."
                   : isJoiningFamily
                     ? "Join Family"
-                    : "Create Account"}
+                    : "Create Free Account"}
               </Button>
             </form>
           </Form>
