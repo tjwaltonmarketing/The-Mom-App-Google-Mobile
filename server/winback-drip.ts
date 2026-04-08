@@ -6,12 +6,12 @@ import { eq, sql } from "drizzle-orm";
 const WINBACK_DAYS = [2, 5, 10];
 
 const MESSAGES: Record<number, (name: string) => string> = {
-  2: (_name) =>
-    `Hey, mama! 💕 You were so close to simplifying your family life. Your 14-day free trial is still waiting — no charge today. Ready? https://app.themom.app/login`,
-  5: (_name) =>
-    `Hey, mama! Still thinking it over? Here's 25% off your first month — only good for the next 48 hours. 👉 https://app.themom.app/login?coupon=WINBACK25`,
-  10: (_name) =>
-    `Last chance! Your 25% discount expires tonight. Thousands of moms are simplifying family life with The Mom App. Don't miss out 💕 https://app.themom.app/login?coupon=WINBACK25`,
+  2: (name) =>
+    `Hey, ${name}! 💕 You were so close to simplifying your family life with The Mom App. Your 14-day free trial is still waiting — no charge today. Ready? https://app.themom.app/login`,
+  5: (name) =>
+    `Hey, ${name}! Still thinking it over? Here's 25% off your first month of The Mom App — only good for the next 48 hours. 👉 https://app.themom.app/login?coupon=WINBACK25`,
+  10: (name) =>
+    `Hey, ${name}! Last chance — your 25% off The Mom App expires tonight. Don't miss out 💕 https://app.themom.app/login?coupon=WINBACK25`,
 };
 
 // ─── KILL SWITCH ────────────────────────────────────────────────────────────
