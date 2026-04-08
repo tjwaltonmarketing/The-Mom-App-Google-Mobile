@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, ChevronRight, ChevronLeft, Mic, Calendar, ListTodo, UtensilsCrossed, Sparkles, Users } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Mic, Calendar, ListTodo, UtensilsCrossed, Sparkles, Users, Bell, Gift, Clock, CreditCard } from "lucide-react";
 import onboardingSlide1 from "@/assets/images/onboarding-slide-1.png";
 import onboardingSlide2 from "@/assets/images/onboarding-slide-2.png";
 import onboardingSlide3 from "@/assets/images/onboarding-slide-3.png";
@@ -124,8 +124,19 @@ const slides = [
   {
     id: 8,
     image: onboardingSlide4,
-    headline: "Start your 14-day free trial",
-    trialBadge: "No credit card required",
+    headline: "We want you to try\nThe Mom App for free.",
+    isPrimingA: true,
+  },
+  {
+    id: 9,
+    image: onboardingSlide4,
+    headline: "We'll send you a reminder\nbefore your free trial ends.",
+    isPrimingB: true,
+  },
+  {
+    id: 10,
+    image: onboardingSlide4,
+    headline: "Start your 14-day FREE trial.",
     body: "You've unlocked a simpler way to manage:",
     features: ["Tasks", "Schedules", "Meals", "Family life"],
     tagline: "Try everything free for 14 days, then choose a plan.",
@@ -179,13 +190,15 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex flex-col" style={{ fontFamily: "'Poppins', sans-serif" }}>
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-md mx-auto w-full">
-        <div className="w-full max-h-[250px] mb-4 flex items-center justify-center">
-          <img
-            src={slide.image}
-            alt={slide.headline}
-            className="max-h-[230px] w-auto object-contain rounded-2xl shadow-lg"
-          />
-        </div>
+        {!(slide as any).isPrimingA && !(slide as any).isPrimingB && (
+          <div className="w-full max-h-[250px] mb-4 flex items-center justify-center">
+            <img
+              src={slide.image}
+              alt={slide.headline}
+              className="max-h-[230px] w-auto object-contain rounded-2xl shadow-lg"
+            />
+          </div>
+        )}
 
         <div className="text-center space-y-3 flex-1 overflow-y-auto">
           {IconComponent && (
@@ -268,68 +281,124 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
             <p className="text-sm text-gray-500">{slide.trust}</p>
           )}
 
-          {slide.isPricing && (
+          {(slide as any).isPrimingA && (
+            <div className="space-y-6 py-2">
+              <div className="flex items-center justify-center">
+                <div className="relative">
+                  <div className="w-28 h-28 bg-gradient-to-br from-pink-100 to-pink-200 rounded-3xl flex items-center justify-center shadow-lg">
+                    <Gift className="h-14 w-14 text-pink-500" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">FREE</div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-2 bg-green-50 border border-green-200 rounded-full px-5 py-2">
+                  <Check className="h-4 w-4 text-green-600 shrink-0" />
+                  <span className="text-green-700 font-semibold text-sm">No Payment Due Now</span>
+                </div>
+                <p className="text-gray-500 text-sm">Enter your card to start your 14-day trial.<br/>You won't be charged a thing today.</p>
+              </div>
+            </div>
+          )}
+
+          {(slide as any).isPrimingB && (
+            <div className="space-y-6 py-2">
+              <div className="flex items-center justify-center">
+                <div className="relative">
+                  <Bell className="h-24 w-24 text-pink-200" strokeWidth={1.5} />
+                  <div className="absolute -top-1 -right-1 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center shadow-md">
+                    <span className="text-white text-sm font-bold">1</span>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-2 bg-green-50 border border-green-200 rounded-full px-5 py-2">
+                  <Check className="h-4 w-4 text-green-600 shrink-0" />
+                  <span className="text-green-700 font-semibold text-sm">No Payment Due Now</span>
+                </div>
+                <p className="text-gray-500 text-sm">We'll remind you on day 13 so you can<br/>cancel before you're ever charged.</p>
+              </div>
+            </div>
+          )}
+
+          {(slide as any).isPricing && (
             <div className="space-y-3">
-              {slide.trialBadge && (
-                <div className="inline-block bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-medium">
-                  {slide.trialBadge}
+              {/* Timeline */}
+              <div className="bg-gray-50 rounded-2xl p-4 text-left space-y-0">
+                <div className="flex items-start gap-3">
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center shrink-0">
+                      <Gift className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="w-0.5 h-8 bg-gray-200 mt-1" />
+                  </div>
+                  <div className="pb-3">
+                    <p className="font-semibold text-gray-900 text-sm">Today — Trial Starts</p>
+                    <p className="text-xs text-gray-500">Unlock everything. Nothing charged.</p>
+                  </div>
                 </div>
-              )}
-              <p className="text-gray-600 text-sm">{slide.body}</p>
-              
-              {slide.features && (
-                <div className="flex flex-wrap justify-center gap-2">
-                  {slide.features.map((feature, idx) => (
-                    <span key={idx} className="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-sm">
-                      {feature}
-                    </span>
-                  ))}
+                <div className="flex items-start gap-3">
+                  <div className="flex flex-col items-center">
+                    <div className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center shrink-0">
+                      <Bell className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="w-0.5 h-8 bg-gray-200 mt-1" />
+                  </div>
+                  <div className="pb-3">
+                    <p className="font-semibold text-gray-900 text-sm">Day 13 — Reminder Sent</p>
+                    <p className="text-xs text-gray-500">We'll remind you your trial ends tomorrow.</p>
+                  </div>
                 </div>
-              )}
-
-              <p className="text-gray-700 font-medium text-sm">{slide.tagline}</p>
-
-              <div className="flex justify-center gap-2 mb-3">
-                <Button
-                  variant={billingCycle === "monthly" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setBillingCycle("monthly")}
-                  className={billingCycle === "monthly" ? "bg-pink-500 hover:bg-pink-600" : ""}
-                >
-                  Monthly
-                </Button>
-                <Button
-                  variant={billingCycle === "yearly" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setBillingCycle("yearly")}
-                  className={billingCycle === "yearly" ? "bg-pink-500 hover:bg-pink-600" : ""}
-                >
-                  Yearly (2 months free)
-                </Button>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center shrink-0">
+                    <CreditCard className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">Day 14 — Billing Starts</p>
+                    <p className="text-xs text-gray-500">Cancel anytime before. No guilt, no pressure.</p>
+                  </div>
+                </div>
               </div>
 
+              {/* Billing toggle */}
+              <div className="flex justify-center gap-2">
+                <button
+                  onClick={() => setBillingCycle("monthly")}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all ${billingCycle === "monthly" ? "border-pink-500 bg-pink-50 text-pink-700" : "border-gray-200 text-gray-500"}`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setBillingCycle("yearly")}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium border-2 transition-all relative ${billingCycle === "yearly" ? "border-pink-500 bg-pink-50 text-pink-700" : "border-gray-200 text-gray-500"}`}
+                >
+                  {billingCycle === "yearly" && (
+                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-pink-500 text-white text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap">2 MONTHS FREE</span>
+                  )}
+                  Yearly
+                </button>
+              </div>
+
+              {/* Plan cards */}
               <div className="grid grid-cols-2 gap-3">
-                <Card 
+                <Card
                   className={`cursor-pointer transition-all ${selectedPlan === "individual" ? "ring-2 ring-pink-500 bg-pink-50" : "hover:bg-gray-50"}`}
                   onClick={() => setSelectedPlan("individual")}
                 >
                   <CardContent className="p-4 text-center">
-                    <h3 className="font-semibold text-gray-900">Individual</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm">Individual</h3>
                     <p className="text-2xl font-bold text-pink-500">{getPrice("individual")}</p>
                     <p className="text-xs text-gray-500">{getPeriod()}</p>
                     <p className="text-xs text-gray-600 mt-1">Perfect for just you</p>
                   </CardContent>
                 </Card>
-
-                <Card 
+                <Card
                   className={`cursor-pointer transition-all relative ${selectedPlan === "family" ? "ring-2 ring-pink-500 bg-pink-50" : "hover:bg-gray-50"}`}
                   onClick={() => setSelectedPlan("family")}
                 >
-                  <div className="absolute -top-3 right-2 bg-pink-500 text-white text-[10px] px-2 py-0.5 rounded-full z-10">
-                    Most Popular
-                  </div>
+                  <div className="absolute -top-3 right-2 bg-pink-500 text-white text-[10px] px-2 py-0.5 rounded-full z-10">Most Popular</div>
                   <CardContent className="p-4 pt-5 text-center">
-                    <h3 className="font-semibold text-gray-900">Family</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm">Family</h3>
                     <p className="text-2xl font-bold text-pink-500">{getPrice("family")}</p>
                     <p className="text-xs text-gray-500">{getPeriod()}</p>
                     <p className="text-xs text-gray-600 mt-1">Up to 6 members</p>
@@ -337,9 +406,10 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
                 </Card>
               </div>
 
-              <p className="text-sm text-gray-600 italic mt-3">
-                Cancel anytime. No guilt. No pressure.
-              </p>
+              <div className="flex items-center justify-center gap-2">
+                <Check className="h-4 w-4 text-green-600 shrink-0" />
+                <span className="text-green-700 font-semibold text-sm">No Payment Due Now</span>
+              </div>
             </div>
           )}
         </div>
@@ -361,7 +431,15 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
             disabled={isLoading}
             className="w-full bg-pink-500 hover:bg-pink-600 text-white py-6 text-lg disabled:opacity-50"
           >
-            {isLoading ? "STARTING YOUR TRIAL..." : isLastSlide ? "START MY 14-DAY FREE TRIAL" : slide.cta}
+            {isLoading
+            ? "STARTING YOUR TRIAL..."
+            : isLastSlide
+            ? "START MY 14-DAY FREE TRIAL"
+            : (slide as any).isPrimingA
+            ? "Continue for Free"
+            : (slide as any).isPrimingB
+            ? "Sounds Good!"
+            : slide.cta}
             {!isLoading && <ChevronRight className="ml-2 h-5 w-5" />}
           </Button>
 
