@@ -123,6 +123,7 @@ export const events = pgTable("events", {
   recurrenceType: text("recurrence_type").default("none"), // "none", "daily", "weekly", "monthly", "yearly"
   recurrenceInterval: integer("recurrence_interval").default(1), // every N days/weeks/months/years
   recurrenceEndDate: timestamp("recurrence_end_date"), // when recurrence ends (null = forever)
+  color: text("color"), // optional hex color for this event
 });
 
 export const tasks = pgTable("tasks", {

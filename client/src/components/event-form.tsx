@@ -19,6 +19,19 @@ import * as z from "zod";
 import { useSubscription } from "@/hooks/use-subscription";
 import { Link } from "wouter";
 
+const EVENT_COLORS = [
+  { label: 'Default', value: '' },
+  { label: 'Red', value: '#D32F2F' },
+  { label: 'Pink', value: '#E91E63' },
+  { label: 'Orange', value: '#F4511E' },
+  { label: 'Yellow', value: '#F6BF26' },
+  { label: 'Green', value: '#33B679' },
+  { label: 'Teal', value: '#039BE5' },
+  { label: 'Blue', value: '#3F51B5' },
+  { label: 'Purple', value: '#8E24AA' },
+  { label: 'Gray', value: '#616161' },
+];
+
 const eventFormSchema = insertEventSchema.extend({
   startDate: z.string(),
   startTime: z.string(),
@@ -29,6 +42,7 @@ const eventFormSchema = insertEventSchema.extend({
   recurrenceType: z.enum(["none", "daily", "weekly", "monthly", "yearly"]).default("none"),
   recurrenceInterval: z.number().min(1).default(1),
   recurrenceEndDate: z.string().optional(),
+  color: z.string().optional(),
 });
 
 type EventFormData = z.infer<typeof eventFormSchema>;
@@ -76,6 +90,7 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
       recurrenceType: "none",
       recurrenceInterval: 1,
       recurrenceEndDate: "",
+      color: "",
     },
   });
 
@@ -89,7 +104,7 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
 
   const createEventMutation = useMutation({
     mutationFn: async (data: EventFormData) => {
-      const { startDate, startTime, endDate, endTime, visibilityType, sharedWith, recurrenceType, recurrenceInterval, recurrenceEndDate, ...eventData } = data;
+      const { startDate, startTime, endDate, endTime, visibilityType, sharedWith, recurrenceType, recurrenceInterval, recurrenceEndDate, color, ...eventData } = data;
       
       let startDateTime: Date;
       let endDateTime: Date | null = null;
@@ -134,6 +149,7 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
         recurrenceType: recurrenceType || "none",
         recurrenceInterval: recurrenceInterval || 1,
         recurrenceEndDate: recurrenceEndDate ? new Date(recurrenceEndDate) : null,
+        color: color || null,
       };
 
       return apiRequest("POST", "/api/events", eventPayload);
@@ -189,6 +205,29 @@ export function EventForm({ onSuccess, selectedDate }: EventFormProps) {
                 {form.formState.errors.title.message}
               </p>
             )}
+          </div>
+
+          {/* Color picker */}
+          <div>
+            <Label>Event Color</Label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {EVENT_COLORS.map(c => (
+                <button
+                  key={c.value}
+                  type="button"
+                  title={c.label}
+                  onClick={() => form.setValue("color", c.value)}
+                  className={`w-6 h-6 rounded-full border-2 transition-all ${
+                    form.watch("color") === c.value
+                      ? 'border-gray-800 dark:border-white scale-110'
+                      : 'border-transparent'
+                  }`}
+                  style={{
+                    backgroundColor: c.value || '#e5e7eb',
+                  }}
+                />
+              ))}
+            </div>
           </div>
 
           <div>

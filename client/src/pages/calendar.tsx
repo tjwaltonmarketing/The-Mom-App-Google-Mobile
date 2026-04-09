@@ -339,9 +339,8 @@ export default function CalendarPage() {
     const { start: monthStart, end: monthEnd } = getDateRange();
     
     return (
-      <div className="overflow-x-auto -mx-2 px-2">
-        <div className="min-w-[420px]">
-          <div className="grid grid-cols-7 gap-1 mb-2">
+      <div>
+        <div className="grid grid-cols-7 gap-1 mb-2">
             {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
               <div key={i} className="py-1 text-center text-xs font-semibold text-gray-500 uppercase">
                 {day}
@@ -380,11 +379,12 @@ export default function CalendarPage() {
                   <div className="hidden sm:block space-y-0.5">
                     {dayEvents.slice(0, 2).map(event => {
                       const member = getMemberById(event.assignedTo);
+                      const bg = event.color ?? (member?.color ? `${member.color}40` : '#BFDBFE');
                       return (
                         <div 
                           key={event.id} 
-                          className="text-xs px-1 py-0.5 rounded truncate text-blue-800 dark:text-blue-200"
-                          style={{ backgroundColor: member?.color ? `${member.color}30` : '#BFDBFE' }}
+                          className="text-xs px-1 py-0.5 rounded truncate"
+                          style={{ backgroundColor: bg, color: event.color ? '#fff' : undefined }}
                         >
                           {event.title}
                         </div>
@@ -398,11 +398,12 @@ export default function CalendarPage() {
                   <div className="sm:hidden flex flex-wrap gap-0.5 mt-0.5">
                     {dayEvents.slice(0, 3).map(event => {
                       const member = getMemberById(event.assignedTo);
+                      const dotColor = event.color ?? member?.color ?? '#EC4899';
                       return (
                         <div
                           key={event.id}
-                          className="w-1.5 h-1.5 rounded-full bg-primary"
-                          style={{ backgroundColor: member?.color ?? undefined }}
+                          className="w-1.5 h-1.5 rounded-full"
+                          style={{ backgroundColor: dotColor }}
                         />
                       );
                     })}
@@ -411,7 +412,6 @@ export default function CalendarPage() {
               );
             })}
           </div>
-        </div>
       </div>
     );
   };
@@ -456,8 +456,11 @@ export default function CalendarPage() {
                   return (
                     <div 
                       key={event.id} 
-                      className="text-xs p-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 group relative"
-                      style={{ backgroundColor: member?.color ? `${member.color}20` : undefined }}
+                      className="text-xs p-1 rounded group relative"
+                      style={{ 
+                        backgroundColor: event.color ?? (member?.color ? `${member.color}30` : '#BFDBFE'),
+                        color: event.color ? '#fff' : undefined
+                      }}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">

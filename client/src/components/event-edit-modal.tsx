@@ -18,6 +18,19 @@ import { format } from "date-fns";
 import type { Event, FamilyMember } from "@shared/schema";
 import { LocationAutocomplete } from "@/components/location-autocomplete";
 
+const EVENT_COLORS = [
+  { label: 'Default', value: '' },
+  { label: 'Red', value: '#D32F2F' },
+  { label: 'Pink', value: '#E91E63' },
+  { label: 'Orange', value: '#F4511E' },
+  { label: 'Yellow', value: '#F6BF26' },
+  { label: 'Green', value: '#33B679' },
+  { label: 'Teal', value: '#039BE5' },
+  { label: 'Blue', value: '#3F51B5' },
+  { label: 'Purple', value: '#8E24AA' },
+  { label: 'Gray', value: '#616161' },
+];
+
 const eventFormSchema = insertEventSchema.extend({
   startDate: z.string(),
   startTime: z.string(),
@@ -26,6 +39,7 @@ const eventFormSchema = insertEventSchema.extend({
   assignedToArray: z.array(z.number()).default([]),
   visibilityType: z.enum(["shared", "private", "busy"]).default("shared"),
   sharedWith: z.array(z.number()).default([]),
+  color: z.string().optional(),
 });
 
 type EventFormData = z.infer<typeof eventFormSchema>;
@@ -68,6 +82,7 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
       startTime: format(new Date(event.startTime), "HH:mm"),
       endDate: event.endTime ? format(new Date(event.endTime), "yyyy-MM-dd") : format(new Date(event.startTime), "yyyy-MM-dd"),
       endTime: event.endTime ? format(new Date(event.endTime), "HH:mm") : "22:00",
+      color: event.color || "",
     },
   });
 
@@ -77,7 +92,7 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
 
   const updateEventMutation = useMutation({
     mutationFn: async (data: EventFormData) => {
-      const { startDate, startTime, endDate, endTime, assignedToArray, visibilityType, sharedWith, ...eventData } = data;
+      const { startDate, startTime, endDate, endTime, assignedToArray, visibilityType, sharedWith, color, ...eventData } = data;
       
       let startDateTime: Date;
       let endDateTime: Date | null = null;
@@ -122,6 +137,7 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
         isPrivate,
         visibilityType,
         sharedWith: finalSharedWith,
+        color: color || null,
       };
 
       return apiRequest("PUT", `/api/events/${event.id}`, eventPayload);
@@ -209,6 +225,27 @@ export function EventEditModal({ event, trigger, onEventUpdated, onEventDeleted 
             {form.formState.errors.title && (
               <p className="text-sm text-red-500">{form.formState.errors.title.message}</p>
             )}
+          </div>
+
+          {/* Color picker */}
+          <div className="space-y-1">
+            <Label>Event Color</Label>
+            <div className="flex flex-wrap gap-2 mt-1">
+              {EVENT_COLORS.map(c => (
+                <button
+                  key={c.value}
+                  type="button"
+                  title={c.label}
+                  onClick={() => form.setValue("color", c.value)}
+                  className={`w-6 h-6 rounded-full border-2 transition-all ${
+                    form.watch("color") === c.value
+                      ? 'border-gray-800 dark:border-white scale-110'
+                      : 'border-transparent'
+                  }`}
+                  style={{ backgroundColor: c.value || '#e5e7eb' }}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="space-y-2">
