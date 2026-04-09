@@ -339,91 +339,93 @@ export default function CalendarPage() {
     const { start: monthStart, end: monthEnd } = getDateRange();
     
     return (
-      <div>
-        <div className="grid grid-cols-7 gap-1 mb-4">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
-              {day}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-1">
-          {days.map(day => {
-            const dayEvents = getEventsForDay(day);
-            const isCurrentDay = isToday(day);
-            const hasEvents = dayEvents.length > 0;
-            const isCurrentMonth = day >= monthStart && day <= monthEnd;
-            
-            return (
-              <div 
-                key={day.toISOString()} 
-                onClick={() => handleDateClick(day)}
-                className={`min-h-[80px] p-2 border rounded-lg transition-all cursor-pointer ${
-                  isCurrentDay 
-                    ? 'bg-primary/10 border-primary' 
-                    : isCurrentMonth
-                      ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                      : 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 opacity-50'
-                }`}
-              >
-                <div className={`text-sm font-medium mb-1 ${
-                  isCurrentDay 
-                    ? 'text-primary' 
-                    : isCurrentMonth 
-                      ? 'text-gray-900 dark:text-white'
-                      : 'text-gray-400 dark:text-gray-600'
-                }`}>
-                  {format(day, 'd')}
-                </div>
-                <div className="space-y-1">
-                  {dayEvents.slice(0, 2).map(event => {
-                    const member = getMemberById(event.assignedTo);
-                    return (
-                      <div 
-                        key={event.id} 
-                        className="text-xs p-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 truncate group relative"
-                        style={{ backgroundColor: member?.color ? `${member.color}20` : undefined }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>{event.isAllDay ? 'All day' : formatTimeInUserTimezone(event.startTime)} {event.title}</span>
-                          <EventEditModal 
-                            event={event}
-                            trigger={
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <Edit size={8} />
-                              </Button>
-                            }
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {dayEvents.length > 2 && (
-                    <div className="text-xs text-gray-500">+{dayEvents.length - 2} more</div>
-                  )}
-                </div>
+      <div className="overflow-x-auto -mx-2 px-2">
+        <div className="min-w-[420px]">
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
+              <div key={i} className="py-1 text-center text-xs font-semibold text-gray-500 uppercase">
+                {day}
               </div>
-            );
-          })}
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {days.map(day => {
+              const dayEvents = getEventsForDay(day);
+              const isCurrentDay = isToday(day);
+              const hasEvents = dayEvents.length > 0;
+              const isCurrentMonth = day >= monthStart && day <= monthEnd;
+              
+              return (
+                <div 
+                  key={day.toISOString()} 
+                  onClick={() => handleDateClick(day)}
+                  className={`min-h-[64px] p-1 border rounded-lg transition-all cursor-pointer ${
+                    isCurrentDay 
+                      ? 'bg-primary/10 border-primary' 
+                      : isCurrentMonth
+                        ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                        : 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 opacity-50'
+                  }`}
+                >
+                  <div className={`text-xs font-semibold mb-1 text-center ${
+                    isCurrentDay 
+                      ? 'w-5 h-5 bg-primary text-white rounded-full flex items-center justify-center mx-auto'
+                      : isCurrentMonth 
+                        ? 'text-gray-900 dark:text-white'
+                        : 'text-gray-400 dark:text-gray-600'
+                  }`}>
+                    {format(day, 'd')}
+                  </div>
+                  {/* Event dots on mobile, text labels on larger screens */}
+                  <div className="hidden sm:block space-y-0.5">
+                    {dayEvents.slice(0, 2).map(event => {
+                      const member = getMemberById(event.assignedTo);
+                      return (
+                        <div 
+                          key={event.id} 
+                          className="text-xs px-1 py-0.5 rounded truncate text-blue-800 dark:text-blue-200"
+                          style={{ backgroundColor: member?.color ? `${member.color}30` : '#BFDBFE' }}
+                        >
+                          {event.title}
+                        </div>
+                      );
+                    })}
+                    {dayEvents.length > 2 && (
+                      <div className="text-xs text-gray-500">+{dayEvents.length - 2}</div>
+                    )}
+                  </div>
+                  {/* Mobile: colored dots only */}
+                  <div className="sm:hidden flex flex-wrap gap-0.5 mt-0.5">
+                    {dayEvents.slice(0, 3).map(event => {
+                      const member = getMemberById(event.assignedTo);
+                      return (
+                        <div
+                          key={event.id}
+                          className="w-1.5 h-1.5 rounded-full bg-primary"
+                          style={{ backgroundColor: member?.color ?? undefined }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
   };
 
   const renderWeekView = () => (
-    <div>
-      <div className="grid grid-cols-7 gap-1 mb-4">
+    <div className="overflow-x-auto -mx-2 px-2">
+      <div className="min-w-[560px]">
+      <div className="grid grid-cols-7 gap-1 mb-2">
         {days.map(day => (
           <div key={day.toISOString()} className="text-center">
-            <div className="text-sm font-medium text-gray-500 mb-1">
+            <div className="text-xs font-medium text-gray-500 mb-1 uppercase">
               {format(day, 'EEE')}
             </div>
-            <div className={`text-lg font-bold p-2 rounded ${
+            <div className={`text-base font-bold w-8 h-8 flex items-center justify-center rounded-full mx-auto ${
               isToday(day) ? 'bg-primary text-white' : 'text-gray-900 dark:text-white'
             }`}>
               {format(day, 'd')}
@@ -503,6 +505,7 @@ export default function CalendarPage() {
             </div>
           );
         })}
+      </div>
       </div>
     </div>
   );
