@@ -417,99 +417,90 @@ export default function CalendarPage() {
   };
 
   const renderWeekView = () => (
-    <div className="overflow-x-auto -mx-2 px-2">
-      <div className="min-w-[560px]">
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {days.map(day => (
-          <div key={day.toISOString()} className="text-center">
-            <div className="text-xs font-medium text-gray-500 mb-1 uppercase">
-              {format(day, 'EEE')}
+    <div className="space-y-2">
+      {days.map(day => {
+        const dayEvents = getEventsForDay(day).sort((a, b) =>
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+        );
+        const today = isToday(day);
+
+        return (
+          <div
+            key={day.toISOString()}
+            className={`flex gap-3 p-3 border rounded-xl transition-all ${
+              today
+                ? 'bg-primary/5 border-primary'
+                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+            }`}
+          >
+            {/* Day label */}
+            <div className="flex flex-col items-center justify-start w-10 shrink-0 pt-0.5">
+              <span className="text-xs font-semibold text-gray-500 uppercase">
+                {format(day, 'EEE')}
+              </span>
+              <div className={`text-lg font-bold w-9 h-9 flex items-center justify-center rounded-full mt-0.5 ${
+                today ? 'bg-primary text-white' : 'text-gray-900 dark:text-white'
+              }`}>
+                {format(day, 'd')}
+              </div>
             </div>
-            <div className={`text-base font-bold w-8 h-8 flex items-center justify-center rounded-full mx-auto ${
-              isToday(day) ? 'bg-primary text-white' : 'text-gray-900 dark:text-white'
-            }`}>
-              {format(day, 'd')}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-7 gap-1">
-        {days.map(day => {
-          const dayEvents = getEventsForDay(day).sort((a, b) => 
-            new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-          );
-          const hasEvents = dayEvents.length > 0;
-          
-          return (
-            <div 
-              key={day.toISOString()}
-              onClick={() => hasEvents ? handleDateClick(day) : null}
-              className={`min-h-[200px] p-1 border rounded-lg ${
-                isToday(day) 
-                  ? 'bg-primary/5 border-primary' 
-                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-              } ${hasEvents ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20' : ''}`}
-            >
-              <div className="space-y-1">
-                {dayEvents.slice(0, 4).map((event, index) => {
-                  const member = getMemberById(event.assignedTo);
-                  return (
-                    <div 
-                      key={event.id} 
-                      className="text-xs p-1 rounded group relative"
-                      style={{ 
-                        backgroundColor: event.color ?? (member?.color ? `${member.color}30` : '#BFDBFE'),
-                        color: event.color ? '#fff' : undefined
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
+
+            {/* Events */}
+            <div className="flex-1 min-w-0 space-y-1.5">
+              {dayEvents.length === 0 ? (
+                <button
+                  className="w-full text-left text-xs text-gray-400 py-2 hover:text-gray-600 transition-colors"
+                  onClick={() => { setSelectedDate(day); setShowEventModal(true); }}
+                >
+                  + Add event
+                </button>
+              ) : (
+                <>
+                  {dayEvents.map(event => {
+                    const member = getMemberById(event.assignedTo);
+                    return (
+                      <div
+                        key={event.id}
+                        className="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg text-sm group"
+                        style={{
+                          backgroundColor: event.color ?? (member?.color ? `${member.color}30` : '#BFDBFE'),
+                          color: event.color ? '#fff' : undefined,
+                        }}
+                      >
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-xs truncate">
+                          <div className="font-medium truncate">{event.title}</div>
+                          <div className="text-xs opacity-80">
                             {event.isAllDay ? 'All day' : formatTimeInUserTimezone(event.startTime)}
                           </div>
-                          <div className="text-xs truncate">
-                            {event.title}
-                          </div>
                         </div>
-                        <EventEditModal 
+                        <EventEditModal
                           event={event}
                           trigger={
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-3 w-3 p-0 opacity-0 group-hover:opacity-100 transition-opacity ml-1 flex-shrink-0"
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 shrink-0"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              <Edit size={6} />
+                              <Edit size={12} />
                             </Button>
                           }
                         />
                       </div>
-                    </div>
-                  );
-                })}
-                {dayEvents.length > 4 && (
-                  <div className="text-xs text-gray-500 text-center py-1">
-                    +{dayEvents.length - 4} more
-                  </div>
-                )}
-                {dayEvents.length === 0 && (
-                  <div 
-                    className="text-xs text-gray-400 text-center py-4 cursor-pointer hover:text-gray-600 transition-colors"
-                    onClick={() => {
-                      setSelectedDate(day);
-                      setShowEventModal(true);
-                    }}
+                    );
+                  })}
+                  <button
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                    onClick={() => { setSelectedDate(day); setShowEventModal(true); }}
                   >
-                    Click to add event
-                  </div>
-                )}
-              </div>
+                    + Add event
+                  </button>
+                </>
+              )}
             </div>
-          );
-        })}
-      </div>
-      </div>
+          </div>
+        );
+      })}
     </div>
   );
 
