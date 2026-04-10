@@ -3624,7 +3624,16 @@ export async function registerRoutes(app: Express) {
       }
 
       const events = await storage.getEventsByFamily(familyMembership.familyId);
-      res.json(events);
+
+      // Filter out private events that belong to other family members
+      const visibleEvents = events.filter(event => {
+        if (event.visibilityType === 'private' || event.isPrivate) {
+          return event.createdBy === familyMembership.id;
+        }
+        return true;
+      });
+
+      res.json(visibleEvents);
     } catch (error) {
       console.error("Parent events fetch error:", error);
       res.status(500).json({ error: "Failed to fetch events" });
@@ -3734,7 +3743,16 @@ export async function registerRoutes(app: Express) {
       }
 
       const todayEvents = await storage.getTodayEventsByFamily(familyMembership.familyId);
-      res.json(todayEvents);
+
+      // Filter out private events that belong to other family members
+      const visibleEvents = todayEvents.filter(event => {
+        if (event.visibilityType === 'private' || event.isPrivate) {
+          return event.createdBy === familyMembership.id;
+        }
+        return true;
+      });
+
+      res.json(visibleEvents);
     } catch (error) {
       console.error("Today events error:", error);
       res.status(500).json({ error: "Failed to get today's events" });
