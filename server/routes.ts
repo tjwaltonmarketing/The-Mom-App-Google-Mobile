@@ -3623,12 +3623,15 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family not found" });
       }
 
+      // Get the family_members record so we have the correct ID that events reference
+      const currentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+
       const events = await storage.getEventsByFamily(familyMembership.familyId);
 
       // Filter out private events that belong to other family members
       const visibleEvents = events.filter(event => {
         if (event.visibilityType === 'private' || event.isPrivate) {
-          return event.createdBy === familyMembership.id;
+          return currentFamilyMember && event.createdBy === currentFamilyMember.id;
         }
         return true;
       });
@@ -3742,12 +3745,15 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family not found" });
       }
 
+      // Get the family_members record so we have the correct ID that events reference
+      const currentFamilyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+
       const todayEvents = await storage.getTodayEventsByFamily(familyMembership.familyId);
 
       // Filter out private events that belong to other family members
       const visibleEvents = todayEvents.filter(event => {
         if (event.visibilityType === 'private' || event.isPrivate) {
-          return event.createdBy === familyMembership.id;
+          return currentFamilyMember && event.createdBy === currentFamilyMember.id;
         }
         return true;
       });
