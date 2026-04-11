@@ -115,7 +115,7 @@ export default function Welcome() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ fontFamily: "'Poppins', sans-serif", background: "linear-gradient(135deg, #6b6bd1, #ee3c6d)" }}>
+    <div className="welcome-bg min-h-screen flex items-center justify-center px-4 py-8" style={{ fontFamily: "'Poppins', sans-serif" }}>
 
       {/* Phone modal */}
       {showPhoneModal && (
@@ -142,10 +142,10 @@ export default function Welcome() {
       <div className="flex flex-col md:flex-row items-center md:items-stretch gap-8 w-full max-w-5xl">
 
         {/* LEFT — signup card */}
-        <div className="bg-white rounded-3xl shadow-xl w-full md:max-w-sm flex-shrink-0">
+        <div className="welcome-card-left bg-white rounded-3xl shadow-xl w-full md:max-w-sm flex-shrink-0">
           <div className="px-7 py-7 flex flex-col items-center gap-5">
             {/* Logo */}
-            <img src={logoPath} alt="The Mom App" className="h-[60px] w-auto" />
+            <img src={logoPath} alt="The Mom App" className="welcome-logo h-[60px] w-auto" />
 
             {/* Headline + subhead */}
             <div className="text-center">
@@ -157,19 +157,19 @@ export default function Welcome() {
 
             {/* Benefit bullets */}
             <div className="w-full space-y-2">
-              <div className="flex items-center gap-3 bg-pink-50 border border-pink-100 rounded-xl px-4 py-3">
+              <div className="welcome-benefit-card flex items-center gap-3 bg-pink-50 border border-pink-100 rounded-xl px-4 py-3">
                 <div className="bg-pink-500 rounded-lg p-2 flex-shrink-0">
                   <Brain className="h-4 w-4 text-white" />
                 </div>
                 <p className="text-sm font-medium text-gray-800 leading-snug">AI that plans meals, manages schedules & delegates tasks</p>
               </div>
-              <div className="flex items-center gap-3 bg-purple-50 border border-purple-100 rounded-xl px-4 py-3">
+              <div className="welcome-benefit-card flex items-center gap-3 bg-purple-50 border border-purple-100 rounded-xl px-4 py-3">
                 <div className="bg-purple-500 rounded-lg p-2 flex-shrink-0">
                   <Users className="h-4 w-4 text-white" />
                 </div>
                 <p className="text-sm font-medium text-gray-800 leading-snug">The whole family finally stays in sync — automatically</p>
               </div>
-              <div className="flex items-center gap-3 bg-rose-50 border border-rose-100 rounded-xl px-4 py-3">
+              <div className="welcome-benefit-card flex items-center gap-3 bg-rose-50 border border-rose-100 rounded-xl px-4 py-3">
                 <div className="bg-rose-400 rounded-lg p-2 flex-shrink-0">
                   <Sparkles className="h-4 w-4 text-white" />
                 </div>
@@ -193,7 +193,7 @@ export default function Welcome() {
             {/* Trial CTA */}
             <Button
               onClick={() => setLocation("/register")}
-              className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold text-base py-6 rounded-xl shadow-md"
+              className="welcome-cta w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold text-base py-6 rounded-xl shadow-md"
             >
               Start My Free 14-Day Trial
             </Button>
@@ -215,7 +215,7 @@ export default function Welcome() {
         </div>
 
         {/* RIGHT — before/after image (desktop only) */}
-        <div className="hidden md:flex flex-col justify-center flex-1 bg-white rounded-3xl shadow-xl px-8 py-8 gap-5">
+        <div className="welcome-card-right hidden md:flex flex-col justify-center flex-1 bg-white rounded-3xl shadow-xl px-8 py-8 gap-5">
           <div className="text-center">
             <p className="text-xs font-semibold text-pink-500 uppercase tracking-widest mb-1">✨ AI-Powered Family Organizer</p>
             <h2 className="text-4xl font-bold text-gray-900 leading-tight">Mom Life.<br /><span className="text-pink-500">Made Easy.</span></h2>
