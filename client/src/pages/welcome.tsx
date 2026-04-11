@@ -137,77 +137,92 @@ export default function Welcome() {
         </div>
       )}
 
-      {/* Main card */}
-      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden">
+      {/* Two-column layout on desktop, single card on mobile */}
+      <div className="flex flex-col md:flex-row items-center md:items-stretch gap-8 w-full max-w-4xl">
 
-        {/* Before/after image — visible on web */}
-        <div className="w-full">
-          <img src={beforeAfterPath} alt="Before and After The Mom App" className="w-full object-cover" />
-        </div>
+        {/* LEFT — signup card */}
+        <div className="bg-white rounded-3xl shadow-xl w-full md:max-w-sm flex-shrink-0">
+          <div className="px-7 py-7 flex flex-col items-center gap-5">
+            {/* Logo */}
+            <img src={logoPath} alt="The Mom App" className="h-10 w-auto" />
 
-        <div className="px-7 py-7 flex flex-col items-center gap-5">
-          {/* Logo */}
-          <img src={logoPath} alt="The Mom App" className="h-10 w-auto" />
+            {/* Headline + subhead */}
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900 leading-tight">Finally. An App That Gets It.</h1>
+              <p className="text-gray-500 text-sm mt-2 leading-relaxed">
+                You remember everything for everyone.<br />It's time someone helped carry the load.
+              </p>
+            </div>
 
-          {/* Headline + subhead */}
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 leading-tight">Finally. An App That Gets It.</h1>
-            <p className="text-gray-500 text-sm mt-2 leading-relaxed">
-              You remember everything for everyone.<br />It's time someone helped carry the load.
+            {/* Benefit bullets */}
+            <div className="w-full space-y-2 text-sm text-gray-700">
+              <div className="flex items-start gap-2">
+                <span className="text-base leading-snug">✅</span>
+                <p className="leading-snug">AI that plans meals, manages schedules & delegates tasks</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-base leading-snug">✅</span>
+                <p className="leading-snug">The whole family finally stays in sync — automatically</p>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-base leading-snug">✅</span>
+                <p className="leading-snug">Less mental load. More you.</p>
+              </div>
+            </div>
+
+            {/* Google Sign-In */}
+            <div className="w-full">
+              <div ref={googleButtonRef} className="w-full" style={{ minHeight: 44 }} />
+              {!googleClientId && <div className="h-11 w-full rounded-lg bg-gray-100 animate-pulse" />}
+            </div>
+
+            {/* Divider */}
+            <div className="w-full flex items-center gap-3">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-xs text-gray-400">or</span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+
+            {/* Trial CTA */}
+            <Button
+              onClick={() => setLocation("/register")}
+              className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold text-base py-6 rounded-xl shadow-md"
+            >
+              Start My Free 14-Day Trial
+            </Button>
+
+            {/* Sign in */}
+            <p className="text-sm text-gray-400">
+              Already have an account?{" "}
+              <button onClick={() => setLocation("/login")} className="text-pink-500 font-semibold hover:underline">Sign In</button>
+            </p>
+
+            {/* Legal */}
+            <p className="text-xs text-gray-400 text-center -mt-2">
+              No commitment • Cancel anytime •{" "}
+              <button onClick={() => setLocation("/terms")} className="underline">Terms</button>
+              {" · "}
+              <button onClick={() => setLocation("/privacy")} className="underline">Privacy</button>
             </p>
           </div>
-
-          {/* Benefit bullets */}
-          <div className="w-full space-y-2 text-sm text-gray-700">
-            <div className="flex items-start gap-2">
-              <span className="text-base leading-snug">✅</span>
-              <p className="leading-snug">AI that plans meals, manages schedules & delegates tasks</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-base leading-snug">✅</span>
-              <p className="leading-snug">The whole family finally stays in sync — automatically</p>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-base leading-snug">✅</span>
-              <p className="leading-snug">Less mental load. More you.</p>
-            </div>
-          </div>
-
-          {/* Google Sign-In */}
-          <div className="w-full">
-            <div ref={googleButtonRef} className="w-full" style={{ minHeight: 44 }} />
-            {!googleClientId && <div className="h-11 w-full rounded-lg bg-gray-100 animate-pulse" />}
-          </div>
-
-          {/* Divider */}
-          <div className="w-full flex items-center gap-3">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400">or</span>
-            <div className="flex-1 h-px bg-gray-200" />
-          </div>
-
-          {/* Trial CTA */}
-          <Button
-            onClick={() => setLocation("/register")}
-            className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold text-base py-6 rounded-xl shadow-md"
-          >
-            Start My Free 14-Day Trial
-          </Button>
-
-          {/* Sign in */}
-          <p className="text-sm text-gray-400">
-            Already have an account?{" "}
-            <button onClick={() => setLocation("/login")} className="text-pink-500 font-semibold hover:underline">Sign In</button>
-          </p>
-
-          {/* Legal */}
-          <p className="text-xs text-gray-400 text-center -mt-2">
-            No commitment • Cancel anytime •{" "}
-            <button onClick={() => setLocation("/terms")} className="underline">Terms</button>
-            {" · "}
-            <button onClick={() => setLocation("/privacy")} className="underline">Privacy</button>
-          </p>
         </div>
+
+        {/* RIGHT — before/after image (desktop only) */}
+        <div className="hidden md:flex flex-col justify-center flex-1 gap-4">
+          <div className="text-center mb-2">
+            <p className="text-xs font-semibold text-pink-500 uppercase tracking-widest mb-1">✨ AI-Powered Family Organizer</p>
+            <h2 className="text-3xl font-bold text-gray-900 leading-tight">Mom Life.<br /><span className="text-pink-500">Made Easy.</span></h2>
+            <p className="text-gray-500 text-sm mt-3 leading-relaxed max-w-xs mx-auto">
+              Reduce your mental load with AI voice assistance. Manage your family's calendar, tasks, meals, notes, and more — all in one place.
+            </p>
+          </div>
+          <img
+            src={beforeAfterPath}
+            alt="Before and After The Mom App"
+            className="w-full max-w-sm mx-auto rounded-2xl shadow-lg object-cover"
+          />
+        </div>
+
       </div>
     </div>
   );
