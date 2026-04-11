@@ -148,7 +148,7 @@ export default function Welcome() {
 
             {/* Headline + subhead */}
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 leading-tight">Finally. An App That Gets It.</h1>
+              <h1 className="text-2xl font-bold text-gray-900 leading-tight">Finally.<br />An App That Gets It.</h1>
               <p className="text-gray-500 text-sm mt-2 leading-relaxed">
                 You remember everything for everyone.<br />It's time someone helped carry the load.
               </p>
