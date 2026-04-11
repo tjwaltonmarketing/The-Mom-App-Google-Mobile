@@ -115,7 +115,7 @@ export default function Welcome() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-100 via-rose-50 to-pink-100 flex items-center justify-center px-4 py-8" style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <div className="min-h-screen flex items-center justify-center px-4 py-8" style={{ fontFamily: "'Poppins', sans-serif", background: "linear-gradient(135deg, #6b6bd1, #ee3c6d)" }}>
 
       {/* Phone modal */}
       {showPhoneModal && (
