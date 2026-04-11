@@ -1,0 +1,213 @@
+Saved working directory and index state WIP on main: 6ebff04 Update application to the next version build
+#242:The-Mom-App-Google-Mobile user289897$ 
+#242:The-Mom-App-Google-Mobile user289897$ git pull origin main
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+ * branch            main       -> FETCH_HEAD
+Updating 6ebff04..7f09f3d
+Fast-forward
+ .github/workflows/build-android.yml                                                 |  15 +-
+ .replit                                                                             |   1 +
+ android/app/build.gradle                                                            |   5 +-
+ android/app/src/main/AndroidManifest.xml                                            |  13 +
+ ...Pasted--head-Meta-Pixel-Code-script-function-f-b-e-v-n-t-s-if-_1774457745177.txt |  55 +++++
+ ...Pasted-Hello-Google-Developer-Thank-you-for-your-patience-whil_1775147268299.txt |  87 +++++++
+ attached_assets/Screen_Recording_20260330_113638_The_Mom_App_1774892279455.mp4      | Bin 0 -> 6506079 bytes
+ attached_assets/Screen_Recording_20260331_121419_Chrome_1775149315464.mp4           | Bin 0 -> 20747468 bytes
+ attached_assets/Screenshot_20260322_120011_Chrome_1774217352218.jpg                 | Bin 0 -> 348468 bytes
+ attached_assets/Screenshot_20260322_160642_Replit_1774217352197.jpg                 | Bin 0 -> 451873 bytes
+ attached_assets/Screenshot_20260322_160653_Replit_1774217352181.jpg                 | Bin 0 -> 458097 bytes
+ attached_assets/Screenshot_20260322_160800_Replit_1774217352167.jpg                 | Bin 0 -> 410847 bytes
+ attached_assets/Screenshot_20260322_160821_Replit_1774217352149.jpg                 | Bin 0 -> 481956 bytes
+ attached_assets/Screenshot_20260322_160830_Replit_1774217352108.jpg                 | Bin 0 -> 441589 bytes
+ attached_assets/Screenshot_20260331_111734_Chrome_1774977564226.jpg                 | Bin 0 -> 262743 bytes
+ attached_assets/Screenshot_20260406_204854_Chrome_1775530234707.jpg                 | Bin 0 -> 316552 bytes
+ attached_assets/Screenshot_20260408_212315_Chrome_1775705370591.jpg                 | Bin 0 -> 325740 bytes
+ attached_assets/Screenshot_20260408_212416_Chrome_1775705370557.jpg                 | Bin 0 -> 356902 bytes
+ attached_assets/Screenshot_20260408_214708_Calendar_1775706498891.jpg               | Bin 0 -> 1295778 bytes
+ attached_assets/google2b27e326046d1b03_1774836877228.html                           |   1 +
+ attached_assets/image_1773708351013.png                                             | Bin 0 -> 222239 bytes
+ attached_assets/image_1773709386106.png                                             | Bin 0 -> 260666 bytes
+ attached_assets/image_1773709419369.png                                             | Bin 0 -> 140778 bytes
+ attached_assets/image_1773709440503.png                                             | Bin 0 -> 131536 bytes
+ attached_assets/image_1773709476027.png                                             | Bin 0 -> 155272 bytes
+ attached_assets/image_1773947828268.png                                             | Bin 0 -> 104746 bytes
+ attached_assets/image_1773949392086.png                                             | Bin 0 -> 61960 bytes
+ attached_assets/image_1773949766887.png                                             | Bin 0 -> 137181 bytes
+ attached_assets/image_1773950339324.png                                             | Bin 0 -> 122358 bytes
+ attached_assets/image_1773950525447.png                                             | Bin 0 -> 128997 bytes
+ attached_assets/image_1773950575879.png                                             | Bin 0 -> 161345 bytes
+ attached_assets/image_1773950982158.png                                             | Bin 0 -> 132128 bytes
+ attached_assets/image_1773952431055.png                                             | Bin 0 -> 186420 bytes
+ attached_assets/image_1773952784025.png                                             | Bin 0 -> 108298 bytes
+ attached_assets/image_1774307749138.png                                             | Bin 0 -> 94785 bytes
+ attached_assets/image_1774310025544.png                                             | Bin 0 -> 44838 bytes
+ attached_assets/image_1774310154963.png                                             | Bin 0 -> 170387 bytes
+ attached_assets/image_1774311158835.png                                             | Bin 0 -> 128409 bytes
+ attached_assets/image_1774311181946.png                                             | Bin 0 -> 301576 bytes
+ attached_assets/image_1774311213846.png                                             | Bin 0 -> 148261 bytes
+ attached_assets/image_1774311253958.png                                             | Bin 0 -> 145130 bytes
+ attached_assets/image_1774386982112.png                                             | Bin 0 -> 98273 bytes
+ attached_assets/image_1774391442508.png                                             | Bin 0 -> 89854 bytes
+ attached_assets/image_1774391648933.png                                             | Bin 0 -> 75844 bytes
+ attached_assets/image_1774391678283.png                                             | Bin 0 -> 97610 bytes
+ attached_assets/image_1774391972101.png                                             | Bin 0 -> 92576 bytes
+ attached_assets/image_1774396336843.png                                             | Bin 0 -> 136251 bytes
+ attached_assets/image_1774397113970.png                                             | Bin 0 -> 144591 bytes
+ attached_assets/image_1774397173219.png                                             | Bin 0 -> 109152 bytes
+ attached_assets/image_1774397211944.png                                             | Bin 0 -> 111303 bytes
+ attached_assets/image_1774399544213.png                                             | Bin 0 -> 83478 bytes
+ attached_assets/image_1774412186850.png                                             | Bin 0 -> 191727 bytes
+ attached_assets/image_1774812394747.png                                             | Bin 0 -> 102776 bytes
+ attached_assets/image_1774812516550.png                                             | Bin 0 -> 118373 bytes
+ attached_assets/image_1774812734341.png                                             | Bin 0 -> 111313 bytes
+ attached_assets/image_1774812965640.png                                             | Bin 0 -> 189758 bytes
+ attached_assets/image_1774816428105.png                                             | Bin 0 -> 132525 bytes
+ attached_assets/image_1774816533669.png                                             | Bin 0 -> 98791 bytes
+ attached_assets/image_1774816684452.png                                             | Bin 0 -> 81328 bytes
+ attached_assets/image_1774816750977.png                                             | Bin 0 -> 131018 bytes
+ attached_assets/image_1774816992297.png                                             | Bin 0 -> 14463 bytes
+ attached_assets/image_1774817076736.png                                             | Bin 0 -> 52604 bytes
+ attached_assets/image_1774817332615.png                                             | Bin 0 -> 89054 bytes
+ attached_assets/image_1774817616789.png                                             | Bin 0 -> 87234 bytes
+ attached_assets/image_1774818899646.png                                             | Bin 0 -> 192998 bytes
+ attached_assets/image_1774820267248.png                                             | Bin 0 -> 106255 bytes
+ attached_assets/image_1774820406636.png                                             | Bin 0 -> 8874 bytes
+ attached_assets/image_1774829354405.png                                             | Bin 0 -> 99819 bytes
+ attached_assets/image_1774829848743.png                                             | Bin 0 -> 69748 bytes
+ attached_assets/image_1774830085128.png                                             | Bin 0 -> 111651 bytes
+ attached_assets/image_1774830114032.png                                             | Bin 0 -> 603644 bytes
+ attached_assets/image_1774830935503.png                                             | Bin 0 -> 53033 bytes
+ attached_assets/image_1774836730485.png                                             | Bin 0 -> 81730 bytes
+ attached_assets/image_1774840988886.png                                             | Bin 0 -> 142937 bytes
+ attached_assets/image_1774977732488.png                                             | Bin 0 -> 49072 bytes
+ attached_assets/image_1774980173816.png                                             | Bin 0 -> 105116 bytes
+ attached_assets/image_1774980439616.png                                             | Bin 0 -> 93476 bytes
+ attached_assets/image_1774981592097.png                                             | Bin 0 -> 92006 bytes
+ attached_assets/image_1775148104993.png                                             | Bin 0 -> 58666 bytes
+ attached_assets/image_1775164045397.png                                             | Bin 0 -> 53710 bytes
+ attached_assets/image_1775667684893.png                                             | Bin 0 -> 106848 bytes
+ attached_assets/image_1775667722843.png                                             | Bin 0 -> 50607 bytes
+ attached_assets/image_1775667755446.png                                             | Bin 0 -> 81791 bytes
+ attached_assets/image_1775669474090.png                                             | Bin 0 -> 65529 bytes
+ attached_assets/image_1775669904767.png                                             | Bin 0 -> 32858 bytes
+ attached_assets/image_1775670974964.png                                             | Bin 0 -> 94811 bytes
+ attached_assets/image_1775676938669.png                                             | Bin 0 -> 30815 bytes
+ attached_assets/image_1775848695426.png                                             | Bin 0 -> 65433 bytes
+ attached_assets/image_1775848867834.png                                             | Bin 0 -> 309120 bytes
+ attached_assets/image_1775851422233.png                                             | Bin 0 -> 85863 bytes
+ attached_assets/image_1775855074918.png                                             | Bin 0 -> 131562 bytes
+ client/public/google2b27e326046d1b03.html                                           |   1 +
+ client/src/components/calendar-sync.tsx                                             | 236 +++++++++---------
+ client/src/components/event-edit-modal.tsx                                          |  39 ++-
+ client/src/components/event-form.tsx                                                |  41 +++-
+ client/src/components/onboarding-flow.tsx                                           | 184 ++++++++++----
+ client/src/components/ui/rich-text-editor.tsx                                       |   4 +-
+ client/src/pages/calendar.tsx                                                       | 531 ++++++++++++++++++++++++++++------------
+ client/src/pages/dashboard.tsx                                                      |   1 +
+ client/src/pages/login.tsx                                                          |  41 +++-
+ client/src/pages/onboarding.tsx                                                     |  43 ++--
+ client/src/pages/register.tsx                                                       | 117 ++++-----
+ client/src/pages/settings.tsx                                                       |  32 ++-
+ client/src/pages/upgrade.tsx                                                        |  18 +-
+ ios/App/App/AppDelegate.swift                                                       |   4 +
+ ios/App/App/Info.plist                                                              | 242 ++++++++++++++++++
+ ios/App/Podfile                                                                     |   1 +
+ native-overrides/android/app/src/main/AndroidManifest.xml                           |  13 +
+ native-overrides/ios/App/App/AppDelegate.swift                                      |   4 +
+ native-overrides/ios/App/Podfile                                                    |   1 +
+ server/google-calendar-service.ts                                                   |  17 +-
+ server/routes.ts                                                                    | 311 ++++++++++++++++++++---
+ server/stripe.ts                                                                    |   6 +-
+ server/winback-drip.ts                                                              | 110 +++++++++
+ shared/schema.ts                                                                    |  14 ++
+ 115 files changed, 1718 insertions(+), 470 deletions(-)
+ create mode 100644 attached_assets/Pasted--head-Meta-Pixel-Code-script-function-f-b-e-v-n-t-s-if-_1774457745177.txt
+ create mode 100644 attached_assets/Pasted-Hello-Google-Developer-Thank-you-for-your-patience-whil_1775147268299.txt
+ create mode 100644 attached_assets/Screen_Recording_20260330_113638_The_Mom_App_1774892279455.mp4
+ create mode 100644 attached_assets/Screen_Recording_20260331_121419_Chrome_1775149315464.mp4
+ create mode 100644 attached_assets/Screenshot_20260322_120011_Chrome_1774217352218.jpg
+ create mode 100644 attached_assets/Screenshot_20260322_160642_Replit_1774217352197.jpg
+ create mode 100644 attached_assets/Screenshot_20260322_160653_Replit_1774217352181.jpg
+ create mode 100644 attached_assets/Screenshot_20260322_160800_Replit_1774217352167.jpg
+ create mode 100644 attached_assets/Screenshot_20260322_160821_Replit_1774217352149.jpg
+ create mode 100644 attached_assets/Screenshot_20260322_160830_Replit_1774217352108.jpg
+ create mode 100644 attached_assets/Screenshot_20260331_111734_Chrome_1774977564226.jpg
+ create mode 100644 attached_assets/Screenshot_20260406_204854_Chrome_1775530234707.jpg
+ create mode 100644 attached_assets/Screenshot_20260408_212315_Chrome_1775705370591.jpg
+ create mode 100644 attached_assets/Screenshot_20260408_212416_Chrome_1775705370557.jpg
+ create mode 100644 attached_assets/Screenshot_20260408_214708_Calendar_1775706498891.jpg
+ create mode 100644 attached_assets/google2b27e326046d1b03_1774836877228.html
+ create mode 100644 attached_assets/image_1773708351013.png
+ create mode 100644 attached_assets/image_1773709386106.png
+ create mode 100644 attached_assets/image_1773709419369.png
+ create mode 100644 attached_assets/image_1773709440503.png
+ create mode 100644 attached_assets/image_1773709476027.png
+ create mode 100644 attached_assets/image_1773947828268.png
+ create mode 100644 attached_assets/image_1773949392086.png
+ create mode 100644 attached_assets/image_1773949766887.png
+ create mode 100644 attached_assets/image_1773950339324.png
+ create mode 100644 attached_assets/image_1773950525447.png
+ create mode 100644 attached_assets/image_1773950575879.png
+ create mode 100644 attached_assets/image_1773950982158.png
+ create mode 100644 attached_assets/image_1773952431055.png
+ create mode 100644 attached_assets/image_1773952784025.png
+ create mode 100644 attached_assets/image_1774307749138.png
+ create mode 100644 attached_assets/image_1774310025544.png
+ create mode 100644 attached_assets/image_1774310154963.png
+ create mode 100644 attached_assets/image_1774311158835.png
+ create mode 100644 attached_assets/image_1774311181946.png
+ create mode 100644 attached_assets/image_1774311213846.png
+ create mode 100644 attached_assets/image_1774311253958.png
+ create mode 100644 attached_assets/image_1774386982112.png
+ create mode 100644 attached_assets/image_1774391442508.png
+ create mode 100644 attached_assets/image_1774391648933.png
+ create mode 100644 attached_assets/image_1774391678283.png
+ create mode 100644 attached_assets/image_1774391972101.png
+ create mode 100644 attached_assets/image_1774396336843.png
+ create mode 100644 attached_assets/image_1774397113970.png
+ create mode 100644 attached_assets/image_1774397173219.png
+ create mode 100644 attached_assets/image_1774397211944.png
+ create mode 100644 attached_assets/image_1774399544213.png
+ create mode 100644 attached_assets/image_1774412186850.png
+ create mode 100644 attached_assets/image_1774812394747.png
+ create mode 100644 attached_assets/image_1774812516550.png
+ create mode 100644 attached_assets/image_1774812734341.png
+ create mode 100644 attached_assets/image_1774812965640.png
+ create mode 100644 attached_assets/image_1774816428105.png
+ create mode 100644 attached_assets/image_1774816533669.png
+ create mode 100644 attached_assets/image_1774816684452.png
+ create mode 100644 attached_assets/image_1774816750977.png
+ create mode 100644 attached_assets/image_1774816992297.png
+ create mode 100644 attached_assets/image_1774817076736.png
+ create mode 100644 attached_assets/image_1774817332615.png
+ create mode 100644 attached_assets/image_1774817616789.png
+ create mode 100644 attached_assets/image_1774818899646.png
+ create mode 100644 attached_assets/image_1774820267248.png
+ create mode 100644 attached_assets/image_1774820406636.png
+ create mode 100644 attached_assets/image_1774829354405.png
+ create mode 100644 attached_assets/image_1774829848743.png
+ create mode 100644 attached_assets/image_1774830085128.png
+ create mode 100644 attached_assets/image_1774830114032.png
+ create mode 100644 attached_assets/image_1774830935503.png
+ create mode 100644 attached_assets/image_1774836730485.png
+ create mode 100644 attached_assets/image_1774840988886.png
+ create mode 100644 attached_assets/image_1774977732488.png
+ create mode 100644 attached_assets/image_1774980173816.png
+ create mode 100644 attached_assets/image_1774980439616.png
+ create mode 100644 attached_assets/image_1774981592097.png
+ create mode 100644 attached_assets/image_1775148104993.png
+ create mode 100644 attached_assets/image_1775164045397.png
+ create mode 100644 attached_assets/image_1775667684893.png
+ create mode 100644 attached_assets/image_1775667722843.png
+ create mode 100644 attached_assets/image_1775667755446.png
+ create mode 100644 attached_assets/image_1775669474090.png
+ create mode 100644 attached_assets/image_1775669904767.png
+ create mode 100644 attached_assets/image_1775670974964.png
+ create mode 100644 attached_assets/image_1775676938669.png
+ create mode 100644 attached_assets/image_1775848695426.png
+ create mode 100644 attached_assets/image_1775848867834.png
+ create mode 100644 attached_assets/image_1775851422233.png
+ create mode 100644 attached_assets/image_1775855074918.png
+ create mode 100644 client/public/google2b27e326046d1b03.html
+ create mode 100644 server/winback-drip.ts
+#242:The-Mom-App-Google-Mobile user289897$ 
