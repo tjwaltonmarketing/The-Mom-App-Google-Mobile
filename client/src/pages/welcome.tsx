@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getApiUrl, setAuthToken } from "@/lib/config";
 import { logFBEvent, FB_EVENTS } from "@/lib/facebook-events";
+import { Brain, Users, Sparkles } from "lucide-react";
 import logoPath from "@assets/The_Mom_app_-_New_Tagline_-_Cropped_1775943647566.png";
 import beforeAfterPath from "@assets/The_Mom_app_(4)_1766014201419.png";
 
@@ -155,18 +156,24 @@ export default function Welcome() {
             </div>
 
             {/* Benefit bullets */}
-            <div className="w-full space-y-2 text-sm text-gray-700">
-              <div className="flex items-start gap-2">
-                <span className="text-base leading-snug">✅</span>
-                <p className="leading-snug">AI that plans meals, manages schedules & delegates tasks</p>
+            <div className="w-full space-y-2">
+              <div className="flex items-center gap-3 bg-pink-50 border border-pink-100 rounded-xl px-4 py-3">
+                <div className="bg-pink-500 rounded-lg p-2 flex-shrink-0">
+                  <Brain className="h-4 w-4 text-white" />
+                </div>
+                <p className="text-sm font-medium text-gray-800 leading-snug">AI that plans meals, manages schedules & delegates tasks</p>
               </div>
-              <div className="flex items-start gap-2">
-                <span className="text-base leading-snug">✅</span>
-                <p className="leading-snug">The whole family finally stays in sync — automatically</p>
+              <div className="flex items-center gap-3 bg-purple-50 border border-purple-100 rounded-xl px-4 py-3">
+                <div className="bg-purple-500 rounded-lg p-2 flex-shrink-0">
+                  <Users className="h-4 w-4 text-white" />
+                </div>
+                <p className="text-sm font-medium text-gray-800 leading-snug">The whole family finally stays in sync — automatically</p>
               </div>
-              <div className="flex items-start gap-2">
-                <span className="text-base leading-snug">✅</span>
-                <p className="leading-snug">Less mental load. More you.</p>
+              <div className="flex items-center gap-3 bg-rose-50 border border-rose-100 rounded-xl px-4 py-3">
+                <div className="bg-rose-400 rounded-lg p-2 flex-shrink-0">
+                  <Sparkles className="h-4 w-4 text-white" />
+                </div>
+                <p className="text-sm font-medium text-gray-800 leading-snug">Less mental load. More you.</p>
               </div>
             </div>
 
