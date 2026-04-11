@@ -45,7 +45,8 @@
         </array>
         <key>UIViewControllerBasedStatusBarAppearance</key>
         <true/>
-
+        <key>NSUserTrackingUsageDescription</key>
+        <string>We use this to measure how well our ads are working so we can show them to people who find The Mom App most useful.</string>
         <key>NSMicrophoneUsageDescription</key>
         <string>The Mom App needs microphone access for voice commands and voice notes.</string>
         <key>NSSpeechRecognitionUsageDescription</key>
