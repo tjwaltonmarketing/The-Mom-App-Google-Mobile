@@ -44,3 +44,4 @@ integrations = ["javascript_stripe:1.0.0", "javascript_sendgrid:1.0.0", "javascr
 [userenv.shared]
 VITE_REVENUECAT_APPLE_API_KEY = "appl_jWnxLTGgndDEuLfvrDcnukFGGIp"
 WINBACK_DRIP_ENABLED = "true"
+VITE_APPLE_CLIENT_ID = "com.themomapp.web"
