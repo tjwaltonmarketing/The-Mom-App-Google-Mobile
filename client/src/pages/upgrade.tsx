@@ -183,14 +183,15 @@ export default function Upgrade() {
       // Win-back users who never completed a Stripe checkout get their 14-day trial
       const hasHadStripeTrial = !!(subscription as any)?.stripeSubscriptionId;
       const trialDays = (pendingCoupon && !hasHadStripeTrial) ? 14 : undefined;
+      const isTrial = !hasHadStripeTrial;
       const response = await apiRequest("POST", "/api/checkout/create-session", { plan, interval, coupon: pendingCoupon, trialDays });
       const data = await response.json();
-      return data as { url: string };
+      return { url: data.url as string, isTrial };
     },
     onSuccess: (data) => {
       if (data.url) {
         localStorage.removeItem("pendingCoupon");
-        logFBEvent(FB_EVENTS.INITIATE_CHECKOUT);
+        logFBEvent(data.isTrial ? FB_EVENTS.START_TRIAL : FB_EVENTS.INITIATE_CHECKOUT);
         window.open(data.url, "_blank");
       }
     },
