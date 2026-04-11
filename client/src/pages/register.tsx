@@ -5,7 +5,6 @@ import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,7 +13,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { setAuthToken } from "@/lib/config";
 import { logFBEvent, FB_EVENTS } from "@/lib/facebook-events";
 import { Eye, EyeOff, Users } from "lucide-react";
-import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
+import logoPath from "@assets/The_Mom_app_-_New_Tagline_-_Cropped_1775943647566.png";
 
 const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -115,24 +114,24 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center -mb-8">
+    <div className="welcome-bg min-h-screen flex items-center justify-center p-4">
+      <div className="welcome-card-left bg-white rounded-3xl shadow-xl w-full max-w-md px-6 py-6 max-h-[95vh] overflow-y-auto">
+        <div className="text-center mb-4">
+          <div className="flex justify-center mb-3">
             <img
               src={logoPath}
               alt="The Mom App Logo"
-              className="w-60 h-60 object-contain"
+              className="h-[75px] object-contain"
             />
           </div>
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-pink-500 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-pink-500 bg-clip-text text-transparent">
             {isJoiningFamily ? `Join ${familyName}` : "Join The Mom App"}
-          </CardTitle>
-          <CardDescription>
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
             {isJoiningFamily
               ? "Create your account to join your family"
               : "Create your account to get started free"}
-          </CardDescription>
+          </p>
           {isJoiningFamily && (
             <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
               <Users className="h-5 w-5 text-green-600" />
@@ -141,8 +140,8 @@ export default function Register() {
               </span>
             </div>
           )}
-        </CardHeader>
-        <CardContent>
+        </div>
+        <div>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -293,7 +292,7 @@ export default function Register() {
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full bg-pink-500 hover:bg-pink-600 text-white"
                 disabled={registerMutation.isPending || !agreedToTerms}
               >
                 {registerMutation.isPending
@@ -313,8 +312,8 @@ export default function Register() {
               </Link>
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
