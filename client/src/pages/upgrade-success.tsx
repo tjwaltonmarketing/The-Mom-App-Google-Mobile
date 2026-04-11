@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2, PartyPopper } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { logFBEvent, FB_EVENTS } from "@/lib/facebook-events";
 
 export default function UpgradeSuccess() {
   const [, setLocation] = useLocation();
@@ -16,6 +17,7 @@ export default function UpgradeSuccess() {
       return apiRequest("GET", `/api/checkout/verify/${sessionId}`);
     },
     onSuccess: () => {
+      logFBEvent(FB_EVENTS.SUBSCRIBE);
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
     },
   });

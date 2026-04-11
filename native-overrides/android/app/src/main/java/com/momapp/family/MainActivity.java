@@ -25,6 +25,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(FCMPlugin.class);
+        registerPlugin(FacebookEventsPlugin.class);
         super.onCreate(savedInstanceState);
 
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);

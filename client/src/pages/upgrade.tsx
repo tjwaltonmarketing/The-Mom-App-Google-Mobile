@@ -9,6 +9,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Capacitor } from "@capacitor/core";
 import { useToast } from "@/hooks/use-toast";
 import type { UserSubscription } from "@shared/schema";
+import { logFBEvent, FB_EVENTS } from "@/lib/facebook-events";
 import {
   isRevenueCatAvailable,
   initRevenueCat,
@@ -189,6 +190,7 @@ export default function Upgrade() {
     onSuccess: (data) => {
       if (data.url) {
         localStorage.removeItem("pendingCoupon");
+        logFBEvent(FB_EVENTS.INITIATE_CHECKOUT);
         window.open(data.url, "_blank");
       }
     },

@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { setAuthToken } from "@/lib/config";
+import { logFBEvent, FB_EVENTS } from "@/lib/facebook-events";
 import { Eye, EyeOff, Users } from "lucide-react";
 import logoPath from "@assets/The Mom app_20250607_125224_0000_1749573727197.png";
 
@@ -90,6 +91,7 @@ export default function Register() {
       if (data.token) {
         setAuthToken(data.token);
       }
+      logFBEvent(FB_EVENTS.COMPLETE_REGISTRATION);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: isJoiningFamily ? "Welcome to the Family!" : "Account Created!",
