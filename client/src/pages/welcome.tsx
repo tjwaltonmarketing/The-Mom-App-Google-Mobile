@@ -144,7 +144,7 @@ export default function Welcome() {
         <div className="bg-white rounded-3xl shadow-xl w-full md:max-w-sm flex-shrink-0">
           <div className="px-7 py-7 flex flex-col items-center gap-5">
             {/* Logo */}
-            <img src={logoPath} alt="The Mom App" className="h-10 w-auto" />
+            <img src={logoPath} alt="The Mom App" className="h-[60px] w-auto" />
 
             {/* Headline + subhead */}
             <div className="text-center">
