@@ -122,6 +122,9 @@ export interface IStorage {
   // Google Auth Methods
   getUserByGoogleId(googleId: string): Promise<User | undefined>;
   
+  // Apple Auth Methods
+  getUserByAppleId(appleId: string): Promise<User | undefined>;
+  
   // Trial and Subscription Management
   initializeUserTrial(userId: number): Promise<User | undefined>;
   getUserTrialStatus(userId: number): Promise<{ isActive: boolean; daysRemaining: number; expiresAt: Date | null }>;
@@ -514,6 +517,11 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByGoogleId(googleId: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
+    return user || undefined;
+  }
+
+  async getUserByAppleId(appleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.appleId, appleId));
     return user || undefined;
   }
 

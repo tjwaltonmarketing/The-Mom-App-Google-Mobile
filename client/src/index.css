@@ -357,9 +357,14 @@
   50%       { box-shadow: 0 0 20px 6px rgba(238, 60, 109, 0.25); }
 }
 
-@keyframes logoFloat {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-5px); }
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  15%       { transform: rotate(-3deg); }
+  30%       { transform: rotate(3deg); }
+  45%       { transform: rotate(-2deg); }
+  60%       { transform: rotate(2deg); }
+  75%       { transform: rotate(-1deg); }
+  90%       { transform: rotate(1deg); }
 }
 
 .welcome-bg {
@@ -378,14 +383,9 @@
   animation-delay: 0.3s;
 }
 
-.welcome-logo {
-  animation: logoFloat 4s ease-in-out infinite;
-  animation-delay: 1s;
-}
-
 .welcome-cta {
-  animation: glowPulse 2.5s ease-in-out infinite;
-  animation-delay: 1.5s;
+  animation: glowPulse 2.5s ease-in-out infinite, wiggle 3s ease-in-out infinite;
+  animation-delay: 1.5s, 2s;
 }
 
 .welcome-benefit-card {

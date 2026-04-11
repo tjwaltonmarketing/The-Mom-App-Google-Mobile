@@ -8,11 +8,15 @@ import { apiRequest } from "@/lib/queryClient";
 import { getApiUrl, setAuthToken } from "@/lib/config";
 import { logFBEvent, FB_EVENTS } from "@/lib/facebook-events";
 import { Brain, Users, Sparkles } from "lucide-react";
+import { SiApple } from "react-icons/si";
 import logoPath from "@assets/The_Mom_app_-_New_Tagline_-_Cropped_1775943647566.png";
 import beforeAfterPath from "@assets/The_Mom_app_(4)_1766014201419.png";
 
 declare global {
-  interface Window { google?: any; }
+  interface Window {
+    google?: any;
+    AppleID?: any;
+  }
 }
 
 export default function Welcome() {
@@ -74,6 +78,64 @@ export default function Welcome() {
       toast({ title: "Error", description: "Could not save phone number.", variant: "destructive" });
     },
   });
+
+  const appleLoginMutation = useMutation({
+    mutationFn: async (data: { identityToken: string; firstName?: string; lastName?: string }) => {
+      const response = await apiRequest("POST", "/api/auth/apple", data);
+      return await response.json();
+    },
+    onSuccess: (data: any) => {
+      if (data.token) setAuthToken(data.token);
+      if (data.user) {
+        queryClient.setQueryData(["/api/auth/user"], data.user);
+        queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+        if (!data.user.phoneNumber) {
+          setShowPhoneModal(true);
+        } else {
+          logFBEvent(FB_EVENTS.COMPLETE_REGISTRATION);
+          setLocation("/");
+        }
+      }
+    },
+    onError: () => {
+      toast({ title: "Apple Sign-In Failed", description: "Could not sign in with Apple. Please try again.", variant: "destructive" });
+    },
+  });
+
+  const handleAppleSignIn = useCallback(async () => {
+    const appleClientId = import.meta.env.VITE_APPLE_CLIENT_ID;
+    if (!appleClientId) {
+      toast({ title: "Apple Sign-In Not Configured", description: "Apple Sign-In requires setup in Apple Developer Portal. Please use Google or email instead.", variant: "destructive" });
+      return;
+    }
+    try {
+      if (!window.AppleID) {
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+          script.onload = () => resolve();
+          script.onerror = () => reject(new Error("Failed to load Apple SDK"));
+          document.head.appendChild(script);
+        });
+      }
+      window.AppleID.auth.init({
+        clientId: appleClientId,
+        scope: "name email",
+        redirectURI: window.location.origin,
+        usePopup: true,
+      });
+      const response = await window.AppleID.auth.signIn();
+      const identityToken = response?.authorization?.id_token;
+      if (!identityToken) throw new Error("No identity token returned");
+      const firstName = response?.user?.name?.firstName;
+      const lastName = response?.user?.name?.lastName;
+      appleLoginMutation.mutate({ identityToken, firstName, lastName });
+    } catch (err: any) {
+      if (err?.error !== "popup_closed_by_user") {
+        toast({ title: "Apple Sign-In Failed", description: "Could not complete Apple Sign-In. Please try again.", variant: "destructive" });
+      }
+    }
+  }, [appleLoginMutation, toast]);
 
   const handleGoogleCallback = useCallback(
     (response: any) => { if (response.credential) googleLoginMutation.mutate(response.credential); },
@@ -145,7 +207,7 @@ export default function Welcome() {
         <div className="welcome-card-left bg-white rounded-3xl shadow-xl w-full md:max-w-sm flex-shrink-0">
           <div className="px-7 py-7 flex flex-col items-center gap-5">
             {/* Logo */}
-            <img src={logoPath} alt="The Mom App" className="welcome-logo h-[60px] w-auto" />
+            <img src={logoPath} alt="The Mom App" className="h-[75px] w-auto" />
 
             {/* Headline + subhead */}
             <div className="text-center">
@@ -177,10 +239,18 @@ export default function Welcome() {
               </div>
             </div>
 
-            {/* Google Sign-In */}
-            <div className="w-full">
+            {/* Sign-in buttons */}
+            <div className="w-full space-y-3">
               <div ref={googleButtonRef} className="w-full" style={{ minHeight: 44 }} />
               {!googleClientId && <div className="h-11 w-full rounded-lg bg-gray-100 animate-pulse" />}
+              <button
+                onClick={handleAppleSignIn}
+                disabled={appleLoginMutation.isPending}
+                className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-900 text-white font-medium text-sm py-[11px] rounded-md border border-gray-300 transition-colors"
+              >
+                <SiApple className="h-4 w-4" />
+                {appleLoginMutation.isPending ? "Signing in..." : "Continue with Apple"}
+              </button>
             </div>
 
             {/* Divider */}

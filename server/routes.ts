@@ -400,6 +400,72 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/auth/apple", async (req, res) => {
+    try {
+      const { identityToken, firstName, lastName } = req.body;
+      if (!identityToken) return res.status(400).json({ error: "Apple identity token is required" });
+
+      // Decode the JWT payload (Apple signs it — trusted from Apple's JS SDK popup flow)
+      const parts = identityToken.split(".");
+      if (parts.length < 2) return res.status(400).json({ error: "Invalid Apple token format" });
+      const payload = JSON.parse(Buffer.from(parts[1] + "==", "base64").toString("utf8"));
+      const { sub: appleId, email } = payload;
+
+      if (!appleId) return res.status(400).json({ error: "Invalid Apple token payload" });
+
+      let user = await storage.getUserByAppleId(appleId);
+
+      if (!user && email) {
+        user = await storage.getUserByEmail(email.toLowerCase());
+        if (user) {
+          await db.execute(sql`UPDATE users SET apple_id = ${appleId}, auth_method = 'apple', is_verified = true WHERE id = ${user.id}`);
+          user = await storage.getUserById(user.id);
+        }
+      }
+
+      if (!user) {
+        if (!email) return res.status(400).json({ error: "Email required for new Apple Sign In users" });
+        user = await storage.createUser({
+          email: email.toLowerCase(),
+          appleId,
+          firstName: firstName || null,
+          lastName: lastName || null,
+          authMethod: "apple",
+          isVerified: true,
+        });
+
+        const family = await storage.createFamily({ name: `${firstName || "My"}'s Family`, ownerId: user.id });
+        await storage.createFamilyMember({
+          userId: user.id, familyId: family.id,
+          name: `${firstName || ""} ${lastName || ""}`.trim() || "Parent",
+          role: "parent", color: "#EC4899",
+          avatar: (firstName || "U").charAt(0).toUpperCase(),
+          notificationPreference: "sms", canLogin: true, isActive: true,
+        });
+        await storage.createFamilyMembership({ userId: user.id, familyId: family.id, role: "owner" });
+
+        const adminPhone = process.env.ADMIN_PHONE_NUMBER;
+        if (adminPhone) {
+          try {
+            await sendSMS(adminPhone, `🎉 New Mom App signup (Apple)!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nTime: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })}`);
+          } catch {}
+        }
+      }
+
+      if (!user) return res.status(500).json({ error: "Failed to create or find user" });
+
+      req.session.userId = user.id;
+      delete req.session.teenId;
+      await new Promise<void>((resolve, reject) => { req.session.save((err) => { if (err) reject(err); else resolve(); }); });
+
+      const token = generateToken(user.id);
+      res.json({ success: true, token, user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, profileImageUrl: user.profileImageUrl, isVerified: user.isVerified } });
+    } catch (error) {
+      console.error("Apple auth error:", error);
+      res.status(500).json({ error: "Apple authentication failed" });
+    }
+  });
+
   app.post("/api/auth/set-phone", async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
     const { phoneNumber } = req.body;

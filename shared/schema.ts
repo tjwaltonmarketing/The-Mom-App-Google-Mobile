@@ -14,7 +14,8 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url", { length: 500 }), // Add for Replit Auth
   replitUserId: varchar("replit_user_id", { length: 255 }).unique(), // Link to Replit Auth
   googleId: varchar("google_id", { length: 255 }).unique(), // Link to Google OAuth
-  authMethod: varchar("auth_method", { length: 50 }).default("email"), // "email", "replit", "google"
+  appleId: varchar("apple_id", { length: 255 }).unique(), // Link to Apple Sign In
+  authMethod: varchar("auth_method", { length: 50 }).default("email"), // "email", "replit", "google", "apple"
   googleCalendarTokens: text("google_calendar_tokens"), // JSON: stored tokens for Google Calendar sync
   isVerified: boolean("is_verified").default(false),
   createdAt: timestamp("created_at").defaultNow(),
