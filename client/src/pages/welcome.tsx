@@ -139,7 +139,7 @@ export default function Welcome() {
       )}
 
       {/* Two-column layout on desktop, single card on mobile */}
-      <div className="flex flex-col md:flex-row items-center md:items-stretch gap-8 w-full max-w-4xl">
+      <div className="flex flex-col md:flex-row items-center md:items-stretch gap-8 w-full max-w-5xl">
 
         {/* LEFT — signup card */}
         <div className="bg-white rounded-3xl shadow-xl w-full md:max-w-sm flex-shrink-0">
@@ -215,18 +215,18 @@ export default function Welcome() {
         </div>
 
         {/* RIGHT — before/after image (desktop only) */}
-        <div className="hidden md:flex flex-col justify-center flex-1 gap-4">
-          <div className="text-center mb-2">
+        <div className="hidden md:flex flex-col justify-center flex-1 bg-white rounded-3xl shadow-xl px-8 py-8 gap-5">
+          <div className="text-center">
             <p className="text-xs font-semibold text-pink-500 uppercase tracking-widest mb-1">✨ AI-Powered Family Organizer</p>
-            <h2 className="text-3xl font-bold text-gray-900 leading-tight">Mom Life.<br /><span className="text-pink-500">Made Easy.</span></h2>
-            <p className="text-gray-500 text-sm mt-3 leading-relaxed max-w-xs mx-auto">
+            <h2 className="text-4xl font-bold text-gray-900 leading-tight">Mom Life.<br /><span className="text-pink-500">Made Easy.</span></h2>
+            <p className="text-gray-500 text-sm mt-3 leading-relaxed">
               Reduce your mental load with AI voice assistance. Manage your family's calendar, tasks, meals, notes, and more — all in one place.
             </p>
           </div>
           <img
             src={beforeAfterPath}
             alt="Before and After The Mom App"
-            className="w-full max-w-sm mx-auto rounded-2xl shadow-lg object-cover"
+            className="w-full rounded-2xl shadow-md object-cover"
           />
         </div>
 
