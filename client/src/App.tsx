@@ -9,6 +9,7 @@ import { PullToRefreshIndicator } from "@/components/pull-to-refresh-indicator";
 import { getApiUrl } from "@/lib/config";
 
 // Pages
+import Welcome from "@/pages/welcome";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import ForgotPassword from "@/pages/forgot-password";
@@ -308,7 +309,7 @@ function Router() {
         // Parent/Admin routes - for authenticated users
         <>
           {!isAuthenticated && !wasAuthenticated ? (
-            <Route path="/" component={Login} />
+            <Route path="/" component={Welcome} />
           ) : !isAuthenticated && wasAuthenticated ? (
             // Previously authenticated, auth is being re-verified (app resume)
             <Route path="/:rest*" component={() => (

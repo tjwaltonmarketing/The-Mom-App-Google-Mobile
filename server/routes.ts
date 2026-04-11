@@ -400,6 +400,18 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/auth/set-phone", async (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
+    const { phoneNumber } = req.body;
+    if (!phoneNumber) return res.status(400).json({ error: "Phone number required" });
+    try {
+      await db.execute(sql`UPDATE users SET phone_number = ${phoneNumber} WHERE id = ${req.session.userId}`);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to update phone number" });
+    }
+  });
+
   app.get("/api/auth/user", async (req, res) => {
     try {
       // Check JWT token authentication first (for cross-domain)
