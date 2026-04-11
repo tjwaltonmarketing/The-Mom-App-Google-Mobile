@@ -384,8 +384,8 @@
 }
 
 .welcome-cta {
-  animation: glowPulse 2.5s ease-in-out infinite, wiggle 3s ease-in-out infinite;
-  animation-delay: 1.5s, 2s;
+  animation: glowPulse 2.5s ease-in-out infinite;
+  animation-delay: 1.5s;
 }
 
 .welcome-benefit-card {
