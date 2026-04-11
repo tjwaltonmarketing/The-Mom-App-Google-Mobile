@@ -188,8 +188,8 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
   const IconComponent = slide.icon ? iconMap[slide.icon] : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white flex flex-col" style={{ fontFamily: "'Poppins', sans-serif" }}>
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 max-w-md mx-auto w-full">
+    <div className="welcome-bg min-h-screen flex flex-col items-center justify-center px-4 py-6" style={{ fontFamily: "'Poppins', sans-serif" }}>
+      <div className="welcome-card-left bg-white rounded-3xl shadow-xl w-full max-w-md flex flex-col px-6 py-6 max-h-[92vh] overflow-y-auto">
         {!(slide as any).isPrimingA && !(slide as any).isPrimingB && (
           <div className="w-full max-h-[250px] mb-4 flex items-center justify-center">
             <img
