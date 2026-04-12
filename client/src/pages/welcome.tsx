@@ -183,7 +183,7 @@ export default function Welcome() {
                 <div className="bg-rose-400 rounded-lg p-2 flex-shrink-0">
                   <CheckCircle2 className="h-4 w-4 text-white" />
                 </div>
-                <p className="text-sm font-medium text-gray-800 leading-snug">Everyone does their part. You finally breathe.</p>
+                <p className="text-sm font-medium text-gray-800 leading-snug">Share tasks. Everyone does their part. You finally breathe.</p>
               </div>
             </div>
 
@@ -218,11 +218,11 @@ export default function Welcome() {
 
             {/* Sign in + invite — grouped so they sit close together */}
             <div className="flex flex-col items-center gap-1">
-              <p className="text-sm" style={{ color: '#9ca3af' }}>
+              <p className="text-sm text-gray-900">
                 Already have an account?{" "}
                 <button onClick={() => setLocation("/login")} className="text-pink-500 font-semibold hover:underline">Sign In</button>
               </p>
-              <p className="text-sm" style={{ color: '#9ca3af' }}>
+              <p className="text-sm text-gray-900">
                 Got a family invite?{" "}
                 <button onClick={() => setLocation("/login")} className="text-pink-500 font-semibold hover:underline">Click here</button>
               </p>
