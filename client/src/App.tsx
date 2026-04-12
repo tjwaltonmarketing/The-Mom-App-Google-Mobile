@@ -70,21 +70,18 @@ function Router() {
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
   const [, setLocation] = useLocation();
 
-  // Handle google_token query param returned by Android server-side OAuth redirect
+  // Handle google_token query param (web/iOS flow) and clean up any stale state params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const googleToken = params.get("google_token");
-    const googleError = params.get("error");
     if (googleToken) {
       setAuthToken(googleToken);
-      // Clean up URL without reload
-      const cleanUrl = window.location.pathname;
-      window.history.replaceState({}, "", cleanUrl);
+      window.history.replaceState({}, "", window.location.pathname);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-    } else if (googleError === "google_auth_failed") {
-      const cleanUrl = window.location.pathname;
-      window.history.replaceState({}, "", cleanUrl);
+      setLocation("/finish-profile");
+    } else if (params.get("error") === "google_auth_failed") {
+      window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
 
@@ -108,7 +105,27 @@ function Router() {
   }, [isAuthenticated, isLoading, wasAuthenticated]);
 
   useEffect(() => {
-    const handleResume = () => {
+    const handleResume = async () => {
+      // Check for pending Google OAuth state (Android redirect flow)
+      const pendingState = localStorage.getItem("google_oauth_state");
+      if (pendingState) {
+        try {
+          const response = await fetch(getApiUrl(`/api/auth/google/poll?state=${pendingState}`), {
+            credentials: "include",
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.token) {
+              localStorage.removeItem("google_oauth_state");
+              setAuthToken(data.token);
+              queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+              setLocation("/finish-profile");
+              return;
+            }
+          }
+        } catch {}
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       queryClient.invalidateQueries({ queryKey: ["/api/teen/auth/user"] });
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
@@ -176,6 +193,9 @@ function Router() {
   const onboardingCompleted = typeof window !== 'undefined' && localStorage.getItem("onboarding_completed") === "true";
   const pendingShareClaim = typeof window !== 'undefined' && localStorage.getItem("pending_share_claim") === "true";
   const needsOnboarding = isAuthenticated && subscriptionReady && (!subscriptionData && !onboardingCompleted || pendingShareClaim);
+
+  // Require phone number before onboarding (catches Google Sign-In users who skipped finish-profile)
+  const needsFinishProfile = isAuthenticated && !!user && !(user as any).phoneNumber;
 
   // Determine if user needs to upgrade (expired trial or cancelled subscription)
   const needsUpgrade = isAuthenticated && !subscriptionLoading && subscriptionData && (
@@ -350,6 +370,9 @@ function Router() {
                 </div>
               </div>
             )} />
+          ) : needsFinishProfile ? (
+            // Require phone number before proceeding (e.g. Google Sign-In users)
+            <Route path="/" component={FinishProfile} />
           ) : needsOnboarding ? (
             // Show onboarding for users who never had a subscription
             <Route path="/" component={Onboarding} />

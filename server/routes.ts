@@ -19,6 +19,15 @@ import { OAuth2Client } from "google-auth-library";
 
 const storage = new DatabaseStorage();
 
+// In-memory store for pending Android Google OAuth tokens (keyed by state, TTL 5 min)
+const pendingGoogleTokens = new Map<string, { token: string; userId: number; createdAt: number }>();
+setInterval(() => {
+  const cutoff = Date.now() - 5 * 60 * 1000;
+  for (const [key, value] of pendingGoogleTokens.entries()) {
+    if (value.createdAt < cutoff) pendingGoogleTokens.delete(key);
+  }
+}, 60 * 1000);
+
 // Helper function to check if user is on Individual plan (trial users always have full access)
 async function isUserOnIndividualPlan(userId: number): Promise<boolean> {
   const subscription = await storage.getUserSubscription(userId);
@@ -399,8 +408,10 @@ export async function registerRoutes(app: Express) {
   });
 
   // Google Sign-In via server-side OAuth redirect (for Android WebView where JS SDK is blocked)
+  // Accepts an optional `state` param so the native app can poll for the token after OAuth completes
   app.get("/api/auth/google/redirect", (req, res) => {
     try {
+      const state = (req.query.state as string) || "";
       const redirectUri = `https://app.themom.app/api/auth/google/redirect/callback`;
       const client = new OAuth2Client(
         process.env.GOOGLE_CLIENT_ID,
@@ -411,6 +422,7 @@ export async function registerRoutes(app: Express) {
         access_type: "online",
         scope: ["profile", "email"],
         prompt: "select_account",
+        state, // Google passes state through to the callback unchanged
       });
       res.redirect(url);
     } catch (error) {
@@ -420,10 +432,34 @@ export async function registerRoutes(app: Express) {
   });
 
   app.get("/api/auth/google/redirect/callback", async (req, res) => {
+    const state = (req.query.state as string) || "";
+
+    const sendSuccessPage = (isAndroid: boolean) => {
+      res.send(`<!DOCTYPE html><html><head><meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Signed In – The Mom App</title>
+        <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#fdf4ff;color:#333;padding:24px;box-sizing:border-box}
+        .card{background:#fff;border-radius:16px;padding:32px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+        h1{font-size:24px;margin:16px 0 8px;color:#7c3aed}p{color:#666;margin:0 0 24px}
+        .check{font-size:48px}.btn{display:block;background:#7c3aed;color:#fff;padding:14px 24px;border-radius:10px;text-decoration:none;font-weight:600;font-size:16px;margin-top:8px}
+        </style></head><body>
+        <div class="card">
+          <div class="check">✅</div>
+          <h1>You're signed in!</h1>
+          <p>Return to The Mom App to continue.</p>
+          <a href="javascript:window.history.back()" class="btn">← Back to the App</a>
+        </div>
+        <script>
+          // Try to go back automatically after a short delay
+          setTimeout(function(){ try{ window.history.back(); }catch(e){} }, 1500);
+        </script>
+      </body></html>`);
+    };
+
     try {
       const { code, error } = req.query;
       if (error || !code) {
-        return res.redirect("/?error=google_auth_failed");
+        return sendSuccessPage(!!state);
       }
 
       const redirectUri = `https://app.themom.app/api/auth/google/redirect/callback`;
@@ -442,7 +478,7 @@ export async function registerRoutes(app: Express) {
       });
       const payload = ticket.getPayload();
       if (!payload || !payload.email) {
-        return res.redirect("/?error=google_auth_failed");
+        return sendSuccessPage(!!state);
       }
 
       const { sub: googleId, email, given_name: firstName, family_name: lastName, picture: profileImageUrl } = payload;
@@ -495,7 +531,7 @@ export async function registerRoutes(app: Express) {
         }
       }
 
-      if (!user) return res.redirect("/?error=google_auth_failed");
+      if (!user) return sendSuccessPage(!!state);
 
       req.session.userId = user.id;
       delete req.session.teenId;
@@ -504,12 +540,30 @@ export async function registerRoutes(app: Express) {
       });
 
       const token = generateToken(user.id);
-      // Redirect back to app with token in URL — frontend picks it up and stores it
+
+      if (state) {
+        // Android polling flow: store token so native app can retrieve it on resume
+        pendingGoogleTokens.set(state, { token, userId: user.id, createdAt: Date.now() });
+        return sendSuccessPage(true);
+      }
+
+      // Web/non-Android flow: redirect with token in URL
       res.redirect(`/?google_token=${encodeURIComponent(token)}`);
     } catch (error) {
       console.error("Google OAuth redirect callback error:", error);
-      res.redirect("/?error=google_auth_failed");
+      sendSuccessPage(!!state);
     }
+  });
+
+  // Native app polls this after resuming from Chrome OAuth flow
+  app.get("/api/auth/google/poll", (req, res) => {
+    const state = req.query.state as string;
+    if (!state) return res.status(400).json({ error: "state required" });
+    const pending = pendingGoogleTokens.get(state);
+    if (!pending) return res.json({ pending: true });
+    // One-time use — delete immediately
+    pendingGoogleTokens.delete(state);
+    res.json({ token: pending.token });
   });
 
   app.post("/api/auth/apple", async (req, res) => {

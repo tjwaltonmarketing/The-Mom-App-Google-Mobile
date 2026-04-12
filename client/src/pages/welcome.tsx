@@ -190,7 +190,10 @@ export default function Welcome() {
               <button
                 onClick={() => {
                   if (isAndroid) {
-                    window.location.href = getApiUrl("/api/auth/google/redirect");
+                    // Generate a state token so the app can poll for the auth result on resume
+                    const state = Math.random().toString(36).slice(2, 18);
+                    localStorage.setItem("google_oauth_state", state);
+                    window.location.href = getApiUrl(`/api/auth/google/redirect?state=${state}`);
                   } else if (window.google?.accounts?.id) {
                     window.google.accounts.id.prompt();
                   } else {
