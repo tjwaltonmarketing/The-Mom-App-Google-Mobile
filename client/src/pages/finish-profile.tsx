@@ -107,7 +107,7 @@ export default function FinishProfile() {
           <img src={logoPath} alt="The Mom App" className="h-[75px] object-contain" />
         </div>
 
-        <h1 className="text-2xl font-bold text-center text-gray-900 mb-1">One quick thing</h1>
+        <h1 className="text-2xl font-bold text-center text-gray-900 mb-1">How should we address your family?</h1>
         <p className="text-sm text-center text-gray-500 mb-6">
           Tell us a bit more so we can set up your family hub.
         </p>
@@ -118,7 +118,7 @@ export default function FinishProfile() {
               Family Name <span className="text-pink-500">*</span>
             </label>
             <Input
-              placeholder="e.g. The Smith Family"
+              placeholder="e.g. Smith Family"
               value={familyName}
               onChange={(e) => { setFamilyName(e.target.value); setFamilyError(""); }}
               className={familyError ? "border-red-400 focus-visible:ring-red-300" : ""}
@@ -139,7 +139,7 @@ export default function FinishProfile() {
             />
             {phoneError && <p className="text-xs text-red-500 mt-1">{phoneError}</p>}
             <p className="text-xs text-gray-400 mt-1">
-              We'll send family reminders here — so you don't have to nag 😄
+              Used for password resets and important account updates. We will never share your info with third parties.
             </p>
           </div>
         </div>
