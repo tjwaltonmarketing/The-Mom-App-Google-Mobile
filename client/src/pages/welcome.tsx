@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ export default function Welcome() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const googleButtonRef = useRef<HTMLDivElement>(null);
+
   const [googleClientId, setGoogleClientId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -126,13 +126,8 @@ export default function Welcome() {
   useEffect(() => {
     if (!googleClientId) return;
     const initGoogle = () => {
-      if (!window.google || !googleButtonRef.current) return;
+      if (!window.google) return;
       window.google.accounts.id.initialize({ client_id: googleClientId, callback: handleGoogleCallback });
-      window.google.accounts.id.renderButton(googleButtonRef.current, {
-        theme: "outline", size: "large",
-        width: googleButtonRef.current.offsetWidth || 320,
-        text: "continue_with", shape: "rectangular", logo_alignment: "center",
-      });
     };
     if (window.google?.accounts?.id) { initGoogle(); return; }
     const script = document.createElement("script");
@@ -189,8 +184,25 @@ export default function Welcome() {
 
             {/* Sign-in buttons */}
             <div className="w-full space-y-3">
-              <div ref={googleButtonRef} className="w-full" style={{ minHeight: 44 }} />
-              {!googleClientId && <div className="h-11 w-full rounded-lg bg-gray-100 animate-pulse" />}
+              <button
+                onClick={() => {
+                  if (window.google?.accounts?.id) {
+                    window.google.accounts.id.prompt();
+                  } else {
+                    toast({ title: "Google Sign-In unavailable", description: "Please use email sign-in or try again.", variant: "destructive" });
+                  }
+                }}
+                disabled={googleLoginMutation.isPending}
+                className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm py-[11px] rounded-md border border-gray-300 transition-colors shadow-sm"
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                  <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9.003 18z" fill="#34A853"/>
+                  <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957A8.996 8.996 0 000 9.002a8.996 8.996 0 00.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                  <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.002 0 5.48 0 2.438 2.017.956 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+                </svg>
+                {googleLoginMutation.isPending ? "Signing in..." : "Continue with Google"}
+              </button>
               <button
                 onClick={handleAppleSignIn}
                 disabled={appleLoginMutation.isPending}
