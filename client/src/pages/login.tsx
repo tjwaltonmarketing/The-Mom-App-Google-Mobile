@@ -215,7 +215,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-pink-50 via-pink-100 to-rose-50">
+    <div className="welcome-bg min-h-screen flex flex-col">
       <div className="flex-1 flex items-center justify-center p-4">
       <div className="flex w-full max-w-5xl items-center gap-8">
         {/* Login Card - Left Side */}
