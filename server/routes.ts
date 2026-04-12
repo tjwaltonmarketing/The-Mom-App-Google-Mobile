@@ -398,6 +398,120 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Google Sign-In via server-side OAuth redirect (for Android WebView where JS SDK is blocked)
+  app.get("/api/auth/google/redirect", (req, res) => {
+    try {
+      const redirectUri = `https://app.themom.app/api/auth/google/redirect/callback`;
+      const client = new OAuth2Client(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        redirectUri
+      );
+      const url = client.generateAuthUrl({
+        access_type: "online",
+        scope: ["profile", "email"],
+        prompt: "select_account",
+      });
+      res.redirect(url);
+    } catch (error) {
+      console.error("Google OAuth redirect start error:", error);
+      res.redirect("/?error=google_auth_failed");
+    }
+  });
+
+  app.get("/api/auth/google/redirect/callback", async (req, res) => {
+    try {
+      const { code, error } = req.query;
+      if (error || !code) {
+        return res.redirect("/?error=google_auth_failed");
+      }
+
+      const redirectUri = `https://app.themom.app/api/auth/google/redirect/callback`;
+      const client = new OAuth2Client(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        redirectUri
+      );
+
+      const { tokens } = await client.getToken(code as string);
+      client.setCredentials(tokens);
+
+      const ticket = await client.verifyIdToken({
+        idToken: tokens.id_token!,
+        audience: process.env.GOOGLE_CLIENT_ID!,
+      });
+      const payload = ticket.getPayload();
+      if (!payload || !payload.email) {
+        return res.redirect("/?error=google_auth_failed");
+      }
+
+      const { sub: googleId, email, given_name: firstName, family_name: lastName, picture: profileImageUrl } = payload;
+
+      let user = await storage.getUserByGoogleId(googleId!);
+      if (!user) {
+        user = await storage.getUserByEmail(email.toLowerCase());
+        if (user) {
+          await db.execute(sql`UPDATE users SET google_id = ${googleId}, auth_method = 'google', profile_image_url = COALESCE(profile_image_url, ${profileImageUrl}), is_verified = true WHERE id = ${user.id}`);
+          user = await storage.getUserById(user.id);
+        } else {
+          user = await storage.createUser({
+            email: email.toLowerCase(),
+            googleId: googleId!,
+            firstName: firstName || null,
+            lastName: lastName || null,
+            profileImageUrl: profileImageUrl || null,
+            authMethod: "google",
+            isVerified: true,
+          });
+          const family = await storage.createFamily({
+            name: `${firstName || "My"}'s Family`,
+            ownerId: user.id,
+          });
+          await storage.createFamilyMember({
+            userId: user.id,
+            familyId: family.id,
+            name: `${firstName || ""} ${lastName || ""}`.trim(),
+            role: "parent",
+            color: "#EC4899",
+            avatar: (firstName || "U").charAt(0).toUpperCase(),
+            notificationPreference: "sms",
+            canLogin: true,
+            isActive: true,
+          });
+          await storage.createFamilyMembership({
+            userId: user.id,
+            familyId: family.id,
+            role: "owner",
+          });
+          const adminPhone = process.env.ADMIN_PHONE_NUMBER;
+          if (adminPhone) {
+            try {
+              await sendSMS(
+                adminPhone,
+                `🎉 New Mom App signup (Google Android)!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nTime: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })}`
+              );
+            } catch {}
+          }
+        }
+      }
+
+      if (!user) return res.redirect("/?error=google_auth_failed");
+
+      req.session.userId = user.id;
+      delete req.session.teenId;
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => (err ? reject(err) : resolve()));
+      });
+
+      const token = generateToken(user.id);
+      // Redirect back to app with token in URL — frontend picks it up and stores it
+      res.redirect(`/?google_token=${encodeURIComponent(token)}`);
+    } catch (error) {
+      console.error("Google OAuth redirect callback error:", error);
+      res.redirect("/?error=google_auth_failed");
+    }
+  });
+
   app.post("/api/auth/apple", async (req, res) => {
     try {
       const { identityToken, firstName, lastName } = req.body;

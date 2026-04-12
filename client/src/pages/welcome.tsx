@@ -184,47 +184,50 @@ export default function Welcome() {
               </div>
             </div>
 
-            {/* Sign-in buttons — hidden on Android (web SDKs don't work in native WebView) */}
-            {!isAndroid && (
-              <>
-                <div className="w-full space-y-3">
-                  <button
-                    onClick={() => {
-                      if (window.google?.accounts?.id) {
-                        window.google.accounts.id.prompt();
-                      } else {
-                        toast({ title: "Google Sign-In unavailable", description: "Please use email sign-in or try again.", variant: "destructive" });
-                      }
-                    }}
-                    disabled={googleLoginMutation.isPending}
-                    className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm py-[11px] rounded-md border border-gray-300 transition-colors shadow-sm"
-                  >
-                    <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-                      <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9.003 18z" fill="#34A853"/>
-                      <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957A8.996 8.996 0 000 9.002a8.996 8.996 0 00.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-                      <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.002 0 5.48 0 2.438 2.017.956 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
-                    </svg>
-                    {googleLoginMutation.isPending ? "Signing in..." : "Continue with Google"}
-                  </button>
-                  <button
-                    onClick={handleAppleSignIn}
-                    disabled={appleLoginMutation.isPending}
-                    className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-900 text-white font-medium text-sm py-[11px] rounded-md border border-gray-300 transition-colors"
-                  >
-                    <SiApple className="h-4 w-4" />
-                    {appleLoginMutation.isPending ? "Signing in..." : "Continue with Apple"}
-                  </button>
-                </div>
+            {/* Sign-in buttons */}
+            <div className="w-full space-y-3">
+              {/* Google — uses JS SDK on web/iOS; server-side redirect on Android */}
+              <button
+                onClick={() => {
+                  if (isAndroid) {
+                    window.location.href = getApiUrl("/api/auth/google/redirect");
+                  } else if (window.google?.accounts?.id) {
+                    window.google.accounts.id.prompt();
+                  } else {
+                    toast({ title: "Google Sign-In unavailable", description: "Please use email sign-in or try again.", variant: "destructive" });
+                  }
+                }}
+                disabled={googleLoginMutation.isPending}
+                className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm py-[11px] rounded-md border border-gray-300 transition-colors shadow-sm"
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                  <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9.003 18z" fill="#34A853"/>
+                  <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957A8.996 8.996 0 000 9.002a8.996 8.996 0 00.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                  <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.002 0 5.48 0 2.438 2.017.956 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+                </svg>
+                {googleLoginMutation.isPending ? "Signing in..." : "Continue with Google"}
+              </button>
 
-                {/* Divider */}
-                <div className="w-full flex items-center gap-3">
-                  <div className="flex-1 h-px bg-gray-200" />
-                  <span className="text-xs text-gray-400">or</span>
-                  <div className="flex-1 h-px bg-gray-200" />
-                </div>
-              </>
-            )}
+              {/* Apple — not supported on Android */}
+              {!isAndroid && (
+                <button
+                  onClick={handleAppleSignIn}
+                  disabled={appleLoginMutation.isPending}
+                  className="w-full flex items-center justify-center gap-2 bg-black hover:bg-gray-900 text-white font-medium text-sm py-[11px] rounded-md border border-gray-300 transition-colors"
+                >
+                  <SiApple className="h-4 w-4" />
+                  {appleLoginMutation.isPending ? "Signing in..." : "Continue with Apple"}
+                </button>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="w-full flex items-center gap-3">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-xs text-gray-400">or</span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
 
             {/* Trial CTA */}
             <Button

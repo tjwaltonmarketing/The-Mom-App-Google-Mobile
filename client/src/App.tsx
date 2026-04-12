@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SplashScreen } from "@/components/splash-screen";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PullToRefreshIndicator } from "@/components/pull-to-refresh-indicator";
-import { getApiUrl } from "@/lib/config";
+import { getApiUrl, setAuthToken } from "@/lib/config";
 
 // Pages
 import Welcome from "@/pages/welcome";
@@ -69,6 +69,24 @@ function Router() {
   const [initialLoad, setInitialLoad] = useState(true);
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
   const [, setLocation] = useLocation();
+
+  // Handle google_token query param returned by Android server-side OAuth redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const googleToken = params.get("google_token");
+    const googleError = params.get("error");
+    if (googleToken) {
+      setAuthToken(googleToken);
+      // Clean up URL without reload
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, "", cleanUrl);
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+    } else if (googleError === "google_auth_failed") {
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, "", cleanUrl);
+    }
+  }, []);
 
   useEffect(() => {
     import("@/services/push-notifications").then(({ setupNotificationTapHandler }) => {
