@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getApiUrl, setAuthToken } from "@/lib/config";
 import { logFBEvent, FB_EVENTS } from "@/lib/facebook-events";
-import { Brain, Users, Sparkles } from "lucide-react";
+import { Calendar, UtensilsCrossed, CheckCircle2 } from "lucide-react";
 import { SiApple } from "react-icons/si";
 import logoPath from "@assets/The_Mom_app_-_New_Tagline_-_Cropped_1775943647566.png";
 import beforeAfterPath from "@assets/The_Mom_app_(4)_1766014201419.png";
@@ -159,9 +159,9 @@ export default function Welcome() {
 
             {/* Headline + subhead */}
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900 leading-tight">Finally.<br />An App That Gets It.</h1>
-              <p className="text-gray-500 text-sm mt-2 leading-relaxed">
-                You remember everything for everyone.<br />It's time someone helped carry the load.
+              <h1 className="text-2xl font-bold text-gray-900 leading-tight">Finally.<br />Share the Family Load.</h1>
+              <p className="text-gray-500 text-sm mt-1 leading-relaxed">
+                Includes AI Powered Assistant
               </p>
             </div>
 
@@ -169,21 +169,21 @@ export default function Welcome() {
             <div className="w-full space-y-2">
               <div className="welcome-benefit-card flex items-center gap-3 bg-pink-50 border border-pink-100 rounded-xl px-4 py-3">
                 <div className="bg-pink-500 rounded-lg p-2 flex-shrink-0">
-                  <Brain className="h-4 w-4 text-white" />
+                  <Calendar className="h-4 w-4 text-white" />
                 </div>
-                <p className="text-sm font-medium text-gray-800 leading-snug">AI that plans meals, manages schedules & delegates tasks</p>
+                <p className="text-sm font-medium text-gray-800 leading-snug">No more holding the family calendar in your head</p>
               </div>
               <div className="welcome-benefit-card flex items-center gap-3 bg-purple-50 border border-purple-100 rounded-xl px-4 py-3">
                 <div className="bg-purple-500 rounded-lg p-2 flex-shrink-0">
-                  <Users className="h-4 w-4 text-white" />
+                  <UtensilsCrossed className="h-4 w-4 text-white" />
                 </div>
-                <p className="text-sm font-medium text-gray-800 leading-snug">The whole family finally stays in sync — automatically</p>
+                <p className="text-sm font-medium text-gray-800 leading-snug">Meals planned, groceries listed — automatically</p>
               </div>
               <div className="welcome-benefit-card flex items-center gap-3 bg-rose-50 border border-rose-100 rounded-xl px-4 py-3">
                 <div className="bg-rose-400 rounded-lg p-2 flex-shrink-0">
-                  <Sparkles className="h-4 w-4 text-white" />
+                  <CheckCircle2 className="h-4 w-4 text-white" />
                 </div>
-                <p className="text-sm font-medium text-gray-800 leading-snug">Less mental load. More you.</p>
+                <p className="text-sm font-medium text-gray-800 leading-snug">Everyone does their part. You finally breathe.</p>
               </div>
             </div>
 
@@ -216,23 +216,15 @@ export default function Welcome() {
               Start My Free 14-Day Trial
             </Button>
 
-            {/* Sign in */}
-            <p className="text-sm text-gray-400">
-              Already have an account?{" "}
-              <button onClick={() => setLocation("/login")} className="text-pink-500 font-semibold hover:underline">Sign In</button>
-            </p>
-
-            {/* Invite callout */}
-            <div className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 -mt-1">
-              <p className="text-xs text-amber-800 text-center leading-relaxed">
-                📩 <span className="font-semibold">Got a family invite?</span> Don't use Google or Apple —{" "}
-                <button
-                  onClick={() => setLocation("/login")}
-                  className="font-semibold underline underline-offset-2 hover:text-amber-900"
-                >
-                  Sign In
-                </button>
-                {" "}with your invite code.
+            {/* Sign in + invite — grouped so they sit close together */}
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-sm text-gray-400">
+                Already have an account?{" "}
+                <button onClick={() => setLocation("/login")} className="text-pink-500 font-semibold hover:underline">Sign In</button>
+              </p>
+              <p className="text-sm text-gray-400">
+                Got a family invite?{" "}
+                <button onClick={() => setLocation("/login")} className="text-pink-500 font-semibold hover:underline">Click here</button>
               </p>
             </div>
 
