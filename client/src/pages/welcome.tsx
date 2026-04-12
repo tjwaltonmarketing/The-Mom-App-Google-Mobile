@@ -222,6 +222,20 @@ export default function Welcome() {
               <button onClick={() => setLocation("/login")} className="text-pink-500 font-semibold hover:underline">Sign In</button>
             </p>
 
+            {/* Invite callout */}
+            <div className="w-full bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 -mt-1">
+              <p className="text-xs text-amber-800 text-center leading-relaxed">
+                📩 <span className="font-semibold">Got a family invite?</span> Don't use Google or Apple —{" "}
+                <button
+                  onClick={() => setLocation("/login")}
+                  className="font-semibold underline underline-offset-2 hover:text-amber-900"
+                >
+                  Sign In
+                </button>
+                {" "}with your invite code.
+              </p>
+            </div>
+
             {/* Legal */}
             <p className="text-xs text-gray-400 text-center -mt-2">
               No commitment • Cancel anytime •{" "}
