@@ -105,9 +105,7 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Name, email, and password are required" });
       }
       
-      if (!isJoiningFamily && !familyName) {
-        return res.status(400).json({ error: "Family name is required" });
-      }
+      const resolvedFamilyName = familyName || "My Family";
 
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email.toLowerCase());
@@ -150,7 +148,7 @@ export async function registerRoutes(app: Express) {
       } else {
         // Create new family
         family = await storage.createFamily({
-          name: familyName,
+          name: resolvedFamilyName,
           ownerId: newUser.id
         });
       }
@@ -201,7 +199,7 @@ export async function registerRoutes(app: Express) {
         try {
           await sendSMS(
             adminPhone,
-            `🎉 New Mom App signup!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nFamily: ${familyName}\nTime: ${new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}`
+            `🎉 New Mom App signup!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nFamily: ${resolvedFamilyName}\nTime: ${new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}`
           );
         } catch (smsError) {
           console.error("Failed to send admin signup notification:", smsError);

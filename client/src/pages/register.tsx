@@ -21,8 +21,6 @@ const registerSchema = z.object({
   confirmPassword: z.string().min(1, "Please confirm your password"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  familyName: z.string().optional(),
-  phoneNumber: z.string().min(1, "Phone number is required"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -71,8 +69,6 @@ export default function Register() {
       confirmPassword: "",
       firstName: "",
       lastName: "",
-      familyName: familyName || "",
-      phoneNumber: "",
     },
   });
 
@@ -90,15 +86,14 @@ export default function Register() {
       if (data.token) {
         setAuthToken(data.token);
       }
-      logFBEvent(FB_EVENTS.COMPLETE_REGISTRATION);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({
-        title: isJoiningFamily ? "Welcome to the Family!" : "Account Created!",
-        description: isJoiningFamily
-          ? `You've joined ${familyName || 'the family'}!`
-          : "Welcome to The Mom App!",
-      });
-      setLocation("/");
+      if (isJoiningFamily) {
+        logFBEvent(FB_EVENTS.COMPLETE_REGISTRATION);
+        toast({ title: "Welcome to the Family!", description: `You've joined ${familyName || 'the family'}!` });
+        setLocation("/");
+      } else {
+        setLocation("/finish-profile");
+      }
     },
     onError: (error: any) => {
       toast({
@@ -187,19 +182,6 @@ export default function Register() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input type="tel" placeholder="e.g., +1 (555) 123-4567" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
               <FormField
                 control={form.control}
@@ -258,22 +240,6 @@ export default function Register() {
                   </FormItem>
                 )}
               />
-
-              {!isJoiningFamily && (
-                <FormField
-                  control={form.control}
-                  name="familyName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Family Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Smith Family" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
 
               <div className="flex items-start gap-3 py-2">
                 <Checkbox

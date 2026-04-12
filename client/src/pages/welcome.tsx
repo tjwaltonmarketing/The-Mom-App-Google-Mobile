@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { getApiUrl, setAuthToken } from "@/lib/config";
@@ -25,9 +24,6 @@ export default function Welcome() {
   const queryClient = useQueryClient();
   const googleButtonRef = useRef<HTMLDivElement>(null);
   const [googleClientId, setGoogleClientId] = useState<string | null>(null);
-  const [showPhoneModal, setShowPhoneModal] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [phoneError, setPhoneError] = useState("");
 
   useEffect(() => {
     document.documentElement.classList.remove("dark", "blue-light-filter");
@@ -52,7 +48,7 @@ export default function Welcome() {
         queryClient.setQueryData(["/api/auth/user"], data.user);
         queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
         if (!data.user.phoneNumber) {
-          setShowPhoneModal(true);
+          setLocation("/finish-profile");
         } else {
           logFBEvent(FB_EVENTS.COMPLETE_REGISTRATION);
           setLocation("/");
@@ -61,21 +57,6 @@ export default function Welcome() {
     },
     onError: () => {
       toast({ title: "Google Sign-In Failed", description: "Could not sign in with Google. Please try again.", variant: "destructive" });
-    },
-  });
-
-  const phoneUpdateMutation = useMutation({
-    mutationFn: async (phone: string) => {
-      const response = await apiRequest("POST", "/api/auth/set-phone", { phoneNumber: phone });
-      return await response.json();
-    },
-    onSuccess: () => {
-      logFBEvent(FB_EVENTS.COMPLETE_REGISTRATION);
-      setShowPhoneModal(false);
-      setLocation("/");
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Could not save phone number.", variant: "destructive" });
     },
   });
 
@@ -90,7 +71,7 @@ export default function Welcome() {
         queryClient.setQueryData(["/api/auth/user"], data.user);
         queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
         if (!data.user.phoneNumber) {
-          setShowPhoneModal(true);
+          setLocation("/finish-profile");
         } else {
           logFBEvent(FB_EVENTS.COMPLETE_REGISTRATION);
           setLocation("/");
@@ -164,41 +145,8 @@ export default function Welcome() {
     };
   }, [googleClientId, handleGoogleCallback]);
 
-  const handlePhoneSubmit = () => {
-    if (!phoneNumber.trim()) { setPhoneError("Please enter your phone number"); return; }
-    setPhoneError("");
-    phoneUpdateMutation.mutate(phoneNumber.trim());
-  };
-
-  const handleSkipPhone = () => {
-    logFBEvent(FB_EVENTS.COMPLETE_REGISTRATION);
-    setShowPhoneModal(false);
-    setLocation("/");
-  };
-
   return (
     <div className="welcome-bg min-h-screen flex items-center justify-center px-4 py-8" style={{ fontFamily: "'Poppins', sans-serif" }}>
-
-      {/* Phone modal */}
-      {showPhoneModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
-            <h2 className="text-xl font-bold text-gray-900 mb-1">One last thing</h2>
-            <p className="text-sm text-gray-500 mb-4">We use your phone number for important family notifications. You can update this anytime in Settings.</p>
-            <Input
-              type="tel" placeholder="Phone number" value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)} className="mb-2 text-base"
-              onKeyDown={(e) => { if (e.key === "Enter") handlePhoneSubmit(); }}
-            />
-            {phoneError && <p className="text-red-500 text-xs mb-2">{phoneError}</p>}
-            <Button onClick={handlePhoneSubmit} disabled={phoneUpdateMutation.isPending}
-              className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 rounded-xl mb-2">
-              {phoneUpdateMutation.isPending ? "Saving..." : "Continue"}
-            </Button>
-            <button onClick={handleSkipPhone} className="w-full text-sm text-gray-400 hover:text-gray-600 py-1">Skip for now</button>
-          </div>
-        </div>
-      )}
 
       {/* Two-column layout on desktop, single card on mobile */}
       <div className="flex flex-col md:flex-row items-center md:items-stretch gap-8 w-full max-w-5xl">

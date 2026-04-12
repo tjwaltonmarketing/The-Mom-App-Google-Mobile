@@ -12,6 +12,7 @@ import { getApiUrl } from "@/lib/config";
 import Welcome from "@/pages/welcome";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
+import FinishProfile from "@/pages/finish-profile";
 import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import Dashboard from "@/pages/dashboard";
@@ -254,6 +255,7 @@ function Router() {
       {/* Public routes - always accessible */}
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/finish-profile" component={FinishProfile} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route path="/teen/login" component={TeenLogin} />
