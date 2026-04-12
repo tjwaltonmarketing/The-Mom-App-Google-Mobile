@@ -236,17 +236,6 @@ export default function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Invite code callout — shown at top so invited members see it immediately */}
-          <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-            <p className="text-xs text-amber-800 text-center leading-relaxed">
-              📩 <span className="font-semibold">Got a family invite?</span>{" "}
-              <Link href="/teen-join" className="font-semibold underline underline-offset-2 hover:text-amber-900">
-                Click here to join with your invite code
-              </Link>
-              {" "}— don't sign in below.
-            </p>
-          </div>
-
           {/* Google Sign-In - hidden until Google OAuth origins are configured
           {googleClientId && (
             <>
