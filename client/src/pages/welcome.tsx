@@ -218,11 +218,11 @@ export default function Welcome() {
 
             {/* Sign in + invite — grouped so they sit close together */}
             <div className="flex flex-col items-center gap-1">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm" style={{ color: '#9ca3af' }}>
                 Already have an account?{" "}
                 <button onClick={() => setLocation("/login")} className="text-pink-500 font-semibold hover:underline">Sign In</button>
               </p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm" style={{ color: '#9ca3af' }}>
                 Got a family invite?{" "}
                 <button onClick={() => setLocation("/login")} className="text-pink-500 font-semibold hover:underline">Click here</button>
               </p>
