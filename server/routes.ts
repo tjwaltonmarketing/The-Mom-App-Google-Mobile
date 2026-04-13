@@ -5421,20 +5421,18 @@ export async function registerRoutes(app: Express) {
   });
 
   // Verify checkout session completion
+  // No auth required — session ID is an unguessable Stripe token; userId comes from session metadata
   app.get("/api/checkout/verify/:sessionId", async (req, res) => {
     try {
-      if (!req.session.userId) {
-        return res.status(401).json({ error: "Not authenticated" });
-      }
-
       const session = await stripe.checkout.sessions.retrieve(req.params.sessionId);
 
       // Accept both "paid" and "no_payment_required" (trial subscriptions)
       const isComplete = session.status === "complete" &&
         (session.payment_status === "paid" || session.payment_status === "no_payment_required");
 
-      if (isComplete && session.metadata?.userId === req.session.userId.toString()) {
-        await storage.updateUserSubscription(req.session.userId, {
+      if (isComplete && session.metadata?.userId) {
+        const userId = parseInt(session.metadata.userId);
+        await storage.updateUserSubscription(userId, {
           subscriptionPlan: session.metadata.plan as "individual" | "family",
           subscriptionStatus: "active",
           stripeSubscriptionId: session.subscription as string,
