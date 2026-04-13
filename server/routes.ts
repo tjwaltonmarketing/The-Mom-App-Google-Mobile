@@ -689,6 +689,7 @@ export async function registerRoutes(app: Express) {
               email: user.email,
               firstName: user.firstName,
               lastName: user.lastName,
+              phoneNumber: user.phoneNumber,
               profileImageUrl: user.profileImageUrl,
               authMethod: user.authMethod,
               isVerified: user.isVerified
@@ -706,6 +707,7 @@ export async function registerRoutes(app: Express) {
             email: user.email,
             firstName: user.firstName,
             lastName: user.lastName,
+            phoneNumber: user.phoneNumber,
             profileImageUrl: user.profileImageUrl,
             authMethod: user.authMethod,
             isVerified: user.isVerified
@@ -725,6 +727,7 @@ export async function registerRoutes(app: Express) {
               email: user.email,
               firstName: user.firstName,
               lastName: user.lastName,
+              phoneNumber: user.phoneNumber,
               profileImageUrl: user.profileImageUrl,
               authMethod: user.authMethod,
               isVerified: user.isVerified
