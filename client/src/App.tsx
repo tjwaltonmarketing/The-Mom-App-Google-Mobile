@@ -70,16 +70,39 @@ function Router() {
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
   const [, setLocation] = useLocation();
 
-  // Handle google_token query param (web/iOS flow) and clean up any stale state params
+  // Handle google_token query param (web/iOS flow), App Links return (/auth/google/return),
+  // and clean up any stale state params
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const googleToken = params.get("google_token");
+
     if (googleToken) {
+      // Web/iOS: token delivered directly in URL
       setAuthToken(googleToken);
       window.history.replaceState({}, "", window.location.pathname);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
       setLocation("/finish-profile");
+    } else if (window.location.pathname === "/auth/google/return") {
+      // Android App Links: Chrome was redirected here; Android may open native app via
+      // App Links (which triggers visibilitychange → handleResume polling), but if Chrome
+      // actually loads this page as a fallback, poll for the token directly here.
+      const state = params.get("state");
+      if (state) {
+        fetch(getApiUrl(`/api/auth/google/poll?state=${state}`), { credentials: "include" })
+          .then(r => r.json())
+          .then(data => {
+            if (data.token) {
+              localStorage.removeItem("google_oauth_state");
+              setAuthToken(data.token);
+              queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+              queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+              window.history.replaceState({}, "", "/");
+              setLocation("/finish-profile");
+            }
+          })
+          .catch(() => {});
+      }
     } else if (params.get("error") === "google_auth_failed") {
       window.history.replaceState({}, "", window.location.pathname);
     }

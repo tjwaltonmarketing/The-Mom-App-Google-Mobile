@@ -50,6 +50,21 @@ async function isUserOnIndividualPlan(userId: number): Promise<boolean> {
 }
 
 export async function registerRoutes(app: Express) {
+  // Android App Links verification file — must be served at this exact path
+  app.get("/.well-known/assetlinks.json", (_req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.json([{
+      relation: ["delegate_permission/common.handle_all_urls"],
+      target: {
+        namespace: "android_app",
+        package_name: "com.momapp.family",
+        sha256_cert_fingerprints: [
+          "80:ED:AD:60:02:83:88:9F:1A:47:F8:34:DE:1A:32:A8:6A:80:4E:C6:3F:A8:C7:37:F8:E5:09:71:45:15:01:1D"
+        ]
+      }
+    }]);
+  });
+
   // Setup Replit Auth first (handles sessions, passport, login/logout routes)
   await setupAuth(app);
   
@@ -555,9 +570,11 @@ export async function registerRoutes(app: Express) {
       const token = generateToken(user.id);
 
       if (state) {
-        // Android polling flow: store token so native app can retrieve it on resume
+        // Android App Links flow: store token, redirect to deep link URL.
+        // Android intercepts https://app.themom.app/auth/google/return and opens
+        // the native app directly. The app's visibilitychange handler polls for the token.
         pendingGoogleTokens.set(state, { token, userId: user.id, createdAt: Date.now() });
-        return sendSuccessPage(true);
+        return res.redirect(`https://app.themom.app/auth/google/return?state=${encodeURIComponent(state)}`);
       }
 
       // Web/non-Android flow: redirect with token in URL
