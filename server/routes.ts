@@ -438,26 +438,33 @@ export async function registerRoutes(app: Express) {
       res.send(`<!DOCTYPE html><html><head><meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>Signed In – The Mom App</title>
-        <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#fdf4ff;color:#333;padding:24px;box-sizing:border-box}
-        .card{background:#fff;border-radius:16px;padding:32px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}
-        h1{font-size:24px;margin:16px 0 8px;color:#7c3aed}p{color:#666;margin:0 0 24px}
-        .check{font-size:48px}.btn{display:block;background:#7c3aed;color:#fff;padding:14px 24px;border-radius:10px;text-decoration:none;font-weight:600;font-size:16px;margin-top:8px;cursor:pointer;border:none;width:100%}
-        .hint{font-size:13px;color:#999;margin-top:16px}
+        <style>
+          body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#fdf4ff;color:#333;padding:24px;box-sizing:border-box}
+          .card{background:#fff;border-radius:16px;padding:32px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+          h1{font-size:24px;margin:16px 0 8px;color:#7c3aed}
+          .check{font-size:56px;margin-bottom:4px}
+          .sub{color:#666;margin:0 0 20px;font-size:15px}
+          .back-box{background:#f3f0ff;border:2px solid #7c3aed;border-radius:12px;padding:20px 16px;margin-top:8px}
+          .back-arrow{font-size:40px;margin-bottom:8px}
+          .back-label{font-size:17px;font-weight:700;color:#7c3aed;margin:0 0 4px}
+          .back-hint{font-size:13px;color:#555;margin:0}
+          .btn{display:block;background:#7c3aed;color:#fff;padding:14px 24px;border-radius:10px;font-weight:600;font-size:16px;margin-top:16px;cursor:pointer;border:none;width:100%}
         </style></head><body>
         <div class="card">
           <div class="check">✅</div>
           <h1>You're signed in!</h1>
-          <p>Returning you to The Mom App…</p>
-          <button class="btn" onclick="returnToApp()">← Back to the App</button>
-          <p class="hint">If the app doesn't open automatically, tap the button above or press the back button.</p>
+          <p class="sub">Your account is ready. Now return to the app:</p>
+          <div class="back-box">
+            <div class="back-arrow">◀</div>
+            <p class="back-label">Tap the Back button</p>
+            <p class="back-hint">Press the ← back button at the bottom of your phone to return to The Mom App</p>
+          </div>
+          <button class="btn" onclick="tryClose()">← Close &amp; Return to App</button>
         </div>
         <script>
-          function returnToApp() {
-            // Use Android Intent URL to bring the native app to the foreground
-            window.location.href = 'intent://app.themom.app/#Intent;scheme=https;package=com.momapp.family;end;';
+          function tryClose() {
+            try { window.close(); } catch(e) {}
           }
-          // Auto-trigger after 2 seconds so the user sees the confirmation first
-          setTimeout(returnToApp, 2000);
         </script>
       </body></html>`);
     };
