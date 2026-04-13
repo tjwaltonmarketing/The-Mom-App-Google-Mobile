@@ -82,6 +82,14 @@ export default function FinishProfile() {
         familyMutation.mutateAsync(familyName.trim()),
       ]);
       logFBEvent(FB_EVENTS.COMPLETE_REGISTRATION);
+      // Update cache immediately so the router's needsFinishProfile check
+      // sees the new phone number before the async refetch completes
+      queryClient.setQueryData(["/api/auth/user"], (old: any) =>
+        old ? { ...old, phoneNumber: phone.trim() } : old
+      );
+      queryClient.setQueryData(["/api/family"], (old: any) =>
+        old ? { ...old, name: familyName.trim() } : old
+      );
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       queryClient.invalidateQueries({ queryKey: ["/api/family"] });
       setLocation("/");
