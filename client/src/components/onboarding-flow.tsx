@@ -190,7 +190,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
   return (
     <div className="welcome-bg min-h-screen flex flex-col items-center justify-center px-4 py-6" style={{ fontFamily: "'Poppins', sans-serif" }}>
       <div className="welcome-card-left bg-white rounded-3xl shadow-xl w-full max-w-md flex flex-col px-6 py-6 max-h-[92vh] overflow-y-auto">
-        {!(slide as any).isPrimingA && !(slide as any).isPrimingB && (
+        {!(slide as any).isPrimingA && !(slide as any).isPrimingB && !(slide as any).isPricing && (
           <div className="w-full max-h-[250px] mb-4 flex items-center justify-center">
             <img
               src={slide.image}
