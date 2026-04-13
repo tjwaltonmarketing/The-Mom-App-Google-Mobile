@@ -59,7 +59,8 @@ export async function registerRoutes(app: Express) {
         namespace: "android_app",
         package_name: "com.momapp.family",
         sha256_cert_fingerprints: [
-          "80:ED:AD:60:02:83:88:9F:1A:47:F8:34:DE:1A:32:A8:6A:80:4E:C6:3F:A8:C7:37:F8:E5:09:71:45:15:01:1D"
+          "80:ED:AD:60:02:83:88:9F:1A:47:F8:34:DE:1A:32:A8:6A:80:4E:C6:3F:A8:C7:37:F8:E5:09:71:45:15:01:1D",
+          "F3:8E:D4:2E:DC:F8:2A:B7:9E:E3:20:C7:8C:CE:8C:9F:EE:B8:45:38:7F:79:B4:CF:45:AA:B6:01:72:EE:EE:34"
         ]
       }
     }]);
