@@ -51,12 +51,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- App Links: intercept https://app.themom.app URLs to return from OAuth -->
+            <!-- App Links: intercept ONLY the OAuth return URL, not all app.themom.app URLs -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="app.themom.app" />
+                <data android:scheme="https"
+                      android:host="app.themom.app"
+                      android:pathPrefix="/auth/google/return" />
             </intent-filter>
 
         </activity>
