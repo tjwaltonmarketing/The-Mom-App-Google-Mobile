@@ -441,17 +441,23 @@ export async function registerRoutes(app: Express) {
         <style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#fdf4ff;color:#333;padding:24px;box-sizing:border-box}
         .card{background:#fff;border-radius:16px;padding:32px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}
         h1{font-size:24px;margin:16px 0 8px;color:#7c3aed}p{color:#666;margin:0 0 24px}
-        .check{font-size:48px}.btn{display:block;background:#7c3aed;color:#fff;padding:14px 24px;border-radius:10px;text-decoration:none;font-weight:600;font-size:16px;margin-top:8px}
+        .check{font-size:48px}.btn{display:block;background:#7c3aed;color:#fff;padding:14px 24px;border-radius:10px;text-decoration:none;font-weight:600;font-size:16px;margin-top:8px;cursor:pointer;border:none;width:100%}
+        .hint{font-size:13px;color:#999;margin-top:16px}
         </style></head><body>
         <div class="card">
           <div class="check">✅</div>
           <h1>You're signed in!</h1>
-          <p>Return to The Mom App to continue.</p>
-          <a href="javascript:window.history.back()" class="btn">← Back to the App</a>
+          <p>Returning you to The Mom App…</p>
+          <button class="btn" onclick="returnToApp()">← Back to the App</button>
+          <p class="hint">If the app doesn't open automatically, tap the button above or press the back button.</p>
         </div>
         <script>
-          // Try to go back automatically after a short delay
-          setTimeout(function(){ try{ window.history.back(); }catch(e){} }, 1500);
+          function returnToApp() {
+            // Use Android Intent URL to bring the native app to the foreground
+            window.location.href = 'intent://app.themom.app/#Intent;scheme=https;package=com.momapp.family;end;';
+          }
+          // Auto-trigger after 2 seconds so the user sees the confirmation first
+          setTimeout(returnToApp, 2000);
         </script>
       </body></html>`);
     };
