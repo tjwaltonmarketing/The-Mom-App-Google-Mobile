@@ -64,6 +64,8 @@ jobs:
         
         mkdir -p android/app/src/main/java/com/momapp/family
         cp native-overrides/android/app/src/main/java/com/momapp/family/*.java android/app/src/main/java/com/momapp/family/
+        # Copy Kotlin files if any exist
+        find native-overrides/android/app/src/main/java/com/momapp/family/ -name "*.kt" -exec cp {} android/app/src/main/java/com/momapp/family/ \;
         
         echo "Restored files:"
         ls -la android/app/src/main/java/com/momapp/family/
@@ -85,7 +87,21 @@ jobs:
         sed -i "/implementation 'com.google.firebase:firebase-messaging:23.3.1'/a\\    implementation 'com.facebook.android:facebook-android-sdk:17.0.1'" android/app/build.gradle
         
         echo "Adding RevenueCat dependency to app/build.gradle..."
-        sed -i "/implementation 'com.facebook.android:facebook-android-sdk:17.0.1'/a\\    implementation 'com.revenuecat.purchases:purchases:5.+'" android/app/build.gradle
+        sed -i "/implementation 'com.facebook.android:facebook-android-sdk:17.0.1'/a\\    implementation 'com.revenuecat.purchases:purchases:7.+'" android/app/build.gradle
+        
+        echo "Ensuring Kotlin plugin is configured for RevenueCat.kt..."
+        if ! grep -q "kotlin-android" android/app/build.gradle; then
+          sed -i "s/apply plugin: 'com.android.application'/apply plugin: 'com.android.application'\napply plugin: 'kotlin-android'/" android/app/build.gradle
+          echo "Added kotlin-android plugin to app/build.gradle"
+        else
+          echo "kotlin-android plugin already present"
+        fi
+        if ! grep -q "kotlin-gradle-plugin" android/build.gradle; then
+          sed -i "/classpath 'com.android.tools.build:gradle/a\\        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24'" android/build.gradle
+          echo "Added Kotlin gradle plugin to project build.gradle"
+        else
+          echo "Kotlin gradle plugin already present"
+        fi
         
         echo "Adding Google Services classpath to project build.gradle..."
         sed -i "/classpath 'com.android.tools.build:gradle/a\\        classpath 'com.google.gms:google-services:4.4.2'" android/build.gradle

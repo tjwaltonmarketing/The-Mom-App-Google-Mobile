@@ -1,0 +1,237 @@
+Run cd android
+=== VERIFYING ALL GRADLE FILES FOR API LEVELS ===
+=== ./capacitor-cordova-android-plugins/cordova.variables.gradle ===
+=== ./capacitor-cordova-android-plugins/build.gradle ===
+20:    compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 34
+23:        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 34
+=== ./variables.gradle ===
+3:    compileSdkVersion = 35
+4:    targetSdkVersion = 35
+=== ./capacitor.settings.gradle ===
+=== ./build.gradle ===
+=== ./app/capacitor.build.gradle ===
+=== ./app/build.gradle ===
+5:    compileSdk rootProject.ext.compileSdkVersion
+9:        targetSdkVersion rootProject.ext.targetSdkVersion
+=== ./settings.gradle ===
+Downloading https://services.gradle.org/distributions/gradle-8.2.1-all.zip
+..................10%..................20%...................30%..................40%...................50%..................60%..................70%...................80%..................90%...................100%
+
+Welcome to Gradle 8.2.1!
+
+Here are the highlights of this release:
+ - Kotlin DSL: new reference documentation, assignment syntax by default
+ - Kotlin DSL is now the default with Gradle init
+ - Improved suggestions to resolve errors in console output
+ - Reduced sync memory consumption
+
+For more details see https://docs.gradle.org/8.2.1/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.2.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :app
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+
+> Configure project :capacitor-cordova-android-plugins
+WARNING: Using flatDir should be avoided because it doesn't support any meta-data formats.
+WARNING: We recommend using a newer Android Gradle plugin to use compileSdk = 35
+
+This Android Gradle plugin (8.2.1) was tested up to compileSdk = 34.
+
+You are strongly encouraged to update your project to use a newer
+Android Gradle plugin that has been tested with compileSdk = 35.
+
+If you are already using the latest version of the Android Gradle plugin,
+you may need to wait until a newer version with support for compileSdk = 35 is available.
+
+To suppress this warning, add/update
+    android.suppressUnsupportedCompileSdk=35
+to this project's gradle.properties.
+
+> Task :clean UP-TO-DATE
+> Task :app:clean UP-TO-DATE
+> Task :capacitor-android:clean UP-TO-DATE
+> Task :capacitor-community-speech-recognition:clean UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:clean UP-TO-DATE
+> Task :capacitor-geolocation:clean UP-TO-DATE
+> Task :capacitor-native-settings:clean UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preReleaseBuild UP-TO-DATE
+> Task :app:generateReleaseResValues
+> Task :app:processReleaseGoogleServices
+> Task :capacitor-android:preBuild UP-TO-DATE
+> Task :capacitor-android:preReleaseBuild UP-TO-DATE
+> Task :capacitor-android:generateReleaseResValues
+> Task :capacitor-android:generateReleaseResources
+> Task :capacitor-android:packageReleaseResources
+> Task :capacitor-community-speech-recognition:preBuild UP-TO-DATE
+> Task :capacitor-community-speech-recognition:preReleaseBuild UP-TO-DATE
+> Task :capacitor-community-speech-recognition:generateReleaseResValues
+> Task :capacitor-community-speech-recognition:generateReleaseResources
+> Task :capacitor-community-speech-recognition:packageReleaseResources
+> Task :capacitor-cordova-android-plugins:preBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:preReleaseBuild UP-TO-DATE
+> Task :capacitor-cordova-android-plugins:generateReleaseResValues
+> Task :capacitor-cordova-android-plugins:generateReleaseResources
+> Task :capacitor-cordova-android-plugins:packageReleaseResources
+> Task :capacitor-geolocation:preBuild UP-TO-DATE
+> Task :capacitor-geolocation:preReleaseBuild UP-TO-DATE
+> Task :capacitor-geolocation:generateReleaseResValues
+> Task :capacitor-geolocation:generateReleaseResources
+> Task :capacitor-geolocation:packageReleaseResources
+> Task :capacitor-native-settings:preBuild UP-TO-DATE
+> Task :capacitor-native-settings:preReleaseBuild UP-TO-DATE
+> Task :capacitor-native-settings:generateReleaseResValues
+> Task :capacitor-native-settings:generateReleaseResources
+> Task :capacitor-native-settings:packageReleaseResources
+> Task :app:mapReleaseSourceSetPaths
+> Task :app:generateReleaseResources
+> Task :app:createReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksRelease
+> Task :capacitor-android:extractDeepLinksRelease
+> Task :capacitor-community-speech-recognition:extractDeepLinksRelease
+> Task :capacitor-android:processReleaseManifest
+> Task :capacitor-cordova-android-plugins:extractDeepLinksRelease
+> Task :capacitor-cordova-android-plugins:processReleaseManifest
+> Task :capacitor-geolocation:extractDeepLinksRelease
+> Task :capacitor-native-settings:extractDeepLinksRelease
+> Task :capacitor-community-speech-recognition:processReleaseManifest
+> Task :capacitor-geolocation:processReleaseManifest
+> Task :capacitor-android:writeReleaseAarMetadata
+> Task :capacitor-community-speech-recognition:writeReleaseAarMetadata
+> Task :capacitor-geolocation:writeReleaseAarMetadata
+> Task :capacitor-cordova-android-plugins:writeReleaseAarMetadata
+> Task :capacitor-native-settings:processReleaseManifest
+> Task :capacitor-native-settings:writeReleaseAarMetadata
+> Task :app:packageReleaseResources
+> Task :app:mergeReleaseResources
+> Task :app:processReleaseMainManifest
+> Task :app:processReleaseManifest
+> Task :app:processApplicationManifestReleaseForBundle
+> Task :app:checkReleaseAarMetadata
+> Task :app:processReleaseManifestForPackage
+> Task :capacitor-android:compileReleaseLibraryResources
+> Task :capacitor-community-speech-recognition:compileReleaseLibraryResources
+> Task :capacitor-cordova-android-plugins:compileReleaseLibraryResources
+> Task :capacitor-cordova-android-plugins:parseReleaseLocalResources
+> Task :capacitor-community-speech-recognition:parseReleaseLocalResources
+> Task :capacitor-android:parseReleaseLocalResources
+> Task :app:parseReleaseLocalResources
+> Task :capacitor-geolocation:compileReleaseLibraryResources
+> Task :capacitor-geolocation:parseReleaseLocalResources
+> Task :capacitor-community-speech-recognition:generateReleaseRFile
+> Task :capacitor-geolocation:generateReleaseRFile
+> Task :capacitor-cordova-android-plugins:generateReleaseRFile
+> Task :capacitor-android:generateReleaseRFile
+> Task :capacitor-native-settings:compileReleaseLibraryResources
+> Task :capacitor-native-settings:parseReleaseLocalResources
+> Task :capacitor-android:javaPreCompileRelease
+> Task :capacitor-community-speech-recognition:javaPreCompileRelease
+> Task :capacitor-geolocation:javaPreCompileRelease
+> Task :capacitor-native-settings:generateReleaseRFile
+
+Note: /home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/node_modules/@capacitor/android/capacitor/src/main/java/com/getcapacitor/Bridge.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+> Task :capacitor-android:compileReleaseJavaWithJavac
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :capacitor-native-settings:javaPreCompileRelease
+> Task :capacitor-cordova-android-plugins:javaPreCompileRelease
+> Task :capacitor-cordova-android-plugins:compileReleaseJavaWithJavac NO-SOURCE
+> Task :capacitor-cordova-android-plugins:bundleLibRuntimeToJarRelease
+> Task :capacitor-android:bundleLibRuntimeToJarRelease
+> Task :capacitor-android:bundleLibCompileToJarRelease
+> Task :capacitor-community-speech-recognition:compileReleaseJavaWithJavac
+> Task :capacitor-community-speech-recognition:bundleLibRuntimeToJarRelease
+> Task :app:processReleaseResources
+> Task :capacitor-geolocation:compileReleaseJavaWithJavac
+> Task :capacitor-geolocation:bundleLibRuntimeToJarRelease
+> Task :app:bundleReleaseResources
+> Task :capacitor-native-settings:compileReleaseJavaWithJavac
+> Task :capacitor-native-settings:bundleLibRuntimeToJarRelease
+> Task :app:javaPreCompileRelease
+> Task :capacitor-community-speech-recognition:bundleLibCompileToJarRelease
+> Task :capacitor-cordova-android-plugins:bundleLibCompileToJarRelease
+> Task :capacitor-native-settings:bundleLibCompileToJarRelease
+> Task :capacitor-geolocation:bundleLibCompileToJarRelease
+> Task :app:checkReleaseDuplicateClasses
+> Task :app:desugarReleaseFileDependencies
+
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:20: error: cannot find symbol
+> Task :app:compileReleaseJavaWithJavac FAILED
+import com.revenuecat.purchases.interfaces.GetOfferingsCallback;
+                                          ^
+  symbol:   class GetOfferingsCallback
+  location: package com.revenuecat.purchases.interfaces
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:108: error: cannot find symbol
+        Purchases.getSharedInstance().getOfferings(new GetOfferingsCallback() {
+                                                       ^
+  symbol:   class GetOfferingsCallback
+  location: class RevenueCatPlugin
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:109: error: method does not override or implement a method from a supertype
+            @Override
+            ^
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:117: error: cannot find symbol
+                        pkgObj.put("productIdentifier", pkg.getProduct().getId());
+                                                                        ^
+  symbol:   method getId()
+  location: class StoreProduct
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:118: error: cannot find symbol
+                        pkgObj.put("localizedTitle", pkg.getProduct().getName());
+                                                                     ^
+  symbol:   method getName()
+  location: class StoreProduct
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:120: error: cannot find symbol
+                        pkgObj.put("priceString", pkg.getProduct().getPrice().getFormatted());
+                                                                             ^
+  symbol:   method getFormatted()
+  location: class String
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:121: error: cannot find symbol
+                        pkgObj.put("price", pkg.getProduct().getPrice().getAmountMicros() / 1_000_000.0);
+                                                                       ^
+  symbol:   method getAmountMicros()
+  location: class String
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:130: error: method does not override or implement a method from a supertype
+            @Override
+            ^
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:146: error: cannot find symbol
+        Purchases.getSharedInstance().getOfferings(new GetOfferingsCallback() {
+                                                       ^
+  symbol:   class GetOfferingsCallback
+  location: class RevenueCatPlugin
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:147: error: method does not override or implement a method from a supertype
+            @Override
+            ^
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:153: error: cannot find symbol
+                        if (pkg.getProduct().getId().equals(productIdentifier)) {
+                                            ^
+  symbol:   method getId()
+  location: class StoreProduct
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:168: error: <anonymous com.momapp.family.RevenueCatPlugin$4$1> is not abstract and does not override abstract method onCompleted(Purchase,PurchaserInfo) in MakePurchaseListener
+                    new MakePurchaseListener() {
+                                               ^
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:169: error: method does not override or implement a method from a supertype
+                        @Override
+                        ^
+/home/runner/work/The-Mom-App-Google-Mobile/The-Mom-App-Google-Mobile/android/app/src/main/java/com/momapp/family/RevenueCatPlugin.java:194: error: method does not override or implement a method from a supertype
+            @Override
+            ^
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+14 errors
+
+85 actionable tasks: 78 executed, 7 up-to-date
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileReleaseJavaWithJavac'.
+> Compilation failed; see the compiler error output for details.
+
+* Try:
+> Run with --info option to get more log output.
+> Run with --scan to get full insights.
+
+BUILD FAILED in 54s
+Error: Process completed with exit code 1.
