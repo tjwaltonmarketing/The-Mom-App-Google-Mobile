@@ -40,28 +40,35 @@ export interface CustomerInfo {
 }
 
 const REVENUECAT_APPLE_API_KEY = import.meta.env.VITE_REVENUECAT_APPLE_API_KEY || "appl_jWnxLTGgndDEuLfvrDcnukFGGIp";
+const REVENUECAT_GOOGLE_API_KEY = import.meta.env.VITE_REVENUECAT_GOOGLE_API_KEY || "";
 
-const RevenueCatNative = Capacitor.getPlatform() === "ios"
+const platform = Capacitor.getPlatform();
+
+const RevenueCatNative = (platform === "ios" || platform === "android")
   ? registerPlugin<RevenueCatPluginInterface>("RevenueCatPlugin")
   : null;
 
 let initialized = false;
 
 export function isRevenueCatAvailable(): boolean {
-  return Capacitor.getPlatform() === "ios" && !!REVENUECAT_APPLE_API_KEY;
+  if (platform === "ios") return !!REVENUECAT_APPLE_API_KEY;
+  if (platform === "android") return !!REVENUECAT_GOOGLE_API_KEY;
+  return false;
 }
 
 export let lastInitError: string = "";
 
 export async function initRevenueCat(): Promise<boolean> {
   if (!isRevenueCatAvailable() || !RevenueCatNative) {
-    lastInitError = `Not available: platform=${Capacitor.getPlatform()}, hasKey=${!!REVENUECAT_APPLE_API_KEY}, hasNative=${!!RevenueCatNative}`;
+    lastInitError = `Not available: platform=${platform}, hasAppleKey=${!!REVENUECAT_APPLE_API_KEY}, hasGoogleKey=${!!REVENUECAT_GOOGLE_API_KEY}, hasNative=${!!RevenueCatNative}`;
     return false;
   }
   if (initialized) return true;
 
+  const apiKey = platform === "android" ? REVENUECAT_GOOGLE_API_KEY : REVENUECAT_APPLE_API_KEY;
+
   try {
-    const result = await RevenueCatNative.configure({ apiKey: REVENUECAT_APPLE_API_KEY });
+    const result = await RevenueCatNative.configure({ apiKey });
     initialized = result.success;
     console.log("[RevenueCat] Initialized:", result);
     if (!result.success) lastInitError = "configure returned success=false";

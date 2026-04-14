@@ -83,6 +83,9 @@ jobs:
         echo "Adding Meta SDK dependency to app/build.gradle..."
         sed -i "/implementation 'com.google.firebase:firebase-messaging:23.3.1'/a\\    implementation 'com.facebook.android:facebook-android-sdk:17.0.1'" android/app/build.gradle
         
+        echo "Adding RevenueCat dependency to app/build.gradle..."
+        sed -i "/implementation 'com.facebook.android:facebook-android-sdk:17.0.1'/a\\    implementation 'com.revenuecat.purchases:purchases:7.+'" android/app/build.gradle
+        
         echo "Adding Google Services classpath to project build.gradle..."
         sed -i "/classpath 'com.android.tools.build:gradle/a\\        classpath 'com.google.gms:google-services:4.4.2'" android/build.gradle
         
@@ -116,8 +119,8 @@ jobs:
         cd android
         
         # Replace existing versionCode and versionName in variables.gradle
-        sed -i 's/versionCode = .*/versionCode = 104/' variables.gradle
-        sed -i 's/versionName = .*/versionName = "10.4"/' variables.gradle
+        sed -i 's/versionCode = .*/versionCode = 105/' variables.gradle
+        sed -i 's/versionName = .*/versionName = "10.5"/' variables.gradle
         
         # Also ensure compileSdkVersion and targetSdkVersion are 35
         sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/' variables.gradle
@@ -128,8 +131,8 @@ jobs:
         
         # Update app/build.gradle to use the version variables
         cd app
-        sed -i 's/versionCode.*$/versionCode 104/' build.gradle
-        sed -i 's/versionName.*$/versionName "10.4"/' build.gradle
+        sed -i 's/versionCode.*$/versionCode 105/' build.gradle
+        sed -i 's/versionName.*$/versionName "10.5"/' build.gradle
         
         echo "Final build.gradle version configuration:"
         grep -A2 -B2 "versionCode\|versionName" build.gradle

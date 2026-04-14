@@ -25,17 +25,19 @@ export default function Onboarding() {
 
   const startTrialMutation = useMutation({
     mutationFn: async ({ plan, interval }: { plan: "individual" | "family"; interval: "monthly" | "yearly" }) => {
-      if (Capacitor.getPlatform() === "ios") {
-        // iOS uses RevenueCat — start a local trial record
+      const nativePlatform = Capacitor.getPlatform() === "ios" || Capacitor.getPlatform() === "android";
+      if (nativePlatform) {
+        // iOS and Android use RevenueCat — start a local trial record, actual billing via native store
         return apiRequest("POST", "/api/subscription/start-trial", { plan });
       }
-      // Android/web — create Stripe checkout session with 14-day trial
+      // Web — create Stripe checkout session with 14-day trial
       const pendingCoupon = localStorage.getItem('pendingCoupon') || undefined;
       const response = await apiRequest("POST", "/api/checkout/create-session", { plan, interval, trialDays: 14, coupon: pendingCoupon });
       return response.json();
     },
     onSuccess: (data: any) => {
-      if (Capacitor.getPlatform() === "ios") {
+      const nativePlatform = Capacitor.getPlatform() === "ios" || Capacitor.getPlatform() === "android";
+      if (nativePlatform) {
         queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
         localStorage.setItem("onboarding_completed", "true");
         toast({ title: "Welcome to The Mom App!", description: "Your free trial has started." });
@@ -119,9 +121,9 @@ export default function Onboarding() {
     setLocation("/");
   };
 
-  const isIOS = Capacitor.getPlatform() === "ios";
+  const isNative = Capacitor.getPlatform() === "ios" || Capacitor.getPlatform() === "android";
 
-  if (showShareModal && !isIOS) {
+  if (showShareModal && !isNative) {
     return (
       <ShareModal
         onShare={handleShare}

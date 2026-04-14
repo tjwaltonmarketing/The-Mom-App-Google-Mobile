@@ -5579,6 +5579,84 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Google Play Billing via RevenueCat
+  app.post("/api/subscription/google-purchase", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { productIdentifier, plan, interval, activeEntitlements, expirationDate } = req.body;
+
+      if (!productIdentifier || !plan) {
+        return res.status(400).json({ error: "Missing product info" });
+      }
+
+      const validPlans = ["individual", "family"];
+      if (!validPlans.includes(plan)) {
+        return res.status(400).json({ error: "Invalid plan" });
+      }
+
+      await storage.updateUserSubscription(req.session.userId, {
+        subscriptionPlan: plan,
+        subscriptionStatus: "active",
+        billingInterval: interval || "monthly",
+        appleProductId: productIdentifier,
+        trialEndDate: null,
+      });
+
+      console.log(`[Google Play] User ${req.session.userId} purchased ${productIdentifier} (${plan}/${interval})`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Google purchase error:", error);
+      res.status(500).json({ error: "Failed to process Google purchase" });
+    }
+  });
+
+  app.post("/api/subscription/google-restore", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { activeEntitlements, activeSubscriptions, expirationDate } = req.body;
+
+      if (!activeSubscriptions || activeSubscriptions.length === 0) {
+        return res.status(400).json({ error: "No active subscriptions to restore" });
+      }
+
+      let plan: "individual" | "family" = "individual";
+      for (const sub of activeSubscriptions) {
+        if (sub.includes("family")) {
+          plan = "family";
+          break;
+        }
+      }
+
+      let interval: "monthly" | "yearly" = "monthly";
+      for (const sub of activeSubscriptions) {
+        if (sub.includes("yearly")) {
+          interval = "yearly";
+          break;
+        }
+      }
+
+      await storage.updateUserSubscription(req.session.userId, {
+        subscriptionPlan: plan,
+        subscriptionStatus: "active",
+        billingInterval: interval,
+        appleProductId: activeSubscriptions[0],
+        trialEndDate: null,
+      });
+
+      console.log(`[Google Play] User ${req.session.userId} restored purchase: ${activeSubscriptions.join(", ")}`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Google restore error:", error);
+      res.status(500).json({ error: "Failed to restore purchases" });
+    }
+  });
+
   // AI Chat Endpoint with Event/Task Creation
   app.post("/api/ai/chat", async (req, res) => {
     try {

@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Users, Sparkles, ArrowLeft, Apple, Loader2, RotateCcw } from "lucide-react";
+import { Check, Crown, Users, Sparkles, ArrowLeft, Apple, Loader2, RotateCcw, ShoppingBag } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Capacitor } from "@capacitor/core";
 import { useToast } from "@/hooks/use-toast";
@@ -66,6 +66,8 @@ export default function Upgrade() {
   const [rcPurchasing, setRcPurchasing] = useState(false);
   const [pendingCoupon] = useState(() => localStorage.getItem('pendingCoupon'));
   const isIOS = Capacitor.getPlatform() === "ios";
+  const isAndroid = Capacitor.getPlatform() === "android";
+  const isNativePurchase = isIOS || isAndroid;
 
   const cancelled = search.includes("cancelled=true");
 
@@ -80,7 +82,7 @@ export default function Upgrade() {
   });
 
   useEffect(() => {
-    if (isIOS && isRevenueCatAvailable() && authUser) {
+    if (isNativePurchase && isRevenueCatAvailable() && authUser) {
       setRcLoading(true);
       initRevenueCat()
         .then(async (ok) => {
@@ -95,9 +97,9 @@ export default function Upgrade() {
         .catch(console.error)
         .finally(() => setRcLoading(false));
     }
-  }, [isIOS, authUser]);
+  }, [isNativePurchase, authUser]);
 
-  const handleIOSPurchase = async () => {
+  const handleNativePurchase = async () => {
     const pkg = getPackageForPlan(rcPackages, selectedPlan, billingInterval);
     if (!pkg) {
       toast({
@@ -113,7 +115,10 @@ export default function Upgrade() {
       const result = await purchaseProduct(pkg.productIdentifier);
       if (result.cancelled) return;
       if (result.success) {
-        await apiRequest("POST", "/api/subscription/apple-purchase", {
+        const endpoint = isAndroid
+          ? "/api/subscription/google-purchase"
+          : "/api/subscription/apple-purchase";
+        await apiRequest("POST", endpoint, {
           productIdentifier: pkg.productIdentifier,
           plan: selectedPlan,
           interval: billingInterval,
@@ -149,7 +154,10 @@ export default function Upgrade() {
     try {
       const info = await restorePurchases();
       if (info && info.activeEntitlements.length > 0) {
-        await apiRequest("POST", "/api/subscription/apple-restore", {
+        const endpoint = isAndroid
+          ? "/api/subscription/google-restore"
+          : "/api/subscription/apple-restore";
+        await apiRequest("POST", endpoint, {
           activeEntitlements: info.activeEntitlements,
           activeSubscriptions: info.activeSubscriptions,
           expirationDate: info.latestExpirationDate,
@@ -163,7 +171,9 @@ export default function Upgrade() {
       } else {
         toast({
           title: "No purchases found",
-          description: "No active subscriptions were found for your Apple ID.",
+          description: isAndroid
+            ? "No active subscriptions were found for your Google account."
+            : "No active subscriptions were found for your Apple ID.",
         });
       }
     } catch {
@@ -355,7 +365,7 @@ export default function Upgrade() {
         </div>
 
         <div className="text-center">
-          {isIOS ? (
+          {isNativePurchase ? (
             <div className="space-y-4">
               {(() => {
                 const pkg = getPackageForPlan(rcPackages, selectedPlan, billingInterval);
@@ -367,12 +377,14 @@ export default function Upgrade() {
                       </p>
                     )}
                     <Button
-                      onClick={handleIOSPurchase}
+                      onClick={handleNativePurchase}
                       disabled={rcPurchasing || rcLoading}
                       className="w-full md:w-auto px-12 py-6 text-lg bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
                     >
                       {rcPurchasing ? (
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      ) : isAndroid ? (
+                        <ShoppingBag className="mr-2 h-5 w-5" />
                       ) : (
                         <Apple className="mr-2 h-5 w-5" />
                       )}
@@ -383,7 +395,9 @@ export default function Upgrade() {
                           : `SUBSCRIBE TO ${selectedPlan.toUpperCase()}`}
                     </Button>
                     <p className="mt-2 text-sm text-gray-500">
-                      Subscription managed by Apple. Cancel anytime.
+                      {isAndroid
+                        ? "Subscription managed by Google Play. Cancel anytime."
+                        : "Subscription managed by Apple. Cancel anytime."}
                     </p>
                     <Button
                       variant="ghost"
