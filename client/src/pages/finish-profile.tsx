@@ -29,22 +29,31 @@ export default function FinishProfile() {
     retry: false,
   });
 
+  const { data: subscription, isLoading: subscriptionLoading } = useQuery<any>({
+    queryKey: ["/api/subscription"],
+    enabled: !!user,
+    retry: false,
+  });
+
   useEffect(() => {
     if (!userLoading && !user) {
       setLocation("/");
       return;
     }
-    if (user && family && !familyLoading) {
+    if (user && !familyLoading && !subscriptionLoading) {
       const hasPhone = !!user.phoneNumber;
       const hasRealFamilyName = family?.name && family.name !== "My Family" && family.name !== "";
-      if (hasPhone && hasRealFamilyName) {
+      const hasSubscription = !!subscription;
+
+      // Existing users (with subscription or complete profile) skip straight to dashboard
+      if ((hasPhone && hasRealFamilyName) || (hasSubscription && hasRealFamilyName)) {
         setLocation("/");
-      } else {
-        if (user.phoneNumber) setPhone(user.phoneNumber);
-        if (family?.name && family.name !== "My Family") setFamilyName(family.name);
+        return;
       }
+      if (user.phoneNumber) setPhone(user.phoneNumber);
+      if (family?.name && family.name !== "My Family") setFamilyName(family.name);
     }
-  }, [user, family, userLoading, familyLoading, setLocation]);
+  }, [user, family, subscription, userLoading, familyLoading, subscriptionLoading, setLocation]);
 
   const hasRealFamilyName = family?.name && family.name !== "My Family" && family.name !== "";
 
