@@ -219,7 +219,8 @@ function Router() {
 
   // Require phone number before onboarding (catches Google Sign-In users who skipped finish-profile)
   // Exception: existing subscribers are never blocked — they're already set up
-  const needsFinishProfile = isAuthenticated && !!user && !(user as any).phoneNumber && !subscriptionData;
+  // Wait for subscriptionReady so we don't evaluate before subscription data has loaded
+  const needsFinishProfile = isAuthenticated && subscriptionReady && !!user && !(user as any).phoneNumber && !subscriptionData;
 
   // Determine if user needs to upgrade (expired trial or cancelled subscription)
   const needsUpgrade = isAuthenticated && !subscriptionLoading && subscriptionData && (
