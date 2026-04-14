@@ -8,17 +8,16 @@ import com.getcapacitor.PluginCall
 import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
 import com.revenuecat.purchases.CustomerInfo
-import com.revenuecat.purchases.EntitlementInfo
-import com.revenuecat.purchases.Offering
 import com.revenuecat.purchases.Offerings
 import com.revenuecat.purchases.Package
 import com.revenuecat.purchases.PurchaseParams
 import com.revenuecat.purchases.Purchases
 import com.revenuecat.purchases.PurchasesConfiguration
 import com.revenuecat.purchases.PurchasesError
-import com.revenuecat.purchases.interfaces.GetOfferingsCallback
 import com.revenuecat.purchases.interfaces.LogInCallback
+import com.revenuecat.purchases.interfaces.PurchaseCallback
 import com.revenuecat.purchases.interfaces.ReceiveCustomerInfoCallback
+import com.revenuecat.purchases.interfaces.ReceiveOfferingsCallback
 import com.revenuecat.purchases.models.StoreTransaction
 
 @CapacitorPlugin(name = "RevenueCatPlugin")
@@ -94,7 +93,7 @@ class RevenueCatPlugin : Plugin() {
 
     @PluginMethod
     fun getOfferings(call: PluginCall) {
-        Purchases.sharedInstance.getOfferings(object : GetOfferingsCallback {
+        Purchases.sharedInstance.getOfferings(object : ReceiveOfferingsCallback {
             override fun onReceived(offerings: Offerings) {
                 val packages = JSArray()
                 for ((_, offering) in offerings.all) {
@@ -128,7 +127,7 @@ class RevenueCatPlugin : Plugin() {
             return
         }
 
-        Purchases.sharedInstance.getOfferings(object : GetOfferingsCallback {
+        Purchases.sharedInstance.getOfferings(object : ReceiveOfferingsCallback {
             override fun onReceived(offerings: Offerings) {
                 var foundPackage: Package? = null
                 loop@ for ((_, offering) in offerings.all) {
@@ -146,24 +145,32 @@ class RevenueCatPlugin : Plugin() {
                 }
 
                 Purchases.sharedInstance.purchase(
-                    PurchaseParams.Builder(activity, packageToPurchase).build()
-                ) { _: StoreTransaction?, customerInfo: CustomerInfo?, error: PurchasesError?, userCancelled: Boolean ->
-                    when {
-                        userCancelled -> call.resolve(JSObject().also {
-                            it.put("success", false)
-                            it.put("cancelled", true)
-                        })
-                        error != null -> {
-                            Log.e(TAG, "Purchase error: ${error.message}")
-                            call.reject(error.message)
+                    PurchaseParams.Builder(activity, packageToPurchase).build(),
+                    object : PurchaseCallback {
+                        override fun onCompleted(
+                            storeTransaction: StoreTransaction,
+                            customerInfo: CustomerInfo
+                        ) {
+                            call.resolve(JSObject().also {
+                                it.put("success", true)
+                                it.put("cancelled", false)
+                                it.put("customerInfo", serializeCustomerInfo(customerInfo))
+                            })
                         }
-                        else -> call.resolve(JSObject().also {
-                            it.put("success", true)
-                            it.put("cancelled", false)
-                            it.put("customerInfo", serializeCustomerInfo(customerInfo))
-                        })
+
+                        override fun onError(error: PurchasesError, userCancelled: Boolean) {
+                            if (userCancelled) {
+                                call.resolve(JSObject().also {
+                                    it.put("success", false)
+                                    it.put("cancelled", true)
+                                })
+                            } else {
+                                Log.e(TAG, "Purchase error: ${error.message}")
+                                call.reject(error.message)
+                            }
+                        }
                     }
-                }
+                )
             }
 
             override fun onError(error: PurchasesError) {
