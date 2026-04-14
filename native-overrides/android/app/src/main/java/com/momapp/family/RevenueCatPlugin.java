@@ -19,11 +19,9 @@ import com.revenuecat.purchases.PurchasesConfiguration;
 import com.revenuecat.purchases.PurchasesError;
 import com.revenuecat.purchases.interfaces.GetOfferingsCallback;
 import com.revenuecat.purchases.interfaces.LogInCallback;
-import com.revenuecat.purchases.interfaces.PurchaseCallback;
+import com.revenuecat.purchases.interfaces.MakePurchaseListener;
 import com.revenuecat.purchases.interfaces.ReceiveCustomerInfoCallback;
-import com.revenuecat.purchases.models.StoreProduct;
 import com.revenuecat.purchases.models.StoreTransaction;
-import com.revenuecat.purchases.PurchaseParams;
 
 import java.util.Map;
 
@@ -113,15 +111,14 @@ public class RevenueCatPlugin extends Plugin {
                 JSArray packages = new JSArray();
                 for (Map.Entry<String, Offering> entry : offerings.getAll().entrySet()) {
                     for (Package pkg : entry.getValue().getAvailablePackages()) {
-                        StoreProduct product = pkg.getProduct();
                         JSObject pkgObj = new JSObject();
                         pkgObj.put("identifier", pkg.getIdentifier());
                         pkgObj.put("packageType", pkg.getPackageType().toString());
-                        pkgObj.put("productIdentifier", product.getId());
-                        pkgObj.put("localizedTitle", product.getName());
-                        pkgObj.put("localizedDescription", product.getDescription() != null ? product.getDescription() : "");
-                        pkgObj.put("priceString", product.getPrice().getFormatted());
-                        pkgObj.put("price", product.getPrice().getAmountMicros() / 1_000_000.0);
+                        pkgObj.put("productIdentifier", pkg.getProduct().getId());
+                        pkgObj.put("localizedTitle", pkg.getProduct().getName());
+                        pkgObj.put("localizedDescription", pkg.getProduct().getDescription() != null ? pkg.getProduct().getDescription() : "");
+                        pkgObj.put("priceString", pkg.getProduct().getPrice().getFormatted());
+                        pkgObj.put("price", pkg.getProduct().getPrice().getAmountMicros() / 1_000_000.0);
                         packages.put(pkgObj);
                     }
                 }
@@ -165,31 +162,33 @@ public class RevenueCatPlugin extends Plugin {
                     return;
                 }
 
-                final Package packageToPurchase = foundPackage;
-                PurchaseParams params = new PurchaseParams.Builder(getActivity(), packageToPurchase).build();
-                Purchases.getSharedInstance().purchase(params, new PurchaseCallback() {
-                    @Override
-                    public void onCompleted(StoreTransaction storeTransaction, CustomerInfo customerInfo) {
-                        JSObject ret = new JSObject();
-                        ret.put("success", true);
-                        ret.put("cancelled", false);
-                        ret.put("customerInfo", serializeCustomerInfo(customerInfo));
-                        call.resolve(ret);
-                    }
-
-                    @Override
-                    public void onError(PurchasesError error, boolean userCancelled) {
-                        if (userCancelled) {
+                Purchases.getSharedInstance().purchasePackage(
+                    getActivity(),
+                    foundPackage,
+                    new MakePurchaseListener() {
+                        @Override
+                        public void onCompleted(StoreTransaction storeTransaction, CustomerInfo customerInfo) {
                             JSObject ret = new JSObject();
-                            ret.put("success", false);
-                            ret.put("cancelled", true);
+                            ret.put("success", true);
+                            ret.put("cancelled", false);
+                            ret.put("customerInfo", serializeCustomerInfo(customerInfo));
                             call.resolve(ret);
-                        } else {
-                            Log.e(TAG, "Purchase error: " + error.getMessage());
-                            call.reject(error.getMessage());
+                        }
+
+                        @Override
+                        public void onError(PurchasesError error, boolean userCancelled) {
+                            if (userCancelled) {
+                                JSObject ret = new JSObject();
+                                ret.put("success", false);
+                                ret.put("cancelled", true);
+                                call.resolve(ret);
+                            } else {
+                                Log.e(TAG, "Purchase error: " + error.getMessage());
+                                call.reject(error.getMessage());
+                            }
                         }
                     }
-                });
+                );
             }
 
             @Override

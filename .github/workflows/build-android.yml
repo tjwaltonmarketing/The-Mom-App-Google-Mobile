@@ -28,7 +28,8 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
       with:
-        api-level: 35
+        packages: 'platforms;android-35 build-tools;35.0.0'
+        accept-android-sdk-licenses: true
         
     - name: Set Android SDK environment
       run: |
@@ -84,7 +85,7 @@ jobs:
         sed -i "/implementation 'com.google.firebase:firebase-messaging:23.3.1'/a\\    implementation 'com.facebook.android:facebook-android-sdk:17.0.1'" android/app/build.gradle
         
         echo "Adding RevenueCat dependency to app/build.gradle..."
-        sed -i "/implementation 'com.facebook.android:facebook-android-sdk:17.0.1'/a\\    implementation 'com.revenuecat.purchases:purchases:7.+'" android/app/build.gradle
+        sed -i "/implementation 'com.facebook.android:facebook-android-sdk:17.0.1'/a\\    implementation 'com.revenuecat.purchases:purchases:6.+'" android/app/build.gradle
         
         echo "Adding Google Services classpath to project build.gradle..."
         sed -i "/classpath 'com.android.tools.build:gradle/a\\        classpath 'com.google.gms:google-services:4.4.2'" android/build.gradle
