@@ -46,6 +46,8 @@ export default function FinishProfile() {
     }
   }, [user, family, userLoading, familyLoading, setLocation]);
 
+  const hasRealFamilyName = family?.name && family.name !== "My Family" && family.name !== "";
+
   const phoneMutation = useMutation({
     mutationFn: async (phoneNumber: string) => {
       const res = await apiRequest("POST", "/api/auth/set-phone", { phoneNumber });
@@ -62,7 +64,8 @@ export default function FinishProfile() {
 
   const handleSubmit = async () => {
     let valid = true;
-    if (!phone.trim()) {
+    // Phone is required only for new users (no real family name yet)
+    if (!phone.trim() && !hasRealFamilyName) {
       setPhoneError("Please enter your phone number");
       valid = false;
     } else {
@@ -77,15 +80,13 @@ export default function FinishProfile() {
     if (!valid) return;
 
     try {
-      await Promise.all([
-        phoneMutation.mutateAsync(phone.trim()),
-        familyMutation.mutateAsync(familyName.trim()),
-      ]);
+      const tasks: Promise<any>[] = [];
+      if (phone.trim()) tasks.push(phoneMutation.mutateAsync(phone.trim()));
+      if (familyName.trim()) tasks.push(familyMutation.mutateAsync(familyName.trim()));
+      await Promise.all(tasks);
       logFBEvent(FB_EVENTS.COMPLETE_REGISTRATION);
-      // Update cache immediately so the router's needsFinishProfile check
-      // sees the new phone number before the async refetch completes
       queryClient.setQueryData(["/api/auth/user"], (old: any) =>
-        old ? { ...old, phoneNumber: phone.trim() } : old
+        old ? { ...old, phoneNumber: phone.trim() || old.phoneNumber } : old
       );
       queryClient.setQueryData(["/api/family"], (old: any) =>
         old ? { ...old, name: familyName.trim() } : old
@@ -136,7 +137,7 @@ export default function FinishProfile() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Phone Number <span className="text-pink-500">*</span>
+              Phone Number {hasRealFamilyName ? <span className="text-gray-400 font-normal">(optional)</span> : <span className="text-pink-500">*</span>}
             </label>
             <Input
               type="tel"
@@ -159,6 +160,15 @@ export default function FinishProfile() {
         >
           {isSubmitting ? "Saving..." : "Let's Get Started →"}
         </Button>
+
+        {hasRealFamilyName && (
+          <button
+            onClick={() => setLocation("/")}
+            className="w-full mt-3 text-sm text-gray-400 hover:text-gray-600 underline"
+          >
+            Skip for now
+          </button>
+        )}
 
         <p className="text-xs text-center text-gray-400 mt-4">
           You can update these anytime in Settings.
