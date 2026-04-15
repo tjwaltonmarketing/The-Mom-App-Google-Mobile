@@ -33,6 +33,7 @@ export const userSubscriptions = pgTable("user_subscriptions", {
   stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
   stripeSubscriptionId: varchar("stripe_subscription_id", { length: 255 }),
   appleProductId: varchar("apple_product_id", { length: 255 }),
+  googleProductId: varchar("google_product_id", { length: 255 }),
   billingInterval: varchar("billing_interval", { length: 20 }), // "monthly", "yearly"
   lastPaymentDate: timestamp("last_payment_date"),
   nextBillingDate: timestamp("next_billing_date"),

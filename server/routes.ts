@@ -5600,12 +5600,15 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Invalid plan" });
       }
 
+      const googleTrialEnd = new Date();
+      googleTrialEnd.setDate(googleTrialEnd.getDate() + 14);
+
       await storage.updateUserSubscription(req.session.userId, {
         subscriptionPlan: plan,
         subscriptionStatus: "active",
         billingInterval: interval || "monthly",
-        appleProductId: productIdentifier,
-        trialEndDate: null,
+        googleProductId: productIdentifier,
+        trialEndDate: googleTrialEnd,
       });
 
       console.log(`[Google Play] User ${req.session.userId} purchased ${productIdentifier} (${plan}/${interval})`);
