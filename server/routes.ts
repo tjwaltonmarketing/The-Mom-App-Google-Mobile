@@ -571,11 +571,14 @@ export async function registerRoutes(app: Express) {
       const token = generateToken(user.id);
 
       if (state) {
-        // Android App Links flow: store token, redirect to deep link URL.
-        // Android intercepts https://app.themom.app/auth/google/return and opens
-        // the native app directly. The app's visibilitychange handler polls for the token.
+        // Android flow: store token, then use an Android intent URL to force-open the
+        // native app directly. This bypasses App Links verification issues with Chrome
+        // Custom Tabs, which would otherwise load the full web app in Chrome and consume
+        // the token before the native Capacitor app can retrieve it.
         pendingGoogleTokens.set(state, { token, userId: user.id, createdAt: Date.now() });
-        return res.redirect(`https://app.themom.app/auth/google/return?state=${encodeURIComponent(state)}`);
+        const fallbackUrl = `https://app.themom.app/auth/google/return?state=${encodeURIComponent(state)}`;
+        const intentUrl = `intent://app.themom.app/auth/google/return?state=${encodeURIComponent(state)}#Intent;scheme=https;package=com.momapp.family;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
+        return res.redirect(intentUrl);
       }
 
       // Web/non-Android flow: redirect with token in URL
