@@ -40,7 +40,7 @@ export interface CustomerInfo {
 }
 
 const REVENUECAT_APPLE_API_KEY = import.meta.env.VITE_REVENUECAT_APPLE_API_KEY || "appl_jWnxLTGgndDEuLfvrDcnukFGGIp";
-const REVENUECAT_GOOGLE_API_KEY = import.meta.env.VITE_REVENUECAT_GOOGLE_API_KEY || "";
+const REVENUECAT_GOOGLE_API_KEY = import.meta.env.VITE_REVENUECAT_GOOGLE_API_KEY || "goog_XcuuBhvjFivaiWvlJDMHrsRmJhX";
 
 const platform = Capacitor.getPlatform();
 
