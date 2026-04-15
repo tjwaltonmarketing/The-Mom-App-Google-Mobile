@@ -13,6 +13,7 @@ import {
   getOfferings,
   purchaseProduct,
   getPackageForPlan,
+  lastInitError,
   type RCPackage,
 } from "@/services/revenuecat";
 
@@ -35,21 +36,30 @@ export default function Onboarding() {
     retry: false,
   });
 
+  // Initialize RevenueCat immediately on native — offerings work anonymously
   useEffect(() => {
-    if (isNative && isRevenueCatAvailable() && authUser) {
-      setRcLoading(true);
-      initRevenueCat()
-        .then(async (ok) => {
-          if (!ok) return;
-          const user = authUser as any;
-          if (user?.id) {
-            await revenueCatLogIn(String(user.id));
-          }
-          const pkgs = await getOfferings();
-          setRcPackages(pkgs);
-        })
-        .catch(console.error)
-        .finally(() => setRcLoading(false));
+    if (!isNative || !isRevenueCatAvailable()) return;
+    setRcLoading(true);
+    initRevenueCat()
+      .then(async (ok) => {
+        if (!ok) {
+          console.warn("[Onboarding] RevenueCat init failed");
+          return;
+        }
+        const pkgs = await getOfferings();
+        console.log("[Onboarding] RC packages loaded:", pkgs.length);
+        setRcPackages(pkgs);
+      })
+      .catch((e) => console.error("[Onboarding] RC init error:", e))
+      .finally(() => setRcLoading(false));
+  }, [isNative]);
+
+  // Log in to RevenueCat once we have the user ID
+  useEffect(() => {
+    if (!isNative || !isRevenueCatAvailable()) return;
+    const user = authUser as any;
+    if (user?.id) {
+      revenueCatLogIn(String(user.id)).catch(console.error);
     }
   }, [isNative, authUser]);
 
@@ -63,11 +73,33 @@ export default function Onboarding() {
   };
 
   const handleNativePurchase = async (plan: "individual" | "family", interval: "monthly" | "yearly") => {
-    const pkg = getPackageForPlan(rcPackages, plan, interval);
+    let packages = rcPackages;
+
+    // If packages aren't loaded yet, try to init + fetch now
+    if (packages.length === 0) {
+      setRcLoading(true);
+      try {
+        const ok = await initRevenueCat();
+        if (ok) {
+          packages = await getOfferings();
+          setRcPackages(packages);
+          console.log("[Onboarding] Retry RC packages:", packages.length);
+        }
+      } catch (e) {
+        console.error("[Onboarding] Retry RC error:", e);
+      } finally {
+        setRcLoading(false);
+      }
+    }
+
+    const pkg = getPackageForPlan(packages, plan, interval);
     if (!pkg) {
+      const available = packages.map(p => p.productIdentifier).join(", ") || "none";
+      const errDetail = lastInitError ? ` Init: ${lastInitError}` : ` ${packages.length} pkgs: ${available}`;
+      console.warn("[Onboarding] No package found for", plan, interval, "available:", available);
       toast({
         title: "Product unavailable",
-        description: "This subscription is not available right now. Please try again later.",
+        description: `Not available right now.${errDetail}`,
         variant: "destructive",
       });
       return;
