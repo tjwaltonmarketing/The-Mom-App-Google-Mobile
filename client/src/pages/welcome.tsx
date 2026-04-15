@@ -143,7 +143,7 @@ export default function Welcome() {
   }, [googleClientId, handleGoogleCallback]);
 
   return (
-    <div className="welcome-bg min-h-screen flex items-center justify-center px-4 py-8" style={{ fontFamily: "'Poppins', sans-serif" }}>
+    <div className="welcome-bg min-h-screen flex items-center justify-center px-4 py-8" style={{ fontFamily: "'Poppins', sans-serif", paddingTop: 'max(2rem, env(safe-area-inset-top))' }}>
 
       {/* Two-column layout on desktop, single card on mobile */}
       <div className="flex flex-col md:flex-row items-center md:items-stretch gap-8 w-full max-w-5xl">

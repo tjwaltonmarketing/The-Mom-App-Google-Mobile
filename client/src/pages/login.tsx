@@ -221,7 +221,7 @@ export default function Login() {
   }
 
   return (
-    <div className="welcome-bg min-h-screen flex flex-col">
+    <div className="welcome-bg min-h-screen flex flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="flex-1 flex items-center justify-center p-4">
       <div className="flex w-full max-w-5xl items-center gap-8">
         {/* Login Card - Left Side */}
