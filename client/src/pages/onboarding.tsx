@@ -1,11 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { OnboardingFlow } from "@/components/onboarding-flow";
 import { ShareModal } from "@/components/share-modal";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Capacitor } from "@capacitor/core";
+import {
+  isRevenueCatAvailable,
+  initRevenueCat,
+  revenueCatLogIn,
+  getOfferings,
+  purchaseProduct,
+  getPackageForPlan,
+  type RCPackage,
+} from "@/services/revenuecat";
 
 export default function Onboarding() {
   const [, setLocation] = useLocation();
@@ -13,6 +22,36 @@ export default function Onboarding() {
   const [showShareModal, setShowShareModal] = useState(
     () => localStorage.getItem("pending_share_claim") === "true"
   );
+  const [rcPackages, setRcPackages] = useState<RCPackage[]>([]);
+  const [rcLoading, setRcLoading] = useState(false);
+  const [rcPurchasing, setRcPurchasing] = useState(false);
+
+  const isAndroid = Capacitor.getPlatform() === "android";
+  const isIOS = Capacitor.getPlatform() === "ios";
+  const isNative = isAndroid || isIOS;
+
+  const { data: authUser } = useQuery({
+    queryKey: ["/api/auth/user"],
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (isNative && isRevenueCatAvailable() && authUser) {
+      setRcLoading(true);
+      initRevenueCat()
+        .then(async (ok) => {
+          if (!ok) return;
+          const user = authUser as any;
+          if (user?.id) {
+            await revenueCatLogIn(String(user.id));
+          }
+          const pkgs = await getOfferings();
+          setRcPackages(pkgs);
+        })
+        .catch(console.error)
+        .finally(() => setRcLoading(false));
+    }
+  }, [isNative, authUser]);
 
   const showShare = () => {
     localStorage.setItem("pending_share_claim", "true");
@@ -23,32 +62,73 @@ export default function Onboarding() {
     localStorage.removeItem("pending_share_claim");
   };
 
+  const handleNativePurchase = async (plan: "individual" | "family", interval: "monthly" | "yearly") => {
+    const pkg = getPackageForPlan(rcPackages, plan, interval);
+    if (!pkg) {
+      toast({
+        title: "Product unavailable",
+        description: "This subscription is not available right now. Please try again later.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRcPurchasing(true);
+    try {
+      const result = await purchaseProduct(pkg.productIdentifier);
+      if (result.cancelled) {
+        setRcPurchasing(false);
+        return;
+      }
+      if (result.success) {
+        const endpoint = isAndroid
+          ? "/api/subscription/google-purchase"
+          : "/api/subscription/apple-purchase";
+        await apiRequest("POST", endpoint, {
+          productIdentifier: pkg.productIdentifier,
+          plan,
+          interval,
+          activeEntitlements: result.customerInfo?.activeEntitlements || [],
+          expirationDate: result.customerInfo?.latestExpirationDate,
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+        localStorage.setItem("onboarding_completed", "true");
+        toast({
+          title: "Welcome to The Mom App!",
+          description: "Your free trial has started. You won't be charged until it ends.",
+        });
+        window.location.href = "/";
+      } else {
+        toast({
+          title: "Purchase failed",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch {
+      toast({
+        title: "Purchase error",
+        description: "Unable to complete purchase. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setRcPurchasing(false);
+    }
+  };
+
   const startTrialMutation = useMutation({
     mutationFn: async ({ plan, interval }: { plan: "individual" | "family"; interval: "monthly" | "yearly" }) => {
-      const nativePlatform = Capacitor.getPlatform() === "ios" || Capacitor.getPlatform() === "android";
-      if (nativePlatform) {
-        // iOS and Android use RevenueCat — start a local trial record, actual billing via native store
-        return apiRequest("POST", "/api/subscription/start-trial", { plan });
-      }
       // Web — create Stripe checkout session with 14-day trial
       const pendingCoupon = localStorage.getItem('pendingCoupon') || undefined;
       const response = await apiRequest("POST", "/api/checkout/create-session", { plan, interval, trialDays: 14, coupon: pendingCoupon });
       return response.json();
     },
     onSuccess: (data: any) => {
-      const nativePlatform = Capacitor.getPlatform() === "ios" || Capacitor.getPlatform() === "android";
-      if (nativePlatform) {
-        queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-        localStorage.setItem("onboarding_completed", "true");
-        toast({ title: "Welcome to The Mom App!", description: "Your free trial has started." });
-        window.location.href = "/";
-      } else if (data?.url) {
-        // Redirect to Stripe Checkout
+      if (data?.url) {
         localStorage.setItem("onboarding_completed", "true");
         localStorage.removeItem("pendingCoupon");
         window.location.href = data.url;
       } else {
-        // Fallback if Stripe URL missing
         queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
         localStorage.setItem("onboarding_completed", "true");
         toast({ title: "Welcome to The Mom App!", description: "Your free trial has started." });
@@ -63,6 +143,14 @@ export default function Onboarding() {
       window.location.href = "/";
     },
   });
+
+  const handleStartTrial = (plan: "individual" | "family", interval: "monthly" | "yearly") => {
+    if (isNative) {
+      handleNativePurchase(plan, interval);
+    } else {
+      startTrialMutation.mutate({ plan, interval });
+    }
+  };
 
   const shareMutation = useMutation({
     mutationFn: async (platform: "facebook" | "instagram" | "skip") => {
@@ -97,10 +185,6 @@ export default function Onboarding() {
     },
   });
 
-  const handleStartTrial = (plan: "individual" | "family", interval: "monthly" | "yearly") => {
-    startTrialMutation.mutate({ plan, interval });
-  };
-
   const handleShare = (platform: "facebook" | "instagram") => {
     shareMutation.mutate(platform);
   };
@@ -121,8 +205,6 @@ export default function Onboarding() {
     setLocation("/");
   };
 
-  const isNative = Capacitor.getPlatform() === "ios" || Capacitor.getPlatform() === "android";
-
   if (showShareModal && !isNative) {
     return (
       <ShareModal
@@ -137,7 +219,7 @@ export default function Onboarding() {
     <OnboardingFlow 
       onComplete={handleComplete}
       onStartTrial={handleStartTrial}
-      isLoading={startTrialMutation.isPending}
+      isLoading={rcPurchasing || startTrialMutation.isPending || rcLoading}
     />
   );
 }
