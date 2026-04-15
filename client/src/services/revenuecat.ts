@@ -162,13 +162,15 @@ export function mapProductToplan(productIdentifier: string): {
   plan: "individual" | "family";
   interval: "monthly" | "yearly";
 } | null {
+  // Strip Google Play base plan suffix (e.g. com.momapp.individual.monthly:individual-monthly → com.momapp.individual.monthly)
+  const baseId = productIdentifier.split(":")[0];
   const mapping: Record<string, { plan: "individual" | "family"; interval: "monthly" | "yearly" }> = {
     "com.momapp.individual.monthly": { plan: "individual", interval: "monthly" },
     "com.momapp.individual.yearly": { plan: "individual", interval: "yearly" },
     "com.momapp.family.monthly": { plan: "family", interval: "monthly" },
     "com.momapp.family.yearly": { plan: "family", interval: "yearly" },
   };
-  return mapping[productIdentifier] || null;
+  return mapping[baseId] || null;
 }
 
 export function getPackageForPlan(
@@ -177,5 +179,8 @@ export function getPackageForPlan(
   interval: "monthly" | "yearly"
 ): RCPackage | undefined {
   const productId = `com.momapp.${plan}.${interval}`;
-  return packages.find((p) => p.productIdentifier === productId);
+  // Google Play appends :basePlanId to subscription IDs (e.g. com.momapp.individual.monthly:individual-monthly)
+  return packages.find(
+    (p) => p.productIdentifier === productId || p.productIdentifier.startsWith(productId + ":")
+  );
 }
