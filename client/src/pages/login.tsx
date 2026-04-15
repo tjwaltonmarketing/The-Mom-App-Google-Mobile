@@ -15,6 +15,11 @@ import { Eye, EyeOff, RefreshCw, Users } from "lucide-react";
 import logoPath from "@assets/The_Mom_app_(5)_1766014062224.png";
 import beforeAfterPath from "@assets/The_Mom_app_(4)_1766014201419.png";
 import { SplashScreen } from "@/components/splash-screen";
+import { Capacitor } from "@capacitor/core";
+
+declare global {
+  interface Window { google?: any; }
+}
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -32,6 +37,7 @@ export default function Login() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const googleButtonRef = useRef<HTMLDivElement>(null);
   const [gsiLoaded, setGsiLoaded] = useState(false);
+  const isAndroid = Capacitor.getPlatform() === "android";
 
   // Capture win-back coupon from URL and persist it for checkout
   const searchString = useSearch();
@@ -236,47 +242,39 @@ export default function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Google Sign-In - hidden until Google OAuth origins are configured
-          {googleClientId && (
-            <>
-              <div ref={googleButtonRef} className={`w-full mb-4 ${gsiLoaded ? '' : 'hidden'}`} />
-              {!gsiLoaded && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full mb-4 h-11 gap-3 font-medium text-sm border-gray-300 hover:bg-gray-50"
-                  disabled={googleLoginMutation.isPending}
-                  onClick={() => {
-                    if (window.google?.accounts?.id) {
-                      window.google.accounts.id.prompt();
-                    } else {
-                      toast({
-                        title: "Google Sign-In",
-                        description: "Google Sign-In works on the published app and mobile devices. Please use email login here.",
-                      });
-                    }
-                  }}
-                >
-                  <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-                    <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9.003 18z" fill="#34A853"/>
-                    <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957A8.996 8.996 0 000 9.002a8.996 8.996 0 00.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-                    <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.002 0 5.48 0 2.438 2.017.956 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
-                  </svg>
-                  {googleLoginMutation.isPending ? "Signing in..." : "Sign in with Google"}
-                </Button>
-              )}
-              <div className="relative mb-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-500">Or sign in with email</span>
-                </div>
-              </div>
-            </>
-          )}
-          */}
+          {/* Google Sign-In */}
+          <button
+            type="button"
+            disabled={googleLoginMutation.isPending}
+            onClick={() => {
+              if (isAndroid) {
+                const state = Math.random().toString(36).slice(2, 18);
+                localStorage.setItem("google_oauth_state", state);
+                window.location.href = getApiUrl(`/api/auth/google/redirect?state=${state}`);
+              } else if (window.google?.accounts?.id) {
+                window.google.accounts.id.prompt();
+              } else {
+                toast({ title: "Google Sign-In unavailable", description: "Please use email sign-in or try again.", variant: "destructive" });
+              }
+            }}
+            className="w-full flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-medium text-sm py-[11px] rounded-md border border-gray-300 transition-colors shadow-sm mb-4 disabled:opacity-50"
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+              <path d="M9.003 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9.003 18z" fill="#34A853"/>
+              <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.96H.957A8.996 8.996 0 000 9.002a8.996 8.996 0 00.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+              <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.428 0 9.002 0 5.48 0 2.438 2.017.956 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+            </svg>
+            {googleLoginMutation.isPending ? "Signing in..." : "Continue with Google"}
+          </button>
+
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-gray-500">Or sign in with email</span>
+            </div>
+          </div>
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
