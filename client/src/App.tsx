@@ -171,31 +171,66 @@ function Router() {
     }
   }, [isAuthenticated, isLoading, wasAuthenticated]);
 
+  // Poll for a pending Google OAuth token and hydrate the auth cache directly
+  // to avoid extra round-trips. Exported as a stable ref so resume/visibility
+  // handlers can call it without re-registering listeners on every render.
+  const pollForGoogleToken = async (pendingState: string) => {
+    // Delays per attempt: fast for the common non-2FA case, slower for 2FA waits.
+    const delays = [0, 200, 500, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000];
+    for (let attempt = 0; attempt < delays.length; attempt++) {
+      if (delays[attempt] > 0) {
+        await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+      }
+      // If another handler already resolved this (e.g. appUrlOpen), bail out.
+      if (!localStorage.getItem("google_oauth_state")) return;
+      try {
+        const response = await fetch(getApiUrl(`/api/auth/google/poll?state=${pendingState}`), {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.token) {
+            localStorage.removeItem("google_oauth_state");
+            setAuthToken(data.token);
+            // Hydrate auth cache directly from poll response to skip an extra round-trip.
+            if (data.user) {
+              queryClient.setQueryData(["/api/auth/user"], data.user);
+            } else {
+              queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+            }
+            queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+            setLocation("/");
+            return;
+          }
+        }
+      } catch {}
+    }
+  };
+
+  // On initial mount, immediately check for a pending OAuth state in case the
+  // app was opened fresh via an intent URL and the appUrlOpen event was missed.
+  useEffect(() => {
+    const pendingState = localStorage.getItem("google_oauth_state");
+    if (pendingState) {
+      // Give appUrlOpen 300 ms to fire and clear the state first.
+      setTimeout(() => {
+        const stillPending = localStorage.getItem("google_oauth_state");
+        if (stillPending) pollForGoogleToken(stillPending);
+      }, 300);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     const handleResume = async () => {
-      // Check for pending Google OAuth state (Android redirect flow).
-      // Retry for up to 15 seconds in case the OAuth/2FA flow is still completing.
       const pendingState = localStorage.getItem("google_oauth_state");
       if (pendingState) {
-        for (let attempt = 0; attempt < 15; attempt++) {
-          try {
-            const response = await fetch(getApiUrl(`/api/auth/google/poll?state=${pendingState}`), {
-              credentials: "include",
-            });
-            if (response.ok) {
-              const data = await response.json();
-              if (data.token) {
-                localStorage.removeItem("google_oauth_state");
-                setAuthToken(data.token);
-                queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-                queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-                setLocation("/");
-                return;
-              }
-            }
-          } catch {}
-          // Wait 1 second before next attempt
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        // Give appUrlOpen 300 ms to fire and clear the state first.
+        await new Promise(resolve => setTimeout(resolve, 300));
+        const stillPending = localStorage.getItem("google_oauth_state");
+        if (stillPending) {
+          await pollForGoogleToken(stillPending);
+          return;
         }
       }
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
@@ -216,6 +251,7 @@ function Router() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('resume', handleResume);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Check subscription status for authenticated users

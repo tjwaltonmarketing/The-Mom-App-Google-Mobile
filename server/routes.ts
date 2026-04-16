@@ -590,14 +590,26 @@ export async function registerRoutes(app: Express) {
   });
 
   // Native app polls this after resuming from Chrome OAuth flow
-  app.get("/api/auth/google/poll", (req, res) => {
+  app.get("/api/auth/google/poll", async (req, res) => {
     const state = req.query.state as string;
     if (!state) return res.status(400).json({ error: "state required" });
     const pending = pendingGoogleTokens.get(state);
     if (!pending) return res.json({ pending: true });
     // One-time use — delete immediately
     pendingGoogleTokens.delete(state);
-    res.json({ token: pending.token });
+    // Return user data alongside the token so the client can hydrate the
+    // auth/user cache directly without a second round-trip, cutting sign-in latency.
+    const user = await storage.getUserById(pending.userId);
+    const userData = user ? {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phoneNumber: user.phoneNumber,
+      googleId: user.googleId,
+      authMethod: user.authMethod,
+    } : null;
+    res.json({ token: pending.token, user: userData });
   });
 
   app.post("/api/auth/apple", async (req, res) => {
