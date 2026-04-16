@@ -264,7 +264,11 @@ function Router() {
   // Also skip onboarding if user already completed it (localStorage fallback for mobile)
   const onboardingCompleted = typeof window !== 'undefined' && localStorage.getItem("onboarding_completed") === "true";
   const pendingShareClaim = typeof window !== 'undefined' && localStorage.getItem("pending_share_claim") === "true";
-  const needsOnboarding = isAuthenticated && subscriptionReady && (!subscriptionData && !onboardingCompleted || pendingShareClaim);
+  // Also wait for user data before showing onboarding — otherwise if the subscription
+  // query resolves first (user still loading), needsOnboarding fires before
+  // needsFinishProfile gets a chance to evaluate, sending new Google Sign-In users
+  // straight to payment instead of the phone-number step.
+  const needsOnboarding = isAuthenticated && subscriptionReady && !!user && (!subscriptionData && !onboardingCompleted || pendingShareClaim);
 
   // Require phone number before onboarding (catches Google Sign-In users who skipped finish-profile)
   // Exception: existing subscribers are never blocked — they're already set up
