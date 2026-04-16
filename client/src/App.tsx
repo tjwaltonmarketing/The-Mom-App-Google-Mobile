@@ -77,12 +77,14 @@ function Router() {
     const googleToken = params.get("google_token");
 
     if (googleToken) {
-      // Web/iOS: token delivered directly in URL
+      // Web/iOS: token delivered directly in URL.
+      // Route to "/" and let App.tsx routing decide (returning users → dashboard,
+      // new users with no subscription → needsFinishProfile → FinishProfile).
       setAuthToken(googleToken);
       window.history.replaceState({}, "", window.location.pathname);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-      setLocation("/finish-profile");
+      setLocation("/");
     } else if (window.location.pathname === "/auth/google/return") {
       // Android fallback: Chrome loaded this page instead of opening the native app.
       // Poll for the token, then try to push it back into the native app via intent URL.
@@ -142,7 +144,7 @@ function Router() {
             setAuthToken(googleToken);
             queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
             queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-            setLocation("/finish-profile");
+            setLocation("/");
           }
         } catch {}
       }).then(h => { listenerHandle = h; }).catch(() => {});
@@ -187,7 +189,7 @@ function Router() {
                 setAuthToken(data.token);
                 queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
                 queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-                setLocation("/finish-profile");
+                setLocation("/");
                 return;
               }
             }
