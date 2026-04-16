@@ -250,6 +250,7 @@ export default function Login() {
               if (isAndroid) {
                 const state = Math.random().toString(36).slice(2, 18);
                 localStorage.setItem("google_oauth_state", state);
+                localStorage.setItem("google_oauth_state_time", Date.now().toString());
                 window.location.href = getApiUrl(`/api/auth/google/redirect?state=${state}`);
               } else if (window.google?.accounts?.id) {
                 window.google.accounts.id.prompt();

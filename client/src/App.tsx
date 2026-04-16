@@ -68,6 +68,22 @@ function Router() {
   const [splashCompleted, setSplashCompleted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
   const [wasAuthenticated, setWasAuthenticated] = useState(false);
+  // True while we're waiting for a Google OAuth response to come back from Chrome.
+  // Prevents the welcome page from showing (and being tappable) during that window.
+  // Only counts as "in progress" if the state was saved within the last 3 minutes —
+  // older entries are stale (abandoned sign-in) and should be cleared immediately.
+  const [googleAuthInProgress, setGoogleAuthInProgress] = useState(() => {
+    const state = localStorage.getItem("google_oauth_state");
+    if (!state) return false;
+    const savedAt = parseInt(localStorage.getItem("google_oauth_state_time") ?? "0", 10);
+    const isStale = !savedAt || Date.now() - savedAt > 3 * 60 * 1000;
+    if (isStale) {
+      localStorage.removeItem("google_oauth_state");
+      localStorage.removeItem("google_oauth_state_time");
+      return false;
+    }
+    return true;
+  });
   const [, setLocation] = useLocation();
 
   // Handle google_token query param (web/iOS flow), App Links return (/auth/google/return),
@@ -141,6 +157,8 @@ function Router() {
           const googleToken = url.searchParams.get("google_token");
           if (googleToken) {
             localStorage.removeItem("google_oauth_state");
+            localStorage.removeItem("google_oauth_state_time");
+            setGoogleAuthInProgress(false);
             setAuthToken(googleToken);
             queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
             queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
@@ -182,7 +200,10 @@ function Router() {
         await new Promise(resolve => setTimeout(resolve, delays[attempt]));
       }
       // If another handler already resolved this (e.g. appUrlOpen), bail out.
-      if (!localStorage.getItem("google_oauth_state")) return;
+      if (!localStorage.getItem("google_oauth_state")) {
+        setGoogleAuthInProgress(false);
+        return;
+      }
       try {
         const response = await fetch(getApiUrl(`/api/auth/google/poll?state=${pendingState}`), {
           credentials: "include",
@@ -191,6 +212,8 @@ function Router() {
           const data = await response.json();
           if (data.token) {
             localStorage.removeItem("google_oauth_state");
+            localStorage.removeItem("google_oauth_state_time");
+            setGoogleAuthInProgress(false);
             setAuthToken(data.token);
             // Hydrate auth cache directly from poll response to skip an extra round-trip.
             if (data.user) {
@@ -205,6 +228,8 @@ function Router() {
         }
       } catch {}
     }
+    // Exhausted all attempts — clear the flag so the welcome page shows normally.
+    setGoogleAuthInProgress(false);
   };
 
   // On initial mount, immediately check for a pending OAuth state in case the
@@ -462,7 +487,22 @@ function Router() {
       ) : (
         // Parent/Admin routes - for authenticated users
         <>
-          {!isAuthenticated && !wasAuthenticated ? (
+          {!isAuthenticated && googleAuthInProgress ? (
+            // Google OAuth is in progress — show a loading screen so users can't
+            // tap away from the welcome page while the token is being delivered.
+            <Route path="/:rest*" component={() => (
+              <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+                <div className="text-center">
+                  <div className="flex items-center space-x-2 justify-center mb-4">
+                    <div className="w-3 h-3 bg-pink-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                    <div className="w-3 h-3 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                    <div className="w-3 h-3 bg-pink-500 rounded-full animate-bounce"></div>
+                  </div>
+                  <p className="text-gray-600 font-medium">Signing you in…</p>
+                </div>
+              </div>
+            )} />
+          ) : !isAuthenticated && !wasAuthenticated ? (
             <Route path="/" component={Welcome} />
           ) : !isAuthenticated && wasAuthenticated ? (
             // Previously authenticated, auth is being re-verified (app resume)
