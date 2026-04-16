@@ -1660,6 +1660,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserSubscription(userId: number, updates: Partial<InsertUserSubscription>): Promise<UserSubscription | undefined> {
+    const existing = await this.getUserSubscription(userId);
+    if (!existing) {
+      // No subscription row yet — create one so new users aren't silently dropped
+      const [created] = await db.insert(userSubscriptions)
+        .values({ userId, ...updates } as InsertUserSubscription)
+        .returning();
+      return created;
+    }
     const [updatedSubscription] = await db.update(userSubscriptions)
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(userSubscriptions.userId, userId))
