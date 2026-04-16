@@ -4751,6 +4751,73 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.get("/api/admin/funnel", async (req, res) => {
+    try {
+      if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
+      const user = await storage.getUserById(req.session.userId);
+      if (!user || user.email !== "wearesubsonic@gmail.com") return res.status(403).json({ error: "Admin access only" });
+
+      const daysParam = req.query.days ? Number(req.query.days) : null;
+      const dateFilter = daysParam ? new Date(Date.now() - daysParam * 24 * 60 * 60 * 1000) : null;
+      const whereClause = dateFilter ? sql`WHERE u.created_at >= ${dateFilter}` : sql`WHERE 1=1`;
+
+      const [registered, trialStarted, paidConverted, churned, dailyFunnel] = await Promise.all([
+        // Stage 1: Registered
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(*) as count FROM users WHERE created_at >= ${dateFilter}`)
+          : db.execute(sql`SELECT COUNT(*) as count FROM users`),
+
+        // Stage 2: Started trial (has a subscription record)
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(DISTINCT u.id) as count FROM users u JOIN user_subscriptions us ON us.user_id = u.id WHERE u.created_at >= ${dateFilter}`)
+          : db.execute(sql`SELECT COUNT(DISTINCT u.id) as count FROM users u JOIN user_subscriptions us ON us.user_id = u.id`),
+
+        // Stage 3: Converted to paid
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(DISTINCT u.id) as count FROM users u JOIN user_subscriptions us ON us.user_id = u.id WHERE u.created_at >= ${dateFilter} AND (us.stripe_subscription_id IS NOT NULL OR us.apple_product_id IS NOT NULL OR us.google_product_id IS NOT NULL)`)
+          : db.execute(sql`SELECT COUNT(DISTINCT u.id) as count FROM users u JOIN user_subscriptions us ON us.user_id = u.id WHERE (us.stripe_subscription_id IS NOT NULL OR us.apple_product_id IS NOT NULL OR us.google_product_id IS NOT NULL)`),
+
+        // Stage 4: Churned (trial ended, never paid)
+        dateFilter
+          ? db.execute(sql`SELECT COUNT(DISTINCT u.id) as count FROM users u JOIN user_subscriptions us ON us.user_id = u.id WHERE u.created_at >= ${dateFilter} AND us.trial_end_date < NOW() AND us.stripe_subscription_id IS NULL AND us.apple_product_id IS NULL AND us.google_product_id IS NULL`)
+          : db.execute(sql`SELECT COUNT(DISTINCT u.id) as count FROM users u JOIN user_subscriptions us ON us.user_id = u.id WHERE us.trial_end_date < NOW() AND us.stripe_subscription_id IS NULL AND us.apple_product_id IS NULL AND us.google_product_id IS NULL`),
+
+        // Daily registrations + trial starts for chart (last 30 days)
+        db.execute(sql`
+          SELECT
+            DATE(u.created_at) as date,
+            COUNT(DISTINCT u.id) as registered,
+            COUNT(DISTINCT us.user_id) as trial_started
+          FROM users u
+          LEFT JOIN user_subscriptions us ON us.user_id = u.id
+          WHERE u.created_at >= NOW() - INTERVAL '30 days'
+          GROUP BY DATE(u.created_at)
+          ORDER BY date
+        `),
+      ]);
+
+      const r = Number(registered.rows[0]?.count || 0);
+      const t = Number(trialStarted.rows[0]?.count || 0);
+      const p = Number(paidConverted.rows[0]?.count || 0);
+      const c = Number(churned.rows[0]?.count || 0);
+
+      res.json({
+        stages: [
+          { label: "Registered", count: r, pct: 100 },
+          { label: "Started Trial", count: t, pct: r > 0 ? Math.round((t / r) * 100) : 0 },
+          { label: "Converted to Paid", count: p, pct: t > 0 ? Math.round((p / t) * 100) : 0 },
+          { label: "Churned (Trial Expired)", count: c, pct: t > 0 ? Math.round((c / t) * 100) : 0 },
+        ],
+        dropOff: r > 0 ? r - t : 0,
+        dailyChart: dailyFunnel.rows,
+        dateFilter: daysParam ? `${daysParam} days` : "all time",
+      });
+    } catch (error) {
+      console.error("Admin funnel error:", error);
+      res.status(500).json({ error: "Failed to fetch funnel data" });
+    }
+  });
+
   app.post("/api/push-notifications/test", async (req, res) => {
     try {
       if (!req.session.userId) {
