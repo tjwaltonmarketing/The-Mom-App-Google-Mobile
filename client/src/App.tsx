@@ -84,21 +84,36 @@ function Router() {
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
       setLocation("/finish-profile");
     } else if (window.location.pathname === "/auth/google/return") {
-      // Android App Links: Chrome was redirected here; Android may open native app via
-      // App Links (which triggers visibilitychange → handleResume polling), but if Chrome
-      // actually loads this page as a fallback, poll for the token directly here.
+      // Android fallback: Chrome loaded this page instead of opening the native app.
+      // Poll for the token, then try to push it back into the native app via intent URL.
+      // If the intent fails, fall back to browser-based auth.
       const state = params.get("state");
-      if (state) {
+      const alreadyProcessed = params.get("already_processed") === "true";
+      if (state && !alreadyProcessed) {
         fetch(getApiUrl(`/api/auth/google/poll?state=${state}`), { credentials: "include" })
           .then(r => r.json())
           .then(data => {
             if (data.token) {
               localStorage.removeItem("google_oauth_state");
-              setAuthToken(data.token);
-              queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-              queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-              window.history.replaceState({}, "", "/");
-              setLocation("/finish-profile");
+              // Attempt to reopen the native app and deliver the token via intent URL.
+              // If the intent succeeds the native appUrlOpen listener will handle it.
+              // The browser_fallback_url delivers the token in the URL so the web
+              // googleToken handler (lines above) picks it up as a last resort.
+              const encodedToken = encodeURIComponent(data.token);
+              const fallbackUrl = encodeURIComponent(
+                `https://app.themom.app/?google_token=${encodedToken}`
+              );
+              const intentUrl = `intent://app.themom.app/?google_token=${encodedToken}#Intent;scheme=https;package=com.momapp.family;S.browser_fallback_url=${fallbackUrl};end`;
+              window.location.href = intentUrl;
+              // Safety net: if still in browser after 1.5 s (intent URL was blocked),
+              // set auth directly in the web context.
+              setTimeout(() => {
+                setAuthToken(data.token);
+                queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+                queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+                window.history.replaceState({}, "", "/");
+                setLocation("/");
+              }, 1500);
             }
           })
           .catch(() => {});
@@ -107,6 +122,33 @@ function Router() {
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);
+
+  // Listen for deep link opens on Android (e.g. intent URL from Google OAuth browser fallback).
+  // Uses registerPlugin so we don't need the separate @capacitor/app package.
+  useEffect(() => {
+    import("@capacitor/core").then(({ registerPlugin, Capacitor }) => {
+      if (!Capacitor.isNativePlatform()) return;
+      interface AppPlugin {
+        addListener(event: string, cb: (data: { url: string }) => void): Promise<{ remove: () => void }>;
+      }
+      const CapApp = registerPlugin<AppPlugin>("App");
+      let listenerHandle: { remove: () => void } | null = null;
+      CapApp.addListener("appUrlOpen", (event) => {
+        try {
+          const url = new URL(event.url);
+          const googleToken = url.searchParams.get("google_token");
+          if (googleToken) {
+            localStorage.removeItem("google_oauth_state");
+            setAuthToken(googleToken);
+            queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+            queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+            setLocation("/finish-profile");
+          }
+        } catch {}
+      }).then(h => { listenerHandle = h; }).catch(() => {});
+      return () => { listenerHandle?.remove(); };
+    }).catch(() => {});
+  }, [setLocation]);
 
   useEffect(() => {
     import("@/services/push-notifications").then(({ setupNotificationTapHandler }) => {
@@ -129,25 +171,30 @@ function Router() {
 
   useEffect(() => {
     const handleResume = async () => {
-      // Check for pending Google OAuth state (Android redirect flow)
+      // Check for pending Google OAuth state (Android redirect flow).
+      // Retry for up to 15 seconds in case the OAuth/2FA flow is still completing.
       const pendingState = localStorage.getItem("google_oauth_state");
       if (pendingState) {
-        try {
-          const response = await fetch(getApiUrl(`/api/auth/google/poll?state=${pendingState}`), {
-            credentials: "include",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            if (data.token) {
-              localStorage.removeItem("google_oauth_state");
-              setAuthToken(data.token);
-              queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-              queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-              setLocation("/finish-profile");
-              return;
+        for (let attempt = 0; attempt < 15; attempt++) {
+          try {
+            const response = await fetch(getApiUrl(`/api/auth/google/poll?state=${pendingState}`), {
+              credentials: "include",
+            });
+            if (response.ok) {
+              const data = await response.json();
+              if (data.token) {
+                localStorage.removeItem("google_oauth_state");
+                setAuthToken(data.token);
+                queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+                queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
+                setLocation("/finish-profile");
+                return;
+              }
             }
-          }
-        } catch {}
+          } catch {}
+          // Wait 1 second before next attempt
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       queryClient.invalidateQueries({ queryKey: ["/api/teen/auth/user"] });
