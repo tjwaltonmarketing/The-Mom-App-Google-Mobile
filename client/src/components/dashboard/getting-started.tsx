@@ -62,7 +62,7 @@ interface GettingStartedProps {
 
 export function GettingStarted({ onStartVoiceNote }: GettingStartedProps) {
   const [, setLocation] = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [dismissed, setDismissed] = useState(
     () => typeof window !== "undefined" && localStorage.getItem("getting_started_dismissed") === "true"
   );
@@ -150,7 +150,7 @@ export function GettingStarted({ onStartVoiceNote }: GettingStartedProps) {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <div>
             <p className="font-semibold text-gray-900 dark:text-white text-sm">
-              Get started — {completedCount}/{items.length} done
+              Get started here! — {completedCount}/{items.length} done
             </p>
             {/* Progress bar */}
             <div className="mt-1 w-48 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
