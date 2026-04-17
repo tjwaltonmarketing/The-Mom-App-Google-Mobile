@@ -27,7 +27,12 @@ function useGettingStartedData() {
     staleTime: 60_000,
   });
 
-  const { data: notes } = useQuery<any[]>({
+  const { data: textNotes } = useQuery<any[]>({
+    queryKey: ["/api/text-notes"],
+    staleTime: 60_000,
+  });
+
+  const { data: voiceNotes } = useQuery<any[]>({
     queryKey: ["/api/voice-notes/all"],
     staleTime: 60_000,
   });
@@ -37,16 +42,14 @@ function useGettingStartedData() {
     staleTime: 60_000,
   });
 
-  const aiVisited = typeof window !== "undefined" &&
-    localStorage.getItem("visited_ai_assistant") === "true";
-
   const hasFamilyMember = (familyMembers?.length ?? 0) > 0;
   const hasEvent = (events?.length ?? 0) > 0;
   const hasTask = (tasks?.length ?? 0) > 0;
-  const hasNote = (notes?.length ?? 0) > 0;
+  const hasTextNote = (textNotes?.length ?? 0) > 0;
+  const hasVoiceNote = (voiceNotes?.length ?? 0) > 0;
   const hasMeal = (meals?.length ?? 0) > 0;
 
-  return { hasFamilyMember, hasEvent, hasTask, hasNote, hasMeal, aiVisited };
+  return { hasFamilyMember, hasEvent, hasTask, hasTextNote, hasVoiceNote, hasMeal };
 }
 
 export function GettingStarted() {
@@ -55,7 +58,7 @@ export function GettingStarted() {
   const [dismissed, setDismissed] = useState(
     () => typeof window !== "undefined" && localStorage.getItem("getting_started_dismissed") === "true"
   );
-  const { hasFamilyMember, hasEvent, hasTask, hasNote, hasMeal, aiVisited } =
+  const { hasFamilyMember, hasEvent, hasTask, hasTextNote, hasVoiceNote, hasMeal } =
     useGettingStartedData();
 
   const items: ChecklistItem[] = [
@@ -82,10 +85,10 @@ export function GettingStarted() {
     },
     {
       id: "note",
-      label: "Write a note",
-      description: "Capture a thought, idea, or reminder — voice or text.",
+      label: "Write a text note",
+      description: "Jot down a thought, idea, or reminder.",
       path: "/notes",
-      done: hasNote,
+      done: hasTextNote,
     },
     {
       id: "meal",
@@ -95,11 +98,11 @@ export function GettingStarted() {
       done: hasMeal,
     },
     {
-      id: "ai",
-      label: "Try the AI Assistant",
-      description: "Ask it anything — it can create tasks, events, and more.",
-      path: "/ai-assistant",
-      done: aiVisited,
+      id: "voice",
+      label: "Try the voice AI",
+      description: "Tap the mic button to dictate tasks, events, or reminders hands-free.",
+      path: "/notes",
+      done: hasVoiceNote,
     },
   ];
 
@@ -110,9 +113,6 @@ export function GettingStarted() {
   if (dismissed || allDone) return null;
 
   const handleItemClick = (item: ChecklistItem) => {
-    if (item.id === "ai") {
-      localStorage.setItem("visited_ai_assistant", "true");
-    }
     setLocation(item.path);
   };
 
