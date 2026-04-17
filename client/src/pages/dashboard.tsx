@@ -9,6 +9,7 @@ import { FamilyPoints } from "@/components/dashboard/family-points";
 import { PasswordVault } from "@/components/dashboard/password-vault";
 import { TrialBanner } from "@/components/dashboard/trial-banner";
 import { VideoBanner } from "@/components/dashboard/video-banner";
+import { GettingStarted } from "@/components/dashboard/getting-started";
 import { FamilyDishwasher } from "@/components/family-dishwasher";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { MindfulUsage } from "@/components/mindful-usage";
@@ -34,6 +35,7 @@ export default function Dashboard() {
         
         <WelcomeHeader onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
         
+        <GettingStarted />
         
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="w-full mb-6 h-auto p-1">
