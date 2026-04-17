@@ -7,7 +7,8 @@ interface ChecklistItem {
   id: string;
   label: string;
   description: string;
-  path: string;
+  path?: string;
+  modal?: boolean;
   done: boolean;
 }
 
@@ -42,6 +43,9 @@ function useGettingStartedData() {
     staleTime: 60_000,
   });
 
+  const aiVisited = typeof window !== "undefined" &&
+    localStorage.getItem("visited_ai_assistant") === "true";
+
   const hasFamilyMember = (familyMembers?.length ?? 0) > 0;
   const hasEvent = (events?.length ?? 0) > 0;
   const hasTask = (tasks?.length ?? 0) > 0;
@@ -49,16 +53,20 @@ function useGettingStartedData() {
   const hasVoiceNote = (voiceNotes?.length ?? 0) > 0;
   const hasMeal = (meals?.length ?? 0) > 0;
 
-  return { hasFamilyMember, hasEvent, hasTask, hasTextNote, hasVoiceNote, hasMeal };
+  return { hasFamilyMember, hasEvent, hasTask, hasTextNote, hasVoiceNote, hasMeal, aiVisited };
 }
 
-export function GettingStarted() {
+interface GettingStartedProps {
+  onStartVoiceNote: () => void;
+}
+
+export function GettingStarted({ onStartVoiceNote }: GettingStartedProps) {
   const [, setLocation] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [dismissed, setDismissed] = useState(
     () => typeof window !== "undefined" && localStorage.getItem("getting_started_dismissed") === "true"
   );
-  const { hasFamilyMember, hasEvent, hasTask, hasTextNote, hasVoiceNote, hasMeal } =
+  const { hasFamilyMember, hasEvent, hasTask, hasTextNote, hasVoiceNote, hasMeal, aiVisited } =
     useGettingStartedData();
 
   const items: ChecklistItem[] = [
@@ -100,9 +108,16 @@ export function GettingStarted() {
     {
       id: "voice",
       label: "Try the voice AI",
-      description: "Tap the mic button to dictate tasks, events, or reminders hands-free.",
-      path: "/notes",
+      description: "Tap the mic and dictate tasks, events, or reminders hands-free.",
+      modal: true,
       done: hasVoiceNote,
+    },
+    {
+      id: "ai",
+      label: "Try the text AI assistant",
+      description: "Ask it anything — it can create tasks, events, and more.",
+      path: "/ai-assistant",
+      done: aiVisited,
     },
   ];
 
@@ -113,7 +128,14 @@ export function GettingStarted() {
   if (dismissed || allDone) return null;
 
   const handleItemClick = (item: ChecklistItem) => {
-    setLocation(item.path);
+    if (item.id === "ai") {
+      localStorage.setItem("visited_ai_assistant", "true");
+    }
+    if (item.modal) {
+      onStartVoiceNote();
+    } else if (item.path) {
+      setLocation(item.path);
+    }
   };
 
   const handleDismiss = () => {

@@ -35,7 +35,7 @@ export default function Dashboard() {
         
         <WelcomeHeader onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
         
-        <GettingStarted />
+        <GettingStarted onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
         
         <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="w-full mb-6 h-auto p-1">
