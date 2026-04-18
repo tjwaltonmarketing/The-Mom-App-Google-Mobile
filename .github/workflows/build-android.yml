@@ -139,8 +139,8 @@ jobs:
         cd android
         
         # Replace existing versionCode and versionName in variables.gradle
-        sed -i 's/versionCode = .*/versionCode = 119/' variables.gradle
-        sed -i 's/versionName = .*/versionName = "10.19"/' variables.gradle
+        sed -i 's/versionCode = .*/versionCode = 120/' variables.gradle
+        sed -i 's/versionName = .*/versionName = "10.20"/' variables.gradle
         
         # Also ensure compileSdkVersion and targetSdkVersion are 35
         sed -i 's/compileSdkVersion = .*/compileSdkVersion = 35/' variables.gradle
@@ -151,8 +151,8 @@ jobs:
         
         # Update app/build.gradle to use the version variables
         cd app
-        sed -i 's/versionCode.*$/versionCode 119/' build.gradle
-        sed -i 's/versionName.*$/versionName "10.19"/' build.gradle
+        sed -i 's/versionCode.*$/versionCode 120/' build.gradle
+        sed -i 's/versionName.*$/versionName "10.20"/' build.gradle
         
         echo "Final build.gradle version configuration:"
         grep -A2 -B2 "versionCode\|versionName" build.gradle
