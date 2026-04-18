@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, ChevronRight, ChevronLeft, Mic, Calendar, ListTodo, UtensilsCrossed, Sparkles, Users, Bell, Gift, Clock, CreditCard, Sun, Moon } from "lucide-react";
-import { useTheme } from "@/components/theme-provider";
+import { Check, ChevronRight, ChevronLeft, Mic, Calendar, ListTodo, UtensilsCrossed, Sparkles, Users, Bell, Gift, Clock, CreditCard } from "lucide-react";
 import onboardingSlide1 from "@/assets/images/onboarding-slide-1.png";
 import onboardingSlide2 from "@/assets/images/onboarding-slide-2.png";
 import onboardingSlide3 from "@/assets/images/onboarding-slide-3.png";
@@ -27,12 +26,6 @@ const slides = [
     body: "Welcome to The Mom App \u2014 the app that shares the load so you don't have to carry it all.\n\nNo more repeating yourself. No more nagging. The app handles the reminders so you don't have to.",
     reassurance: "Less mental load. More peace of mind.",
     cta: "Let's make mom life easier",
-  },
-  {
-    id: "theme",
-    image: onboardingSlide1,
-    headline: "How would you like the app to look?",
-    isThemePicker: true,
   },
   {
     id: 2,
@@ -163,8 +156,6 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [selectedPlan, setSelectedPlan] = useState<"individual" | "family">("family");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
-  const { theme, setTheme } = useTheme();
-  
   const slide = slides[currentSlide];
   const isLastSlide = currentSlide === slides.length - 1;
 
@@ -198,7 +189,7 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
   return (
     <div className="welcome-bg min-h-screen flex flex-col items-center justify-center px-4 py-6" style={{ fontFamily: "'Poppins', sans-serif" }}>
       <div className="welcome-card-left bg-white rounded-3xl shadow-xl w-full max-w-md flex flex-col px-6 py-6 max-h-[92vh] overflow-y-auto">
-        {!(slide as any).isPrimingA && !(slide as any).isPrimingB && !(slide as any).isPricing && !(slide as any).isThemePicker && (
+        {!(slide as any).isPrimingA && !(slide as any).isPrimingB && !(slide as any).isPricing && (
           <div className="w-full max-h-[250px] mb-4 flex items-center justify-center">
             <img
               src={slide.image}
@@ -329,45 +320,6 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
             </div>
           )}
 
-          {(slide as any).isThemePicker && (
-            <div className="space-y-5 py-2">
-              <p className="text-gray-500 text-sm">Pick what feels right to you. You can always change it later.</p>
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => setTheme("light")}
-                  className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${theme === "light" ? "border-pink-500 bg-pink-50 shadow-md" : "border-gray-200 hover:border-gray-300"}`}
-                >
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center ${theme === "light" ? "bg-pink-100" : "bg-gray-100"}`}>
-                    <Sun className={`h-7 w-7 ${theme === "light" ? "text-pink-500" : "text-gray-400"}`} />
-                  </div>
-                  <span className={`font-semibold text-base ${theme === "light" ? "text-pink-600" : "text-gray-600"}`}>Light</span>
-                  <span className="text-xs text-gray-400 leading-tight text-center">Clean &amp; bright</span>
-                  {theme === "light" && (
-                    <div className="w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center">
-                      <Check className="h-3 w-3 text-white" />
-                    </div>
-                  )}
-                </button>
-                <button
-                  onClick={() => setTheme("dark")}
-                  className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${theme === "dark" ? "border-pink-500 bg-gray-800 shadow-md" : "border-gray-200 hover:border-gray-300"}`}
-                >
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}>
-                    <Moon className={`h-7 w-7 ${theme === "dark" ? "text-pink-400" : "text-gray-400"}`} />
-                  </div>
-                  <span className={`font-semibold text-base ${theme === "dark" ? "text-pink-300" : "text-gray-600"}`}>Dark</span>
-                  <span className={`text-xs leading-tight text-center ${theme === "dark" ? "text-gray-400" : "text-gray-400"}`}>Easy on the eyes</span>
-                  {theme === "dark" && (
-                    <div className="w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center">
-                      <Check className="h-3 w-3 text-white" />
-                    </div>
-                  )}
-                </button>
-              </div>
-              <p className="text-xs text-gray-400 text-center">You can change this later in Settings if need be.</p>
-            </div>
-          )}
-
           {(slide as any).isPricing && (
             <div className="space-y-3">
               {/* Timeline */}
@@ -486,8 +438,6 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: 
             ? "Continue for Free"
             : (slide as any).isPrimingB
             ? "Sounds Good!"
-            : (slide as any).isThemePicker
-            ? (theme === "dark" ? "Dark it is! Continue" : "Light it is! Continue")
             : slide.cta}
             {!isLoading && <ChevronRight className="ml-2 h-5 w-5" />}
           </Button>

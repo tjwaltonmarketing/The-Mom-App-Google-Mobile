@@ -4,9 +4,10 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Monitor, ExternalLink, Bell, ChevronRight, CheckCircle2, Settings } from "lucide-react";
+import { Monitor, ExternalLink, Bell, ChevronRight, CheckCircle2, Settings, Sun, Moon, Check } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { requestAndRegisterPush, openNotificationSettings, checkPushPermissionStatus } from "@/services/push-notifications";
+import { useTheme } from "@/components/theme-provider";
 
 const STORAGE_KEY = "onboarding_slides_shown";
 
@@ -24,25 +25,28 @@ export function WebAccessTipModal() {
   const [enableLoading, setEnableLoading] = useState(false);
   const [notifResult, setNotifResult] = useState<"idle" | "success" | "failed">("idle");
   const isNative = Capacitor.isNativePlatform();
+  const { theme, setTheme } = useTheme();
 
-  const totalSlides = isNative ? 2 : 1;
+  // Slide 0: theme picker (everyone)
+  // Slide 1: web browser tip (mobile/app only)
+  // Slide 2: notifications (native only)
+  const totalSlides = isNative ? 3 : isMobileOrApp() ? 2 : 1;
 
   useEffect(() => {
-    if (!isMobileOrApp()) {
-      return;
-    }
     const hasSeenSlides = localStorage.getItem(STORAGE_KEY);
     const hasSeenOldTip = localStorage.getItem("web_access_tip_shown");
     if (!hasSeenSlides) {
+      // If they've already seen the old web tip but not the new sequence,
+      // skip to the right slide for native users
       if (hasSeenOldTip && isNative) {
-        setCurrentSlide(1);
+        setCurrentSlide(2);
       }
       const timer = setTimeout(() => {
         setIsOpen(true);
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [isNative]);
 
   const handleDismiss = () => {
     localStorage.setItem(STORAGE_KEY, "true");
@@ -97,10 +101,84 @@ export function WebAccessTipModal() {
     await openNotificationSettings();
   };
 
+  const dotCount = isNative ? 3 : isMobileOrApp() ? 2 : 1;
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleDismiss()}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+
+        {/* Slide 0 — Theme picker (all platforms) */}
         {currentSlide === 0 && (
+          <div className="p-6">
+            <h2 className="text-xl font-semibold text-center mb-1">How would you like the app to look?</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-5">Pick what feels right. You can always change it later.</p>
+
+            <div className="grid grid-cols-2 gap-4 mb-5">
+              <button
+                onClick={() => setTheme("light")}
+                className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${theme === "light" ? "border-pink-500 bg-pink-50 dark:bg-pink-900/20 shadow-md" : "border-gray-200 dark:border-gray-700 hover:border-gray-300"}`}
+              >
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center ${theme === "light" ? "bg-pink-100" : "bg-gray-100 dark:bg-gray-800"}`}>
+                  <Sun className={`h-7 w-7 ${theme === "light" ? "text-pink-500" : "text-gray-400"}`} />
+                </div>
+                <span className={`font-semibold text-base ${theme === "light" ? "text-pink-600" : "text-gray-600 dark:text-gray-300"}`}>Light</span>
+                <span className="text-xs text-gray-400 leading-tight text-center">Clean &amp; bright</span>
+                {theme === "light" && (
+                  <div className="w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center">
+                    <Check className="h-3 w-3 text-white" />
+                  </div>
+                )}
+              </button>
+
+              <button
+                onClick={() => setTheme("dark")}
+                className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${theme === "dark" ? "border-pink-500 bg-gray-800 shadow-md" : "border-gray-200 dark:border-gray-700 hover:border-gray-300"}`}
+              >
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center ${theme === "dark" ? "bg-gray-700" : "bg-gray-100 dark:bg-gray-800"}`}>
+                  <Moon className={`h-7 w-7 ${theme === "dark" ? "text-pink-400" : "text-gray-400"}`} />
+                </div>
+                <span className={`font-semibold text-base ${theme === "dark" ? "text-pink-300" : "text-gray-600 dark:text-gray-300"}`}>Dark</span>
+                <span className="text-xs text-gray-400 leading-tight text-center">Easy on the eyes</span>
+                {theme === "dark" && (
+                  <div className="w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center">
+                    <Check className="h-3 w-3 text-white" />
+                  </div>
+                )}
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-400 dark:text-gray-500 text-center mb-5">
+              You can change this later in Settings if need be.
+            </p>
+
+            <div className="flex items-center justify-between">
+              {dotCount > 1 && (
+                <div className="flex gap-1.5">
+                  {Array.from({ length: dotCount }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-1.5 rounded-full transition-all ${
+                        i === currentSlide
+                          ? "w-6 bg-pink-600"
+                          : "w-1.5 bg-gray-300 dark:bg-gray-600"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+              <Button
+                onClick={handleNext}
+                className="ml-auto bg-pink-600 hover:bg-pink-700"
+              >
+                {theme === "dark" ? "Dark it is!" : "Light it is!"}
+                {dotCount > 1 && <ChevronRight className="h-4 w-4 ml-1" />}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Slide 1 — Web browser tip (mobile/app only) */}
+        {currentSlide === 1 && isMobileOrApp() && (
           <div className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-full flex items-center justify-center">
@@ -129,20 +207,18 @@ export function WebAccessTipModal() {
               </div>
             </div>
             <div className="mt-6 flex items-center justify-between">
-              {isNative && (
-                <div className="flex gap-1.5">
-                  {Array.from({ length: totalSlides }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-1.5 rounded-full transition-all ${
-                        i === currentSlide
-                          ? "w-6 bg-pink-600"
-                          : "w-1.5 bg-gray-300 dark:bg-gray-600"
-                      }`}
-                    />
-                  ))}
-                </div>
-              )}
+              <div className="flex gap-1.5">
+                {Array.from({ length: dotCount }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-1.5 rounded-full transition-all ${
+                      i === currentSlide
+                        ? "w-6 bg-pink-600"
+                        : "w-1.5 bg-gray-300 dark:bg-gray-600"
+                    }`}
+                  />
+                ))}
+              </div>
               <Button
                 onClick={handleNext}
                 className="ml-auto bg-pink-600 hover:bg-pink-700"
@@ -160,7 +236,8 @@ export function WebAccessTipModal() {
           </div>
         )}
 
-        {currentSlide === 1 && isNative && (
+        {/* Slide 2 — Notifications (native only) */}
+        {currentSlide === 2 && isNative && (
           <div className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 rounded-full flex items-center justify-center">
@@ -223,7 +300,7 @@ export function WebAccessTipModal() {
             </div>
             <div className="mt-6 flex items-center justify-between">
               <div className="flex gap-1.5">
-                {Array.from({ length: totalSlides }).map((_, i) => (
+                {Array.from({ length: dotCount }).map((_, i) => (
                   <div
                     key={i}
                     className={`h-1.5 rounded-full transition-all ${
@@ -263,6 +340,7 @@ export function WebAccessTipModal() {
             </div>
           </div>
         )}
+
       </DialogContent>
     </Dialog>
   );
