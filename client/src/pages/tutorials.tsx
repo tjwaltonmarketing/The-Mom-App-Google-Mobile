@@ -187,6 +187,11 @@ const tutorials: Tutorial[] = [
         tips: ["Check the weather widget for planning outdoor activities", "Use quick actions for common tasks"]
       },
       {
+        title: "Get Started Here! Checklist",
+        description: "New users see a 'Get started here!' checklist near the top of the dashboard. It walks you through 8 key features step by step — tap any item to jump straight to that feature.",
+        tips: ["The checklist starts collapsed — tap it to expand", "Each item auto-checks when you complete it", "Dismiss it with the X once you're comfortable, or it disappears when all 8 are done"]
+      },
+      {
         title: "Today's Schedule",
         description: "See what's happening today for each family member with color-coded events.",
         action: "Click on any event to view details or make changes"
@@ -197,9 +202,9 @@ const tutorials: Tutorial[] = [
         tips: ["Tasks show who they're assigned to", "Priority levels help you focus on what's urgent"]
       },
       {
-        title: "Family Progress",
-        description: "Track your family's weekly task completion and attendance at events.",
-        tips: ["Green progress bars mean you're on track", "Use this to motivate kids with visible progress"]
+        title: "Dashboard & Passwords Tabs",
+        description: "The main dashboard has two tabs: Dashboard (your daily view) and Passwords (the family vault). Switch between them anytime.",
+        tips: ["Password vault stores family logins securely", "Both parents can access all vault entries"]
       }
     ]
   },
@@ -351,7 +356,7 @@ const tutorials: Tutorial[] = [
       {
         title: "Your 14-Day Trial",
         description: "Every new account gets 14 days of full access to test all features. Trial countdown is visible in Settings > Account.",
-        tips: ["Trial starts when you create your account", "Full access to all features", "No credit card required to start"]
+        tips: ["Trial starts when you create your account", "Full access to all features during trial", "Payment method collected at signup but not charged for 14 days", "Cancel anytime before trial ends — no charge"]
       },
       {
         title: "Get 7 Bonus Days - Extend to 21 Days",

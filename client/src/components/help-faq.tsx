@@ -15,6 +15,13 @@ interface FAQItem {
 
 const faqItems: FAQItem[] = [
   {
+    id: "getting-started-checklist",
+    question: "What is the 'Get started here!' checklist on my dashboard?",
+    answer: "When you first log in, you'll see a 'Get started here!' panel at the top of your dashboard. It's a collapsible checklist with 8 steps to help you explore all the key features: adding a family member, creating a calendar event, adding a task, writing a text note, planning a meal, trying the voice AI, trying the text AI assistant, and exploring the password vault. Each step links directly to that feature. The checklist disappears once you've completed all 8 steps, or you can dismiss it manually with the X button.",
+    category: "getting-started",
+    tags: ["getting-started", "checklist", "onboarding", "dashboard", "new-user"]
+  },
+  {
     id: "parent-accounts-overview",
     question: "How do parent accounts work? Do both parents get full access?",
     answer: "Parent accounts have complete, unrestricted access to all family coordination features. Both parents can manage calendars, assign tasks, invite family members, access the password vault, and control all settings. When you invite another parent via Settings > Family > 'Invite Parent to Family', they receive full administrative privileges - not a limited view like teen accounts. This ensures true partnership in family coordination.",
@@ -45,7 +52,7 @@ const faqItems: FAQItem[] = [
   {
     id: "assign-tasks-family-members",
     question: "How do I assign tasks to family members?",
-    answer: "When creating a task, simply select the family member from the dropdown menu. The task automatically appears in their collapsible section on the task management page. No complex point systems or gamification - just simple, visual task organization that makes it clear who is responsible for each task. You can print customized task lists for each family member.",
+    answer: "When creating a task, simply select the family member from the dropdown menu. The task automatically appears in their collapsible section on the task management page. For younger children, it's simple visual task organization. For teen accounts, there's also a built-in points and gamification system — teens earn points for completing tasks and build streaks over time. You can print customized task lists for each family member.",
     category: "features",
     tags: ["tasks", "assignment", "family", "simple", "organization"]
   },
@@ -79,10 +86,10 @@ const faqItems: FAQItem[] = [
   },
   {
     id: "voice-assistant-basics",
-    question: "How does the voice-to-assistant feature work?",
-    answer: "Record a voice note by clicking the microphone button. The AI transcribes your speech in real-time and analyzes it for tasks, calendar events, and reminders. You'll see smart suggestions that you can review and create with one tap. For example, saying 'Pick up groceries tomorrow and schedule Emma's dentist appointment' will suggest creating a grocery task and a calendar event.",
+    question: "How does the voice AI work?",
+    answer: "Tap the red microphone button on your dashboard to open the Voice Assistant. Speak naturally and the AI transcribes your speech in real-time, then analyzes it for tasks, calendar events, and reminders. You'll see smart suggestions you can review and create with one tap. For example, saying 'Pick up groceries tomorrow and schedule Emma's dentist appointment' will suggest creating a grocery task and a calendar event. This is separate from the text-based AI Assistant, which you can find in the main menu for typed conversations.",
     category: "features",
-    tags: ["voice", "ai", "assistant", "tasks", "calendar"]
+    tags: ["voice", "ai", "assistant", "tasks", "calendar", "microphone"]
   },
   {
     id: "voice-notes-accuracy",
@@ -164,14 +171,14 @@ const faqItems: FAQItem[] = [
   {
     id: "billing-plans-overview",
     question: "What are the billing options and pricing?",
-    answer: "Individual Plan: $5.99/month or $59.99/year for 1 user with full family coordination features. Family Plan: $9.99/month or $99.99/year for up to 4 users including teen accounts and advanced family features. Every new account gets a 14-day free trial with full access. No credit card required to start. Cancel anytime.",
+    answer: "Individual Plan: $5.99/month or $59.99/year for 1 user with full family coordination features. Family Plan: $9.99/month or $99.99/year for up to 4 users including teen accounts and advanced family features. Every new account gets a 14-day free trial with full access — your payment method is collected at signup but you are not charged until after your trial ends. Cancel anytime.",
     category: "billing",
     tags: ["pricing", "plans", "trial", "billing", "individual", "family"]
   },
   {
     id: "trial-period",
     question: "How does the 14-day trial work?",
-    answer: "Your trial starts when you create your account and gives you full access to all features for 14 days. Trial countdown is visible in Settings > Account. No credit card required to start. You can upgrade anytime during or after the trial period. Trial time remaining is preserved when upgrading or merging accounts.",
+    answer: "Your trial starts when you create your account and gives you full access to all features for 14 days. A payment method is required at signup, but you won't be charged until after the trial ends. Trial countdown is visible in Settings > Account. You can cancel anytime before the trial ends and you won't be billed. Trial time remaining is preserved when upgrading or merging accounts.",
     category: "billing",
     tags: ["trial", "14-day", "free", "upgrade", "account"]
   },
@@ -191,8 +198,8 @@ const faqItems: FAQItem[] = [
   },
   {
     id: "subscription-features",
-    question: "What's included in the premium subscription?",
-    answer: "Premium includes unlimited voice notes, AI meal planning, advanced calendar integration, password vault, priority support, and upcoming features like habit tracking and allowance management. Free accounts get 10 voice notes per month and basic features.",
+    question: "What's included in the subscription?",
+    answer: "Your subscription includes unlimited voice notes, AI meal planning, advanced calendar integration with Google Calendar sync, family password vault, text and voice AI assistants, teen accounts with gamification, and priority support. All features are fully available during your 14-day trial — no restrictions.",
     category: "billing",
     tags: ["subscription", "premium", "features", "limits"]
   },
@@ -233,10 +240,10 @@ const faqItems: FAQItem[] = [
   },
   {
     id: "ai-voice-commands",
-    question: "What can I do with voice commands and the AI assistant?",
-    answer: "The AI assistant can create calendar events, tasks, notes, and meal plans from your voice commands. Just say things like 'Add soccer practice tomorrow at 6pm' or 'Create a task to buy groceries'. The AI understands natural language and will add items to your calendar or task list automatically.",
+    question: "What's the difference between the voice AI and the text AI assistant?",
+    answer: "The Mom App has two AI modes. The Voice AI is accessed by tapping the red microphone button on your dashboard — you speak, it transcribes, and it suggests tasks and events to create. The Text AI Assistant is a chat-style interface in the main menu where you type your requests. Both can create tasks, events, meal plans, and more. Use voice when you're on the go, and text when you prefer to type.",
     category: "features",
-    tags: ["AI", "voice", "commands", "calendar", "tasks", "assistant"]
+    tags: ["AI", "voice", "text", "commands", "calendar", "tasks", "assistant", "difference"]
   },
   {
     id: "ai-assignment",
