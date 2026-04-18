@@ -51,7 +51,7 @@ export function RichTextEditor({ content, onChange, placeholder, className }: Ri
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[120px] p-3 [&_p]:my-0 [&_p]:leading-relaxed',
+        class: 'prose prose-sm max-w-none dark:prose-invert focus:outline-none min-h-[120px] p-3 [&_p]:my-0 [&_p]:leading-relaxed dark:text-gray-100',
       },
     },
   });

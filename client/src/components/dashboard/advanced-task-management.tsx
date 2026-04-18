@@ -283,7 +283,7 @@ export function AdvancedTaskManagement() {
         <div className="flex-1 min-w-0 overflow-hidden">
           {/* Title and main actions row */}
           <div className="flex items-start gap-2 mb-2">
-            <h4 className={`font-medium text-sm flex-1 min-w-0 truncate ${task.isCompleted ? 'line-through text-gray-500' : 'text-gray-900'} flex items-center gap-1.5`}>
+            <h4 className={`font-medium text-sm flex-1 min-w-0 truncate ${task.isCompleted ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'} flex items-center gap-1.5`}>
               {task.isPrivate && (
                 <Lock className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
               )}
