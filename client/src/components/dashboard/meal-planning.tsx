@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send, ArrowUpDown } from "lucide-react";
+import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send, ArrowUpDown, Pencil, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +47,7 @@ export function MealPlanning() {
   const [selectedMember, setSelectedMember] = useState("");
   const [expandedMeal, setExpandedMeal] = useState<number | null>(null);
   const [sortByCategory, setSortByCategory] = useState(false);
+  const [editingGroceryItem, setEditingGroceryItem] = useState<{ id: number; quantity: string; category: string } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -263,6 +264,21 @@ export function MealPlanning() {
         title: "All items deleted",
         description: "Grocery list has been cleared",
       });
+    },
+  });
+
+  const updateGroceryMutation = useMutation({
+    mutationFn: async ({ id, quantity, category }: { id: number; quantity: string; category: string }) => {
+      return apiRequest("PATCH", `/api/grocery-items/${id}`, { quantity, category });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+      await refetchGrocery();
+      setEditingGroceryItem(null);
+      toast({ title: "Item updated", description: "Grocery item saved" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update item", variant: "destructive" });
     },
   });
 
@@ -784,24 +800,31 @@ export function MealPlanning() {
                         </h5>
                         <div className="space-y-2">
                           {items.map((item: GroceryItem) => (
-                            <div key={item.id} className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg ml-2">
-                              <Checkbox
-                                checked={false}
-                                onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
-                              />
-                              <div className="flex-1">
-                                <p className="font-medium">{item.item}</p>
-                                <p className="text-sm text-gray-600">{item.quantity}</p>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => deleteGroceryMutation.mutate(item.id)}
-                                disabled={deleteGroceryMutation.isPending}
-                                className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
+                            <div key={item.id} className="p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg ml-2">
+                              {editingGroceryItem?.id === item.id ? (
+                                <div className="space-y-2">
+                                  <p className="font-medium text-sm">{item.item}</p>
+                                  <div className="flex gap-2">
+                                    <Input value={editingGroceryItem.quantity} onChange={(e) => setEditingGroceryItem({ ...editingGroceryItem, quantity: e.target.value })} placeholder="Quantity" className="flex-1 h-8 text-sm" />
+                                    <Select value={editingGroceryItem.category} onValueChange={(val) => setEditingGroceryItem({ ...editingGroceryItem, category: val })}>
+                                      <SelectTrigger className="flex-1 h-8 text-sm"><SelectValue /></SelectTrigger>
+                                      <SelectContent>{categories.map(cat => <SelectItem key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                    <Button size="sm" className="h-8 w-8 p-0" onClick={() => updateGroceryMutation.mutate(editingGroceryItem)} disabled={updateGroceryMutation.isPending}><Check className="h-3 w-3" /></Button>
+                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setEditingGroceryItem(null)}><X className="h-3 w-3" /></Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center space-x-3">
+                                  <Checkbox checked={false} onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })} />
+                                  <div className="flex-1">
+                                    <p className="font-medium">{item.item}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">{item.quantity}</p>
+                                  </div>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setEditingGroceryItem({ id: item.id, quantity: item.quantity, category: item.category || "other" })}><Pencil className="h-3 w-3" /></Button>
+                                  <Button variant="ghost" size="sm" onClick={() => deleteGroceryMutation.mutate(item.id)} disabled={deleteGroceryMutation.isPending} className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"><Trash2 className="h-3 w-3" /></Button>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -814,27 +837,32 @@ export function MealPlanning() {
                 ) : (
                   <div className="space-y-2">
                     {getPendingGroceries().map((item: GroceryItem) => (
-                      <div key={item.id} className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg">
-                        <Checkbox
-                          checked={false}
-                          onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
-                        />
-                        <div className="flex-1">
-                          <p className="font-medium">{item.item}</p>
-                          <p className="text-sm text-gray-600">{item.quantity}</p>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          {item.category}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteGroceryMutation.mutate(item.id)}
-                          disabled={deleteGroceryMutation.isPending}
-                          className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                      <div key={item.id} className="p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg">
+                        {editingGroceryItem?.id === item.id ? (
+                          <div className="space-y-2">
+                            <p className="font-medium text-sm">{item.item}</p>
+                            <div className="flex gap-2">
+                              <Input value={editingGroceryItem.quantity} onChange={(e) => setEditingGroceryItem({ ...editingGroceryItem, quantity: e.target.value })} placeholder="Quantity" className="flex-1 h-8 text-sm" />
+                              <Select value={editingGroceryItem.category} onValueChange={(val) => setEditingGroceryItem({ ...editingGroceryItem, category: val })}>
+                                <SelectTrigger className="flex-1 h-8 text-sm"><SelectValue /></SelectTrigger>
+                                <SelectContent>{categories.map(cat => <SelectItem key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>)}</SelectContent>
+                              </Select>
+                              <Button size="sm" className="h-8 w-8 p-0" onClick={() => updateGroceryMutation.mutate(editingGroceryItem)} disabled={updateGroceryMutation.isPending}><Check className="h-3 w-3" /></Button>
+                              <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setEditingGroceryItem(null)}><X className="h-3 w-3" /></Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-3">
+                            <Checkbox checked={false} onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })} />
+                            <div className="flex-1">
+                              <p className="font-medium">{item.item}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{item.quantity}</p>
+                            </div>
+                            <Badge variant="outline" className="text-xs">{item.category}</Badge>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setEditingGroceryItem({ id: item.id, quantity: item.quantity, category: item.category || "other" })}><Pencil className="h-3 w-3" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => deleteGroceryMutation.mutate(item.id)} disabled={deleteGroceryMutation.isPending} className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"><Trash2 className="h-3 w-3" /></Button>
+                          </div>
+                        )}
                       </div>
                     ))}
                     {getPendingGroceries().length === 0 && (
