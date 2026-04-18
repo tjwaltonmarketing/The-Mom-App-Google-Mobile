@@ -25,7 +25,9 @@ import {
   Edit,
   Trash2,
   AlertTriangle,
-  Crown
+  Crown,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -159,6 +161,13 @@ export function PasswordVault() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
+  const [expandedPasswords, setExpandedPasswords] = useState<Set<number>>(new Set());
+
+  const toggleExpanded = (id: number) => {
+    const next = new Set(expandedPasswords);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setExpandedPasswords(next);
+  };
 
   const handleDeletePassword = (password: Password) => {
     setDeleteConfirmPassword(password);
@@ -348,184 +357,189 @@ export function PasswordVault() {
                 <p className="text-sm">Try adjusting your search or category filter</p>
               </div>
             ) : (
-              filteredPasswords.map((password) => (
-                <div
-                  key={password.id}
-                  className="p-4 bg-gray-50 dark:bg-gray-700 blue-light-filter:bg-amber-25 rounded-lg border border-gray-200 dark:border-gray-600 blue-light-filter:border-amber-200"
-                >
-                  <div className="flex items-start mb-3">
-                    <div className="flex items-center gap-2 flex-1 mr-3">
-                      <div className="w-3 h-3 text-xs flex items-center justify-center flex-shrink-0">
+              filteredPasswords.map((password) => {
+                const isExpanded = expandedPasswords.has(password.id);
+                return (
+                  <div
+                    key={password.id}
+                    className="bg-gray-50 dark:bg-gray-700 blue-light-filter:bg-amber-25 rounded-lg border border-gray-200 dark:border-gray-600 blue-light-filter:border-amber-200 overflow-hidden"
+                  >
+                    {/* Collapsed header — always visible, click to expand */}
+                    <button
+                      onClick={() => toggleExpanded(password.id)}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                    >
+                      <span className="text-base leading-none flex-shrink-0">
                         {getCategoryIcon(password.category)}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900 dark:text-white blue-light-filter:text-gray-900 truncate">
-                            {password.title}
-                          </h3>
-                          {password.isFavorite && (
-                            <Star size={12} className="text-yellow-500 fill-current flex-shrink-0" />
-                          )}
-                        </div>
-                        <Badge className={`text-xs ${getCategoryColor(password.category)}`}>
-                          {password.category}
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
-                      {password.website && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => window.open(`https://${password.website}`, '_blank')}
-                          className="p-1 h-6 w-6 hover:bg-gray-200 dark:hover:bg-gray-600"
-                          title="Open website"
-                        >
-                          <ExternalLink size={10} />
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleFavorite(password)}
-                        className="p-1 h-6 w-6 hover:bg-gray-200 dark:hover:bg-gray-600"
-                        title={password.isFavorite ? "Remove from favorites" : "Add to favorites"}
-                        disabled={toggleFavoriteMutation.isPending}
-                        data-testid={`button-toggle-favorite-${password.id}`}
-                      >
-                        {password.isFavorite ? <StarOff size={10} /> : <Star size={10} />}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-sm">
-                    {password.website && (
-                      <div className="flex items-center gap-2">
-                        <Globe size={14} className="text-gray-500" />
-                        <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700">
-                          {password.website}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {password.username && (
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <User size={14} className="text-gray-500 flex-shrink-0" />
-                          <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700 truncate">
-                            {password.username}
-                          </span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(password.username || "")}
-                          className="p-1 h-6 w-6 flex-shrink-0"
-                          title="Copy username"
-                        >
-                          <Copy size={12} />
-                        </Button>
-                      </div>
-                    )}
-
-                    {password.email && password.email !== password.username && (
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <Mail size={14} className="text-gray-500 flex-shrink-0" />
-                          <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700 truncate">
-                            {password.email}
-                          </span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(password.email || "")}
-                          className="p-1 h-6 w-6 flex-shrink-0"
-                          title="Copy email"
-                        >
-                          <Copy size={12} />
-                        </Button>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <Lock size={14} className="text-gray-500 flex-shrink-0" />
-                        <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700 font-mono truncate">
-                          {visiblePasswords.has(password.id) 
-                            ? password.password 
-                            : "•".repeat(password.password.length)
-                          }
-                        </span>
-                      </div>
-                      <div className="flex gap-1 flex-shrink-0">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => togglePasswordVisibility(password.id)}
-                          className="p-1 h-6 w-6"
-                          title={visiblePasswords.has(password.id) ? "Hide password" : "Show password"}
-                        >
-                          {visiblePasswords.has(password.id) ? (
-                            <EyeOff size={12} />
-                          ) : (
-                            <Eye size={12} />
-                          )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(password.password)}
-                          className="p-1 h-6 w-6"
-                          title="Copy password"
-                        >
-                          <Copy size={12} />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {password.notes && (
-                      <>
-                        <Separator className="my-2" />
-                        <p className="text-xs text-gray-500 dark:text-gray-400 blue-light-filter:text-gray-600">
-                          {password.notes}
-                        </p>
-                      </>
-                    )}
-
-                    <div className="flex justify-between items-center pt-2">
-                      <span className="text-xs text-gray-400">
-                        Updated {password.lastUpdated ? new Date(password.lastUpdated).toLocaleDateString() : 'Never'}
                       </span>
-                      <div className="flex gap-1">
-                        {canSharePasswords && (
+                      <span className="font-semibold text-gray-900 dark:text-white truncate flex-1 text-sm">
+                        {password.title}
+                      </span>
+                      {password.isFavorite && (
+                        <Star size={12} className="text-yellow-500 fill-current flex-shrink-0" />
+                      )}
+                      <Badge className={`text-xs flex-shrink-0 ${getCategoryColor(password.category)}`}>
+                        {password.category}
+                      </Badge>
+                      {isExpanded
+                        ? <ChevronUp size={14} className="text-gray-400 flex-shrink-0" />
+                        : <ChevronDown size={14} className="text-gray-400 flex-shrink-0" />
+                      }
+                    </button>
+
+                    {/* Expanded details */}
+                    {isExpanded && (
+                      <div className="px-3 pb-3 space-y-2 text-sm border-t border-gray-200 dark:border-gray-600 pt-2">
+                        {/* Quick-action row */}
+                        <div className="flex items-center gap-1 justify-end">
+                          {password.website && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(`https://${password.website}`, '_blank')}
+                              className="p-1 h-6 w-6 hover:bg-gray-200 dark:hover:bg-gray-600"
+                              title="Open website"
+                            >
+                              <ExternalLink size={10} />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setEditingPassword(password)}
-                            className="p-1 h-6 w-6 text-gray-400 hover:text-blue-600"
-                            title="Edit sharing permissions"
-                            data-testid={`button-edit-password-${password.id}`}
+                            onClick={() => handleToggleFavorite(password)}
+                            className="p-1 h-6 w-6 hover:bg-gray-200 dark:hover:bg-gray-600"
+                            title={password.isFavorite ? "Remove from favorites" : "Add to favorites"}
+                            disabled={toggleFavoriteMutation.isPending}
+                            data-testid={`button-toggle-favorite-${password.id}`}
                           >
-                            <Edit size={12} />
+                            {password.isFavorite ? <StarOff size={10} /> : <Star size={10} />}
                           </Button>
+                        </div>
+
+                        {password.website && (
+                          <div className="flex items-center gap-2">
+                            <Globe size={14} className="text-gray-500 flex-shrink-0" />
+                            <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700 truncate">
+                              {password.website}
+                            </span>
+                          </div>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeletePassword(password)}
-                          className="p-1 h-6 w-6 text-gray-400 hover:text-red-600"
-                          title="Delete password"
-                          data-testid={`button-delete-password-${password.id}`}
-                        >
-                          <Trash2 size={12} />
-                        </Button>
+
+                        {password.username && (
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <User size={14} className="text-gray-500 flex-shrink-0" />
+                              <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700 truncate">
+                                {password.username}
+                              </span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(password.username || "")}
+                              className="p-1 h-6 w-6 flex-shrink-0"
+                              title="Copy username"
+                            >
+                              <Copy size={12} />
+                            </Button>
+                          </div>
+                        )}
+
+                        {password.email && password.email !== password.username && (
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <Mail size={14} className="text-gray-500 flex-shrink-0" />
+                              <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700 truncate">
+                                {password.email}
+                              </span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(password.email || "")}
+                              className="p-1 h-6 w-6 flex-shrink-0"
+                              title="Copy email"
+                            >
+                              <Copy size={12} />
+                            </Button>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <Lock size={14} className="text-gray-500 flex-shrink-0" />
+                            <span className="text-gray-600 dark:text-gray-300 blue-light-filter:text-gray-700 font-mono truncate">
+                              {visiblePasswords.has(password.id)
+                                ? password.password
+                                : "•".repeat(Math.min(password.password.length, 12))
+                              }
+                            </span>
+                          </div>
+                          <div className="flex gap-1 flex-shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => togglePasswordVisibility(password.id)}
+                              className="p-1 h-6 w-6"
+                              title={visiblePasswords.has(password.id) ? "Hide password" : "Show password"}
+                            >
+                              {visiblePasswords.has(password.id) ? <EyeOff size={12} /> : <Eye size={12} />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(password.password)}
+                              className="p-1 h-6 w-6"
+                              title="Copy password"
+                            >
+                              <Copy size={12} />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {password.notes && (
+                          <>
+                            <Separator className="my-1" />
+                            <p className="text-xs text-gray-500 dark:text-gray-400 blue-light-filter:text-gray-600">
+                              {password.notes}
+                            </p>
+                          </>
+                        )}
+
+                        <div className="flex justify-between items-center pt-1">
+                          <span className="text-xs text-gray-400">
+                            Updated {password.lastUpdated ? new Date(password.lastUpdated).toLocaleDateString() : 'Never'}
+                          </span>
+                          <div className="flex gap-1">
+                            {canSharePasswords && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setEditingPassword(password)}
+                                className="p-1 h-6 w-6 text-gray-400 hover:text-blue-600"
+                                title="Edit sharing permissions"
+                                data-testid={`button-edit-password-${password.id}`}
+                              >
+                                <Edit size={12} />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeletePassword(password)}
+                              className="p-1 h-6 w-6 text-gray-400 hover:text-red-600"
+                              title="Delete password"
+                              data-testid={`button-delete-password-${password.id}`}
+                            >
+                              <Trash2 size={12} />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </TabsContent>
         </Tabs>
