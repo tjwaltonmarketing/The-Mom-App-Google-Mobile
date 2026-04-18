@@ -4174,6 +4174,47 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Update password details
+  app.patch("/api/passwords/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const passwordId = parseInt(req.params.id);
+      const familyMember = await storage.getFamilyMemberByUserId(req.session.userId);
+      if (!familyMember) {
+        return res.status(404).json({ error: "Family member not found" });
+      }
+
+      const existingPassword = await storage.getPasswordById(passwordId);
+      if (!existingPassword) {
+        return res.status(404).json({ error: "Password not found" });
+      }
+
+      if (existingPassword.createdBy !== familyMember.id) {
+        return res.status(403).json({ error: "You can only edit passwords you created" });
+      }
+
+      const { title, category, website, username, email, password, notes, isFavorite } = req.body;
+      const updates: Record<string, any> = {};
+      if (title !== undefined) updates.title = title;
+      if (category !== undefined) updates.category = category;
+      if (website !== undefined) updates.website = website;
+      if (username !== undefined) updates.username = username;
+      if (email !== undefined) updates.email = email;
+      if (password !== undefined) updates.password = password;
+      if (notes !== undefined) updates.notes = notes;
+      if (isFavorite !== undefined) updates.isFavorite = isFavorite;
+
+      const updated = await storage.updatePassword(passwordId, updates);
+      res.json(updated);
+    } catch (error) {
+      console.error("Password update error:", error);
+      res.status(500).json({ error: "Failed to update password" });
+    }
+  });
+
   app.delete("/api/passwords/:id", async (req, res) => {
     try {
       if (!req.session.userId) {

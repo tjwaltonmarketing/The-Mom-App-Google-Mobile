@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { PasswordModal } from "@/components/password-modal";
 import { PasswordEditModal } from "@/components/password-edit-modal";
+import { PasswordDetailsEditModal } from "@/components/password-details-edit-modal";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Shield, 
@@ -27,7 +28,8 @@ import {
   AlertTriangle,
   Crown,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Users
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -54,6 +56,7 @@ export function PasswordVault() {
   const queryClient = useQueryClient();
   const { isIndividualPlan, canAccessPasswordVault, canSharePasswords } = useSubscription();
   const [editingPassword, setEditingPassword] = useState<Password | null>(null);
+  const [editingPasswordDetails, setEditingPasswordDetails] = useState<Password | null>(null);
   const [deleteConfirmPassword, setDeleteConfirmPassword] = useState<Password | null>(null);
   const [showRemoveAllConfirm, setShowRemoveAllConfirm] = useState(false);
 
@@ -511,6 +514,15 @@ export function PasswordVault() {
                             Updated {password.lastUpdated ? new Date(password.lastUpdated).toLocaleDateString() : 'Never'}
                           </span>
                           <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingPasswordDetails(password)}
+                              className="p-1 h-6 w-6 text-gray-400 hover:text-green-600"
+                              title="Edit password details"
+                            >
+                              <Edit size={12} />
+                            </Button>
                             {canSharePasswords && (
                               <Button
                                 variant="ghost"
@@ -520,7 +532,7 @@ export function PasswordVault() {
                                 title="Edit sharing permissions"
                                 data-testid={`button-edit-password-${password.id}`}
                               >
-                                <Edit size={12} />
+                                <Users size={12} />
                               </Button>
                             )}
                             <Button
@@ -550,6 +562,14 @@ export function PasswordVault() {
           password={editingPassword}
           isOpen={!!editingPassword}
           onClose={() => setEditingPassword(null)}
+        />
+      )}
+
+      {editingPasswordDetails && (
+        <PasswordDetailsEditModal
+          password={editingPasswordDetails}
+          isOpen={!!editingPasswordDetails}
+          onClose={() => setEditingPasswordDetails(null)}
         />
       )}
       
