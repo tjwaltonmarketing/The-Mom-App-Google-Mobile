@@ -101,6 +101,9 @@ export default function TasksPage() {
                 <span className="font-bold text-pink-500 mt-0.5">3.</span>
                 <p>Print and post it somewhere they can see it — done! 🎉</p>
               </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 pt-1">
+                💡 Can't print from your phone? Visit <strong>app.themom.app</strong> in any web browser to print from a computer.
+              </p>
             </div>
           </div>
           <DialogFooter className="pt-2">
