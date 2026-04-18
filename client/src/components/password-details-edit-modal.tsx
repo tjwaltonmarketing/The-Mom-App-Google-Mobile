@@ -78,6 +78,7 @@ export function PasswordDetailsEditModal({ password, isOpen, onClose }: Password
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/passwords"] });
+      queryClient.refetchQueries({ queryKey: ["/api/passwords"] });
       toast({
         title: "Password Updated",
         description: "Your changes have been saved.",
