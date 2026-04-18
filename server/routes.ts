@@ -3776,6 +3776,23 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  app.patch("/api/grocery-items/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const itemId = parseInt(req.params.id);
+      const updated = await storage.updateGroceryItem(itemId, req.body);
+      if (!updated) {
+        return res.status(404).json({ error: "Grocery item not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error("Update grocery item error:", error);
+      res.status(500).json({ error: "Failed to update grocery item" });
+    }
+  });
+
   app.delete("/api/grocery-items/:id", async (req, res) => {
     try {
       if (!req.session.userId) {

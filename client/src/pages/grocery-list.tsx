@@ -1,6 +1,6 @@
 import { Header } from "@/components/layout/header";
 import { MobileNav } from "@/components/layout/mobile-nav";
-import { ShoppingCart, Plus, Share2, Calendar, Check, Trash2, ArrowUpDown } from "lucide-react";
+import { ShoppingCart, Plus, Share2, Calendar, Check, Trash2, ArrowUpDown, Pencil, X } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,7 @@ export default function GroceryListPage() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState("");
   const [sortByCategory, setSortByCategory] = useState(false);
+  const [editingItem, setEditingItem] = useState<{ id: number; quantity: string; category: string } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -117,6 +118,20 @@ export default function GroceryListPage() {
         title: "Item deleted",
         description: "Removed from grocery list",
       });
+    },
+  });
+
+  const updateGroceryMutation = useMutation({
+    mutationFn: async ({ id, quantity, category }: { id: number; quantity: string; category: string }) => {
+      return apiRequest("PATCH", `/api/grocery-items/${id}`, { quantity, category });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/grocery-items"] });
+      setEditingItem(null);
+      toast({ title: "Item updated", description: "Grocery item saved" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update item", variant: "destructive" });
     },
   });
 
@@ -279,23 +294,50 @@ export default function GroceryListPage() {
                         </h3>
                         <div className="space-y-2">
                           {items.map((item: GroceryItem) => (
-                            <div key={item.id} className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg ml-2">
-                              <Checkbox
-                                checked={false}
-                                onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
-                              />
-                              <div className="flex-1">
-                                <p className="font-medium">{item.item}</p>
-                                <p className="text-sm text-gray-600">{item.quantity}</p>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => deleteGroceryMutation.mutate(item.id)}
-                                className="h-8 w-8 p-0"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                            <div key={item.id} className="p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg ml-2">
+                              {editingItem?.id === item.id ? (
+                                <div className="space-y-2">
+                                  <p className="font-medium text-sm">{item.item}</p>
+                                  <div className="flex gap-2">
+                                    <Input
+                                      value={editingItem.quantity}
+                                      onChange={(e) => setEditingItem({ ...editingItem, quantity: e.target.value })}
+                                      placeholder="Quantity"
+                                      className="flex-1 h-8 text-sm"
+                                    />
+                                    <Select value={editingItem.category} onValueChange={(val) => setEditingItem({ ...editingItem, category: val })}>
+                                      <SelectTrigger className="flex-1 h-8 text-sm">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {categories.map(cat => (
+                                          <SelectItem key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <Button size="sm" className="h-8 w-8 p-0" onClick={() => updateGroceryMutation.mutate(editingItem)} disabled={updateGroceryMutation.isPending}>
+                                      <Check className="h-4 w-4" />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setEditingItem(null)}>
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center space-x-3">
+                                  <Checkbox checked={false} onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })} />
+                                  <div className="flex-1">
+                                    <p className="font-medium">{item.item}</p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">{item.quantity}</p>
+                                  </div>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setEditingItem({ id: item.id, quantity: item.quantity, category: item.category || "other" })}>
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => deleteGroceryMutation.mutate(item.id)}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -308,26 +350,51 @@ export default function GroceryListPage() {
                 ) : (
                   <div className="space-y-2">
                     {getPendingGroceries().map((item: GroceryItem) => (
-                      <div key={item.id} className="flex items-center space-x-3 p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg">
-                        <Checkbox
-                          checked={false}
-                          onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })}
-                        />
-                        <div className="flex-1">
-                          <p className="font-medium">{item.item}</p>
-                          <p className="text-sm text-gray-600">{item.quantity}</p>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          {item.category}
-                        </Badge>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteGroceryMutation.mutate(item.id)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <div key={item.id} className="p-3 bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-lg">
+                        {editingItem?.id === item.id ? (
+                          <div className="space-y-2">
+                            <p className="font-medium text-sm">{item.item}</p>
+                            <div className="flex gap-2">
+                              <Input
+                                value={editingItem.quantity}
+                                onChange={(e) => setEditingItem({ ...editingItem, quantity: e.target.value })}
+                                placeholder="Quantity"
+                                className="flex-1 h-8 text-sm"
+                              />
+                              <Select value={editingItem.category} onValueChange={(val) => setEditingItem({ ...editingItem, category: val })}>
+                                <SelectTrigger className="flex-1 h-8 text-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {categories.map(cat => (
+                                    <SelectItem key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button size="sm" className="h-8 w-8 p-0" onClick={() => updateGroceryMutation.mutate(editingItem)} disabled={updateGroceryMutation.isPending}>
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => setEditingItem(null)}>
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-3">
+                            <Checkbox checked={false} onCheckedChange={() => toggleGroceryMutation.mutate({ id: item.id, isCompleted: true })} />
+                            <div className="flex-1">
+                              <p className="font-medium">{item.item}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{item.quantity}</p>
+                            </div>
+                            <Badge variant="outline" className="text-xs">{item.category}</Badge>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setEditingItem({ id: item.id, quantity: item.quantity, category: item.category || "other" })}>
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => deleteGroceryMutation.mutate(item.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     ))}
                     {getPendingGroceries().length === 0 && (
