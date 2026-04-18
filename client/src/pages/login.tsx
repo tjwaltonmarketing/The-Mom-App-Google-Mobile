@@ -52,18 +52,26 @@ export default function Login() {
     retry: false,
   });
 
+  const { data: subscriptionData } = useQuery<any>({
+    queryKey: ["/api/subscription"],
+    enabled: !!authUser?.id,
+    retry: false,
+  });
+
   useEffect(() => {
-    if (authUser?.id) {
-      // If there's a pending coupon, send them to upgrade; otherwise just go home
+    if (!authUser?.id) return;
+    // Only auto-redirect if the user already has an active subscription.
+    // If they have no subscription they'd just be bounced into the onboarding
+    // loop — let them stay on the login page so they can sign in as someone else.
+    if (subscriptionData) {
       const pending = localStorage.getItem('pendingCoupon');
       setLocation(pending ? "/upgrade" : "/");
     }
-  }, [authUser, setLocation]);
+  }, [authUser, subscriptionData, setLocation]);
 
-  // Force light mode on login page
+  // Ensure light mode on login page without overwriting the user's saved preference
   useEffect(() => {
     document.documentElement.classList.remove('dark', 'blue-light-filter');
-    localStorage.setItem('mom-app-theme', 'light');
   }, []);
 
   // Fetch Google Client ID
