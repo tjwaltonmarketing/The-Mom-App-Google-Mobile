@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { CheckCircle2, Circle, ChevronDown, ChevronUp, X } from "lucide-react";
+import { CheckCircle2, Circle, ChevronDown, ChevronUp, ChevronRight, X } from "lucide-react";
 import { useState } from "react";
 
 interface ChecklistItem {
@@ -199,43 +199,51 @@ export function GettingStarted({ onStartVoiceNote, onSwitchToPasswords }: Gettin
 
       {/* Items */}
       {!collapsed && (
-        <ul className="divide-y divide-gray-50 dark:divide-gray-700/50">
-          {items.map((item) => (
-            <li key={item.id}>
-              <button
-                onClick={() => handleItemClick(item)}
-                disabled={item.done}
-                className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors ${
-                  item.done
-                    ? "opacity-50 cursor-default"
-                    : "hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100"
-                }`}
-              >
-                {item.done ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
-                ) : (
-                  <Circle className="w-5 h-5 text-gray-300 dark:text-gray-600 shrink-0 mt-0.5" />
-                )}
-                <div className="min-w-0">
-                  <p
-                    className={`text-sm font-medium ${
-                      item.done
-                        ? "line-through text-gray-400 dark:text-gray-500"
-                        : "text-gray-900 dark:text-white"
-                    }`}
-                  >
-                    {item.label}
-                  </p>
-                  {!item.done && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                      {item.description}
-                    </p>
+        <>
+          <p className="px-4 pt-2 pb-1 text-xs text-pink-500 dark:text-pink-400 font-medium">
+            Tap each step below to get started →
+          </p>
+          <ul className="divide-y divide-gray-50 dark:divide-gray-700/50">
+            {items.map((item) => (
+              <li key={item.id}>
+                <button
+                  onClick={() => handleItemClick(item)}
+                  disabled={item.done}
+                  className={`w-full flex items-start gap-3 px-4 py-3 text-left transition-colors ${
+                    item.done
+                      ? "opacity-50 cursor-default"
+                      : "hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100"
+                  }`}
+                >
+                  {item.done ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-gray-300 dark:text-gray-600 shrink-0 mt-0.5" />
                   )}
-                </div>
-              </button>
-            </li>
-          ))}
-        </ul>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`text-sm font-medium ${
+                        item.done
+                          ? "line-through text-gray-400 dark:text-gray-500"
+                          : "text-gray-900 dark:text-white"
+                      }`}
+                    >
+                      {item.label}
+                    </p>
+                    {!item.done && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                  {!item.done && (
+                    <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 shrink-0 mt-0.5" />
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );
