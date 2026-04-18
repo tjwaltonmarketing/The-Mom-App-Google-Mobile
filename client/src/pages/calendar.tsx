@@ -206,13 +206,13 @@ export default function CalendarPage() {
                       <div className="flex items-center gap-3">
                         <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                         <div className="flex-1">
-                          <div className="font-medium text-gray-900">{event.title}</div>
-                          <div className="text-sm text-gray-600 flex items-center gap-1">
+                          <div className="font-medium text-gray-900 dark:text-gray-100">{event.title}</div>
+                          <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-1">
                             <Clock size={14} />
                             {timeDisplay}
                           </div>
                           {event.description && (
-                            <div className="text-sm text-gray-500 mt-1">{event.description}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">{event.description}</div>
                           )}
                           {event.location && (
                             <div className="mt-2">
