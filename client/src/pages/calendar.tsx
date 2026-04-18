@@ -612,17 +612,17 @@ export default function CalendarPage() {
       <Dialog open={showCalendarTip} onOpenChange={(open) => { if (!open) dismissCalendarTip(); }}>
         <DialogContent className="max-w-sm rounded-2xl">
           <DialogHeader className="text-center items-center pb-2">
-            <div className="w-14 h-14 bg-pink-100 rounded-full flex items-center justify-center mb-3">
+            <div className="w-14 h-14 bg-pink-100 dark:bg-pink-900/40 rounded-full flex items-center justify-center mb-3">
               <Calendar className="text-pink-500" size={28} />
             </div>
-            <DialogTitle className="text-xl font-bold text-gray-900">Did you know?</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">Did you know?</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 text-sm text-gray-600 px-1">
-            <p className="text-center text-gray-700">
+          <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300 px-1">
+            <p className="text-center text-gray-700 dark:text-gray-200">
               You can import events from <strong>Google Calendar</strong> or any <strong>iCal feed</strong> directly into your family calendar!
             </p>
-            <div className="bg-pink-50 rounded-xl p-4 space-y-2">
-              <p className="font-semibold text-gray-800 text-xs uppercase tracking-wide">How to import:</p>
+            <div className="bg-pink-50 dark:bg-pink-900/30 rounded-xl p-4 space-y-2">
+              <p className="font-semibold text-gray-800 dark:text-gray-100 text-xs uppercase tracking-wide">How to import:</p>
               <div className="flex items-start gap-2">
                 <span className="font-bold text-pink-500 mt-0.5">1.</span>
                 <p>Scroll down to the <strong>Import Calendars</strong> section (right sidebar on desktop, bottom on mobile)</p>
