@@ -129,8 +129,8 @@ export function GettingStarted({ onStartVoiceNote, onSwitchToPasswords }: Gettin
     },
     {
       id: "password",
-      label: "Save a password",
-      description: "Store a family password or login securely in the Passwords tab.",
+      label: "Explore the password vault",
+      description: "See how your family can securely store and share logins in one place.",
       tab: true,
       done: hasPassword,
     },
@@ -149,6 +149,7 @@ export function GettingStarted({ onStartVoiceNote, onSwitchToPasswords }: Gettin
     if (item.modal) {
       onStartVoiceNote();
     } else if (item.tab) {
+      setCollapsed(true);
       onSwitchToPasswords();
     } else if (item.path) {
       setLocation(item.path);
