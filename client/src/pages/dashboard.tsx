@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Dashboard() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   return (
     <div className="min-h-screen bg-neutral dark:bg-background blue-light-filter:bg-neutral">
@@ -35,9 +36,12 @@ export default function Dashboard() {
         
         <WelcomeHeader onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
         
-        <GettingStarted onStartVoiceNote={() => setIsVoiceModalOpen(true)} />
+        <GettingStarted
+          onStartVoiceNote={() => setIsVoiceModalOpen(true)}
+          onSwitchToPasswords={() => setActiveTab("passwords")}
+        />
         
-        <Tabs defaultValue="dashboard" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full mb-6 h-auto p-1">
             <div className="grid grid-cols-2 gap-1 w-full">
               <TabsTrigger value="dashboard" className="text-xs sm:text-sm">Dashboard</TabsTrigger>

@@ -9,6 +9,7 @@ interface ChecklistItem {
   description: string;
   path?: string;
   modal?: boolean;
+  tab?: boolean;
   done: boolean;
 }
 
@@ -43,6 +44,11 @@ function useGettingStartedData() {
     staleTime: 60_000,
   });
 
+  const { data: passwords } = useQuery<any[]>({
+    queryKey: ["/api/passwords"],
+    staleTime: 60_000,
+  });
+
   const aiVisited = typeof window !== "undefined" &&
     localStorage.getItem("visited_ai_assistant") === "true";
 
@@ -52,21 +58,23 @@ function useGettingStartedData() {
   const hasTextNote = (textNotes?.length ?? 0) > 0;
   const hasVoiceNote = (voiceNotes?.length ?? 0) > 0;
   const hasMeal = (meals?.length ?? 0) > 0;
+  const hasPassword = (passwords?.length ?? 0) > 0;
 
-  return { hasFamilyMember, hasEvent, hasTask, hasTextNote, hasVoiceNote, hasMeal, aiVisited };
+  return { hasFamilyMember, hasEvent, hasTask, hasTextNote, hasVoiceNote, hasMeal, hasPassword, aiVisited };
 }
 
 interface GettingStartedProps {
   onStartVoiceNote: () => void;
+  onSwitchToPasswords: () => void;
 }
 
-export function GettingStarted({ onStartVoiceNote }: GettingStartedProps) {
+export function GettingStarted({ onStartVoiceNote, onSwitchToPasswords }: GettingStartedProps) {
   const [, setLocation] = useLocation();
   const [collapsed, setCollapsed] = useState(true);
   const [dismissed, setDismissed] = useState(
     () => typeof window !== "undefined" && localStorage.getItem("getting_started_dismissed") === "true"
   );
-  const { hasFamilyMember, hasEvent, hasTask, hasTextNote, hasVoiceNote, hasMeal, aiVisited } =
+  const { hasFamilyMember, hasEvent, hasTask, hasTextNote, hasVoiceNote, hasMeal, hasPassword, aiVisited } =
     useGettingStartedData();
 
   const items: ChecklistItem[] = [
@@ -119,6 +127,13 @@ export function GettingStarted({ onStartVoiceNote }: GettingStartedProps) {
       path: "/ai-assistant",
       done: aiVisited,
     },
+    {
+      id: "password",
+      label: "Save a password",
+      description: "Store a family password or login securely in the Passwords tab.",
+      tab: true,
+      done: hasPassword,
+    },
   ];
 
   const completedCount = items.filter((i) => i.done).length;
@@ -133,6 +148,8 @@ export function GettingStarted({ onStartVoiceNote }: GettingStartedProps) {
     }
     if (item.modal) {
       onStartVoiceNote();
+    } else if (item.tab) {
+      onSwitchToPasswords();
     } else if (item.path) {
       setLocation(item.path);
     }
