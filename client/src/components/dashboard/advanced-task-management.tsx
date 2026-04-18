@@ -491,7 +491,7 @@ export function AdvancedTaskManagement() {
           <title>${member.name}'s Task List</title>
           <style>
             body { 
-              font-family: 'Comic Sans MS', cursive, sans-serif; 
+              font-family: Arial, sans-serif; 
               padding: 20px; 
               background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
               min-height: 100vh;
