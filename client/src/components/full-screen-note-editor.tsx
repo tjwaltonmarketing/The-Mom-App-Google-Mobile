@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, Save, CheckCircle, CloudOff } from "lucide-react";
+import { ArrowLeft, Save, CheckCircle, CloudOff, Cloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
@@ -51,6 +51,7 @@ export function FullScreenNoteEditor({
   const [hasChanges, setHasChanges] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [draftRestored, setDraftRestored] = useState(false);
+  const [draftSavedAt, setDraftSavedAt] = useState<Date | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check if we restored a draft on mount
@@ -85,8 +86,10 @@ export function FullScreenNoteEditor({
       try {
         if (title.trim() || content.trim()) {
           localStorage.setItem(NEW_NOTE_DRAFT_KEY, JSON.stringify({ title, content }));
+          setDraftSavedAt(new Date());
         } else {
           localStorage.removeItem(NEW_NOTE_DRAFT_KEY);
+          setDraftSavedAt(null);
         }
       } catch {}
     }, 1000);
@@ -167,8 +170,14 @@ export function FullScreenNoteEditor({
         </Button>
         
         <div className="flex items-center gap-3">
-          {/* Draft restored indicator */}
-          {isNewNote && draftRestored && (
+          {/* New note: draft saved / restored indicators */}
+          {isNewNote && draftSavedAt && (
+            <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+              <Cloud className="h-3 w-3" />
+              <span>Draft saved</span>
+            </div>
+          )}
+          {isNewNote && draftRestored && !draftSavedAt && (
             <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
               <CloudOff className="h-3 w-3" />
               <span>Draft restored</span>
