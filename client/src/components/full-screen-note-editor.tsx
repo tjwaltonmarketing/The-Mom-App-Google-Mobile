@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, Save, CheckCircle } from "lucide-react";
+import { ArrowLeft, Save, CheckCircle, CloudOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import type { TextNote } from "@shared/schema";
+
+const NEW_NOTE_DRAFT_KEY = "mom_app_new_note_draft";
 
 interface FullScreenNoteEditorProps {
   note?: TextNote | null;
@@ -20,23 +22,88 @@ export function FullScreenNoteEditor({
   isSaving = false,
   isNewNote = false
 }: FullScreenNoteEditorProps) {
-  const [title, setTitle] = useState(note?.title || "");
-  const [content, setContent] = useState(note?.content || "");
+  const savedRef = useRef(false);
+  const draftSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Restore draft from localStorage for new notes
+  const getInitialTitle = () => {
+    if (isNewNote) {
+      try {
+        const draft = localStorage.getItem(NEW_NOTE_DRAFT_KEY);
+        if (draft) return JSON.parse(draft).title || "";
+      } catch {}
+    }
+    return note?.title || "";
+  };
+
+  const getInitialContent = () => {
+    if (isNewNote) {
+      try {
+        const draft = localStorage.getItem(NEW_NOTE_DRAFT_KEY);
+        if (draft) return JSON.parse(draft).content || "";
+      } catch {}
+    }
+    return note?.content || "";
+  };
+
+  const [title, setTitle] = useState(getInitialTitle);
+  const [content, setContent] = useState(getInitialContent);
   const [hasChanges, setHasChanges] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [draftRestored, setDraftRestored] = useState(false);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check if we restored a draft on mount
+  useEffect(() => {
+    if (isNewNote) {
+      try {
+        const draft = localStorage.getItem(NEW_NOTE_DRAFT_KEY);
+        if (draft) {
+          const parsed = JSON.parse(draft);
+          if (parsed.title || parsed.content) setDraftRestored(true);
+        }
+      } catch {}
+    }
+  }, []);
 
   // Track changes
   useEffect(() => {
     if (isNewNote) {
-      // For new notes, has changes if there's any content
       setHasChanges(title.trim().length > 0 || content.trim().length > 0);
     } else if (note) {
-      const titleChanged = title !== note.title;
-      const contentChanged = content !== note.content;
-      setHasChanges(titleChanged || contentChanged);
+      setHasChanges(title !== note.title || content !== note.content);
     }
   }, [title, content, note, isNewNote]);
+
+  // Save draft to localStorage for new notes (debounced 1s)
+  useEffect(() => {
+    if (!isNewNote) return;
+
+    if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
+
+    draftSaveTimerRef.current = setTimeout(() => {
+      try {
+        if (title.trim() || content.trim()) {
+          localStorage.setItem(NEW_NOTE_DRAFT_KEY, JSON.stringify({ title, content }));
+        } else {
+          localStorage.removeItem(NEW_NOTE_DRAFT_KEY);
+        }
+      } catch {}
+    }, 1000);
+
+    return () => {
+      if (draftSaveTimerRef.current) clearTimeout(draftSaveTimerRef.current);
+    };
+  }, [title, content, isNewNote]);
+
+  // Clear draft from localStorage when component unmounts after a successful save
+  useEffect(() => {
+    return () => {
+      if (isNewNote && savedRef.current) {
+        localStorage.removeItem(NEW_NOTE_DRAFT_KEY);
+      }
+    };
+  }, [isNewNote]);
 
   // Auto-save function (only for existing notes)
   const doAutoSave = useCallback(() => {
@@ -50,33 +117,17 @@ export function FullScreenNoteEditor({
   // Trigger auto-save after 2 seconds of inactivity (only for existing notes)
   useEffect(() => {
     if (!isNewNote && hasChanges && title.trim()) {
-      // Clear existing timer
-      if (autoSaveTimerRef.current) {
-        clearTimeout(autoSaveTimerRef.current);
-      }
-      
-      // Set new timer
-      autoSaveTimerRef.current = setTimeout(() => {
-        doAutoSave();
-      }, 2000);
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = setTimeout(doAutoSave, 2000);
     }
-
-    // Cleanup on unmount
     return () => {
-      if (autoSaveTimerRef.current) {
-        clearTimeout(autoSaveTimerRef.current);
-      }
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     };
   }, [title, content, hasChanges, doAutoSave, isNewNote]);
 
   // Save before closing (for existing notes)
   const handleClose = () => {
-    // Clear any pending auto-save
-    if (autoSaveTimerRef.current) {
-      clearTimeout(autoSaveTimerRef.current);
-    }
-    
-    // Save if there are changes (only for existing notes)
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     if (!isNewNote && hasChanges && title.trim() && note) {
       onSave({ id: note.id, title, content });
     }
@@ -85,19 +136,18 @@ export function FullScreenNoteEditor({
 
   // Manual save / Create
   const handleSave = () => {
-    if (title.trim()) {
-      // Clear any pending auto-save
-      if (autoSaveTimerRef.current) {
-        clearTimeout(autoSaveTimerRef.current);
-      }
-      
-      if (isNewNote) {
-        onSave({ title, content });
-      } else if (note) {
-        onSave({ id: note.id, title, content });
-        setLastSaved(new Date());
-        setHasChanges(false);
-      }
+    if (!title.trim()) return;
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+
+    if (isNewNote) {
+      savedRef.current = true;
+      // Also clear draft immediately on save attempt
+      try { localStorage.removeItem(NEW_NOTE_DRAFT_KEY); } catch {}
+      onSave({ title, content });
+    } else if (note) {
+      onSave({ id: note.id, title, content });
+      setLastSaved(new Date());
+      setHasChanges(false);
     }
   };
 
@@ -117,16 +167,22 @@ export function FullScreenNoteEditor({
         </Button>
         
         <div className="flex items-center gap-3">
+          {/* Draft restored indicator */}
+          {isNewNote && draftRestored && (
+            <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
+              <CloudOff className="h-3 w-3" />
+              <span>Draft restored</span>
+            </div>
+          )}
+          {/* Existing note: saved / saving indicators */}
           {!isNewNote && lastSaved && !hasChanges && (
             <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
               <CheckCircle className="h-3 w-3" />
               <span>Saved</span>
             </div>
           )}
-          {hasChanges && !isSaving && (
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              {isNewNote ? "" : "Unsaved changes"}
-            </span>
+          {!isNewNote && hasChanges && !isSaving && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">Unsaved changes</span>
           )}
           {isSaving && (
             <span className="text-xs text-gray-500 dark:text-gray-400">Saving...</span>
@@ -151,7 +207,7 @@ export function FullScreenNoteEditor({
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Note title..."
             className="text-xl font-semibold border-0 border-b rounded-none px-0 focus-visible:ring-0 bg-transparent"
-            autoFocus={isNewNote}
+            autoFocus={isNewNote && !draftRestored}
           />
           
           <div className="min-h-[60vh]">
