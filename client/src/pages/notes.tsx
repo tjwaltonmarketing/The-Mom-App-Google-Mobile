@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Mic, Quote, ChevronDown, ChevronUp, Search, Plus, FileText, Edit, Trash2, Save, X, AlertTriangle } from "lucide-react";
+import { Mic, Quote, ChevronDown, ChevronUp, Search, Plus, FileText, Edit, Trash2, Save, X, AlertTriangle, Cloud } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,15 +18,41 @@ import { RichTextEditor, RichTextDisplay } from "@/components/ui/rich-text-edito
 import type { VoiceNote, TextNote, FamilyMember } from "@shared/schema";
 import { formatDistanceToNow, format, isToday, isYesterday, startOfDay } from "date-fns";
 
+const NEW_NOTE_DRAFT_KEY = "mom_app_new_note_draft";
+
 export default function Notes() {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [showFullScreenNewNote, setShowFullScreenNewNote] = useState(false);
   const [fullScreenEditNote, setFullScreenEditNote] = useState<TextNote | null>(null);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [hasSavedDraft, setHasSavedDraft] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Check for a saved draft on mount and whenever the editor closes
+  useEffect(() => {
+    const checkDraft = () => {
+      try {
+        const draft = localStorage.getItem(NEW_NOTE_DRAFT_KEY);
+        if (draft) {
+          const parsed = JSON.parse(draft);
+          setHasSavedDraft(!!(parsed.title || parsed.content));
+        } else {
+          setHasSavedDraft(false);
+        }
+      } catch {
+        setHasSavedDraft(false);
+      }
+    };
+    checkDraft();
+  }, [showFullScreenNewNote]); // re-check when editor opens/closes
+
+  const discardDraft = () => {
+    try { localStorage.removeItem(NEW_NOTE_DRAFT_KEY); } catch {}
+    setHasSavedDraft(false);
+  };
 
   // Voice Notes Query
   const { data: voiceNotes = [], isLoading: voiceNotesLoading } = useQuery<VoiceNote[]>({
@@ -507,6 +533,32 @@ export default function Notes() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Notes</h1>
           <p className="text-gray-600 dark:text-gray-400">Voice notes and text notes for your family</p>
         </div>
+
+        {/* Saved draft recovery banner */}
+        {hasSavedDraft && (
+          <div className="mb-4 flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl px-4 py-3">
+            <Cloud className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+            <p className="text-sm text-amber-800 dark:text-amber-300 flex-1">
+              You have an unsaved note draft.
+            </p>
+            <Button
+              size="sm"
+              className="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 h-7 flex-shrink-0"
+              onClick={() => setShowFullScreenNewNote(true)}
+            >
+              Resume
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-amber-600 dark:text-amber-400 hover:text-amber-800 p-1 h-7 w-7 flex-shrink-0"
+              onClick={discardDraft}
+              title="Discard draft"
+            >
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
 
         {/* Search */}
         <div className="mb-6">
