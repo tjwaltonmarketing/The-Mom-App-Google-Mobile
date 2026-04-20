@@ -38,6 +38,7 @@ export default function Login() {
   const googleButtonRef = useRef<HTMLDivElement>(null);
   const [gsiLoaded, setGsiLoaded] = useState(false);
   const isAndroid = Capacitor.getPlatform() === "android";
+  const isNative = Capacitor.isNativePlatform();
 
   // Capture win-back coupon from URL and persist it for checkout
   const searchString = useSearch();
@@ -255,7 +256,7 @@ export default function Login() {
             type="button"
             disabled={googleLoginMutation.isPending}
             onClick={() => {
-              if (isAndroid) {
+              if (isNative) {
                 const state = Math.random().toString(36).slice(2, 18);
                 localStorage.setItem("google_oauth_state", state);
                 localStorage.setItem("google_oauth_state_time", Date.now().toString());

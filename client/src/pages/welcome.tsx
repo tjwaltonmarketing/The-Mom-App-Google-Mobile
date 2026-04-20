@@ -24,6 +24,7 @@ export default function Welcome() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const isAndroid = Capacitor.getPlatform() === "android";
+  const isNative = Capacitor.isNativePlatform();
 
   const [googleClientId, setGoogleClientId] = useState<string | null>(null);
 
@@ -186,10 +187,10 @@ export default function Welcome() {
 
             {/* Sign-in buttons */}
             <div className="w-full space-y-3">
-              {/* Google — uses JS SDK on web/iOS; server-side redirect on Android */}
+              {/* Google — uses JS SDK on web; server-side redirect on native (iOS + Android) */}
               <button
                 onClick={() => {
-                  if (isAndroid) {
+                  if (isNative) {
                     // Generate a state token so the app can poll for the auth result on resume
                     const state = Math.random().toString(36).slice(2, 18);
                     localStorage.setItem("google_oauth_state", state);

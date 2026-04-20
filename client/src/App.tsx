@@ -163,6 +163,13 @@ function Router() {
             queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
             queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
             setLocation("/");
+            return;
+          }
+          // iOS Google OAuth deep link: momapp://auth/google-return?state=...
+          const stateParam = url.searchParams.get("state");
+          if (stateParam && (url.hostname === "auth" || url.pathname.includes("google-return"))) {
+            // Keep google_oauth_state in localStorage so pollForGoogleToken doesn't bail early
+            pollForGoogleToken(stateParam);
           }
         } catch {}
       }).then(h => { listenerHandle = h; }).catch(() => {});

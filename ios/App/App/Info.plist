@@ -87,6 +87,12 @@
                                 <string>fb1612863293103928</string>
                         </array>
                 </dict>
+                <dict>
+                        <key>CFBundleURLSchemes</key>
+                        <array>
+                                <string>momapp</string>
+                        </array>
+                </dict>
         </array>
 </dict>
 </plist>

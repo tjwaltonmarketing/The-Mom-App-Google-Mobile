@@ -450,7 +450,7 @@ export async function registerRoutes(app: Express) {
   app.get("/api/auth/google/redirect/callback", async (req, res) => {
     const state = (req.query.state as string) || "";
 
-    const sendSuccessPage = (isAndroid: boolean) => {
+    const sendSuccessPage = (isNativeApp: boolean) => {
       res.send(`<!DOCTYPE html><html><head><meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>Signed In – The Mom App</title>
@@ -470,16 +470,28 @@ export async function registerRoutes(app: Express) {
           <div class="check">✅</div>
           <h1>You're signed in!</h1>
           <p class="sub">Your account is ready. Now return to the app:</p>
-          <div class="back-box">
+          <div class="back-box" id="back-box">
             <div class="back-arrow">◀</div>
-            <p class="back-label">Tap the Back button</p>
-            <p class="back-hint">Press the ← back button at the bottom of your phone to return to The Mom App</p>
+            <p class="back-label" id="back-label">Return to The Mom App</p>
+            <p class="back-hint" id="back-hint">Tap the button below or swipe back to return to the app</p>
           </div>
-          <button class="btn" onclick="tryClose()">← Close &amp; Return to App</button>
+          <button class="btn" onclick="tryReturn()">← Return to The Mom App</button>
         </div>
         <script>
-          function tryClose() {
-            try { window.close(); } catch(e) {}
+          var ua = navigator.userAgent;
+          var isIOS = /iPad|iPhone|iPod/.test(ua);
+          var isAndroid = /Android/.test(ua);
+          if (isAndroid) {
+            document.getElementById('back-hint').textContent = 'Press the ← back button at the bottom of your phone to return to The Mom App';
+          } else if (isIOS) {
+            document.getElementById('back-hint').textContent = 'Tap the button below or swipe from the left edge to return to The Mom App';
+          }
+          function tryReturn() {
+            window.location.href = 'momapp://auth/google-complete';
+            setTimeout(function() {
+              try { window.close(); } catch(e) {}
+              window.history.back();
+            }, 500);
           }
         </script>
       </body></html>`);
@@ -553,7 +565,7 @@ export async function registerRoutes(app: Express) {
             try {
               await sendSMS(
                 adminPhone,
-                `🎉 New Mom App signup (Google Android)!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nTime: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })}`
+                `🎉 New Mom App signup (Google native)!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nTime: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })}`
               );
             } catch {}
           }
@@ -571,14 +583,23 @@ export async function registerRoutes(app: Express) {
       const token = generateToken(user.id);
 
       if (state) {
-        // Android flow: store token, then use an Android intent URL to force-open the
-        // native app directly. This bypasses App Links verification issues with Chrome
-        // Custom Tabs, which would otherwise load the full web app in Chrome and consume
-        // the token before the native Capacitor app can retrieve it.
+        // Native app flow: store token server-side keyed by state, then redirect back
+        // to the native app using the appropriate deep-link scheme.
+        // Android uses an intent URL to bypass Chrome Custom Tab / App Links issues.
+        // iOS uses the momapp:// custom URL scheme registered in Info.plist.
         pendingGoogleTokens.set(state, { token, userId: user.id, createdAt: Date.now() });
-        const fallbackUrl = `https://app.themom.app/auth/google/return?state=${encodeURIComponent(state)}`;
-        const intentUrl = `intent://app.themom.app/auth/google/return?state=${encodeURIComponent(state)}#Intent;scheme=https;package=com.momapp.family;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
-        return res.redirect(intentUrl);
+        const ua = req.headers["user-agent"] || "";
+        const isIOS = /iPad|iPhone|iPod/.test(ua);
+        if (isIOS) {
+          // iOS: redirect straight to the custom URL scheme so Capacitor picks it up via appUrlOpen
+          const iosUrl = `momapp://auth/google-return?state=${encodeURIComponent(state)}`;
+          return res.redirect(iosUrl);
+        } else {
+          // Android: use intent URL so Chrome opens the native app directly
+          const fallbackUrl = `https://app.themom.app/auth/google/return?state=${encodeURIComponent(state)}`;
+          const intentUrl = `intent://app.themom.app/auth/google/return?state=${encodeURIComponent(state)}#Intent;scheme=https;package=com.momapp.family;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
+          return res.redirect(intentUrl);
+        }
       }
 
       // Web/non-Android flow: redirect with token in URL
