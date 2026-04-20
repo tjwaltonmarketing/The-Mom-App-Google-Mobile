@@ -87,12 +87,26 @@ export default function Welcome() {
   });
 
   const handleAppleSignIn = useCallback(async () => {
-    const appleClientId = import.meta.env.VITE_APPLE_CLIENT_ID;
-    if (!appleClientId) {
-      toast({ title: "Apple Sign-In Not Configured", description: "Apple Sign-In requires setup in Apple Developer Portal. Please use Google or email instead.", variant: "destructive" });
-      return;
-    }
     try {
+      if (isNative) {
+        // Native iOS: use the custom AppleSignInPlugin (ASAuthorizationAppleIDProvider)
+        const { registerPlugin } = await import("@capacitor/core");
+        interface AppleSignInPlugin {
+          signIn(): Promise<{ identityToken: string; firstName?: string; lastName?: string; email?: string }>;
+        }
+        const AppleSignIn = registerPlugin<AppleSignInPlugin>("AppleSignInPlugin");
+        const result = await AppleSignIn.signIn();
+        if (!result.identityToken) throw new Error("No identity token returned");
+        appleLoginMutation.mutate({ identityToken: result.identityToken, firstName: result.firstName, lastName: result.lastName });
+        return;
+      }
+
+      // Web: use Apple JS SDK popup
+      const appleClientId = import.meta.env.VITE_APPLE_CLIENT_ID;
+      if (!appleClientId) {
+        toast({ title: "Apple Sign-In Not Configured", description: "Apple Sign-In requires setup in Apple Developer Portal. Please use Google or email instead.", variant: "destructive" });
+        return;
+      }
       if (!window.AppleID) {
         await new Promise<void>((resolve, reject) => {
           const script = document.createElement("script");
@@ -115,11 +129,11 @@ export default function Welcome() {
       const lastName = response?.user?.name?.lastName;
       appleLoginMutation.mutate({ identityToken, firstName, lastName });
     } catch (err: any) {
-      if (err?.error !== "popup_closed_by_user") {
+      if (err?.error !== "popup_closed_by_user" && err?.message !== "canceled") {
         toast({ title: "Apple Sign-In Failed", description: "Could not complete Apple Sign-In. Please try again.", variant: "destructive" });
       }
     }
-  }, [appleLoginMutation, toast]);
+  }, [appleLoginMutation, toast, isNative]);
 
   const handleGoogleCallback = useCallback(
     (response: any) => { if (response.credential) googleLoginMutation.mutate(response.credential); },
