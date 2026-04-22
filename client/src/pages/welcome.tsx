@@ -129,8 +129,10 @@ export default function Welcome() {
       const lastName = response?.user?.name?.lastName;
       appleLoginMutation.mutate({ identityToken, firstName, lastName });
     } catch (err: any) {
+      console.error("[AppleSignIn] error:", JSON.stringify(err), err?.message, err?.code);
       if (err?.error !== "popup_closed_by_user" && err?.message !== "canceled") {
-        toast({ title: "Apple Sign-In Failed", description: "Could not complete Apple Sign-In. Please try again.", variant: "destructive" });
+        const detail = err?.message || err?.error || "Unknown error";
+        toast({ title: "Apple Sign-In Failed", description: detail, variant: "destructive" });
       }
     }
   }, [appleLoginMutation, toast, isNative]);
