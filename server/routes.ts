@@ -591,9 +591,33 @@ export async function registerRoutes(app: Express) {
         const ua = req.headers["user-agent"] || "";
         const isIOS = /iPad|iPhone|iPod/.test(ua);
         if (isIOS) {
-          // iOS: redirect straight to the custom URL scheme so Capacitor picks it up via appUrlOpen
+          // iOS: SFSafariViewController blocks direct 302 redirects to custom URL schemes.
+          // Serve an HTML page that fires the URL scheme via JS — iOS handles this correctly.
           const iosUrl = `momapp://auth/google-return?state=${encodeURIComponent(state)}`;
-          return res.redirect(iosUrl);
+          return res.send(`<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Signed in — The Mom App</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, sans-serif; background: #fff5f8; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; text-align: center; }
+    .icon { font-size: 64px; margin-bottom: 16px; }
+    h2 { font-size: 22px; font-weight: 700; color: #111; margin-bottom: 8px; }
+    p { font-size: 15px; color: #777; margin-bottom: 32px; line-height: 1.5; }
+    .btn { display: inline-block; background: #ec4899; color: white; padding: 16px 32px; border-radius: 14px; text-decoration: none; font-size: 16px; font-weight: 600; box-shadow: 0 4px 14px rgba(236,72,153,0.35); }
+  </style>
+</head>
+<body>
+  <div class="icon">💗</div>
+  <h2>You're signed in!</h2>
+  <p>Returning you to The Mom App…</p>
+  <a class="btn" href="${iosUrl}">← Open The Mom App</a>
+  <script>
+    setTimeout(function() { window.location.href = '${iosUrl}'; }, 400);
+  </script>
+</body>
+</html>`);
         } else {
           // Android: use intent URL so Chrome opens the native app directly
           const fallbackUrl = `https://app.themom.app/auth/google/return?state=${encodeURIComponent(state)}`;
