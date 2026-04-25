@@ -124,17 +124,22 @@ export class NotificationService {
     const isUrgent = type === "task_past_due";
 
     if (recipient_user_id) {
-      const notifRecord: InsertNotification = {
-        type,
-        title,
-        message: body,
-        recipientId: recipient_user_id,
-        relatedTaskId: related_task_id ?? undefined,
-        deliveryMethod: "in_app",
-        scheduledFor: new Date(),
-        status: isUrgent ? "urgent" : "pending",
-      };
-      await storage.createNotification(notifRecord);
+      const familyMember = await storage.getFamilyMemberByUserId(recipient_user_id);
+      if (familyMember) {
+        const notifRecord: InsertNotification = {
+          type,
+          title,
+          message: body,
+          recipientId: familyMember.id,
+          relatedTaskId: related_task_id ?? undefined,
+          deliveryMethod: "in_app",
+          scheduledFor: new Date(),
+          status: isUrgent ? "urgent" : "pending",
+        };
+        await storage.createNotification(notifRecord).catch(err =>
+          console.error("[NotifPoller] In-app notification save failed (push still sending):", err)
+        );
+      }
 
       await sendPushNotification({
         userId: recipient_user_id,
@@ -161,7 +166,9 @@ export class NotificationService {
           scheduledFor: new Date(),
           status: isUrgent ? "urgent" : "pending",
         };
-        await storage.createNotification(notifRecord);
+        await storage.createNotification(notifRecord).catch(err =>
+          console.error("[NotifPoller] Teen in-app notification save failed (push still sending):", err)
+        );
 
         if (teenProfile.userId) {
           await sendPushNotification({
@@ -450,11 +457,16 @@ export class NotificationService {
     const { type, title, body, recipientUserId, recipientTeenId, relatedTaskId } = opts;
 
     if (recipientUserId) {
-      const notifRecord: InsertNotification = {
-        type, title, message: body, recipientId: recipientUserId,
-        relatedTaskId, deliveryMethod: "in_app", scheduledFor: new Date(), status: "pending",
-      };
-      await storage.createNotification(notifRecord);
+      const familyMember = await storage.getFamilyMemberByUserId(recipientUserId);
+      if (familyMember) {
+        const notifRecord: InsertNotification = {
+          type, title, message: body, recipientId: familyMember.id,
+          relatedTaskId, deliveryMethod: "in_app", scheduledFor: new Date(), status: "pending",
+        };
+        await storage.createNotification(notifRecord).catch(err =>
+          console.error("[NotifService] In-app notification save failed (push still sending):", err)
+        );
+      }
       await sendPushNotification({ userId: recipientUserId, title, body, data: { type } })
         .catch(err => console.error("[NotifService] Immediate push failed:", err));
     }
@@ -466,7 +478,9 @@ export class NotificationService {
           type, title, message: body, recipientId: recipientTeenId,
           relatedTaskId, deliveryMethod: "in_app", scheduledFor: new Date(), status: "pending",
         };
-        await storage.createNotification(notifRecord);
+        await storage.createNotification(notifRecord).catch(err =>
+          console.error("[NotifService] Teen in-app notification save failed (push still sending):", err)
+        );
         if (teenProfile.userId) {
           await sendPushNotification({ userId: teenProfile.userId, title, body, data: { type } })
             .catch(err => console.error("[NotifService] Teen immediate push failed:", err));
