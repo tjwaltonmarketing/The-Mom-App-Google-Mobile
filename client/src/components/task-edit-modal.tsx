@@ -192,7 +192,7 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
                 {dueDate ? format(dueDate, "PPP") : "Pick a date"}
               </Button>
               {datePickerOpen && (
-                <div className="absolute z-50 top-full left-0 mt-1 bg-white border rounded-md shadow-lg">
+                <div className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg">
                   <Calendar
                     mode="single"
                     selected={dueDate}
