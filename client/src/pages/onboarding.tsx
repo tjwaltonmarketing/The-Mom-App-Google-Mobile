@@ -157,7 +157,8 @@ export default function Onboarding() {
     },
     onSuccess: (data: any) => {
       if (data?.url) {
-        localStorage.setItem("onboarding_completed", "true");
+        // Redirect to Stripe — do NOT set onboarding_completed yet.
+        // It will be set in upgrade-success once the subscription is verified.
         localStorage.removeItem("pendingCoupon");
         window.location.href = data.url;
       } else {
@@ -169,10 +170,7 @@ export default function Onboarding() {
     },
     onError: (error: any) => {
       console.error("Start trial error:", error);
-      queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-      localStorage.setItem("onboarding_completed", "true");
-      toast({ title: "Welcome to The Mom App!", description: "Your free trial has started." });
-      window.location.href = "/";
+      toast({ title: "Something went wrong", description: "Could not start your trial. Please try again.", variant: "destructive" });
     },
   });
 

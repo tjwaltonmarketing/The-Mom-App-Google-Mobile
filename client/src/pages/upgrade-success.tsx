@@ -18,6 +18,7 @@ export default function UpgradeSuccess() {
     },
     onSuccess: () => {
       logFBEvent(FB_EVENTS.SUBSCRIBE);
+      localStorage.setItem("onboarding_completed", "true");
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
     },
   });

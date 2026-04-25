@@ -355,14 +355,12 @@ function Router() {
   
   // Determine if user needs onboarding (never had a subscription)
   // Only show onboarding if subscription query completed and returned no data
-  // Also skip onboarding if user already completed it (localStorage fallback for mobile)
-  const onboardingCompleted = typeof window !== 'undefined' && localStorage.getItem("onboarding_completed") === "true";
   const pendingShareClaim = typeof window !== 'undefined' && localStorage.getItem("pending_share_claim") === "true";
-  // Also wait for user data before showing onboarding — otherwise if the subscription
-  // query resolves first (user still loading), needsOnboarding fires before
-  // needsFinishProfile gets a chance to evaluate, sending new Google Sign-In users
-  // straight to payment instead of the phone-number step.
-  const needsOnboarding = isAuthenticated && subscriptionReady && !!user && (!subscriptionData && !onboardingCompleted || pendingShareClaim);
+  // needsOnboarding is driven purely by subscriptionData — if they have no subscription
+  // they must go through onboarding regardless of any localStorage flag.
+  // (localStorage "onboarding_completed" was previously used as a gate but caused a bug
+  // where users who backed out of Stripe were silently bypassed into the dashboard.)
+  const needsOnboarding = isAuthenticated && subscriptionReady && !!user && (!subscriptionData || pendingShareClaim);
 
   // Require phone number before onboarding (catches Google Sign-In users who skipped finish-profile)
   // Exception: existing subscribers are never blocked — they're already set up
