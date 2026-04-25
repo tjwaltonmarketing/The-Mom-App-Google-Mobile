@@ -18,6 +18,27 @@ function parseTimeOffset(offset: string): number {
   }
 }
 
+// Returns true if the given UTC date falls within quiet hours in the given IANA timezone
+function isInQuietHours(date: Date, timezone: string, quietStart: string, quietEnd: string): boolean {
+  try {
+    const fmt = (part: Intl.DateTimeFormatPartTypes) =>
+      new Intl.DateTimeFormat("en-US", { timeZone: timezone, [part]: "2-digit", hour12: false } as any)
+        .formatToParts(date).find(p => p.type === part)?.value ?? "00";
+    const localH = parseInt(fmt("hour"));
+    const localM = parseInt(fmt("minute"));
+    const localMins = localH * 60 + localM;
+    const [sh, sm] = quietStart.split(":").map(Number);
+    const [eh, em] = quietEnd.split(":").map(Number);
+    const startMins = sh * 60 + sm;
+    const endMins = eh * 60 + em;
+    // Spans midnight (e.g. 21:00–08:00)
+    if (startMins > endMins) return localMins >= startMins || localMins < endMins;
+    return localMins >= startMins && localMins < endMins;
+  } catch {
+    return false;
+  }
+}
+
 export interface TaskNotificationConfig {
   taskId: number;
   teenId: number;
@@ -122,6 +143,15 @@ export class NotificationService {
   private async firePush(row: any) {
     const { title, body, recipient_user_id, recipient_teen_id, related_task_id, related_event_id, type } = row;
     const isUrgent = type === "task_past_due";
+
+    // Skip repeat overdue notifications if the task is already completed
+    if (related_task_id && type === "task_past_due") {
+      const task = await storage.getTaskById(related_task_id).catch(() => null);
+      if (task?.status === "completed") {
+        console.log(`[NotifPoller] Skipping overdue push — task ${related_task_id} already completed`);
+        return;
+      }
+    }
 
     if (recipient_user_id) {
       const familyMember = await storage.getFamilyMemberByUserId(recipient_user_id);
@@ -331,6 +361,26 @@ export class NotificationService {
         "Task Overdue", `⏰ "${taskTitle}" is past due. Get it done!`,
         undefined, teenId, taskId
       );
+    }
+
+    // Progressive repeat reminders every 4 hours after overdue, skipping quiet hours
+    const teenUserPrefs = await storage.getUserPreferences(teenProfile.userId);
+    const tz = teenUserPrefs?.timezone || "America/New_York";
+    const quietStart = notifSettings?.quietStart || "21:00";
+    const quietEnd = notifSettings?.quietEnd || "08:00";
+    const MAX_REPEATS = 6; // up to 24 hours of follow-ups
+
+    let repeatCount = 0;
+    for (let i = 1; i <= MAX_REPEATS * 2 && repeatCount < MAX_REPEATS; i++) {
+      const candidate = addHours(overdueTime, 4 * i);
+      if (!isAfter(candidate, now)) continue;
+      if (isInQuietHours(candidate, tz, quietStart, quietEnd)) continue;
+      await this.scheduleDbPush(
+        `overdue_repeat_${taskId}_${i}`, candidate, "task_past_due",
+        "Task Still Overdue", `⏰ Still waiting: "${taskTitle}" needs to be done! (${points} pts)`,
+        undefined, teenId, taskId
+      );
+      repeatCount++;
     }
   }
 
