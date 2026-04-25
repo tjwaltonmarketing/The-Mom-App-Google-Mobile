@@ -480,6 +480,13 @@ export class NotificationService {
           userId, undefined, undefined, eventId);
       }
     }
+
+    // At-start notification
+    if (isAfter(startTime, now)) {
+      await this.scheduleDbPush(`event_start_${eventId}`, startTime, "event_reminder",
+        "Starting Now", `🗓️ Starting now: "${eventTitle}"${locationText}`,
+        userId, undefined, undefined, eventId);
+    }
   }
 
   async cancelTaskNotifications(taskId: number) {
@@ -495,6 +502,7 @@ export class NotificationService {
     await this.cancelDbPushes(`event_r1_${eventId}`);
     await this.cancelDbPushes(`event_r2_${eventId}`);
     await this.cancelDbPushes(`event_r3_${eventId}`);
+    await this.cancelDbPushes(`event_start_${eventId}`);
   }
 
   // ─── Immediate send helper (no scheduling — fires right now) ────────────────
