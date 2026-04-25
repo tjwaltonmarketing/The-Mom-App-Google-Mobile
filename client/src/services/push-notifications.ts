@@ -167,8 +167,13 @@ export async function setupPushNotifications(): Promise<boolean> {
 export async function silentlyRefreshToken(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
   try {
-    const plugin = await waitForPlugin(3);
-    if (!plugin) return;
+    // Give the native side a few seconds to fully initialize before probing
+    await delay(3000);
+    const plugin = await waitForPlugin(10);
+    if (!plugin) {
+      console.warn('silentlyRefreshToken: FCM plugin not ready after 10 attempts');
+      return;
+    }
     await setupListeners();
     const status = await plugin.checkPermissions();
     if (status.receive !== 'granted') return;
@@ -176,6 +181,8 @@ export async function silentlyRefreshToken(): Promise<void> {
     if (result?.token) {
       console.log('Silently refreshed FCM token');
       await saveTokenToServer(result.token);
+    } else {
+      console.warn('silentlyRefreshToken: getToken returned no token');
     }
   } catch (e) {
     console.warn('silentlyRefreshToken failed:', e);

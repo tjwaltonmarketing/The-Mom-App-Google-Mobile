@@ -7,6 +7,7 @@ import { SplashScreen } from "@/components/splash-screen";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PullToRefreshIndicator } from "@/components/pull-to-refresh-indicator";
 import { getApiUrl, setAuthToken } from "@/lib/config";
+import { getAuthHeaders } from "@/lib/queryClient";
 import { silentlyRefreshToken } from "@/services/push-notifications";
 
 // Pages
@@ -328,14 +329,14 @@ function Router() {
     if (!isAuthenticated || !user) return;
     const deviceTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (!deviceTz) return;
-    fetch('/api/auth/preferences', { credentials: 'include' })
+    fetch(getApiUrl('/api/auth/preferences'), { credentials: 'include', headers: getAuthHeaders() })
       .then(r => r.json())
       .then(prefs => {
         if (!prefs?.timezone) {
-          fetch('/api/auth/preferences', {
+          fetch(getApiUrl('/api/auth/preferences'), {
             method: 'PUT',
             credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
             body: JSON.stringify({ timezone: deviceTz }),
           });
         }
