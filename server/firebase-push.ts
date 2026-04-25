@@ -91,6 +91,7 @@ export async function sendPushNotification(params: {
       response.responses.forEach((resp, idx) => {
         if (!resp.success) {
           const errorCode = resp.error?.code;
+          console.warn(`🔴 Push failed for token ID ${activeTokens[idx].id} (${activeTokens[idx].platform}): ${errorCode || resp.error?.message || "unknown error"}`);
           if (
             errorCode === "messaging/invalid-registration-token" ||
             errorCode === "messaging/registration-token-not-registered"

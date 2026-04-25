@@ -1601,6 +1601,17 @@ export class DatabaseStorage implements IStorage {
 
   // Push Token implementations
   async createPushToken(insertPushToken: InsertPushToken): Promise<PushToken> {
+    // If this exact token string already exists, reactivate it instead of creating a duplicate
+    const existing = await db.select().from(pushTokens)
+      .where(eq(pushTokens.token, insertPushToken.token))
+      .limit(1);
+    if (existing.length > 0) {
+      const [updated] = await db.update(pushTokens)
+        .set({ isActive: true, userId: insertPushToken.userId, platform: insertPushToken.platform, updatedAt: new Date() })
+        .where(eq(pushTokens.token, insertPushToken.token))
+        .returning();
+      return updated;
+    }
     const [pushToken] = await db.insert(pushTokens).values(insertPushToken).returning();
     return pushToken;
   }
