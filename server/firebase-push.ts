@@ -51,6 +51,7 @@ export async function sendPushNotification(params: {
     const activeTokens = tokens.filter(t => t.isActive && t.token);
 
     if (activeTokens.length === 0) {
+      console.log(`🔕 No active push tokens found for user ${userId} — skipping push`);
       return { success: true, sentCount: 0, failedCount: 0 };
     }
 

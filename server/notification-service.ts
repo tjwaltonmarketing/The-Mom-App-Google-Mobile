@@ -18,6 +18,20 @@ function parseTimeOffset(offset: string): number {
   }
 }
 
+// Format a date in a specific IANA timezone, e.g. "Apr 25 at 1:12 PM"
+function formatInTz(date: Date, timezone: string): string {
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone, month: "short", day: "numeric",
+      hour: "numeric", minute: "2-digit", hour12: true,
+    }).formatToParts(date);
+    const get = (type: string) => parts.find(p => p.type === type)?.value ?? "";
+    return `${get("month")} ${get("day")} at ${get("hour")}:${get("minute")} ${get("dayPeriod")}`;
+  } catch {
+    return format(date, "MMM d 'at' h:mm a");
+  }
+}
+
 // Returns true if the given UTC date falls within quiet hours in the given IANA timezone
 function isInQuietHours(date: Date, timezone: string, quietStart: string, quietEnd: string): boolean {
   try {
@@ -336,10 +350,14 @@ export class NotificationService {
 
     const now = new Date();
 
+    // Resolve teen's timezone up front (used for display formatting + quiet hours)
+    const teenUserPrefs = await storage.getUserPreferences(teenProfile.userId);
+    const tz = teenUserPrefs?.timezone || "America/New_York";
+
     // Immediate assignment notification
     await this.sendImmediatePush({
       type: "task_assigned", title: "New Task Assigned",
-      body: `📋 New task: "${taskTitle}" — Due ${format(dueDate, "MMM d 'at' h:mm a")} (${points} points)`,
+      body: `📋 New task: "${taskTitle}" — Due ${formatInTz(dueDate, tz)} (${points} points)`,
       recipientTeenId: teenId, relatedTaskId: taskId,
     });
 
@@ -364,8 +382,6 @@ export class NotificationService {
     }
 
     // Progressive repeat reminders every 4 hours after overdue, skipping quiet hours
-    const teenUserPrefs = await storage.getUserPreferences(teenProfile.userId);
-    const tz = teenUserPrefs?.timezone || "America/New_York";
     const quietStart = notifSettings?.quietStart || "21:00";
     const quietEnd = notifSettings?.quietEnd || "08:00";
     const MAX_REPEATS = 6; // up to 24 hours of follow-ups
@@ -396,10 +412,11 @@ export class NotificationService {
     const overdueEnabled = prefs?.taskOverdueReminder ?? true;
 
     // Immediate on-assign notification
+    const parentTz = prefs?.timezone || "America/New_York";
     if (reminderOnAssign) {
       await this.sendImmediatePush({
         type: "task_assigned", title: "Task Notification",
-        body: `📋 New task: "${taskTitle}" — Due ${format(dueDate, "MMM d 'at' h:mm a")}`,
+        body: `📋 New task: "${taskTitle}" — Due ${formatInTz(dueDate, parentTz)}`,
         recipientUserId: userId, relatedTaskId: taskId,
       });
     }
