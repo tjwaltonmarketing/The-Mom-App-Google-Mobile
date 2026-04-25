@@ -401,7 +401,7 @@ export default function Login() {
       </Card>
       
       {/* Before/After Image - Right Side (hidden on mobile) */}
-      <div className="hidden lg:flex flex-col flex-1 max-w-lg text-center">
+      <div className="hidden lg:flex flex-col flex-1 max-w-lg text-center bg-white rounded-2xl shadow-lg p-8">
         {/* Marketing Text */}
         <div className="mb-6">
           <p className="text-gray-600 text-sm mb-2">✨ AI-Powered Family Organizer</p>
