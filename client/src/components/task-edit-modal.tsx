@@ -28,6 +28,11 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
   const [dueDate, setDueDate] = useState<Date | undefined>(
     task.dueDate ? new Date(task.dueDate) : undefined
   );
+  const [dueTime, setDueTime] = useState<string>(() => {
+    if (!task.dueDate) return "";
+    const d = new Date(task.dueDate);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  });
   const [points, setPoints] = useState<string>(task.points?.toString() || "10");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const { toast } = useToast();
@@ -44,6 +49,12 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
       setPriority(task.priority);
       setAssignedTo(task.assignedTo?.toString() || "unassigned");
       setDueDate(task.dueDate ? new Date(task.dueDate) : undefined);
+      if (task.dueDate) {
+        const d = new Date(task.dueDate);
+        setDueTime(`${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`);
+      } else {
+        setDueTime("");
+      }
       setPoints(task.points?.toString() || "10");
     }
   }, [task]);
@@ -82,12 +93,23 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
       return;
     }
 
+    let finalDueDate: Date | null = null;
+    if (dueDate) {
+      finalDueDate = new Date(dueDate);
+      if (dueTime) {
+        const [hours, minutes] = dueTime.split(":").map(Number);
+        finalDueDate.setHours(hours, minutes, 0, 0);
+      } else {
+        finalDueDate.setHours(0, 0, 0, 0);
+      }
+    }
+
     const updates = {
       title: title.trim(),
       description: description.trim() || null,
       priority,
       assignedTo: assignedTo !== "unassigned" ? parseInt(assignedTo) : null,
-      dueDate: dueDate ? dueDate.toISOString() : null,
+      dueDate: finalDueDate ? finalDueDate.toISOString() : null,
       points: parseInt(points),
     };
 
@@ -159,24 +181,6 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium">Points Reward</label>
-              <Select value={points} onValueChange={setPoints}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5 points</SelectItem>
-                  <SelectItem value="10">10 points</SelectItem>
-                  <SelectItem value="15">15 points</SelectItem>
-                  <SelectItem value="20">20 points</SelectItem>
-                  <SelectItem value="25">25 points</SelectItem>
-                  <SelectItem value="30">30 points</SelectItem>
-                  <SelectItem value="50">50 points</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="relative">
               <label className="text-sm font-medium">Due Date</label>
               <Button
@@ -205,6 +209,34 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
                 </div>
               )}
             </div>
+
+            <div>
+              <label className="text-sm font-medium">Due Time</label>
+              <Input
+                type="time"
+                value={dueTime}
+                onChange={(e) => setDueTime(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Points Reward</label>
+            <Select value={points} onValueChange={setPoints}>
+              <SelectTrigger className="mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="5">5 points</SelectItem>
+                <SelectItem value="10">10 points</SelectItem>
+                <SelectItem value="15">15 points</SelectItem>
+                <SelectItem value="20">20 points</SelectItem>
+                <SelectItem value="25">25 points</SelectItem>
+                <SelectItem value="30">30 points</SelectItem>
+                <SelectItem value="50">50 points</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex gap-2 pt-4">
