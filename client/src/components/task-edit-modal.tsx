@@ -30,6 +30,7 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
     task.dueDate ? new Date(task.dueDate) : undefined
   );
   const [points, setPoints] = useState<string>(task.points?.toString() || "10");
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: familyMembers = [] } = useQuery<FamilyMember[]>({
@@ -179,7 +180,7 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
 
             <div>
               <label className="text-sm font-medium">Due Date</label>
-              <Popover>
+              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -196,7 +197,10 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
                   <Calendar
                     mode="single"
                     selected={dueDate}
-                    onSelect={setDueDate}
+                    onSelect={(date) => {
+                      setDueDate(date);
+                      setDatePickerOpen(false);
+                    }}
                     initialFocus
                   />
                 </PopoverContent>

@@ -33,6 +33,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const [dueTime, setDueTime] = useState<string>("");
   const [points, setPoints] = useState<string>("0");
   const [isPrivate, setIsPrivate] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -293,7 +294,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">Due Date</label>
-              <Popover>
+              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -310,7 +311,10 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
                   <Calendar
                     mode="single"
                     selected={dueDate}
-                    onSelect={setDueDate}
+                    onSelect={(date) => {
+                      setDueDate(date);
+                      setDatePickerOpen(false);
+                    }}
                     initialFocus
                   />
                 </PopoverContent>
