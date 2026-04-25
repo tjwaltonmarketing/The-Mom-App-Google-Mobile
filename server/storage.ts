@@ -1264,9 +1264,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteTask(id: number): Promise<boolean> {
-    const result = await db
-      .delete(tasks)
-      .where(eq(tasks.id, id));
+    // Clear FK reference in notifications before deleting the task
+    await db.update(notifications)
+      .set({ relatedTaskId: null })
+      .where(eq(notifications.relatedTaskId, id));
+    const result = await db.delete(tasks).where(eq(tasks.id, id));
     return result.rowCount !== null && result.rowCount > 0;
   }
 
@@ -1357,13 +1359,20 @@ export class DatabaseStorage implements IStorage {
         }
         
         // Delete only completed tasks
+        const completedTaskRows = await db
+          .select({ id: tasks.id })
+          .from(tasks)
+          .where(and(inArray(tasks.createdBy, memberIdsToDelete), eq(tasks.isCompleted, true)));
+        if (completedTaskRows.length > 0) {
+          const ids = completedTaskRows.map(t => t.id);
+          await db.update(notifications).set({ relatedTaskId: null }).where(inArray(notifications.relatedTaskId, ids));
+        }
         const result = await db
           .delete(tasks)
           .where(and(
             inArray(tasks.createdBy, memberIdsToDelete),
             eq(tasks.isCompleted, true)
           ));
-        
         return result.rowCount !== null && result.rowCount >= 0;
       }
     }
@@ -1373,6 +1382,16 @@ export class DatabaseStorage implements IStorage {
       return true;
     }
     
+    // Clear FK references in notifications before deleting tasks
+    const taskRows = await db
+      .select({ id: tasks.id })
+      .from(tasks)
+      .where(inArray(tasks.createdBy, memberIdsToDelete));
+    if (taskRows.length > 0) {
+      const ids = taskRows.map(t => t.id);
+      await db.update(notifications).set({ relatedTaskId: null }).where(inArray(notifications.relatedTaskId, ids));
+    }
+
     // Delete tasks created by the specified members
     const result = await db
       .delete(tasks)
