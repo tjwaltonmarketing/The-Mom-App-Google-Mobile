@@ -40,6 +40,7 @@ export default function FamilyChatPage() {
   const { data: notifications = [] } = useQuery<Notification[]>({
     queryKey: ["/api/notifications/pending"],
     enabled: !!user,
+    refetchInterval: 60 * 1000,
   });
 
   const sendMessageMutation = useMutation({

@@ -26,6 +26,7 @@ export function NotificationBell() {
       
       return response.json();
     },
+    refetchInterval: 60 * 1000,
   });
 
   const clearAllNotificationsMutation = useMutation({
