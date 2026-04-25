@@ -159,6 +159,29 @@ export async function setupPushNotifications(): Promise<boolean> {
   return requestAndRegisterPush();
 }
 
+/**
+ * Called silently on every app launch (authenticated users on native platforms).
+ * If the user already granted notifications, grabs the current FCM token and saves it.
+ * This handles token rotation without requiring the user to re-enable notifications.
+ */
+export async function silentlyRefreshToken(): Promise<void> {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    const plugin = await waitForPlugin(3);
+    if (!plugin) return;
+    await setupListeners();
+    const status = await plugin.checkPermissions();
+    if (status.receive !== 'granted') return;
+    const result = await plugin.getToken();
+    if (result?.token) {
+      console.log('Silently refreshed FCM token');
+      await saveTokenToServer(result.token);
+    }
+  } catch (e) {
+    console.warn('silentlyRefreshToken failed:', e);
+  }
+}
+
 export async function openNotificationSettings(): Promise<void> {
   const platform = Capacitor.getPlatform();
 

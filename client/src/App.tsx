@@ -7,6 +7,7 @@ import { SplashScreen } from "@/components/splash-screen";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PullToRefreshIndicator } from "@/components/pull-to-refresh-indicator";
 import { getApiUrl, setAuthToken } from "@/lib/config";
+import { silentlyRefreshToken } from "@/services/push-notifications";
 
 // Pages
 import Welcome from "@/pages/welcome";
@@ -340,6 +341,10 @@ function Router() {
         }
       })
       .catch(() => {});
+
+    // Silently refresh the push notification token on every login.
+    // Handles token rotation on Android/iOS without requiring user action.
+    silentlyRefreshToken().catch(() => {});
   }, [isAuthenticated, (user as any)?.id]);
 
   // Wait for subscription query to complete before deciding on routing
