@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Task, FamilyMember } from "@shared/schema";
@@ -178,22 +177,22 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
               </Select>
             </div>
 
-            <div>
+            <div className="relative">
               <label className="text-sm font-medium">Due Date</label>
-              <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full mt-1 justify-start text-left font-normal",
-                      !dueDate && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarDays className="mr-2 h-4 w-4" />
-                    {dueDate ? format(dueDate, "PPP") : "Pick a date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+              <Button
+                type="button"
+                variant="outline"
+                className={cn(
+                  "w-full mt-1 justify-start text-left font-normal",
+                  !dueDate && "text-muted-foreground"
+                )}
+                onClick={() => setDatePickerOpen(!datePickerOpen)}
+              >
+                <CalendarDays className="mr-2 h-4 w-4" />
+                {dueDate ? format(dueDate, "PPP") : "Pick a date"}
+              </Button>
+              {datePickerOpen && (
+                <div className="absolute z-50 top-full left-0 mt-1 bg-white border rounded-md shadow-lg">
                   <Calendar
                     mode="single"
                     selected={dueDate}
@@ -203,8 +202,8 @@ export function TaskEditModal({ task, isOpen, onClose }: TaskEditModalProps) {
                     }}
                     initialFocus
                   />
-                </PopoverContent>
-              </Popover>
+                </div>
+              )}
             </div>
           </div>
 
