@@ -95,9 +95,14 @@ function PushNotificationSetting() {
           </p>
         </div>
         {status === "granted" ? (
-          <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50 dark:bg-green-900/20">
-            <Check className="h-3 w-3 mr-1" /> On
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50 dark:bg-green-900/20">
+              <Check className="h-3 w-3 mr-1" /> On
+            </Badge>
+            <Button size="sm" variant="ghost" className="text-xs text-muted-foreground h-7 px-2" onClick={handleEnable} disabled={enabling}>
+              {enabling ? "Refreshing…" : "Refresh"}
+            </Button>
+          </div>
         ) : status === "prompt" ? (
           <Button size="sm" variant="outline" onClick={handleEnable} disabled={enabling}>
             {enabling ? "Enabling…" : "Enable"}
