@@ -125,6 +125,7 @@ export class NotificationService {
 
     if (recipient_user_id) {
       const notifRecord: InsertNotification = {
+        type,
         title,
         message: body,
         recipientId: recipient_user_id,
@@ -151,6 +152,7 @@ export class NotificationService {
       const teenProfile = await storage.getTeenProfile(recipient_teen_id);
       if (teenProfile) {
         const notifRecord: InsertNotification = {
+          type,
           title,
           message: body,
           recipientId: recipient_teen_id,
@@ -449,7 +451,7 @@ export class NotificationService {
 
     if (recipientUserId) {
       const notifRecord: InsertNotification = {
-        title, message: body, recipientId: recipientUserId,
+        type, title, message: body, recipientId: recipientUserId,
         relatedTaskId, deliveryMethod: "in_app", scheduledFor: new Date(), status: "pending",
       };
       await storage.createNotification(notifRecord);
@@ -461,7 +463,7 @@ export class NotificationService {
       const teenProfile = await storage.getTeenProfile(recipientTeenId);
       if (teenProfile) {
         const notifRecord: InsertNotification = {
-          title, message: body, recipientId: recipientTeenId,
+          type, title, message: body, recipientId: recipientTeenId,
           relatedTaskId, deliveryMethod: "in_app", scheduledFor: new Date(), status: "pending",
         };
         await storage.createNotification(notifRecord);
