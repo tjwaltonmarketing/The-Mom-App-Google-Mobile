@@ -322,6 +322,26 @@ function Router() {
     staleTime: 0, // Always refetch subscription data
   });
 
+  // Auto-sync device timezone to server on login (only if not already set)
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+    const deviceTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (!deviceTz) return;
+    fetch('/api/auth/preferences', { credentials: 'include' })
+      .then(r => r.json())
+      .then(prefs => {
+        if (!prefs?.timezone) {
+          fetch('/api/auth/preferences', {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timezone: deviceTz }),
+          });
+        }
+      })
+      .catch(() => {});
+  }, [isAuthenticated, (user as any)?.id]);
+
   // Wait for subscription query to complete before deciding on routing
   // subscriptionLoading is true during initial fetch, but we also check isFetching for refetches
   // Also check if query is pending (hasn't started yet) when enabled changes

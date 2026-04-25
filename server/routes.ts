@@ -1025,7 +1025,7 @@ export async function registerRoutes(app: Express) {
       if (eventReminders !== undefined) updates.eventReminders = eventReminders;
       if (dailyDigest !== undefined) updates.dailyDigest = dailyDigest;
       if (dailyDigestTime !== undefined) updates.dailyDigestTime = dailyDigestTime;
-      if (timezone !== undefined) updates.timezone = timezone;
+      if (timezone !== undefined && timezone !== '') updates.timezone = timezone;
       if (taskReminderOnAssign !== undefined) updates.taskReminderOnAssign = taskReminderOnAssign;
       if (taskReminderBeforeDue !== undefined) updates.taskReminderBeforeDue = taskReminderBeforeDue;
       if (taskOverdueReminder !== undefined) updates.taskOverdueReminder = taskOverdueReminder;

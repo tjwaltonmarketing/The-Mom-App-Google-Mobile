@@ -649,7 +649,7 @@ export default function SettingsPage() {
     updatePrivacyMutation.mutate({
       marketingEmails,
       usageAnalytics,
-      timezone: selectedTimezone,
+      timezone: selectedTimezone || getDeviceTimezone(),
     } as any);
     toast({
       title: "Settings Saved",
