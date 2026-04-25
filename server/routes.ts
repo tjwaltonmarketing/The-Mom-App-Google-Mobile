@@ -37,14 +37,14 @@ async function isUserOnIndividualPlan(userId: number): Promise<boolean> {
     if (family && family.ownerId !== userId) {
       const ownerSubscription = await storage.getUserSubscription(family.ownerId);
       if (!ownerSubscription) return false;
-      const ownerOnTrial = ownerSubscription.trialEndDate && new Date(ownerSubscription.trialEndDate) > new Date() && !ownerSubscription.stripeSubscriptionId && !ownerSubscription.appleProductId;
+      const ownerOnTrial = ownerSubscription.subscriptionStatus === "trial" && ownerSubscription.trialEndDate && new Date(ownerSubscription.trialEndDate) > new Date();
       if (ownerOnTrial) return false;
       return ownerSubscription.subscriptionPlan === "individual";
     }
     return false;
   }
   // Trial users have full access — not restricted to individual plan limits
-  const isOnTrial = subscription.trialEndDate && new Date(subscription.trialEndDate) > new Date() && !subscription.stripeSubscriptionId && !subscription.appleProductId;
+  const isOnTrial = subscription.subscriptionStatus === "trial" && subscription.trialEndDate && new Date(subscription.trialEndDate) > new Date();
   if (isOnTrial) return false;
   return subscription.subscriptionPlan === "individual";
 }
@@ -5385,8 +5385,7 @@ export async function registerRoutes(app: Express) {
       }
 
       let trialDaysLeft = 0;
-      const hasPaidSubscription = !!subscription.stripeSubscriptionId || !!subscription.appleProductId;
-      const isOnTrial = subscription.trialEndDate && !hasPaidSubscription;
+      const isOnTrial = subscription.subscriptionStatus === "trial" && subscription.trialEndDate && new Date(subscription.trialEndDate) > new Date();
       if (isOnTrial) {
         trialDaysLeft = Math.max(0, Math.ceil((subscription.trialEndDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
       }
@@ -5704,15 +5703,17 @@ export async function registerRoutes(app: Express) {
         return res.status(400).json({ error: "Invalid plan" });
       }
 
+      const appleTrialEnd = expirationDate ? new Date(expirationDate) : (() => { const d = new Date(); d.setDate(d.getDate() + 7); return d; })();
+
       await storage.updateUserSubscription(req.session.userId, {
         subscriptionPlan: plan,
-        subscriptionStatus: "active",
+        subscriptionStatus: "trial",
         billingInterval: interval || "monthly",
         appleProductId: productIdentifier,
-        trialEndDate: null,
+        trialEndDate: appleTrialEnd,
       });
 
-      console.log(`[Apple IAP] User ${req.session.userId} purchased ${productIdentifier} (${plan}/${interval})`);
+      console.log(`[Apple IAP] User ${req.session.userId} started trial for ${productIdentifier} (${plan}/${interval}), trial ends ${appleTrialEnd.toISOString()}`);
       res.json({ success: true });
     } catch (error) {
       console.error("Apple purchase error:", error);
@@ -5787,13 +5788,13 @@ export async function registerRoutes(app: Express) {
 
       await storage.updateUserSubscription(req.session.userId, {
         subscriptionPlan: plan,
-        subscriptionStatus: "active",
+        subscriptionStatus: "trial",
         billingInterval: interval || "monthly",
         googleProductId: productIdentifier,
         trialEndDate: googleTrialEnd,
       });
 
-      console.log(`[Google Play] User ${req.session.userId} purchased ${productIdentifier} (${plan}/${interval})`);
+      console.log(`[Google Play] User ${req.session.userId} started trial for ${productIdentifier} (${plan}/${interval}), trial ends ${googleTrialEnd.toISOString()}`);
       res.json({ success: true });
     } catch (error) {
       console.error("Google purchase error:", error);
