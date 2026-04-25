@@ -166,27 +166,32 @@ export async function setupPushNotifications(): Promise<boolean> {
  */
 export async function silentlyRefreshToken(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
-  try {
-    // Give the native side a few seconds to fully initialize before probing
-    await delay(3000);
-    const plugin = await waitForPlugin(10);
-    if (!plugin) {
-      console.warn('silentlyRefreshToken: FCM plugin not ready after 10 attempts');
-      return;
+  // Give the native bridge a few seconds to fully initialize
+  await delay(4000);
+  // Attempt getToken up to 5 times — skip checkPermissions entirely since
+  // Android FCM tokens don't require notification permission to obtain
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      const plugin = getPlugin();
+      if (!plugin) {
+        console.warn(`silentlyRefreshToken: plugin not found (attempt ${attempt})`);
+        await delay(2000);
+        continue;
+      }
+      await setupListeners();
+      const result = await plugin.getToken();
+      if (result?.token) {
+        console.log(`silentlyRefreshToken: token obtained on attempt ${attempt}`);
+        await saveTokenToServer(result.token);
+        return;
+      }
+      console.warn(`silentlyRefreshToken: getToken returned no token (attempt ${attempt})`);
+    } catch (e) {
+      console.warn(`silentlyRefreshToken attempt ${attempt} failed:`, e);
     }
-    await setupListeners();
-    const status = await plugin.checkPermissions();
-    if (status.receive !== 'granted') return;
-    const result = await plugin.getToken();
-    if (result?.token) {
-      console.log('Silently refreshed FCM token');
-      await saveTokenToServer(result.token);
-    } else {
-      console.warn('silentlyRefreshToken: getToken returned no token');
-    }
-  } catch (e) {
-    console.warn('silentlyRefreshToken failed:', e);
+    await delay(2000);
   }
+  console.warn('silentlyRefreshToken: exhausted all attempts');
 }
 
 export async function openNotificationSettings(): Promise<void> {
