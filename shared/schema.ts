@@ -846,6 +846,25 @@ export const insertFeatureRequestSchema = createInsertSchema(featureRequests).om
 export type FeatureRequest = typeof featureRequests.$inferSelect;
 export type InsertFeatureRequest = z.infer<typeof insertFeatureRequestSchema>;
 
+// Persistent push notification scheduler — survives server restarts and autoscale
+export const scheduledPushes = pgTable("scheduled_pushes", {
+  id: serial("id").primaryKey(),
+  key: varchar("key", { length: 200 }).notNull().unique(), // dedup key prevents double-scheduling
+  type: varchar("type", { length: 50 }).notNull(), // "task_reminder", "task_past_due", "event_reminder", etc.
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  recipientUserId: integer("recipient_user_id"),
+  recipientTeenId: integer("recipient_teen_id"),
+  relatedTaskId: integer("related_task_id"),
+  relatedEventId: integer("related_event_id"),
+  scheduledFor: timestamp("scheduled_for").notNull(),
+  firedAt: timestamp("fired_at"),
+  cancelledAt: timestamp("cancelled_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type ScheduledPush = typeof scheduledPushes.$inferSelect;
+
 // Win-back drip campaign tracking
 export const winbackDrip = pgTable("winback_drip", {
   id: serial("id").primaryKey(),

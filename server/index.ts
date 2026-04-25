@@ -4,6 +4,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { setupSession, extractTokenFromRequest, verifyToken } from "./auth";
 import { initializeFirebase } from "./firebase-push";
 import { storage } from "./storage";
+import { notificationService } from "./notification-service";
 
 // Set LeadConnector environment variables for testing
 if (!process.env.LEADCONNECTOR_API_KEY) {
@@ -107,6 +108,14 @@ app.use((req, res, next) => {
 (async () => {
   initializeFirebase();
   const server = await registerRoutes(app);
+
+  // Start the persistent push notification scheduler.
+  // Runs every 60s, survives restarts and autoscale instances.
+  notificationService.startPoller();
+  // Seed any existing incomplete tasks/events that don't have scheduled pushes yet.
+  notificationService.backfillExistingSchedule().catch(err =>
+    console.error("[Startup] Backfill failed:", err)
+  );
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

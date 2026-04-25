@@ -1,8 +1,10 @@
 import { storage } from "./storage";
-import { sendEmail } from "./email-service";
-import { sendPushNotification, sendPushToFamilyMember } from "./firebase-push";
+import { sendPushNotification } from "./firebase-push";
+import { db } from "./db";
+import { scheduledPushes } from "@shared/schema";
 import type { InsertNotification } from "@shared/schema";
-import { addHours, addMinutes, isBefore, isAfter, format } from "date-fns";
+import { sql, and, lte, isNull } from "drizzle-orm";
+import { addHours, addMinutes, isAfter, format } from "date-fns";
 
 function parseTimeOffset(offset: string): number {
   const match = offset.match(/^(\d+)(m|h|d)$/);
@@ -32,348 +34,345 @@ export interface ParentTaskNotificationConfig {
 }
 
 export class NotificationService {
-  private notificationQueue: Map<string, NodeJS.Timeout> = new Map();
-  
-  async scheduleTaskNotifications(config: TaskNotificationConfig) {
-    const { taskId, teenId, taskTitle, dueDate, points } = config;
-    
-    // Get teen's notification preferences
-    const teenProfile = await storage.getTeenProfile(teenId);
-    const notificationSettings = await storage.getTeenNotificationSettings(teenProfile?.id || 0);
-    
-    if (!notificationSettings?.taskReminders) {
-      return; // Teen has disabled task notifications
-    }
-    
-    const now = new Date();
-    
-    // 1. Initial notification - immediate
-    await this.sendTaskNotification({
-      type: "task_assigned",
-      taskId,
-      teenId,
-      taskTitle,
-      dueDate,
-      points,
-      message: `📋 New task assigned: "${taskTitle}" - Due ${format(dueDate, "MMM d 'at' h:mm a")} (${points} points)`
-    });
-    
-    // 2. Reminder 2 hours before due date
-    const reminderTime = addHours(dueDate, -2);
-    if (isAfter(reminderTime, now)) {
-      this.scheduleNotification(`reminder_${taskId}`, reminderTime, async () => {
-        await this.sendTaskNotification({
-          type: "task_reminder",
-          taskId,
-          teenId,
-          taskTitle,
-          dueDate,
-          points,
-          message: `⏰ Reminder: "${taskTitle}" is due in 2 hours (${points} points)`
-        });
-      });
-    }
-    
-    // 3. Past due notification
-    const pastDueTime = addMinutes(dueDate, 15); // 15 minutes after due
-    
-    // Check if task is already overdue (dueDate is in the past)
-    if (isBefore(dueDate, now)) {
-      // Task is already overdue at creation - send immediate notification
-      await this.sendTaskNotification({
-        type: "task_past_due",
-        taskId,
-        teenId,
-        taskTitle,
-        dueDate,
-        points,
-        message: `🚨 Task overdue: "${taskTitle}" - Complete soon to earn ${points} points!`
-      });
-      // Start recurring reminders immediately
-      this.scheduleRecurringReminders(taskId, teenId, taskTitle, points);
-    } else {
-      // Schedule past-due notification for 15 minutes after due date
-      this.scheduleNotification(`past_due_${taskId}`, pastDueTime, async () => {
-        await this.sendTaskNotification({
-          type: "task_past_due",
-          taskId,
-          teenId,
-          taskTitle,
-          dueDate,
-          points,
-          message: `🚨 Task overdue: "${taskTitle}" - Complete soon to earn ${points} points!`
-        });
-        
-        // Start recurring reminders every 4 hours
-        this.scheduleRecurringReminders(taskId, teenId, taskTitle, points);
-      });
+
+  // ─── DB-backed scheduling (replaces in-memory setTimeout) ───────────────────
+
+  private async scheduleDbPush(
+    key: string,
+    scheduledFor: Date,
+    type: string,
+    title: string,
+    body: string,
+    recipientUserId?: number,
+    recipientTeenId?: number,
+    relatedTaskId?: number,
+    relatedEventId?: number,
+  ) {
+    try {
+      await db.execute(sql`
+        INSERT INTO scheduled_pushes
+          (key, type, title, body, recipient_user_id, recipient_teen_id, related_task_id, related_event_id, scheduled_for)
+        VALUES
+          (${key}, ${type}, ${title}, ${body},
+           ${recipientUserId ?? null}, ${recipientTeenId ?? null},
+           ${relatedTaskId ?? null}, ${relatedEventId ?? null},
+           ${scheduledFor})
+        ON CONFLICT (key) DO NOTHING
+      `);
+    } catch (err) {
+      console.error(`[NotifScheduler] Failed to schedule ${key}:`, err);
     }
   }
-  
-  // Parent/User task notifications
+
+  private async cancelDbPushes(filter: string) {
+    // filter is either "task_<id>" or "event_<id>" — matches any key containing it
+    await db.execute(sql`
+      UPDATE scheduled_pushes
+      SET cancelled_at = NOW()
+      WHERE key LIKE ${'%' + filter + '%'}
+        AND fired_at IS NULL
+        AND cancelled_at IS NULL
+    `);
+  }
+
+  // ─── Poller — runs every 60s on startup, safe for multi-instance autoscale ──
+
+  public startPoller() {
+    const tick = () => this.processDuePushes();
+    tick(); // fire immediately on startup
+    setInterval(tick, 60 * 1000);
+    console.log("[NotifPoller] Started — polling every 60s");
+  }
+
+  private async processDuePushes() {
+    try {
+      // Atomic claim: UPDATE...RETURNING with FOR UPDATE SKIP LOCKED
+      // Only one autoscale instance will process each row — no double-sends
+      const result = await db.execute(sql`
+        UPDATE scheduled_pushes
+        SET fired_at = NOW()
+        WHERE id IN (
+          SELECT id FROM scheduled_pushes
+          WHERE scheduled_for <= NOW()
+            AND fired_at IS NULL
+            AND cancelled_at IS NULL
+          ORDER BY scheduled_for
+          LIMIT 50
+          FOR UPDATE SKIP LOCKED
+        )
+        RETURNING id, key, type, title, body,
+                  recipient_user_id, recipient_teen_id,
+                  related_task_id, related_event_id
+      `);
+
+      if (result.rows.length > 0) {
+        console.log(`[NotifPoller] Firing ${result.rows.length} due notification(s)`);
+      }
+
+      for (const row of result.rows as any[]) {
+        await this.firePush(row).catch(err =>
+          console.error(`[NotifPoller] Failed to fire push ${row.key}:`, err)
+        );
+      }
+    } catch (err) {
+      console.error("[NotifPoller] Poll error:", err);
+    }
+  }
+
+  private async firePush(row: any) {
+    const { title, body, recipient_user_id, recipient_teen_id, related_task_id, related_event_id, type } = row;
+    const isUrgent = type === "task_past_due";
+
+    if (recipient_user_id) {
+      const notifRecord: InsertNotification = {
+        title,
+        message: body,
+        recipientId: recipient_user_id,
+        relatedTaskId: related_task_id ?? undefined,
+        deliveryMethod: "in_app",
+        scheduledFor: new Date(),
+        status: isUrgent ? "urgent" : "pending",
+      };
+      await storage.createNotification(notifRecord);
+
+      await sendPushNotification({
+        userId: recipient_user_id,
+        title,
+        body,
+        data: {
+          type,
+          ...(related_task_id ? { taskId: String(related_task_id) } : {}),
+          ...(related_event_id ? { eventId: String(related_event_id) } : {}),
+        },
+      }).catch(err => console.error("[NotifPoller] Push send failed:", err));
+    }
+
+    if (recipient_teen_id) {
+      const teenProfile = await storage.getTeenProfile(recipient_teen_id);
+      if (teenProfile) {
+        const notifRecord: InsertNotification = {
+          title,
+          message: body,
+          recipientId: recipient_teen_id,
+          relatedTaskId: related_task_id ?? undefined,
+          deliveryMethod: "in_app",
+          scheduledFor: new Date(),
+          status: isUrgent ? "urgent" : "pending",
+        };
+        await storage.createNotification(notifRecord);
+
+        if (teenProfile.userId) {
+          await sendPushNotification({
+            userId: teenProfile.userId,
+            title,
+            body,
+            data: { type, ...(related_task_id ? { taskId: String(related_task_id) } : {}) },
+          }).catch(err => console.error("[NotifPoller] Teen push send failed:", err));
+        }
+      }
+    }
+  }
+
+  // ─── Backfill on startup — reschedules existing tasks/events ────────────────
+
+  public async backfillExistingSchedule() {
+    const now = new Date();
+    let tasksScheduled = 0;
+    let eventsScheduled = 0;
+
+    try {
+      // Backfill incomplete tasks with future due dates
+      const taskRows = await db.execute(sql`
+        SELECT t.id, t.title, t.due_date, t.teen_id,
+               fm.user_id AS assignee_user_id
+        FROM tasks t
+        LEFT JOIN family_members fm ON fm.id = t.assigned_to
+        WHERE t.is_completed = false
+          AND t.due_date IS NOT NULL
+          AND t.due_date > ${now}
+      `);
+
+      for (const task of taskRows.rows as any[]) {
+        const dueDate = new Date(task.due_date);
+
+        // 2 hours before reminder
+        const reminderTime = addHours(dueDate, -2);
+        if (isAfter(reminderTime, now)) {
+          if (task.assignee_user_id) {
+            await this.scheduleDbPush(
+              `parent_reminder_${task.id}_${task.assignee_user_id}`,
+              reminderTime, "task_reminder",
+              "Task Reminder",
+              `⏰ Reminder: "${task.title}" is due in 2 hours`,
+              task.assignee_user_id, undefined, task.id
+            );
+          }
+          if (task.teen_id) {
+            await this.scheduleDbPush(
+              `reminder_${task.id}`,
+              reminderTime, "task_reminder",
+              "Task Reminder",
+              `⏰ Reminder: "${task.title}" is due in 2 hours`,
+              undefined, task.teen_id, task.id
+            );
+          }
+        }
+
+        // Overdue (15 min after due)
+        const overdueTime = addMinutes(dueDate, 15);
+        if (isAfter(overdueTime, now)) {
+          if (task.assignee_user_id) {
+            await this.scheduleDbPush(
+              `parent_past_due_${task.id}_${task.assignee_user_id}`,
+              overdueTime, "task_past_due",
+              "Task Overdue",
+              `🚨 Task overdue: "${task.title}" — please complete soon!`,
+              task.assignee_user_id, undefined, task.id
+            );
+          }
+          if (task.teen_id) {
+            await this.scheduleDbPush(
+              `past_due_${task.id}`,
+              overdueTime, "task_past_due",
+              "Task Overdue",
+              `⏰ "${task.title}" is past due. Get it done!`,
+              undefined, task.teen_id, task.id
+            );
+          }
+        }
+
+        tasksScheduled++;
+      }
+
+      // Backfill future events
+      const eventRows = await db.execute(sql`
+        SELECT e.id, e.title, e.start_time,
+               fm.user_id AS creator_user_id
+        FROM events e
+        JOIN family_members fm ON fm.id = e.created_by
+        WHERE e.start_time > ${now}
+      `);
+
+      for (const event of eventRows.rows as any[]) {
+        const startTime = new Date(event.start_time);
+        const userId = event.creator_user_id;
+        if (!userId) continue;
+
+        const r1 = new Date(startTime.getTime() - 24 * 60 * 60 * 1000);
+        if (isAfter(r1, now)) {
+          await this.scheduleDbPush(`event_r1_${event.id}`, r1, "event_reminder", "Event Reminder",
+            `📅 Tomorrow: "${event.title}" at ${format(startTime, "h:mm a")}`,
+            userId, undefined, undefined, event.id);
+        }
+        const r2 = new Date(startTime.getTime() - 60 * 60 * 1000);
+        if (isAfter(r2, now)) {
+          await this.scheduleDbPush(`event_r2_${event.id}`, r2, "event_reminder", "Event Reminder",
+            `⏰ Starting in 1 hour: "${event.title}"`,
+            userId, undefined, undefined, event.id);
+        }
+        const r3 = new Date(startTime.getTime() - 15 * 60 * 1000);
+        if (isAfter(r3, now)) {
+          await this.scheduleDbPush(`event_r3_${event.id}`, r3, "event_reminder", "Event Reminder",
+            `🔔 Starting in 15 minutes: "${event.title}"`,
+            userId, undefined, undefined, event.id);
+        }
+        eventsScheduled++;
+      }
+
+      console.log(`[NotifPoller] Backfill complete — ${tasksScheduled} tasks, ${eventsScheduled} events seeded`);
+    } catch (err) {
+      console.error("[NotifPoller] Backfill error:", err);
+    }
+  }
+
+  // ─── Public scheduling API (called when tasks/events are created) ────────────
+
+  async scheduleTaskNotifications(config: TaskNotificationConfig) {
+    const { taskId, teenId, taskTitle, dueDate, points } = config;
+
+    const teenProfile = await storage.getTeenProfile(teenId);
+    if (!teenProfile) return;
+    const notifSettings = await storage.getTeenNotificationSettings(teenProfile.id);
+    if (notifSettings?.taskReminders === false) return;
+
+    const now = new Date();
+
+    // Immediate assignment notification
+    await this.sendImmediatePush({
+      type: "task_assigned", title: "New Task Assigned",
+      body: `📋 New task: "${taskTitle}" — Due ${format(dueDate, "MMM d 'at' h:mm a")} (${points} points)`,
+      recipientTeenId: teenId, relatedTaskId: taskId,
+    });
+
+    // 2 hours before reminder
+    const reminderTime = addHours(dueDate, -2);
+    if (isAfter(reminderTime, now)) {
+      await this.scheduleDbPush(
+        `reminder_${taskId}`, reminderTime, "task_reminder",
+        "Task Reminder", `⏰ Reminder: "${taskTitle}" is due in 2 hours (${points} points)`,
+        undefined, teenId, taskId
+      );
+    }
+
+    // Overdue (15 min after due)
+    const overdueTime = addMinutes(dueDate, 15);
+    if (isAfter(overdueTime, now)) {
+      await this.scheduleDbPush(
+        `past_due_${taskId}`, overdueTime, "task_past_due",
+        "Task Overdue", `⏰ "${taskTitle}" is past due. Get it done!`,
+        undefined, teenId, taskId
+      );
+    }
+  }
+
   async scheduleParentTaskNotifications(config: ParentTaskNotificationConfig) {
     const { taskId, userId, taskTitle, dueDate } = config;
-    
+
     const prefs = await storage.getUserPreferences(userId);
-    
-    if (prefs?.taskReminders === false) {
-      return;
-    }
-    
+    if (prefs?.taskReminders === false) return;
+
     const now = new Date();
     const reminderOnAssign = prefs?.taskReminderOnAssign ?? true;
     const beforeDue = prefs?.taskReminderBeforeDue || "2h";
     const overdueEnabled = prefs?.taskOverdueReminder ?? true;
-    const overdueInterval = prefs?.taskOverdueRepeatInterval || "4h";
-    
-    // 1. Initial notification - immediate (if enabled)
+
+    // Immediate on-assign notification
     if (reminderOnAssign) {
-      await this.sendParentTaskNotification({
-        type: "task_assigned",
-        taskId,
-        userId,
-        taskTitle,
-        dueDate,
-        message: `📋 New task: "${taskTitle}" - Due ${format(dueDate, "MMM d 'at' h:mm a")}`
+      await this.sendImmediatePush({
+        type: "task_assigned", title: "Task Notification",
+        body: `📋 New task: "${taskTitle}" — Due ${format(dueDate, "MMM d 'at' h:mm a")}`,
+        recipientUserId: userId, relatedTaskId: taskId,
       });
     }
-    
-    // 2. Reminder before due date (customizable)
+
+    // Before-due reminder
     const beforeDueMs = parseTimeOffset(beforeDue);
     if (beforeDueMs > 0) {
       const reminderTime = new Date(dueDate.getTime() - beforeDueMs);
       if (isAfter(reminderTime, now)) {
-        const label = beforeDue === "30m" ? "30 minutes" : beforeDue === "1h" ? "1 hour" : beforeDue === "2h" ? "2 hours" : "4 hours";
-        this.scheduleNotification(`parent_reminder_${taskId}_${userId}`, reminderTime, async () => {
-          await this.sendParentTaskNotification({
-            type: "task_reminder",
-            taskId,
-            userId,
-            taskTitle,
-            dueDate,
-            message: `⏰ Reminder: "${taskTitle}" is due in ${label}`
-          });
-        });
+        const labelMap: Record<string, string> = { "30m": "30 minutes", "1h": "1 hour", "2h": "2 hours", "4h": "4 hours" };
+        const label = labelMap[beforeDue] || beforeDue;
+        await this.scheduleDbPush(
+          `parent_reminder_${taskId}_${userId}`, reminderTime, "task_reminder",
+          "Task Reminder", `⏰ Reminder: "${taskTitle}" is due in ${label}`,
+          userId, undefined, taskId
+        );
       }
     }
-    
-    // 3. Past due notification (if enabled)
+
+    // Overdue (15 min after due)
     if (overdueEnabled) {
-      const pastDueTime = addMinutes(dueDate, 15);
-      
-      if (isBefore(dueDate, now)) {
-        await this.sendParentTaskNotification({
-          type: "task_past_due",
-          taskId,
-          userId,
-          taskTitle,
-          dueDate,
-          message: `🚨 Task overdue: "${taskTitle}" - Please complete soon!`
-        });
-        if (overdueInterval !== "none") {
-          this.scheduleParentRecurringReminders(taskId, userId, taskTitle, overdueInterval);
-        }
-      } else {
-        this.scheduleNotification(`parent_past_due_${taskId}_${userId}`, pastDueTime, async () => {
-          await this.sendParentTaskNotification({
-            type: "task_past_due",
-            taskId,
-            userId,
-            taskTitle,
-            dueDate,
-            message: `🚨 Task overdue: "${taskTitle}" - Please complete soon!`
-          });
-          if (overdueInterval !== "none") {
-            this.scheduleParentRecurringReminders(taskId, userId, taskTitle, overdueInterval);
-          }
-        });
+      const overdueTime = addMinutes(dueDate, 15);
+      if (isAfter(overdueTime, now)) {
+        await this.scheduleDbPush(
+          `parent_past_due_${taskId}_${userId}`, overdueTime, "task_past_due",
+          "Task Overdue", `🚨 Task overdue: "${taskTitle}" — please complete soon!`,
+          userId, undefined, taskId
+        );
       }
-    }
-  }
-  
-  private scheduleParentRecurringReminders(taskId: number, userId: number, taskTitle: string, interval: string = "4h") {
-    const intervalMs = parseTimeOffset(interval);
-    if (intervalMs <= 0) return;
-    
-    const intervalId = setInterval(async () => {
-      const task = await storage.getTask(taskId);
-      if (!task || task.isCompleted) {
-        clearInterval(intervalId);
-        return;
-      }
-      
-      await this.sendParentTaskNotification({
-        type: "task_recurring_reminder",
-        taskId,
-        userId,
-        taskTitle,
-        message: `🔔 Still pending: "${taskTitle}"`
-      });
-    }, intervalMs);
-    
-    this.notificationQueue.set(`parent_recurring_${taskId}_${userId}`, intervalId);
-  }
-  
-  private async sendParentTaskNotification(notification: {
-    type: string;
-    taskId: number;
-    userId: number;
-    taskTitle: string;
-    dueDate?: Date;
-    message: string;
-  }) {
-    const { taskId, userId, message, type } = notification;
-    
-    // Get user preferences
-    const prefs = await storage.getUserPreferences(userId);
-    const notificationMethod = prefs?.notificationMethod || "in_app";
-    
-    // Create in-app notification
-    const notificationRecord: InsertNotification = {
-      title: "Task Notification",
-      message,
-      recipientId: userId,
-      relatedTaskId: taskId,
-      deliveryMethod: "in_app",
-      scheduledFor: new Date(),
-      status: type === "task_past_due" ? "urgent" : "pending"
-    };
-    await storage.createNotification(notificationRecord);
-    console.log(`📱 Parent in-app notification: ${message}`);
-
-    // Send FCM push notification
-    try {
-      await sendPushNotification({
-        userId,
-        title: "Task Notification",
-        body: message,
-        data: { type: "task", taskId: String(taskId) },
-      });
-    } catch (error) {
-      console.error("Failed to send parent push notification:", error);
     }
   }
 
-  private scheduleRecurringReminders(taskId: number, teenId: number, taskTitle: string, points: number) {
-    const intervalId = setInterval(async () => {
-      // Check if task is still pending
-      const task = await storage.getTask(taskId);
-      if (!task || task.isCompleted) {
-        clearInterval(intervalId);
-        return;
-      }
-      
-      await this.sendTaskNotification({
-        type: "task_recurring_reminder",
-        taskId,
-        teenId,
-        taskTitle,
-        points,
-        message: `🔔 Still pending: "${taskTitle}" - ${points} points waiting for you!`
-      });
-    }, 4 * 60 * 60 * 1000); // 4 hours
-    
-    // Store the interval ID for cleanup
-    this.notificationQueue.set(`recurring_${taskId}`, intervalId);
-  }
-  
-  private scheduleNotification(key: string, scheduledTime: Date, callback: () => Promise<void>) {
-    const now = new Date();
-    const delay = scheduledTime.getTime() - now.getTime();
-    
-    if (delay > 0) {
-      const timeoutId = setTimeout(async () => {
-        await callback();
-        this.notificationQueue.delete(key);
-      }, delay);
-      
-      this.notificationQueue.set(key, timeoutId);
-    }
-  }
-  
-  private async sendTaskNotification(notification: {
-    type: string;
-    taskId: number;
-    teenId: number;
-    taskTitle: string;
-    dueDate?: Date;
-    points: number;
-    message: string;
-  }) {
-    const { taskId, teenId, message, type } = notification;
-    
-    // For teen tasks, get teen profile and their notification settings
-    const teenProfile = await storage.getTeenProfile(teenId);
-    if (!teenProfile) {
-      console.warn(`Teen profile ${teenId} not found`);
-      return;
-    }
-    
-    const teenSettings = await storage.getTeenNotificationSettings(teenProfile.id);
-    
-    // Determine notification method from teen settings
-    // Default to "both" if not specified
-    const preferSms = teenSettings?.preferSms !== false;
-    const preferInApp = true; // Always send in-app for teens
-    
-    // Get phone number from teen profile
-    const phoneNumber = teenProfile.phoneNumber;
-    
-    // Create in-app notification (always for teens)
-    if (preferInApp) {
-      const notificationRecord: InsertNotification = {
-        title: "Task Notification",
-        message,
-        recipientId: teenId,
-        relatedTaskId: taskId,
-        deliveryMethod: "in_app",
-        scheduledFor: new Date(),
-        status: type === "task_past_due" ? "urgent" : "pending"
-      };
-      await storage.createNotification(notificationRecord);
-      console.log(`📱 Teen in-app notification: ${message}`);
-    }
-    
-    // Send FCM push notification to teen (if they have a linked user account)
-    if (teenProfile.userId) {
-      try {
-        await sendPushNotification({
-          userId: teenProfile.userId,
-          title: "Task Notification",
-          body: message,
-          data: { type: "task", taskId: String(taskId) },
-        });
-      } catch (error) {
-        console.error("Failed to send teen push notification:", error);
-      }
-    }
-  }
-  
-  async cancelTaskNotifications(taskId: number) {
-    // Cancel all scheduled notifications for this task
-    const keys = Array.from(this.notificationQueue.keys()).filter(key => 
-      key.includes(`_${taskId}`) || key.includes(`${taskId}_`)
-    );
-    
-    keys.forEach(key => {
-      const id = this.notificationQueue.get(key);
-      if (id) {
-        // Use clearInterval for recurring reminders, clearTimeout for others
-        if (key.startsWith('recurring_')) {
-          clearInterval(id);
-        } else {
-          clearTimeout(id);
-        }
-        this.notificationQueue.delete(key);
-      }
-    });
-  }
-  
-  async markTaskCompleted(taskId: number) {
-    await this.cancelTaskNotifications(taskId);
-  }
-  
-  // Event reminder methods
   async scheduleEventReminders(config: {
     eventId: number;
     userId: number;
@@ -382,201 +381,130 @@ export class NotificationService {
     location?: string;
   }) {
     const { eventId, userId, eventTitle, startTime, location } = config;
-    
+
     const prefs = await storage.getUserPreferences(userId);
-    if (prefs?.eventReminders === false) {
-      return;
-    }
-    
+    if (prefs?.eventReminders === false) return;
+
     const now = new Date();
     const locationText = location ? ` at ${location}` : "";
-    
-    const reminder1 = prefs?.eventReminder1 || "1d";
-    const reminder2 = prefs?.eventReminder2 || "1h";
-    const reminder3 = prefs?.eventReminder3 || "15m";
-
+    const r1 = prefs?.eventReminder1 || "1d";
+    const r2 = prefs?.eventReminder2 || "1h";
+    const r3 = prefs?.eventReminder3 || "15m";
     const labelMap: Record<string, string> = {
       "5m": "5 minutes", "15m": "15 minutes", "30m": "30 minutes",
       "1h": "1 hour", "2h": "2 hours", "12h": "12 hours", "1d": "tomorrow"
     };
-    
-    // 1. First reminder (default: 1 day before)
-    if (reminder1 !== "none") {
-      const offset1 = parseTimeOffset(reminder1);
-      const time1 = new Date(startTime.getTime() - offset1);
-      if (isAfter(time1, now)) {
-        const label = reminder1 === "1d" 
-          ? `📅 Tomorrow: "${eventTitle}"${locationText} at ${format(startTime, "h:mm a")}`
-          : `📅 In ${labelMap[reminder1] || reminder1}: "${eventTitle}"${locationText}`;
-        this.scheduleNotification(`event_r1_${eventId}`, time1, async () => {
-          await this.sendEventNotification({ eventId, userId, eventTitle, startTime, message: label });
-        });
-      }
-    }
-    
-    // 2. Second reminder (default: 1 hour before)
-    if (reminder2 !== "none") {
-      const offset2 = parseTimeOffset(reminder2);
-      const time2 = new Date(startTime.getTime() - offset2);
-      if (isAfter(time2, now)) {
-        this.scheduleNotification(`event_r2_${eventId}`, time2, async () => {
-          await this.sendEventNotification({
-            eventId, userId, eventTitle, startTime,
-            message: `⏰ Starting in ${labelMap[reminder2] || reminder2}: "${eventTitle}"${locationText}`
-          });
-        });
-      }
-    }
-    
-    // 3. Third reminder (default: 15 minutes before)
-    if (reminder3 !== "none") {
-      const offset3 = parseTimeOffset(reminder3);
-      const time3 = new Date(startTime.getTime() - offset3);
-      if (isAfter(time3, now)) {
-        this.scheduleNotification(`event_r3_${eventId}`, time3, async () => {
-          await this.sendEventNotification({
-            eventId, userId, eventTitle, startTime,
-            message: `🔔 Starting in ${labelMap[reminder3] || reminder3}: "${eventTitle}"${locationText}`
-          });
-        });
-      }
-    }
-  }
-  
-  private async sendEventNotification(notification: {
-    eventId: number;
-    userId: number;
-    eventTitle: string;
-    startTime: Date;
-    message: string;
-  }) {
-    const { eventId, userId, message } = notification;
-    
-    // Get user preferences to determine delivery method
-    const prefs = await storage.getUserPreferences(userId);
-    const notificationMethod = prefs?.notificationMethod || "in_app";
-    
-    // Create in-app notification
-    const notificationRecord: InsertNotification = {
-      title: "Event Reminder",
-      message,
-      recipientId: userId,
-      deliveryMethod: "in_app",
-      scheduledFor: new Date(),
-      status: "pending"
-    };
-    await storage.createNotification(notificationRecord);
-    console.log(`📱 In-app event notification: ${message}`);
 
-    // Send FCM push notification
-    try {
-      await sendPushNotification({
-        userId,
-        title: "Event Reminder",
-        body: message,
-        data: { type: "event", eventId: String(eventId) },
-      });
-    } catch (error) {
-      console.error("Failed to send event push notification:", error);
+    if (r1 !== "none") {
+      const t1 = new Date(startTime.getTime() - parseTimeOffset(r1));
+      if (isAfter(t1, now)) {
+        await this.scheduleDbPush(`event_r1_${eventId}`, t1, "event_reminder", "Event Reminder",
+          r1 === "1d"
+            ? `📅 Tomorrow: "${eventTitle}"${locationText} at ${format(startTime, "h:mm a")}`
+            : `📅 In ${labelMap[r1] || r1}: "${eventTitle}"${locationText}`,
+          userId, undefined, undefined, eventId);
+      }
+    }
+    if (r2 !== "none") {
+      const t2 = new Date(startTime.getTime() - parseTimeOffset(r2));
+      if (isAfter(t2, now)) {
+        await this.scheduleDbPush(`event_r2_${eventId}`, t2, "event_reminder", "Event Reminder",
+          `⏰ Starting in ${labelMap[r2] || r2}: "${eventTitle}"${locationText}`,
+          userId, undefined, undefined, eventId);
+      }
+    }
+    if (r3 !== "none") {
+      const t3 = new Date(startTime.getTime() - parseTimeOffset(r3));
+      if (isAfter(t3, now)) {
+        await this.scheduleDbPush(`event_r3_${eventId}`, t3, "event_reminder", "Event Reminder",
+          `🔔 Starting in ${labelMap[r3] || r3}: "${eventTitle}"${locationText}`,
+          userId, undefined, undefined, eventId);
+      }
     }
   }
-  
-  async cancelEventReminders(eventId: number) {
-    const keys = Array.from(this.notificationQueue.keys()).filter(key => 
-      key.startsWith(`event_`) && key.includes(`_${eventId}`)
-    );
-    
-    keys.forEach(key => {
-      const timeoutId = this.notificationQueue.get(key);
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        this.notificationQueue.delete(key);
-      }
-    });
+
+  async cancelTaskNotifications(taskId: number) {
+    await this.cancelDbPushes(`_${taskId}`);
+    await this.cancelDbPushes(`_${taskId}_`);
   }
-  
-  // Daily digest - sends summary of open tasks
+
+  async markTaskCompleted(taskId: number) {
+    await this.cancelTaskNotifications(taskId);
+  }
+
+  async cancelEventReminders(eventId: number) {
+    await this.cancelDbPushes(`event_r1_${eventId}`);
+    await this.cancelDbPushes(`event_r2_${eventId}`);
+    await this.cancelDbPushes(`event_r3_${eventId}`);
+  }
+
+  // ─── Immediate send helper (no scheduling — fires right now) ────────────────
+
+  private async sendImmediatePush(opts: {
+    type: string; title: string; body: string;
+    recipientUserId?: number; recipientTeenId?: number;
+    relatedTaskId?: number;
+  }) {
+    const { type, title, body, recipientUserId, recipientTeenId, relatedTaskId } = opts;
+
+    if (recipientUserId) {
+      const notifRecord: InsertNotification = {
+        title, message: body, recipientId: recipientUserId,
+        relatedTaskId, deliveryMethod: "in_app", scheduledFor: new Date(), status: "pending",
+      };
+      await storage.createNotification(notifRecord);
+      await sendPushNotification({ userId: recipientUserId, title, body, data: { type } })
+        .catch(err => console.error("[NotifService] Immediate push failed:", err));
+    }
+
+    if (recipientTeenId) {
+      const teenProfile = await storage.getTeenProfile(recipientTeenId);
+      if (teenProfile) {
+        const notifRecord: InsertNotification = {
+          title, message: body, recipientId: recipientTeenId,
+          relatedTaskId, deliveryMethod: "in_app", scheduledFor: new Date(), status: "pending",
+        };
+        await storage.createNotification(notifRecord);
+        if (teenProfile.userId) {
+          await sendPushNotification({ userId: teenProfile.userId, title, body, data: { type } })
+            .catch(err => console.error("[NotifService] Teen immediate push failed:", err));
+        }
+      }
+    }
+  }
+
+  // ─── Daily digest ────────────────────────────────────────────────────────────
+
   async sendDailyDigest(userId: number) {
     const prefs = await storage.getUserPreferences(userId);
-    
-    // Check if daily digest is enabled
-    if (prefs?.dailyDigest === false) {
-      return;
-    }
-    
-    const notificationMethod = prefs?.notificationMethod || "both";
-    
-    // Get user info
+    if (prefs?.dailyDigest === false) return;
+
     const user = await storage.getUser(userId);
     if (!user) return;
-    
-    // Get user's family membership
+
     const familyMembership = await storage.getUserFamilyMembership(userId);
     if (!familyMembership) return;
-    
-    // Get all open tasks for this user
+
     const tasks = await storage.getTasksByFamily(familyMembership.familyId);
     const openTasks = tasks.filter(t => !t.isCompleted);
-    
-    if (openTasks.length === 0) {
-      return; // No open tasks, skip digest
-    }
-    
-    // Categorize tasks
+    if (openTasks.length === 0) return;
+
     const today = new Date();
-    const tasksWithDueDate = openTasks.filter(t => t.dueDate);
-    const tasksWithoutDueDate = openTasks.filter(t => !t.dueDate);
-    const overdueTasks = tasksWithDueDate.filter(t => new Date(t.dueDate!) < today);
-    const dueTodayTasks = tasksWithDueDate.filter(t => {
-      const dueDate = new Date(t.dueDate!);
-      return dueDate.toDateString() === today.toDateString();
-    });
-    
-    // Build digest message
+    const overdue = openTasks.filter(t => t.dueDate && new Date(t.dueDate) < today);
+    const dueToday = openTasks.filter(t => t.dueDate && new Date(t.dueDate!).toDateString() === today.toDateString());
+
     let message = `📋 Daily Task Summary:\n`;
-    
-    if (overdueTasks.length > 0) {
-      message += `🚨 ${overdueTasks.length} overdue task${overdueTasks.length > 1 ? 's' : ''}\n`;
-    }
-    if (dueTodayTasks.length > 0) {
-      message += `⏰ ${dueTodayTasks.length} due today\n`;
-    }
-    if (tasksWithoutDueDate.length > 0) {
-      message += `📌 ${tasksWithoutDueDate.length} task${tasksWithoutDueDate.length > 1 ? 's' : ''} with no deadline\n`;
-    }
-    
+    if (overdue.length > 0) message += `🚨 ${overdue.length} overdue\n`;
+    if (dueToday.length > 0) message += `⏰ ${dueToday.length} due today\n`;
     message += `Total open: ${openTasks.length}`;
-    
-    // Create in-app notification
-    const notificationRecord: InsertNotification = {
-      title: "Daily Task Summary",
-      message,
-      recipientId: userId,
-      deliveryMethod: "in_app",
-      scheduledFor: new Date(),
-      status: "pending"
-    };
-    await storage.createNotification(notificationRecord);
-    console.log(`📱 Daily digest in-app notification sent to user ${userId}`);
-    
-    // Send FCM push notification for daily digest
-    try {
-      await sendPushNotification({
-        userId,
-        title: "Daily Task Summary",
-        body: message,
-        data: { type: "digest" },
-      });
-    } catch (error) {
-      console.error("Failed to send daily digest push notification:", error);
-    }
+
+    await this.sendImmediatePush({
+      type: "digest", title: "Daily Task Summary", body: message, recipientUserId: userId,
+    });
   }
-  
-  // Schedule daily digest for all users who have it enabled
+
   async scheduleDailyDigests() {
-    // This would be called by a cron job or scheduler
-    // For now, we'll just log that it's available
-    console.log("📅 Daily digest scheduler is ready");
+    console.log("📅 Daily digest scheduler ready");
   }
 }
 
