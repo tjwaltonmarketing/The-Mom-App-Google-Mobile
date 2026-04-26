@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, ChevronRight, ChevronLeft, Mic, Sparkles, Users, Bell, Gift, Clock, CreditCard } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, ChevronDown, Mic, Sparkles, Users, Bell, Gift, Clock, CreditCard } from "lucide-react";
 import onboardingSlide1 from "@/assets/images/onboarding-slide-1.png";
 import onboardingSlideAi from "@/assets/images/onboarding-slide-ai.png";
 import onboardingSlideFamily from "@/assets/images/onboarding-slide-family.png";
@@ -88,8 +88,29 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false, in
   const [currentSlide, setCurrentSlide] = useState(initialSlide);
   const [selectedPlan, setSelectedPlan] = useState<"individual" | "family">("family");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [showScrollHint, setShowScrollHint] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const slide = slides[currentSlide];
   const isLastSlide = currentSlide === slides.length - 1;
+
+  const checkScrollable = useCallback(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const hasMore = el.scrollHeight > el.clientHeight + 10;
+    setShowScrollHint(hasMore);
+  }, []);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    el.scrollTop = 0;
+    setTimeout(checkScrollable, 50);
+    const handleScroll = () => {
+      if (el.scrollTop > 30) setShowScrollHint(false);
+    };
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [currentSlide, checkScrollable]);
 
   const handleNext = () => {
     if (isLastSlide) {
@@ -120,7 +141,8 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false, in
 
   return (
     <div className="welcome-bg min-h-screen flex flex-col items-center justify-center px-4 py-6" style={{ fontFamily: "'Poppins', sans-serif" }}>
-      <div className="welcome-card-left bg-white rounded-3xl shadow-xl w-full max-w-md flex flex-col px-6 py-6 max-h-[92vh] overflow-y-auto">
+      <div className="relative w-full max-w-md">
+      <div ref={cardRef} className="welcome-card-left bg-white rounded-3xl shadow-xl w-full max-w-md flex flex-col px-6 py-6 max-h-[92vh] overflow-y-auto">
         {!(slide as any).isPrimingA && !(slide as any).isPrimingB && !(slide as any).isPricing && (
           <div className="w-full max-h-[250px] mb-4 flex items-center justify-center">
             <img
@@ -391,6 +413,17 @@ export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false, in
             </p>
           )}
         </div>
+      </div>
+
+      {showScrollHint && (
+        <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center pb-3 pointer-events-none rounded-b-3xl overflow-hidden">
+          <div className="w-full h-16 bg-gradient-to-t from-white to-transparent" />
+          <div className="animate-bounce text-pink-400 -mt-6">
+            <ChevronDown className="h-6 w-6" />
+          </div>
+          <p className="text-xs text-pink-400 font-medium tracking-wide mt-0.5">scroll for more</p>
+        </div>
+      )}
       </div>
     </div>
   );
