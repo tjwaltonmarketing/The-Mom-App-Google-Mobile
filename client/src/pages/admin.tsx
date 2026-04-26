@@ -17,6 +17,13 @@ interface ActiveTrial {
   subscription_status: string; trial_start_date: string;
   trial_end_date: string; created_at: string;
   email: string; first_name: string | null; last_name: string | null;
+  google_product_id: string | null; apple_product_id: string | null;
+}
+
+function getTrialPlatform(trial: ActiveTrial): "android" | "ios" | "web" {
+  if (trial.google_product_id) return "android";
+  if (trial.apple_product_id) return "ios";
+  return "web";
 }
 
 interface AdminMetrics {
@@ -248,7 +255,26 @@ export default function Admin() {
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   <MetricCard title="Families" value={metrics.families.total} icon={Home} color="text-orange-600" />
-                  <MetricCard title="Active Trials" value={metrics.activeTrials?.length || 0} icon={Clock} color="text-amber-600" />
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium text-muted-foreground">Active Trials</p>
+                        <Clock className="h-4 w-4 text-amber-600" />
+                      </div>
+                      <p className="text-2xl font-bold">{metrics.activeTrials?.length || 0}</p>
+                      <div className="flex gap-3 mt-2">
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <span className="text-green-600 font-semibold">{metrics.activeTrials?.filter(t => getTrialPlatform(t) === "android").length || 0}</span> Android
+                        </span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <span className="text-blue-600 font-semibold">{metrics.activeTrials?.filter(t => getTrialPlatform(t) === "ios").length || 0}</span> iOS
+                        </span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <span className="text-purple-600 font-semibold">{metrics.activeTrials?.filter(t => getTrialPlatform(t) === "web").length || 0}</span> Web
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
                   <MetricCard title="Tasks Created" value={metrics.engagement.tasks.total} subtitle={`${taskCompletionRate}% completed`} icon={CheckSquare} color="text-indigo-600" />
                   <MetricCard title="Push Tokens" value={metrics.pushNotifications.activeTokens} subtitle="active devices" icon={Bell} color="text-yellow-600" />
                 </div>
@@ -550,6 +576,7 @@ export default function Admin() {
                             <tr className="border-b text-left text-muted-foreground">
                               <th className="pb-2 font-medium">User</th>
                               <th className="pb-2 font-medium">Email</th>
+                              <th className="pb-2 font-medium">Platform</th>
                               <th className="pb-2 font-medium">Plan</th>
                               <th className="pb-2 font-medium">Expires</th>
                               <th className="pb-2 font-medium">Days Left</th>
@@ -558,10 +585,14 @@ export default function Admin() {
                           <tbody>
                             {metrics.activeTrials.map((trial) => {
                               const daysLeft = getDaysRemaining(trial.trial_end_date);
+                              const platform = getTrialPlatform(trial);
+                              const platformLabel = platform === "android" ? "Android" : platform === "ios" ? "iOS" : "Web";
+                              const platformColor = platform === "android" ? "bg-green-50 text-green-700 border-green-200" : platform === "ios" ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-purple-50 text-purple-700 border-purple-200";
                               return (
                                 <tr key={trial.id} className="border-b last:border-0">
                                   <td className="py-2 font-medium">{trial.first_name} {trial.last_name || ""}</td>
                                   <td className="py-2 text-muted-foreground text-xs">{trial.email}</td>
+                                  <td className="py-2"><Badge variant="outline" className={`text-xs ${platformColor}`}>{platformLabel}</Badge></td>
                                   <td className="py-2"><Badge variant="outline" className="capitalize text-xs">{trial.subscription_plan}</Badge></td>
                                   <td className="py-2 text-muted-foreground text-xs">{new Date(trial.trial_end_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</td>
                                   <td className="py-2"><Badge variant="outline" className={`text-xs ${getTrialBadgeColor(daysLeft)}`}>{daysLeft > 365 ? "Extended" : `${daysLeft}d`}</Badge></td>

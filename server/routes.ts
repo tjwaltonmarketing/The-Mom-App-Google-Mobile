@@ -4794,6 +4794,7 @@ export async function registerRoutes(app: Express) {
         db.execute(sql`
           SELECT us.id, us.user_id, us.subscription_plan, us.subscription_status, 
                  us.trial_start_date, us.trial_end_date, us.created_at,
+                 us.google_product_id, us.apple_product_id,
                  u.email, u.first_name, u.last_name
           FROM user_subscriptions us
           JOIN users u ON u.id = us.user_id
