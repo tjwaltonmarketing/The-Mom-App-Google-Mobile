@@ -4801,6 +4801,10 @@ export async function registerRoutes(app: Express) {
           WHERE us.trial_end_date > ${now}
             AND us.subscription_status IN ('active', 'trial')
             AND (us.stripe_subscription_id IS NULL OR us.stripe_subscription_id = '')
+            AND u.email NOT IN (
+              'test@themom.app','emily@themom.app','themomapp.us@gmail.com',
+              'wearesubsonic@gmail.com','emmett0823@gmail.com','tjwaltonmarketing@gmail.com'
+            )
           ORDER BY us.trial_end_date ASC
         `),
       ]);
