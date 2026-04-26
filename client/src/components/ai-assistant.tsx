@@ -123,10 +123,10 @@ export function AIAssistant({ onClose }: AIAssistantProps) {
   };
 
   const quickPrompts = [
-    "Help me plan meals for this week",
-    "Create a reminder for tomorrow at 3pm",
-    "What tasks should I assign to the kids?",
-    "Add milk and eggs to my grocery list"
+    "Add a task to my todo list",
+    "Add an event to my calendar",
+    "Assign a task to a family member",
+    "Help me with a diet specific meal plan"
   ];
 
   return (
