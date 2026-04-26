@@ -1,0 +1,62 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "Hka3sK9TLIcqpKkogKfRK"
+uri = "file://screenshots/onboarding-01-welcome.jpg"
+type = "image"
+title = "Screen 1 — Welcome"
+
+[[outputs]]
+id = "I7IiBEO8QNgEARNqgpsSa"
+uri = "file://screenshots/onboarding-02-overview.jpg"
+type = "image"
+title = "Screen 2 — Everything in One Place"
+
+[[outputs]]
+id = "ugAa-NxJ1TtmUIeEWPrf1"
+uri = "file://screenshots/onboarding-03-calendar.jpg"
+type = "image"
+title = "Screen 3 — Smart Calendar"
+
+[[outputs]]
+id = "URyr7T_c0hvi8zgc5ANEZ"
+uri = "file://screenshots/onboarding-04-tasks.jpg"
+type = "image"
+title = "Screen 4 — Smart Task Management"
+
+[[outputs]]
+id = "X-1iX_xaFLaJ4yrFVNUna"
+uri = "file://screenshots/onboarding-05-meals.jpg"
+type = "image"
+title = "Screen 5 — Meal Planning"
+
+[[outputs]]
+id = "FQgGUI2ml4WSkMMn-riBe"
+uri = "file://screenshots/onboarding-06-ai.jpg"
+type = "image"
+title = "Screen 6 — AI Assistant"
+
+[[outputs]]
+id = "77MKJ4HE_Iyp34cmwN3nm"
+uri = "file://screenshots/onboarding-07-family.jpg"
+type = "image"
+title = "Screen 7 — Built for the Whole Family"
+
+[[outputs]]
+id = "YBv9CedjwOFwmFcmTXMve"
+uri = "file://screenshots/onboarding-08-priming-a.jpg"
+type = "image"
+title = "Screen 8 — Try it Free"
+
+[[outputs]]
+id = "yxqCsETvF2p80q5iMIKyp"
+uri = "file://screenshots/onboarding-09-priming-b.jpg"
+type = "image"
+title = "Screen 9 — Trial Reminder Promise"
+
+[[outputs]]
+id = "aFRmTW8DoLYq2Ivlm0hfe"
+uri = "file://screenshots/onboarding-10-pricing.jpg"
+type = "image"
+title = "Screen 10 — Pricing & Trial Start"

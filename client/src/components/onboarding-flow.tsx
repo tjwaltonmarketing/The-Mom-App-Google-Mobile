@@ -152,8 +152,8 @@ const iconMap: Record<string, any> = {
   family: Users,
 };
 
-export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false }: OnboardingFlowProps) {
-  const [currentSlide, setCurrentSlide] = useState(0);
+export function OnboardingFlow({ onComplete, onStartTrial, isLoading = false, initialSlide = 0 }: OnboardingFlowProps & { initialSlide?: number }) {
+  const [currentSlide, setCurrentSlide] = useState(initialSlide);
   const [selectedPlan, setSelectedPlan] = useState<"individual" | "family">("family");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const slide = slides[currentSlide];

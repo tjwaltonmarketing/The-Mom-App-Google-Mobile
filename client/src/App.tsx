@@ -19,6 +19,7 @@ import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import Dashboard from "@/pages/dashboard";
 import Onboarding from "@/pages/onboarding";
+import OnboardingPreview from "@/pages/onboarding-preview";
 import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 import Calendar from "@/pages/calendar";
@@ -472,6 +473,7 @@ function Router() {
       <Route path="/teen/join" component={TeenOnboarding} />
       <Route path="/teen-join" component={TeenOnboarding} />
       <Route path="/teen-onboarding" component={TeenOnboarding} />
+      <Route path="/onboarding-preview" component={OnboardingPreview} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/delete-account" component={DeleteAccount} />
