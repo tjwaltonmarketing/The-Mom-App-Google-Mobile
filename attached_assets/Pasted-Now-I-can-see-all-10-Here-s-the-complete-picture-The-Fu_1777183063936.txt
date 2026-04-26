@@ -1,0 +1,21 @@
+Now I can see all 10. Here's the complete picture:
+
+The Full Flow in Order
+ScreenTitleType1You're officially in, MamaWelcome2Everything you juggle. One place.Overview3Smart CalendarFeature4Smart Task ManagementFeature5Meal Planning Made EasyFeature6Your AI-Powered AssistantFeature7Built for the Whole FamilyFeature8We want you to try it freePriming A9We'll send you a reminderPriming B10PaywallConversion
+
+Honest Assessment
+The good news: Screens 8, 9, and 10 are excellent. The two priming screens back to back before the paywall is actually a smart psychological sequence — screen 8 removes payment anxiety, screen 9 removes cancellation anxiety. That's textbook conversion optimization and most apps don't do it this well.
+The problem: You have 5 consecutive feature education screens (3-7) before you get to the priming sequence. That's where people are dropping off. By the time they reach screen 8 most of them are already gone.
+
+My Recommended Cut
+Drop from 10 to 6 screens:
+KeepCut✅ Screen 1 — Welcome❌ Screen 2 — Overview (redundant with welcome)✅ Screen 6 — AI Assistant❌ Screen 3 — Smart Calendar✅ Screen 7 — Built for Whole Family❌ Screen 4 — Smart Task Management✅ Screen 8 — Priming A❌ Screen 5 — Meal Planning✅ Screen 9 — Priming B✅ Screen 10 — Paywall
+
+Why Keep AI Assistant and Built for Whole Family
+AI Assistant is your killer feature and the biggest differentiator — it earns its screen.
+Built for the Whole Family is important because it's the core value proposition — this isn't just a personal organizer, it's a family system. That distinction justifies the subscription price and should be shown before the paywall.
+Calendar, Tasks, and Meal Planning are all features users will discover naturally once they're in the app. They don't need to be sold on each one individually before they've even started a trial.
+
+The New Flow
+ScreenContentPurpose1You're officially in, MamaEmotional hook2AI-Powered AssistantWow factor3Built for the Whole FamilyValue justification4We want you to try it freeRemove payment fear5We'll send a reminderRemove cancellation fear6PaywallConvert
+Clean. Fast. Focused. Gets her to the paywall in 6 taps instead of 10 — and the two she cares most about (AI and Family) are still there to do the selling. 🎯

@@ -1,13 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, ChevronRight, ChevronLeft, Mic, Calendar, ListTodo, UtensilsCrossed, Sparkles, Users, Bell, Gift, Clock, CreditCard } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, Mic, Sparkles, Users, Bell, Gift, Clock, CreditCard } from "lucide-react";
 import onboardingSlide1 from "@/assets/images/onboarding-slide-1.png";
-import onboardingSlide2 from "@/assets/images/onboarding-slide-2.png";
-import onboardingSlide3 from "@/assets/images/onboarding-slide-3.png";
-import onboardingSlideCalendar from "@/assets/images/onboarding-slide-calendar.png";
-import onboardingSlideTasks from "@/assets/images/onboarding-slide-tasks.png";
-import onboardingSlideMeals from "@/assets/images/onboarding-slide-meals.png";
 import onboardingSlideAi from "@/assets/images/onboarding-slide-ai.png";
 import onboardingSlideFamily from "@/assets/images/onboarding-slide-family.png";
 import onboardingSlide4 from "@/assets/images/onboarding-slide-4.png";
@@ -29,66 +24,6 @@ const slides = [
   },
   {
     id: 2,
-    image: onboardingSlide2,
-    headline: "Everything you juggle. One place.",
-    benefits: [
-      "Share the load \u2014 stop carrying it all yourself",
-      "The app does the nagging so you don't have to",
-      "Smart reminders keep everyone on track",
-      "Plan meals, manage tasks, and stay organized",
-      "Use voice or text \u2014 whatever works for you",
-    ],
-    tagline: "Less overwhelm. More peace.",
-    emotional: "Because you shouldn't have to ask twice.",
-    cta: "Show me the features",
-  },
-  {
-    id: 3,
-    image: onboardingSlideCalendar,
-    icon: "calendar",
-    headline: "Smart Calendar",
-    subtitle: "Your family's schedule, simplified.",
-    featureHighlights: [
-      "See everyone's events in one beautiful view",
-      "Color-coded by family member",
-      "Privacy controls \u2014 share what you want, keep what you don't",
-      "Shared, busy, and private event types",
-    ],
-    tagline: "Never double-book again.",
-    cta: "What else can it do?",
-  },
-  {
-    id: 4,
-    image: onboardingSlideTasks,
-    icon: "tasks",
-    headline: "Smart Task Management",
-    subtitle: "Delegate without the drama.",
-    featureHighlights: [
-      "Create tasks by voice or text \u2014 your choice",
-      "Assign to family members with one tap",
-      "The app sends the reminders so you don't nag",
-      "Family members earn points for completing tasks",
-    ],
-    tagline: "Let the app do the nagging for you.",
-    cta: "There's more!",
-  },
-  {
-    id: 5,
-    image: onboardingSlideMeals,
-    icon: "meals",
-    headline: "Meal Planning Made Easy",
-    subtitle: "Answer \"What's for dinner?\" once and for all.",
-    featureHighlights: [
-      "Plan your weekly meals in minutes",
-      "Browse recipe suggestions and ideas",
-      "Auto-generate grocery lists from your meal plan",
-      "The whole family can see what's coming up",
-    ],
-    tagline: "Less stress at dinnertime. More time together.",
-    cta: "Keep going!",
-  },
-  {
-    id: 6,
     image: onboardingSlideAi,
     icon: "ai",
     headline: "Your AI-Powered Assistant",
@@ -105,7 +40,7 @@ const slides = [
     cta: "One more thing...",
   },
   {
-    id: 7,
+    id: 3,
     image: onboardingSlideFamily,
     icon: "family",
     headline: "Built for the Whole Family",
@@ -122,19 +57,19 @@ const slides = [
     cta: "I'm ready!",
   },
   {
-    id: 8,
+    id: 4,
     image: onboardingSlide4,
     headline: "We want you to try\nThe Mom App for free.",
     isPrimingA: true,
   },
   {
-    id: 9,
+    id: 5,
     image: onboardingSlide4,
     headline: "We'll send you a reminder\nbefore your free trial ends.",
     isPrimingB: true,
   },
   {
-    id: 10,
+    id: 6,
     image: onboardingSlide4,
     headline: "Start your 14-day FREE trial.",
     body: "You've unlocked a simpler way to manage:",
@@ -145,9 +80,6 @@ const slides = [
 ];
 
 const iconMap: Record<string, any> = {
-  calendar: Calendar,
-  tasks: ListTodo,
-  meals: UtensilsCrossed,
   ai: Sparkles,
   family: Users,
 };
