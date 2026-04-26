@@ -3,7 +3,7 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { AIAssistant } from "@/components/ai-assistant";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bot, Lightbulb, Zap, Clock, Shield, AlertTriangle } from "lucide-react";
+import { Bot, Lightbulb, Zap, Clock, Shield, AlertTriangle, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { VoiceNoteModal } from "@/components/voice-note-modal";
 import {
@@ -21,11 +21,22 @@ export default function AIAssistantPage() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [showConsentDialog, setShowConsentDialog] = useState(false);
   const [consented, setConsented] = useState(hasAIConsent());
+  const [showScrollHint, setShowScrollHint] = useState(true);
 
   useEffect(() => {
     if (!hasAIConsent()) {
       setShowConsentDialog(true);
     }
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        setShowScrollHint(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleConsent = () => {
