@@ -3,18 +3,7 @@ import Capacitor
 import RevenueCat
 
 @objc(RevenueCatPlugin)
-public class RevenueCatPlugin: CAPPlugin, CAPBridgedPlugin {
-    public let identifier = "RevenueCatPlugin"
-    public let jsName = "RevenueCatPlugin"
-    public let pluginMethods: [CAPPluginMethod] = [
-        CAPPluginMethod(name: "configure", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "getOfferings", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "purchasePackage", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "restorePurchases", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "getCustomerInfo", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "logIn", returnType: CAPPluginReturnPromise),
-        CAPPluginMethod(name: "logOut", returnType: CAPPluginReturnPromise),
-    ]
+public class RevenueCatPlugin: CAPPlugin {
 
     private var isConfigured = false
     private var isPurchasing = false
