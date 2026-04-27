@@ -1,0 +1,111 @@
+LA094-i:The-Mom-App-Google-Mobile user289897$ git pull origin main
+remote: Enumerating objects: 22, done.
+remote: Counting objects: 100% (22/22), done.
+remote: Compressing objects: 100% (7/7), done.
+remote: Total 15 (delta 7), reused 15 (delta 7), pack-reused 0 (from 0)
+Unpacking objects: 100% (15/15), 819.82 KiB | 4.08 MiB/s, done.
+From https://github.com/tjwaltonmarketing/The-Mom-App-Google-Mobile
+ * branch            main       -> FETCH_HEAD
+   8717043..4494ebc  main       -> origin/main
+Updating 0ab8e9b..4494ebc
+error: Your local changes to the following files would be overwritten by merge:
+	ios/App/The Mom App (Official).xcodeproj/project.pbxproj
+Please commit your changes or stash them before you merge.
+error: The following untracked working tree files would be overwritten by merge:
+	ios/App/App/RevenueCatPlugin.m
+	ios/App/App/RevenueCatPlugin.swift
+Please move or remove them before you merge.
+Aborting
+LA094-i:The-Mom-App-Google-Mobile user289897$ npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.14 building for production...
+transforming (2) ../vite/modulepreload-polyfill.jsBrowserslist: browsers data (caniuse-lite) is 18 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 3198 modules transformed.
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/config.ts is dynamically imported by /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx but also statically imported by /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/useAuth.ts, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/queryClient.ts, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/calendar.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/login.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/register.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-login.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/welcome.tsx, dynamic import will not move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/queryClient.ts is dynamically imported by /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx but also statically imported by /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/ai-assistant.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/calendar-sync.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/advanced-task-management.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/meal-planning.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/password-vault.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/quick-tasks.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/today-schedule.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/trial-banner.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/voice-notes.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/welcome-header.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/event-edit-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/event-form.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family-dishwasher.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family/invite-teen-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/family/kid-point-manager.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/feedback-prompt-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/notification-bell.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/parent-invite-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/password-details-edit-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/password-edit-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/password-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/task-edit-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/task-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/teen-task-detail-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/teen/teen-navigation.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/voice-note-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/weather-display.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/use-pull-to-refresh.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/useAuth.ts, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/admin.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/calendar.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/delete-account.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/finish-profile.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/forgot-password.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/grocery-list.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/login.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/notes.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/onboarding.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/register.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/reset-password.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/subscription.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/tasks.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-calendar.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-dashboard.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-login.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-onboarding.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-passwords.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-profile.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/teen-tasks.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/upgrade-success.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/upgrade.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/welcome.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts, dynamic import will not move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/node_modules/@capacitor/core/dist/index.js is dynamically imported by /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/welcome.tsx but also statically imported by /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/notification-prompt.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/trial-banner.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/web-access-tip-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/hooks/use-voice-recording.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/lib/facebook-events.ts, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/login.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/onboarding.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/subscription.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/upgrade.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/video-tutorials.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/welcome.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/revenuecat.ts, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/node_modules/@capacitor-community/speech-recognition/dist/esm/index.js, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/node_modules/@capacitor-community/speech-recognition/dist/esm/web.js, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/node_modules/capacitor-native-settings/dist/esm/index.js, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/node_modules/capacitor-native-settings/dist/esm/web.js, dynamic import will not move module into another chunk.
+
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/services/push-notifications.ts is dynamically imported by /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx but also statically imported by /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/App.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/dashboard/notification-prompt.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/components/web-access-tip-modal.tsx, /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/client/src/pages/settings.tsx, dynamic import will not move module into another chunk.
+
+../dist/public/index.html                                                                 2.30 kB │ gzip:   0.82 kB
+../dist/public/assets/logo-icon-DNGmlCd-.png                                             27.04 kB
+../dist/public/assets/The_Mom_app_-_New_Tagline_-_Cropped_1775943647566-D6OnSuYl.png     72.88 kB
+../dist/public/assets/The_Mom_app_(5)_1766014062224-6qVf_YmQ.png                         82.76 kB
+../dist/public/assets/onboarding-slide-4-rHtayH7z.png                                   356.97 kB
+../dist/public/assets/onboarding-slide-2-DOAnxM2R.png                                   472.23 kB
+../dist/public/assets/onboarding-slide-1-WQCRwazH.png                                   473.66 kB
+../dist/public/assets/onboarding-slide-family-EbBOjLQv.png                              578.29 kB
+../dist/public/assets/onboarding-slide-tasks-FJgrccnv.png                               860.62 kB
+../dist/public/assets/onboarding-slide-meals-a2IrNqzw.png                               928.19 kB
+../dist/public/assets/onboarding-slide-ai-Bxp1YDl6.png                                  945.11 kB
+../dist/public/assets/onboarding-slide-calendar-CEeLQ3iz.png                          1,098.90 kB
+../dist/public/assets/The_Mom_app_(4)_1766014201419-D2Gnu6Zw.png                      4,686.94 kB
+../dist/public/assets/index-pyFLIAgM.css                                                138.70 kB │ gzip:  21.47 kB
+../dist/public/assets/web-FYcEk1kr.js                                                     0.35 kB │ gzip:   0.19 kB
+../dist/public/assets/web-6VlmXiK5.js                                                     0.80 kB │ gzip:   0.24 kB
+../dist/public/assets/index-DhBRrWF_.js                                               1,840.62 kB │ gzip: 516.55 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.53s
+▲ [WARNING] Import "defineConfig" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    vite.config.ts:1:9:
+      1 │ import { defineConfig } from "vite";
+        ╵          ~~~~~~~~~~~~
+
+▲ [WARNING] Import "createServer" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    server/vite.ts:4:9:
+      4 │ import { createServer as createViteServer, createLogger } from "vite";
+        ╵          ~~~~~~~~~~~~
+
+▲ [WARNING] Import "createLogger" will always be undefined because the file "vite" has no exports [import-is-undefined]
+
+    server/vite.ts:4:43:
+      4 │ import { createServer as createViteServer, createLogger } from "vite";
+        ╵                                            ~~~~~~~~~~~~
+
+3 warnings
+
+  dist/index.js  428.5kb
+
+⚡ Done in 16ms
+LA094-i:The-Mom-App-Google-Mobile user289897$ npx cap sync ios
+✔ Copying web assets from public to ios/App/App/public in 16.17ms
+✔ Creating capacitor.config.json in ios/App/App in 1.28ms
+✔ copy ios in 59.41ms
+✔ Updating iOS plugins in 7.22ms
+✖ Updating iOS native dependencies with pod install - failed!
+✖ update ios - failed!
+[error] Command line invocation:
+        /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project App.xcodeproj clean
+        
+        User defaults from command line:
+        IDEPackageSupportUseBuiltinSCM = YES
+        
+        2026-04-27 11:49:02.800 xcodebuild[68831:22820475] Writing error result bundle to
+        /var/folders/dj/bfd7pvr51316st0j_y6rt3rc0000h5/T/ResultBundle_2026-27-04_11-49-0002.xcresult
+        xcodebuild: error: Unable to read project 'App.xcodeproj'.
+        Reason: Project /Volumes/Macintosh_HD/Users/user289897/Desktop/The-Mom-App-Google-Mobile/ios/App/App.xcodeproj
+        cannot be opened because it is missing its project.pbxproj file.
+        
+        
+        
+LA094-i:The-Mom-App-Google-Mobile user289897$ sed -i '' 's/CAPBridgeViewController" customModule="Capacitor"/MyViewController" customModule="App"/' ios/App/App/Base.lproj/Main.storyboard
+LA094-i:The-Mom-App-Google-Mobile user289897$ sed -i '' 's/CAPBridgeViewController" customModule="Capacitor"/MyViewController" customModule="App"/' ios/App/App/Base.lproj/Main.storyboard
+LA094-i:The-Mom-App-Google-Mobile user289897$ open ios/App/App.xcworkspace
+LA094-i:The-Mom-App-Google-Mobile user289897$ 
