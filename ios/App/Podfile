@@ -1,6 +1,8 @@
+
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '14.0'
+project 'The Mom App (Official)'
 use_frameworks!
 
 # workaround to avoid Xcode caching of Pods that requires
