@@ -3114,9 +3114,11 @@ export async function registerRoutes(app: Express) {
       }
 
       // Auto-spawn next occurrence for recurring tasks
-      if (task.recurrence && task.recurrence !== "none" && task.dueDate) {
+      if (task.recurrence && task.recurrence !== "none") {
         try {
-          const nextDue = new Date(task.dueDate);
+          // Use the original due date if set, otherwise base from now
+          const baseDate = task.dueDate ? new Date(task.dueDate) : new Date();
+          const nextDue = new Date(baseDate);
           if (task.recurrence === "daily") nextDue.setDate(nextDue.getDate() + 1);
           else if (task.recurrence === "weekly") nextDue.setDate(nextDue.getDate() + 7);
           else if (task.recurrence === "monthly") nextDue.setMonth(nextDue.getMonth() + 1);
