@@ -114,8 +114,13 @@ export function MealPlanning() {
 
   // Saved meals
   interface SavedMeal { id: number; name: string; mealType: string; ingredients?: string[]; notes?: string | null; createdAt: string; }
-  const { data: savedMeals = [] } = useQuery<SavedMeal[]>({
+  const { data: savedMeals = [], refetch: refetchSavedMeals } = useQuery<SavedMeal[]>({
     queryKey: ["/api/saved-meals"],
+    queryFn: async () => {
+      const response = await authFetch("/api/saved-meals");
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    },
     enabled: !isTeenUser && !!teenData,
   });
 
@@ -129,8 +134,9 @@ export function MealPlanning() {
       });
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/saved-meals"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/saved-meals"] });
+      await refetchSavedMeals();
       setIsSaveMealOpen(false);
       setSavingMeal(null);
       toast({ title: "Meal saved to library", description: "You can reuse it any time from Saved Meals" });

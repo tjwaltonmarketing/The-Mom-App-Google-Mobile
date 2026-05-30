@@ -319,7 +319,7 @@ export default function GroceryListPage() {
                     <ShoppingCart className="h-5 w-5 text-pink-500" />
                     Shopping List ({getPendingGroceries().length} items)
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Button 
                       variant={sortByCategory ? "default" : "outline"} 
                       size="sm"
@@ -327,11 +327,21 @@ export default function GroceryListPage() {
                       className="gap-2"
                     >
                       <ArrowUpDown className="h-4 w-4" />
-                      {sortByCategory ? "Sorted" : "Sort by Category"}
+                      {sortByCategory ? "Sorted" : "Sort"}
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => setIsShareModalOpen(true)} className="gap-2">
                       <Share2 className="h-4 w-4" />
                       Share
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      disabled={getPendingGroceries().length === 0}
+                      onClick={() => { setSaveListName(""); setIsSaveListOpen(true); }}
+                    >
+                      <BookmarkPlus className="h-4 w-4" />
+                      Save List
                     </Button>
                   </div>
                 </CardTitle>
