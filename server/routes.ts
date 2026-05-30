@@ -218,18 +218,7 @@ export async function registerRoutes(app: Express) {
       // Generate JWT token for cross-domain authentication
       const token = generateToken(newUser.id);
 
-      // Send SMS notification to admin about new signup
-      const adminPhone = process.env.ADMIN_PHONE_NUMBER;
-      if (adminPhone) {
-        try {
-          await sendSMS(
-            adminPhone,
-            `🎉 New Mom App signup!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nFamily: ${resolvedFamilyName}\nTime: ${new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}`
-          );
-        } catch (smsError) {
-          console.error("Failed to send admin signup notification:", smsError);
-        }
-      }
+      // Admin signup SMS notifications disabled to reduce costs
 
       res.json({
         success: true,
@@ -373,18 +362,7 @@ export async function registerRoutes(app: Express) {
             role: 'owner'
           });
 
-          // Send admin notification
-          const adminPhone = process.env.ADMIN_PHONE_NUMBER;
-          if (adminPhone) {
-            try {
-              await sendSMS(
-                adminPhone,
-                `🎉 New Mom App signup (Google)!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nTime: ${new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}`
-              );
-            } catch (smsError) {
-              console.error("Failed to send admin signup notification:", smsError);
-            }
-          }
+          // Admin signup SMS notifications disabled to reduce costs
         }
       }
 
@@ -560,15 +538,7 @@ export async function registerRoutes(app: Express) {
             familyId: family.id,
             role: "owner",
           });
-          const adminPhone = process.env.ADMIN_PHONE_NUMBER;
-          if (adminPhone) {
-            try {
-              await sendSMS(
-                adminPhone,
-                `🎉 New Mom App signup (Google native)!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nTime: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })}`
-              );
-            } catch {}
-          }
+          // Admin signup SMS notifications disabled to reduce costs
         }
       }
 
@@ -701,12 +671,7 @@ export async function registerRoutes(app: Express) {
         });
         await storage.createFamilyMembership({ userId: user.id, familyId: family.id, role: "owner" });
 
-        const adminPhone = process.env.ADMIN_PHONE_NUMBER;
-        if (adminPhone) {
-          try {
-            await sendSMS(adminPhone, `🎉 New Mom App signup (Apple)!\n\nName: ${firstName} ${lastName}\nEmail: ${email}\nTime: ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })}`);
-          } catch {}
-        }
+        // Admin signup SMS notifications disabled to reduce costs
       }
 
       if (!user) return res.status(500).json({ error: "Failed to create or find user" });

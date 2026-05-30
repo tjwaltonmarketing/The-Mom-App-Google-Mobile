@@ -1,67 +1,79 @@
-import { sendSMS } from "./sms-service";
+import { sendEmail } from "./email-service";
 import { db } from "./db";
 import { winbackDrip, users, userSubscriptions } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 
 const WINBACK_DAYS = [2, 5, 10];
 
+const SUBJECTS: Record<number, string> = {
+  2: "Your free trial is still waiting 💕",
+  5: "25% off The Mom App — 48 hours only",
+  10: "Last chance: 25% off expires tonight 💕",
+};
+
 const MESSAGES: Record<number, (name: string) => string> = {
-  2: (name) =>
-    `Hey, ${name}! 💕 You were so close to simplifying your family life with The Mom App. Your 14-day free trial is still waiting — no charge today. Ready? https://app.themom.app/login`,
-  5: (name) =>
-    `Hey, ${name}! Still thinking it over? Here's 25% off your first month of The Mom App — only good for the next 48 hours. 👉 https://app.themom.app/login?coupon=WINBACK25`,
-  10: (name) =>
-    `Hey, ${name}! Last chance — your 25% off The Mom App expires tonight. Don't miss out 💕 https://app.themom.app/login?coupon=WINBACK25`,
+  2: (name) => `
+    <p>Hey ${name}! 💕</p>
+    <p>You were so close to simplifying your family life with The Mom App. Your 14-day free trial is still waiting — no charge today.</p>
+    <p><a href="https://app.themom.app/login">Start your free trial →</a></p>
+    <p>Mom Life. Made Easy.</p>
+  `,
+  5: (name) => `
+    <p>Hey ${name}!</p>
+    <p>Still thinking it over? Here's <strong>25% off your first month</strong> of The Mom App — only good for the next 48 hours.</p>
+    <p><a href="https://app.themom.app/login?coupon=WINBACK25">Claim 25% off →</a></p>
+    <p>Mom Life. Made Easy.</p>
+  `,
+  10: (name) => `
+    <p>Hey ${name}!</p>
+    <p>Last chance — your 25% off The Mom App expires tonight. Don't miss out 💕</p>
+    <p><a href="https://app.themom.app/login?coupon=WINBACK25">Claim your discount →</a></p>
+    <p>Mom Life. Made Easy.</p>
+  `,
 };
 
 // ─── KILL SWITCH ────────────────────────────────────────────────────────────
-// The campaign will NOT send real texts unless WINBACK_DRIP_ENABLED=true
+// The campaign will NOT send real emails unless WINBACK_EMAIL_ENABLED=true
 // is set as an environment variable. Remove this check only when ready to go live.
-const CAMPAIGN_LIVE = process.env.WINBACK_DRIP_ENABLED === "true";
+const CAMPAIGN_LIVE = process.env.WINBACK_EMAIL_ENABLED === "true";
 
 export async function runWinbackDripCheck() {
   try {
     if (!CAMPAIGN_LIVE) {
-      console.log("💌 Winback drip: DRY RUN mode (set WINBACK_DRIP_ENABLED=true to go live)");
+      console.log("💌 Winback drip: DRY RUN mode (set WINBACK_EMAIL_ENABLED=true to go live)");
     }
 
     const now = new Date();
 
-    // Find users who:
-    // 1. Have a phone number
-    // 2. Never completed checkout (no stripeSubscriptionId and no appleProductId)
     const candidates = await db
       .select({
         id: users.id,
         firstName: users.firstName,
-        phoneNumber: users.phoneNumber,
+        email: users.email,
         createdAt: users.createdAt,
         stripeSubId: userSubscriptions.stripeSubscriptionId,
         appleProductId: userSubscriptions.appleProductId,
+        googleProductId: userSubscriptions.googleProductId,
         subscriptionStatus: userSubscriptions.subscriptionStatus,
       })
       .from(users)
       .leftJoin(userSubscriptions, eq(userSubscriptions.userId, users.id))
-      .where(sql`${users.phoneNumber} IS NOT NULL AND ${users.createdAt} IS NOT NULL`);
+      .where(sql`${users.email} IS NOT NULL AND ${users.createdAt} IS NOT NULL`);
 
-    // Filter to users who have never subscribed or trialled:
-    // - No Stripe subscription ID (never completed Stripe checkout)
-    // - No Apple product ID (never purchased via iOS)
-    // - No active/trial subscription status (excludes legacy trial users without a Stripe ID)
     const ACTIVE_STATUSES = ["active", "trial"];
     const nonPaying = candidates.filter(
       (u) =>
         !u.stripeSubId &&
         !u.appleProductId &&
+        !u.googleProductId &&
         !ACTIVE_STATUSES.includes(u.subscriptionStatus || "")
     );
 
-    // Get already-sent winback records
     const sentRecords = await db.select().from(winbackDrip);
     const sentSet = new Set(sentRecords.map((r) => `${r.userId}-${r.day}`));
 
     for (const user of nonPaying) {
-      if (!user.createdAt || !user.phoneNumber) continue;
+      if (!user.createdAt || !user.email) continue;
 
       const daysSinceSignup = Math.floor(
         (now.getTime() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
@@ -70,25 +82,24 @@ export async function runWinbackDripCheck() {
       for (const day of WINBACK_DAYS) {
         const key = `${user.id}-${day}`;
 
-        // Send within the 24h window of the target day
         if (daysSinceSignup < day || daysSinceSignup >= day + 1) continue;
         if (sentSet.has(key)) continue;
 
-        const message = MESSAGES[day](user.firstName || "");
+        const subject = SUBJECTS[day];
+        const html = MESSAGES[day](user.firstName || "there");
 
         if (!CAMPAIGN_LIVE) {
-          // Dry run — log what would be sent, don't actually send or record
-          console.log(`💌 [DRY RUN] Would send day ${day} SMS to user ${user.id} (${user.phoneNumber}): "${message}"`);
+          console.log(`💌 [DRY RUN] Would send day ${day} email to user ${user.id} (${user.email}): "${subject}"`);
           continue;
         }
 
-        const sent = await sendSMS(user.phoneNumber, message);
+        const sent = await sendEmail(user.email, subject, html);
 
         if (sent) {
           await db.insert(winbackDrip).values({ userId: user.id, day });
-          console.log(`✅ Winback day ${day} SMS sent to user ${user.id}`);
+          console.log(`✅ Winback day ${day} email sent to user ${user.id}`);
         } else {
-          console.log(`⚠️ Winback day ${day} SMS failed for user ${user.id}`);
+          console.log(`⚠️ Winback day ${day} email failed for user ${user.id}`);
         }
       }
     }
@@ -103,8 +114,8 @@ export function initWinbackDripScheduler() {
   runWinbackDripCheck();
   setInterval(runWinbackDripCheck, 60 * 60 * 1000);
   if (CAMPAIGN_LIVE) {
-    console.log("💌 Winback drip scheduler initialized — LIVE MODE");
+    console.log("💌 Winback drip scheduler initialized — LIVE MODE (email)");
   } else {
-    console.log("💌 Winback drip scheduler initialized — DRY RUN (no texts will be sent)");
+    console.log("💌 Winback drip scheduler initialized — DRY RUN (no emails will be sent)");
   }
 }
