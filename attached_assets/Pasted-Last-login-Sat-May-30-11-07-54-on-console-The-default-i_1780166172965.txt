@@ -1,0 +1,63 @@
+Last login: Sat May 30 11:07:54 on console
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+LA708:~ user294897$ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 14984  100 14984    0     0  53624      0 --:--:-- --:--:-- --:--:-- 53706
+=> Downloading nvm from git to '/Users/user294897/.nvm'
+=> Cloning into '/Users/user294897/.nvm'...
+remote: Enumerating objects: 428, done.
+remote: Counting objects: 100% (428/428), done.
+remote: Compressing objects: 100% (354/354), done.
+remote: Total 428 (delta 60), reused 194 (delta 46), pack-reused 0 (from 0)
+Receiving objects: 100% (428/428), 415.66 KiB | 2.68 MiB/s, done.
+Resolving deltas: 100% (60/60), done.
+* (HEAD detached at FETCH_HEAD)
+  master
+=> Compressing and cleaning up git repository
+
+=> Profile not found. Tried ~/.bashrc, ~/.bash_profile, ~/.zshrc, and ~/.profile.
+=> Create one of them and run this script again
+   OR
+=> Append the following lines to the correct file yourself:
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+
+source ~/.bashrc
+nvm install 20
+nvm use 20nvm use 20npm notice 
+npm notice New major version of npm available! 10.5.0 -> 11.16.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.16.0
+npm notice Run npm install -g npm@11.16.0 to update!
+npm notice 
+=> You currently have modules installed globally with `npm`. These will no
+=> longer be linked to the active version of Node when you install a new node
+=> with `nvm`; and they may (depending on how you construct your `$PATH`)
+=> override the binaries of modules installed with `nvm`:
+
+/usr/local/lib
+├── @ionic/angular@8.6.0
+├── @ionic/cli@7.2.1
+├── cordova@12.0.0
+├── corepack@0.34.1
+├── eas-cli@16.24.1
+├── firebase-tools@14.16.0
+=> If you wish to uninstall them at a later point (or re-install them under your
+=> `nvm` Nodes), you can remove them from the system Node as follows:
+
+     $ nvm use system
+     $ npm uninstall -g a_module
+
+=> Close and reopen your terminal to start using nvm or run the following to use it now:
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+LA708:~ user294897$ source ~/.bashrc
+-bash: /Users/user294897/.bashrc: No such file or directory
+LA708:~ user294897$ nvm install 20
+-bash: nvm: command not found
+LA708:~ user294897$ nvm use 20
