@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { CalendarDays, User, Flag, Lock, Crown } from "lucide-react";
+import { CalendarDays, User, Flag, Lock, Crown, Repeat } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
   const [dueTime, setDueTime] = useState<string>("");
   const [points, setPoints] = useState<string>("0");
   const [isPrivate, setIsPrivate] = useState(false);
+  const [recurrence, setRecurrence] = useState<string>("none");
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
@@ -147,6 +148,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
       dueDate: finalDueDate ? finalDueDate.toISOString() : null,
       points: parseInt(points),
       isPrivate,
+      recurrence,
       // Add childProfileId if needed for backend processing
       ...(childProfileId && { childProfileId }),
     };
@@ -163,6 +165,7 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
     setDueTime("");
     setPoints("0");
     setIsPrivate(false);
+    setRecurrence("none");
     onClose();
   };
 
@@ -271,6 +274,23 @@ export function TaskModal({ isOpen, onClose }: TaskModalProps) {
                 <SelectItem value="25">25 points</SelectItem>
                 <SelectItem value="30">30 points</SelectItem>
                 <SelectItem value="50">50 points</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">Repeat</label>
+            <Select value={recurrence} onValueChange={setRecurrence}>
+              <SelectTrigger className="mt-1">
+                <Repeat className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Does not repeat</SelectItem>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+                <SelectItem value="yearly">Yearly</SelectItem>
               </SelectContent>
             </Select>
           </div>

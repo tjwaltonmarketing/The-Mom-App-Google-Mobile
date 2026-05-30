@@ -146,6 +146,8 @@ export const tasks = pgTable("tasks", {
   teenId: integer("teen_id"), // reference to teen profile if assigned to teen
   childProfileId: integer("child_profile_id").references(() => childProfiles.id), // reference to child profile if assigned to child
   isPrivate: boolean("is_private").default(false), // private tasks only visible to creator
+  recurrence: text("recurrence").default("none"), // "none", "daily", "weekly", "monthly", "yearly"
+  recurrenceEndDate: timestamp("recurrence_end_date"), // stop recurring after this date
 });
 
 export const voiceNotes = pgTable("voice_notes", {

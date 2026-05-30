@@ -3112,6 +3112,38 @@ export async function registerRoutes(app: Express) {
       } catch (notifError) {
         console.error("Failed to cancel task notifications:", notifError);
       }
+
+      // Auto-spawn next occurrence for recurring tasks
+      if (task.recurrence && task.recurrence !== "none" && task.dueDate) {
+        try {
+          const nextDue = new Date(task.dueDate);
+          if (task.recurrence === "daily") nextDue.setDate(nextDue.getDate() + 1);
+          else if (task.recurrence === "weekly") nextDue.setDate(nextDue.getDate() + 7);
+          else if (task.recurrence === "monthly") nextDue.setMonth(nextDue.getMonth() + 1);
+          else if (task.recurrence === "yearly") nextDue.setFullYear(nextDue.getFullYear() + 1);
+
+          const shouldSpawn = !task.recurrenceEndDate || nextDue <= new Date(task.recurrenceEndDate);
+          if (shouldSpawn) {
+            await storage.createTask({
+              title: task.title,
+              description: task.description,
+              priority: task.priority,
+              assignedTo: task.assignedTo,
+              dueDate: nextDue.toISOString(),
+              points: task.points,
+              isPrivate: task.isPrivate,
+              recurrence: task.recurrence,
+              recurrenceEndDate: task.recurrenceEndDate ? task.recurrenceEndDate.toISOString() : null,
+              childProfileId: task.childProfileId,
+              createdBy: task.createdBy,
+              category: task.category,
+              estimatedTime: task.estimatedTime,
+            });
+          }
+        } catch (recurErr) {
+          console.error("Failed to spawn next recurring task:", recurErr);
+        }
+      }
       
       res.json(completedTask);
     } catch (error) {
@@ -4665,6 +4697,23 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       console.error("Create push token error:", error);
       res.status(500).json({ error: "Failed to save push token" });
+    }
+  });
+
+  app.post("/api/admin/test-sms", async (req, res) => {
+    try {
+      if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
+      const user = await storage.getUserById(req.session.userId);
+      if (!user || user.email !== "wearesubsonic@gmail.com") return res.status(403).json({ error: "Admin access only" });
+
+      const { to, message } = req.body;
+      if (!to || !message) return res.status(400).json({ error: "to and message required" });
+
+      const result = await sendSMS(to, message);
+      res.json({ success: result, to, message });
+    } catch (error) {
+      console.error("Admin test SMS error:", error);
+      res.status(500).json({ error: "Failed to send test SMS" });
     }
   });
 
