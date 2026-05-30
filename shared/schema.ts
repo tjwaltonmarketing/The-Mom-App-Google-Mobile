@@ -271,6 +271,26 @@ export const mealPlans = pgTable("meal_plans", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const savedMeals = pgTable("saved_meals", {
+  id: serial("id").primaryKey(),
+  familyId: integer("family_id").references(() => families.id).notNull(),
+  name: text("name").notNull(),
+  mealType: text("meal_type").notNull().default("dinner"),
+  ingredients: text("ingredients").array().default([]),
+  notes: text("notes"),
+  createdBy: integer("created_by").references(() => familyMembers.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const savedGroceryLists = pgTable("saved_grocery_lists", {
+  id: serial("id").primaryKey(),
+  familyId: integer("family_id").references(() => families.id).notNull(),
+  name: text("name").notNull(),
+  items: jsonb("items").notNull().default([]),
+  createdBy: integer("created_by").references(() => familyMembers.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const householdSettings = pgTable("household_settings", {
   id: serial("id").primaryKey(),
   familyId: integer("family_id").references(() => families.id).notNull(),
@@ -442,6 +462,16 @@ export const insertGroceryItemSchema = createInsertSchema(groceryItems).omit({
 });
 
 export const insertMealPlanSchema = createInsertSchema(mealPlans).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSavedMealSchema = createInsertSchema(savedMeals).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSavedGroceryListSchema = createInsertSchema(savedGroceryLists).omit({
   id: true,
   createdAt: true,
 });
@@ -750,6 +780,12 @@ export type InsertGroceryItem = z.infer<typeof insertGroceryItemSchema>;
 
 export type MealPlan = typeof mealPlans.$inferSelect;
 export type InsertMealPlan = z.infer<typeof insertMealPlanSchema>;
+
+export type SavedMeal = typeof savedMeals.$inferSelect;
+export type InsertSavedMeal = z.infer<typeof insertSavedMealSchema>;
+
+export type SavedGroceryList = typeof savedGroceryLists.$inferSelect;
+export type InsertSavedGroceryList = z.infer<typeof insertSavedGroceryListSchema>;
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;

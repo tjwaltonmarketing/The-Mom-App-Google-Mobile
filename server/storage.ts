@@ -57,6 +57,12 @@ import {
   type InsertGroceryItem,
   type MealPlan,
   type InsertMealPlan,
+  savedMeals,
+  savedGroceryLists,
+  type SavedMeal,
+  type InsertSavedMeal,
+  type SavedGroceryList,
+  type InsertSavedGroceryList,
   type User,
   type InsertUser,
   type Family,
@@ -289,6 +295,16 @@ export interface IStorage {
   updateMealPlan(id: number, updates: Partial<InsertMealPlan>): Promise<MealPlan | undefined>;
   deleteMealPlan(id: number): Promise<boolean>;
   deleteAllMealPlans(): Promise<number>;
+
+  // Saved Meals
+  getSavedMealsByFamily(familyId: number): Promise<SavedMeal[]>;
+  createSavedMeal(meal: InsertSavedMeal): Promise<SavedMeal>;
+  deleteSavedMeal(id: number, familyId: number): Promise<boolean>;
+
+  // Saved Grocery Lists
+  getSavedGroceryListsByFamily(familyId: number): Promise<SavedGroceryList[]>;
+  createSavedGroceryList(list: InsertSavedGroceryList): Promise<SavedGroceryList>;
+  deleteSavedGroceryList(id: number, familyId: number): Promise<boolean>;
 
   // Household Settings
   getHouseholdSettings(familyId: number): Promise<HouseholdSettings | undefined>;
@@ -2073,6 +2089,34 @@ export class DatabaseStorage implements IStorage {
   async deleteAllMealPlans(): Promise<number> {
     const result = await db.delete(mealPlans);
     return result.rowCount ?? 0;
+  }
+
+  async getSavedMealsByFamily(familyId: number): Promise<SavedMeal[]> {
+    return await db.select().from(savedMeals).where(eq(savedMeals.familyId, familyId)).orderBy(desc(savedMeals.createdAt));
+  }
+
+  async createSavedMeal(meal: InsertSavedMeal): Promise<SavedMeal> {
+    const [created] = await db.insert(savedMeals).values(meal).returning();
+    return created;
+  }
+
+  async deleteSavedMeal(id: number, familyId: number): Promise<boolean> {
+    const result = await db.delete(savedMeals).where(and(eq(savedMeals.id, id), eq(savedMeals.familyId, familyId)));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getSavedGroceryListsByFamily(familyId: number): Promise<SavedGroceryList[]> {
+    return await db.select().from(savedGroceryLists).where(eq(savedGroceryLists.familyId, familyId)).orderBy(desc(savedGroceryLists.createdAt));
+  }
+
+  async createSavedGroceryList(list: InsertSavedGroceryList): Promise<SavedGroceryList> {
+    const [created] = await db.insert(savedGroceryLists).values(list).returning();
+    return created;
+  }
+
+  async deleteSavedGroceryList(id: number, familyId: number): Promise<boolean> {
+    const result = await db.delete(savedGroceryLists).where(and(eq(savedGroceryLists.id, id), eq(savedGroceryLists.familyId, familyId)));
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Family Merge Request Implementation

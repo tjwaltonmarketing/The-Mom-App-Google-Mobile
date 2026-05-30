@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send, ArrowUpDown, Pencil, X } from "lucide-react";
+import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send, ArrowUpDown, Pencil, X, Bookmark, BookmarkCheck, List } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +48,8 @@ export function MealPlanning() {
   const [expandedMeal, setExpandedMeal] = useState<number | null>(null);
   const [sortByCategory, setSortByCategory] = useState(false);
   const [editingGroceryItem, setEditingGroceryItem] = useState<{ id: number; quantity: string; category: string } | null>(null);
+  const [isSaveMealOpen, setIsSaveMealOpen] = useState(false);
+  const [savingMeal, setSavingMeal] = useState<MealPlan | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -109,6 +111,67 @@ export function MealPlanning() {
     queryKey: [familyMembersEndpoint],
     enabled: !!teenData, // Only fetch after we know the user context
   });
+
+  // Saved meals
+  interface SavedMeal { id: number; name: string; mealType: string; ingredients?: string[]; notes?: string | null; createdAt: string; }
+  const { data: savedMeals = [] } = useQuery<SavedMeal[]>({
+    queryKey: ["/api/saved-meals"],
+    enabled: !isTeenUser && !!teenData,
+  });
+
+  const saveMealMutation = useMutation({
+    mutationFn: async (meal: MealPlan) => {
+      const response = await apiRequest("POST", "/api/saved-meals", {
+        name: meal.meal,
+        mealType: meal.mealType,
+        ingredients: meal.ingredients || [],
+        notes: meal.notes || null,
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/saved-meals"] });
+      setIsSaveMealOpen(false);
+      setSavingMeal(null);
+      toast({ title: "Meal saved to library", description: "You can reuse it any time from Saved Meals" });
+    },
+    onError: () => toast({ title: "Error", description: "Failed to save meal", variant: "destructive" }),
+  });
+
+  const deleteSavedMealMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/saved-meals/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/saved-meals"] });
+      toast({ title: "Removed from library" });
+    },
+  });
+
+  const addSavedMealToPlan = useMutation({
+    mutationFn: async ({ savedMeal, day, mealType }: { savedMeal: SavedMeal; day: string; mealType: string }) => {
+      const response = await apiRequest("POST", "/api/meal-plans", {
+        day,
+        mealType,
+        meal: savedMeal.name,
+        ingredients: savedMeal.ingredients || [],
+        notes: savedMeal.notes || "",
+        createdBy: 1,
+      });
+      return response.json();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: [mealPlansEndpoint] });
+      await refetchMeals();
+      toast({ title: "Meal added to plan" });
+    },
+    onError: () => toast({ title: "Error", description: "Failed to add meal to plan", variant: "destructive" }),
+  });
+
+  const [quickAddDay, setQuickAddDay] = useState("");
+  const [quickAddType, setQuickAddType] = useState("dinner");
+  const [quickAddTarget, setQuickAddTarget] = useState<SavedMeal | null>(null);
 
   const addMealMutation = useMutation({
     mutationFn: async (meal: Omit<MealPlan, 'id' | 'createdAt'>) => {
@@ -518,9 +581,10 @@ export function MealPlanning() {
       
       <CardContent>
         <Tabs defaultValue="meals" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="meals">Meal Plans</TabsTrigger>
             <TabsTrigger value="grocery">Grocery List</TabsTrigger>
+            <TabsTrigger value="saved" className="gap-1"><Bookmark className="h-3 w-3" />Saved</TabsTrigger>
           </TabsList>
           
           <TabsContent value="meals" className="space-y-4">
@@ -636,6 +700,19 @@ export function MealPlanning() {
                               {meal.mealType}
                             </Badge>
                             <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 text-amber-500 hover:text-amber-600"
+                                title="Save to library"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSavingMeal(meal);
+                                  setIsSaveMealOpen(true);
+                                }}
+                              >
+                                <Bookmark className="h-3 w-3" />
+                              </Button>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -908,8 +985,126 @@ export function MealPlanning() {
               )}
             </div>
           </TabsContent>
+
+          {/* Saved Meals Tab */}
+          <TabsContent value="saved" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">Saved Meal Library</h3>
+              <span className="text-sm text-gray-500">{savedMeals.length} saved</span>
+            </div>
+
+            {savedMeals.length === 0 ? (
+              <div className="text-center py-10 text-gray-500">
+                <BookmarkCheck className="h-10 w-10 mx-auto mb-3 text-gray-300" />
+                <p className="font-medium">No saved meals yet</p>
+                <p className="text-sm mt-1">Click the <Bookmark className="h-3 w-3 inline text-amber-500" /> bookmark icon on any meal to save it here for easy reuse.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {savedMeals.map((meal) => (
+                  <div key={meal.id} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-medium text-sm truncate">{meal.name}</p>
+                          <Badge variant="outline" className="text-xs shrink-0">{meal.mealType}</Badge>
+                        </div>
+                        {meal.ingredients && meal.ingredients.length > 0 && (
+                          <p className="text-xs text-gray-500 truncate">
+                            {meal.ingredients.slice(0, 3).join(', ')}{meal.ingredients.length > 3 ? '…' : ''}
+                          </p>
+                        )}
+                        {meal.notes && <p className="text-xs text-gray-400 mt-1 truncate">{meal.notes}</p>}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-red-400 hover:text-red-600 shrink-0"
+                        onClick={() => deleteSavedMealMutation.mutate(meal.id)}
+                        disabled={deleteSavedMealMutation.isPending}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      {quickAddTarget?.id === meal.id ? (
+                        <div className="flex gap-2 flex-wrap w-full">
+                          <Select value={quickAddDay} onValueChange={setQuickAddDay}>
+                            <SelectTrigger className="h-7 text-xs flex-1 min-w-[90px]">
+                              <SelectValue placeholder="Day" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {weekDays.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                          <Select value={quickAddType} onValueChange={setQuickAddType}>
+                            <SelectTrigger className="h-7 text-xs flex-1 min-w-[80px]">
+                              <SelectValue placeholder="Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {mealTypes.map(t => <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            size="sm"
+                            className="h-7 text-xs px-2"
+                            disabled={!quickAddDay || addSavedMealToPlan.isPending}
+                            onClick={() => {
+                              addSavedMealToPlan.mutate({ savedMeal: meal, day: quickAddDay, mealType: quickAddType });
+                              setQuickAddTarget(null);
+                              setQuickAddDay("");
+                            }}
+                          >
+                            <Check className="h-3 w-3 mr-1" />Add
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={() => setQuickAddTarget(null)}>
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs gap-1"
+                          onClick={() => { setQuickAddTarget(meal); setQuickAddDay(""); setQuickAddType("dinner"); }}
+                        >
+                          <Plus className="h-3 w-3" />
+                          Add to Plan
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </CardContent>
+
+      {/* Save to Library Dialog */}
+      <Dialog open={isSaveMealOpen} onOpenChange={(open) => { setIsSaveMealOpen(open); if (!open) setSavingMeal(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Save to Meal Library</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Save <span className="font-medium text-gray-900 dark:text-white">"{savingMeal?.meal}"</span> to your library so you can quickly add it to future meal plans.
+            </p>
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => setIsSaveMealOpen(false)}>Cancel</Button>
+              <Button
+                className="flex-1 gap-2"
+                disabled={saveMealMutation.isPending}
+                onClick={() => savingMeal && saveMealMutation.mutate(savingMeal)}
+              >
+                <Bookmark className="h-4 w-4" />
+                {saveMealMutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Share Grocery List Modal */}
       <Dialog open={isShareModalOpen} onOpenChange={setIsShareModalOpen}>

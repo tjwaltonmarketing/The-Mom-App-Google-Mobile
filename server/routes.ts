@@ -3726,6 +3726,98 @@ export async function registerRoutes(app: Express) {
     }
   });
 
+  // Saved Meals routes
+  app.get("/api/saved-meals", async (req, res) => {
+    try {
+      if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
+      const membership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!membership) return res.status(404).json({ error: "Family not found" });
+      const meals = await storage.getSavedMealsByFamily(membership.familyId);
+      res.json(meals);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get saved meals" });
+    }
+  });
+
+  app.post("/api/saved-meals", async (req, res) => {
+    try {
+      if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
+      const membership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!membership) return res.status(404).json({ error: "Family not found" });
+      const member = await storage.getFamilyMemberByUserId(req.session.userId);
+      const { name, mealType, ingredients, notes } = req.body;
+      if (!name) return res.status(400).json({ error: "Name is required" });
+      const meal = await storage.createSavedMeal({
+        familyId: membership.familyId,
+        name,
+        mealType: mealType || "dinner",
+        ingredients: ingredients || [],
+        notes: notes || null,
+        createdBy: member?.id || null,
+      });
+      res.json(meal);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to save meal" });
+    }
+  });
+
+  app.delete("/api/saved-meals/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
+      const membership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!membership) return res.status(404).json({ error: "Family not found" });
+      const success = await storage.deleteSavedMeal(parseInt(req.params.id), membership.familyId);
+      res.json({ success });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete saved meal" });
+    }
+  });
+
+  // Saved Grocery Lists routes
+  app.get("/api/saved-grocery-lists", async (req, res) => {
+    try {
+      if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
+      const membership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!membership) return res.status(404).json({ error: "Family not found" });
+      const lists = await storage.getSavedGroceryListsByFamily(membership.familyId);
+      res.json(lists);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get saved lists" });
+    }
+  });
+
+  app.post("/api/saved-grocery-lists", async (req, res) => {
+    try {
+      if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
+      const membership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!membership) return res.status(404).json({ error: "Family not found" });
+      const member = await storage.getFamilyMemberByUserId(req.session.userId);
+      const { name, items } = req.body;
+      if (!name) return res.status(400).json({ error: "Name is required" });
+      const list = await storage.createSavedGroceryList({
+        familyId: membership.familyId,
+        name,
+        items: items || [],
+        createdBy: member?.id || null,
+      });
+      res.json(list);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to save grocery list" });
+    }
+  });
+
+  app.delete("/api/saved-grocery-lists/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) return res.status(401).json({ error: "Not authenticated" });
+      const membership = await storage.getUserFamilyMembership(req.session.userId);
+      if (!membership) return res.status(404).json({ error: "Family not found" });
+      const success = await storage.deleteSavedGroceryList(parseInt(req.params.id), membership.familyId);
+      res.json({ success });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete saved list" });
+    }
+  });
+
   app.get("/api/grocery-items", async (req, res) => {
     try {
       if (!req.session.userId) {
