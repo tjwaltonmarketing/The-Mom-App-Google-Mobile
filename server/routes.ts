@@ -3552,9 +3552,9 @@ export async function registerRoutes(app: Express) {
       }
 
       res.json(updatedMember);
-    } catch (error: any) {
-      console.error("Family member update error:", error?.message || error, error?.stack);
-      res.status(500).json({ error: "Failed to update family member", detail: error?.message });
+    } catch (error) {
+      console.error("Family member update error:", error);
+      res.status(500).json({ error: "Failed to update family member" });
     }
   });
 
