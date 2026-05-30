@@ -103,6 +103,11 @@ export const familyMembers = pgTable("family_members", {
   canLogin: boolean("can_login").default(false), // Whether this member can log into the app
   isActive: boolean("is_active").default(true), // For soft deletion/deactivation
   points: integer("points").default(0), // Reward points for kids (child and teen roles)
+  canCreateTasks: boolean("can_create_tasks").default(true),
+  canEditEvents: boolean("can_edit_events").default(true),
+  canManageGroceries: boolean("can_manage_groceries").default(true),
+  canViewPasswords: boolean("can_view_passwords").default(false),
+  receivesNotifications: boolean("receives_notifications").default(true),
 });
 
 

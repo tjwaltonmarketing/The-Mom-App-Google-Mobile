@@ -3521,7 +3521,8 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family member not found" });
       }
 
-      const { name, role, color, avatar, phone, email, notificationPreference } = req.body;
+      const { name, role, color, avatar, phone, email, notificationPreference,
+              canCreateTasks, canEditEvents, canManageGroceries, canViewPasswords, receivesNotifications } = req.body;
 
       const updates: Record<string, any> = {};
       if (name !== undefined) updates.name = name;
@@ -3531,6 +3532,11 @@ export async function registerRoutes(app: Express) {
       if (phone !== undefined) updates.phone = phone;
       if (email !== undefined) updates.email = email;
       if (notificationPreference !== undefined) updates.notificationPreference = notificationPreference;
+      if (canCreateTasks !== undefined) updates.canCreateTasks = canCreateTasks;
+      if (canEditEvents !== undefined) updates.canEditEvents = canEditEvents;
+      if (canManageGroceries !== undefined) updates.canManageGroceries = canManageGroceries;
+      if (canViewPasswords !== undefined) updates.canViewPasswords = canViewPasswords;
+      if (receivesNotifications !== undefined) updates.receivesNotifications = receivesNotifications;
 
       if (name && !avatar) {
         updates.avatar = name.trim().charAt(0).toUpperCase();

@@ -190,6 +190,13 @@ export default function SettingsPage() {
   const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
   const [showEditMemberDialog, setShowEditMemberDialog] = useState(false);
   const [showPermissionsDialog, setShowPermissionsDialog] = useState(false);
+  const [permissionState, setPermissionState] = useState<Record<number, {
+    canCreateTasks: boolean;
+    canEditEvents: boolean;
+    canManageGroceries: boolean;
+    canViewPasswords: boolean;
+    receivesNotifications: boolean;
+  }>>({});
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [showSecurityDialog, setShowSecurityDialog] = useState(false);
@@ -412,6 +419,24 @@ export default function SettingsPage() {
         description: error.message || "Failed to update family member",
         variant: "destructive",
       });
+    },
+  });
+
+  const savePermissionsMutation = useMutation({
+    mutationFn: async (state: typeof permissionState) => {
+      await Promise.all(
+        Object.entries(state).map(([id, perms]) =>
+          apiRequest("PATCH", `/api/family-members/${id}`, perms)
+        )
+      );
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/family-members"] });
+      toast({ title: "Permissions saved", description: "Family member permissions updated." });
+      setShowPermissionsDialog(false);
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message || "Failed to save permissions", variant: "destructive" });
     },
   });
 
@@ -671,6 +696,17 @@ export default function SettingsPage() {
   };
 
   const handleManagePermissions = () => {
+    const initial: typeof permissionState = {};
+    (familyMembers as any[]).forEach((m: any) => {
+      initial[m.id] = {
+        canCreateTasks: m.canCreateTasks ?? m.role !== 'child',
+        canEditEvents: m.canEditEvents ?? m.role !== 'child',
+        canManageGroceries: m.canManageGroceries ?? true,
+        canViewPasswords: m.canViewPasswords ?? (m.role === 'mom' || m.role === 'dad'),
+        receivesNotifications: m.receivesNotifications ?? m.notificationPreference !== 'none',
+      };
+    });
+    setPermissionState(initial);
     setShowPermissionsDialog(true);
   };
 
@@ -1994,7 +2030,7 @@ export default function SettingsPage() {
 
         {/* Manage Permissions Dialog */}
         <Dialog open={showPermissionsDialog} onOpenChange={setShowPermissionsDialog}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5 text-primary" />
@@ -2005,59 +2041,66 @@ export default function SettingsPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6">
-              {familyMembers.map((member) => (
-                <div key={member.id} className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full text-white font-medium text-sm" 
-                         style={{ backgroundColor: member.color || '#3b82f6' }}>
-                      {member.avatar || member.name.charAt(0).toUpperCase()}
+              {(familyMembers as any[]).map((member: any) => {
+                const perms = permissionState[member.id];
+                if (!perms) return null;
+                const setField = (field: keyof typeof perms, value: boolean) =>
+                  setPermissionState(prev => ({
+                    ...prev,
+                    [member.id]: { ...prev[member.id], [field]: value },
+                  }));
+                return (
+                  <div key={member.id} className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full text-white font-medium text-sm"
+                           style={{ backgroundColor: member.color || '#3b82f6' }}>
+                        {member.avatar || member.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-medium">{member.name}</div>
+                        <div className="text-sm text-muted-foreground capitalize">{member.role}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-medium">{member.name}</div>
-                      <div className="text-sm text-muted-foreground capitalize">{member.role}</div>
+                    <div className="ml-11 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">Can create tasks</Label>
+                        <Switch checked={perms.canCreateTasks} onCheckedChange={v => setField("canCreateTasks", v)} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">Can edit events</Label>
+                        <Switch checked={perms.canEditEvents} onCheckedChange={v => setField("canEditEvents", v)} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">Can manage grocery lists</Label>
+                        <Switch checked={perms.canManageGroceries} onCheckedChange={v => setField("canManageGroceries", v)} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">Can view passwords</Label>
+                        <Switch checked={perms.canViewPasswords} onCheckedChange={v => setField("canViewPasswords", v)} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm">Receives notifications</Label>
+                        <Switch checked={perms.receivesNotifications} onCheckedChange={v => setField("receivesNotifications", v)} />
+                      </div>
                     </div>
                   </div>
-                  <div className="ml-11 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm">Can create tasks</Label>
-                      <Switch defaultChecked={member.role !== 'child'} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm">Can edit events</Label>
-                      <Switch defaultChecked={member.role !== 'child'} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm">Can manage grocery lists</Label>
-                      <Switch defaultChecked={true} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm">Can view passwords</Label>
-                      <Switch defaultChecked={member.role === 'mom' || member.role === 'dad'} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm">Receives notifications</Label>
-                      <Switch defaultChecked={member.notificationPreference !== 'none'} />
-                    </div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setShowPermissionsDialog(false)}
+                disabled={savePermissionsMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button onClick={() => {
-                toast({
-                  title: "Success",
-                  description: "Permissions updated successfully!",
-                });
-                setShowPermissionsDialog(false);
-              }}>
-                Save Permissions
+              <Button
+                onClick={() => savePermissionsMutation.mutate(permissionState)}
+                disabled={savePermissionsMutation.isPending}
+              >
+                {savePermissionsMutation.isPending ? "Saving…" : "Save Permissions"}
               </Button>
             </DialogFooter>
           </DialogContent>
