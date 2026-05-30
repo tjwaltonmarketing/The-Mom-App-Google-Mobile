@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, Edit, Users, ChevronDown, ChevronRight, Printer, MoreVertical, Lock, CheckSquare } from "lucide-react";
+import { Plus, Calendar, User, Flag, Search, Filter, Trash2, AlertTriangle, Edit, Users, ChevronDown, ChevronRight, Printer, MoreVertical, Lock, CheckSquare, Repeat, Flame, XCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -340,6 +340,18 @@ export function AdvancedTaskManagement() {
                 {task.points} points
               </Badge>
             )}
+            {task.recurrence && task.recurrence !== "none" && (
+              <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs flex items-center gap-1">
+                <Repeat className="h-3 w-3" />
+                {task.recurrence}
+              </Badge>
+            )}
+            {task.recurrence && task.recurrence !== "none" && task.dueDate && new Date(task.dueDate) < new Date() && (
+              <Badge className="bg-red-100 text-red-700 border-red-200 text-xs flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                Overdue {Math.floor((Date.now() - new Date(task.dueDate).getTime()) / 86400000)}d
+              </Badge>
+            )}
             {member && (
               <div 
                 className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs"
@@ -350,6 +362,21 @@ export function AdvancedTaskManagement() {
               </div>
             )}
           </div>
+          {task.recurrence && task.recurrence !== "none" && ((task.completedCount ?? 0) > 0 || (task.missedCount ?? 0) > 0) && (
+            <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
+              <span className="flex items-center gap-1 text-green-600">✓ {task.completedCount ?? 0} done</span>
+              {(task.missedCount ?? 0) > 0 && (
+                <span className="flex items-center gap-1 text-red-500">
+                  <XCircle className="h-3 w-3" />{task.missedCount} missed
+                </span>
+              )}
+              {(task.streak ?? 0) > 0 && (
+                <span className="flex items-center gap-1 text-orange-500">
+                  <Flame className="h-3 w-3" />{task.streak} streak
+                </span>
+              )}
+            </div>
+          )}
           
           {task.description && (
             <p className={`text-xs mb-2 ${task.isCompleted ? 'text-gray-400' : 'text-gray-600'}`}>

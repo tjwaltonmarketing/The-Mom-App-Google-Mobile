@@ -148,6 +148,8 @@ export const tasks = pgTable("tasks", {
   isPrivate: boolean("is_private").default(false), // private tasks only visible to creator
   recurrence: text("recurrence").default("none"), // "none", "daily", "weekly", "monthly", "yearly"
   recurrenceEndDate: timestamp("recurrence_end_date"), // stop recurring after this date
+  completedCount: integer("completed_count").default(0), // how many times this recurring task has been completed
+  missedCount: integer("missed_count").default(0), // how many occurrences were missed
 });
 
 export const voiceNotes = pgTable("voice_notes", {

@@ -3115,40 +3115,45 @@ export async function registerRoutes(app: Express) {
         console.error("Failed to cancel task notifications:", notifError);
       }
 
-      // Auto-spawn next occurrence for recurring tasks
+      // Option 3: Recurring tasks update in place — one task, track stats, advance date
       if (task.recurrence && task.recurrence !== "none") {
         try {
-          // Use the original due date if set, otherwise base from now
-          const baseDate = task.dueDate ? new Date(task.dueDate) : new Date();
-          const nextDue = new Date(baseDate);
-          if (task.recurrence === "daily") nextDue.setDate(nextDue.getDate() + 1);
-          else if (task.recurrence === "weekly") nextDue.setDate(nextDue.getDate() + 7);
-          else if (task.recurrence === "monthly") nextDue.setMonth(nextDue.getMonth() + 1);
-          else if (task.recurrence === "yearly") nextDue.setFullYear(nextDue.getFullYear() + 1);
+          const now = new Date();
+          const baseDate = task.dueDate ? new Date(task.dueDate) : now;
 
-          const shouldSpawn = !task.recurrenceEndDate || nextDue <= new Date(task.recurrenceEndDate);
-          if (shouldSpawn) {
-            await storage.createTask({
-              title: task.title,
-              description: task.description,
-              priority: task.priority,
-              assignedTo: task.assignedTo,
-              dueDate: nextDue.toISOString(),
-              points: task.points,
-              isPrivate: task.isPrivate,
-              recurrence: task.recurrence,
-              recurrenceEndDate: task.recurrenceEndDate ? task.recurrenceEndDate.toISOString() : null,
-              childProfileId: task.childProfileId,
-              createdBy: task.createdBy,
-              category: task.category,
-              estimatedTime: task.estimatedTime,
+          // Advance nextDue until it's in the future, counting how many steps
+          let nextDue = new Date(baseDate);
+          let advances = 0;
+          while (nextDue <= now) {
+            if (task.recurrence === "daily") nextDue.setDate(nextDue.getDate() + 1);
+            else if (task.recurrence === "weekly") nextDue.setDate(nextDue.getDate() + 7);
+            else if (task.recurrence === "monthly") nextDue.setMonth(nextDue.getMonth() + 1);
+            else if (task.recurrence === "yearly") nextDue.setFullYear(nextDue.getFullYear() + 1);
+            advances++;
+          }
+          // First advance = this completion; rest = missed occurrences
+          const missedThisTime = Math.max(0, advances - 1);
+          const newStreak = missedThisTime > 0 ? 1 : (task.streak || 0) + 1;
+          const isExpired = task.recurrenceEndDate && nextDue > new Date(task.recurrenceEndDate);
+
+          if (!isExpired) {
+            // Reset task to next occurrence — stays visible in list
+            const updatedTask = await storage.updateTask(task.id, {
+              isCompleted: false,
+              completedAt: null,
+              completedBy: null,
+              dueDate: nextDue,
+              completedCount: (task.completedCount || 0) + 1,
+              missedCount: (task.missedCount || 0) + missedThisTime,
+              streak: newStreak,
             });
+            return res.json(updatedTask);
           }
         } catch (recurErr) {
-          console.error("Failed to spawn next recurring task:", recurErr);
+          console.error("Failed to update recurring task:", recurErr);
         }
       }
-      
+
       res.json(completedTask);
     } catch (error) {
       console.error("Complete task error:", error);

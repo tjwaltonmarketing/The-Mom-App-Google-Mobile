@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { CheckCircle, Plus, Lock } from "lucide-react";
+import { CheckCircle, Plus, Lock, Repeat, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -167,26 +167,29 @@ export function QuickTasks() {
                       {task.isPrivate && (
                         <Lock className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
                       )}
+                      {task.recurrence && task.recurrence !== "none" && (
+                        <Repeat className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                      )}
                       {task.title}
                     </p>
-                    <div className="flex items-center space-x-2 mt-1">
+                    <div className="flex items-center flex-wrap gap-1.5 mt-1">
                       <Badge 
                         variant="secondary" 
                         className={getPriorityColor(task.priority)}
                       >
                         {task.isCompleted ? 'Completed' : `${task.priority} Priority`}
                       </Badge>
+                      {task.recurrence && task.recurrence !== "none" && task.dueDate && new Date(task.dueDate) < new Date() && (
+                        <Badge className="bg-red-100 text-red-700 text-xs flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3" />
+                          Overdue {Math.floor((Date.now() - new Date(task.dueDate).getTime()) / 86400000)}d
+                        </Badge>
+                      )}
                       {task.dueDate && (
                         <span className="text-xs text-gray-500">
                           Due: {new Date(task.dueDate).toLocaleDateString()} {new Date(task.dueDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       )}
-                      <span className="text-xs text-gray-500">
-                        {task.isCompleted 
-                          ? `Completed by ${getMemberById(task.completedBy)?.name || 'Unknown'}`
-                          : `Assigned to ${member?.name || 'Unknown'}`
-                        }
-                      </span>
                     </div>
                   </div>
                   {member && (
