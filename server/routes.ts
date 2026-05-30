@@ -2967,7 +2967,7 @@ export async function registerRoutes(app: Express) {
         return res.status(404).json({ error: "Family member record not found" });
       }
 
-      const { title, description, dueDate, priority, assignedTo, category, points, estimatedTime, childProfileId, isPrivate } = req.body;
+      const { title, description, dueDate, priority, assignedTo, category, points, estimatedTime, childProfileId, isPrivate, recurrence, recurrenceEndDate } = req.body;
 
       // Check if user is on Individual plan - cannot assign tasks to others
       const onIndividualPlan = await isUserOnIndividualPlan(req.session.userId);
@@ -2997,7 +2997,9 @@ export async function registerRoutes(app: Express) {
         points: points || 0,
         estimatedTime: estimatedTime || 0,
         childProfileId: finalChildProfileId,
-        isPrivate: isPrivate || false
+        isPrivate: isPrivate || false,
+        recurrence: recurrence || "none",
+        recurrenceEndDate: recurrenceEndDate ? new Date(recurrenceEndDate) : null,
       });
 
       // Schedule task notifications if assignee has reminders enabled and task has due date
