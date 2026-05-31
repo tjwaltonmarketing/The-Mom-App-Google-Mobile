@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send, ArrowUpDown, Pencil, X, Bookmark, BookmarkCheck, BookmarkPlus, List } from "lucide-react";
+import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send, ArrowUpDown, Pencil, X, Bookmark, BookmarkCheck, BookmarkPlus, List, ChevronDown, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +52,8 @@ export function MealPlanning() {
   const [savingMeal, setSavingMeal] = useState<MealPlan | null>(null);
   const [isSaveListOpen, setIsSaveListOpen] = useState(false);
   const [saveListName, setSaveListName] = useState("");
+  const [savedMealsExpanded, setSavedMealsExpanded] = useState(false);
+  const [savedGroceryExpanded, setSavedGroceryExpanded] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -930,8 +932,14 @@ export function MealPlanning() {
                       variant="outline"
                       size="sm"
                       className="gap-1 text-xs"
-                      disabled={getPendingGroceries().length === 0}
-                      onClick={() => { setSaveListName(""); setIsSaveListOpen(true); }}
+                      onClick={() => {
+                        if (getPendingGroceries().length === 0) {
+                          toast({ title: "List is empty", description: "Add items to your grocery list first", variant: "destructive" });
+                          return;
+                        }
+                        setSaveListName("");
+                        setIsSaveListOpen(true);
+                      }}
                     >
                       <BookmarkPlus className="h-3 w-3" />
                       Save List
@@ -1058,144 +1066,134 @@ export function MealPlanning() {
             </div>
           </TabsContent>
 
-          {/* Saved Meals Tab */}
-          <TabsContent value="saved" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">Saved Meal Library</h3>
-              <span className="text-sm text-gray-500">{savedMeals.length} saved</span>
+          {/* Saved Tab */}
+          <TabsContent value="saved" className="space-y-2">
+
+            {/* Saved Meals — collapsible */}
+            <div className="border rounded-lg overflow-hidden">
+              <button
+                className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                onClick={() => setSavedMealsExpanded(v => !v)}
+              >
+                <div className="flex items-center gap-2">
+                  <Bookmark className="h-4 w-4 text-amber-500" />
+                  <span className="font-medium text-sm">Saved Meals</span>
+                  <Badge variant="secondary" className="text-xs">{savedMeals.length}</Badge>
+                </div>
+                {savedMealsExpanded ? <ChevronDown className="h-4 w-4 text-gray-400" /> : <ChevronRight className="h-4 w-4 text-gray-400" />}
+              </button>
+
+              {savedMealsExpanded && (
+                <div className="p-3">
+                  {savedMeals.length === 0 ? (
+                    <div className="text-center py-6 text-gray-500">
+                      <BookmarkCheck className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm font-medium">No saved meals yet</p>
+                      <p className="text-xs mt-1">Tap the <Bookmark className="h-3 w-3 inline text-amber-500" /> icon on any meal card to save it here.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {savedMeals.map((meal) => (
+                        <div key={meal.id} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-medium text-sm truncate">{meal.name}</p>
+                                <Badge variant="outline" className="text-xs shrink-0">{meal.mealType}</Badge>
+                              </div>
+                              {meal.ingredients && meal.ingredients.length > 0 && (
+                                <p className="text-xs text-gray-500 truncate">
+                                  {meal.ingredients.slice(0, 3).join(', ')}{meal.ingredients.length > 3 ? '…' : ''}
+                                </p>
+                              )}
+                              {meal.notes && <p className="text-xs text-gray-400 mt-1 truncate">{meal.notes}</p>}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 text-red-400 hover:text-red-600 shrink-0"
+                              onClick={() => deleteSavedMealMutation.mutate(meal.id)}
+                              disabled={deleteSavedMealMutation.isPending}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <div className="mt-3 flex gap-2">
+                            {quickAddTarget?.id === meal.id ? (
+                              <div className="flex gap-2 flex-wrap w-full">
+                                <Select value={quickAddDay} onValueChange={setQuickAddDay}>
+                                  <SelectTrigger className="h-7 text-xs flex-1 min-w-[90px]"><SelectValue placeholder="Day" /></SelectTrigger>
+                                  <SelectContent>{weekDays.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <Select value={quickAddType} onValueChange={setQuickAddType}>
+                                  <SelectTrigger className="h-7 text-xs flex-1 min-w-[80px]"><SelectValue placeholder="Type" /></SelectTrigger>
+                                  <SelectContent>{mealTypes.map(t => <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <Button size="sm" className="h-7 text-xs px-2" disabled={!quickAddDay || addSavedMealToPlan.isPending}
+                                  onClick={() => { addSavedMealToPlan.mutate({ savedMeal: meal, day: quickAddDay, mealType: quickAddType }); setQuickAddTarget(null); setQuickAddDay(""); }}>
+                                  <Check className="h-3 w-3 mr-1" />Add
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={() => setQuickAddTarget(null)}><X className="h-3 w-3" /></Button>
+                              </div>
+                            ) : (
+                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1"
+                                onClick={() => { setQuickAddTarget(meal); setQuickAddDay(""); setQuickAddType("dinner"); }}>
+                                <Plus className="h-3 w-3" />Add to Plan
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {savedMeals.length === 0 ? (
-              <div className="text-center py-10 text-gray-500">
-                <BookmarkCheck className="h-10 w-10 mx-auto mb-3 text-gray-300" />
-                <p className="font-medium">No saved meals yet</p>
-                <p className="text-sm mt-1">Click the <Bookmark className="h-3 w-3 inline text-amber-500" /> bookmark icon on any meal to save it here for easy reuse.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {savedMeals.map((meal) => (
-                  <div key={meal.id} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium text-sm truncate">{meal.name}</p>
-                          <Badge variant="outline" className="text-xs shrink-0">{meal.mealType}</Badge>
-                        </div>
-                        {meal.ingredients && meal.ingredients.length > 0 && (
-                          <p className="text-xs text-gray-500 truncate">
-                            {meal.ingredients.slice(0, 3).join(', ')}{meal.ingredients.length > 3 ? '…' : ''}
-                          </p>
-                        )}
-                        {meal.notes && <p className="text-xs text-gray-400 mt-1 truncate">{meal.notes}</p>}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 w-7 p-0 text-red-400 hover:text-red-600 shrink-0"
-                        onClick={() => deleteSavedMealMutation.mutate(meal.id)}
-                        disabled={deleteSavedMealMutation.isPending}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    <div className="mt-3 flex gap-2">
-                      {quickAddTarget?.id === meal.id ? (
-                        <div className="flex gap-2 flex-wrap w-full">
-                          <Select value={quickAddDay} onValueChange={setQuickAddDay}>
-                            <SelectTrigger className="h-7 text-xs flex-1 min-w-[90px]">
-                              <SelectValue placeholder="Day" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {weekDays.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                          <Select value={quickAddType} onValueChange={setQuickAddType}>
-                            <SelectTrigger className="h-7 text-xs flex-1 min-w-[80px]">
-                              <SelectValue placeholder="Type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {mealTypes.map(t => <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                          <Button
-                            size="sm"
-                            className="h-7 text-xs px-2"
-                            disabled={!quickAddDay || addSavedMealToPlan.isPending}
-                            onClick={() => {
-                              addSavedMealToPlan.mutate({ savedMeal: meal, day: quickAddDay, mealType: quickAddType });
-                              setQuickAddTarget(null);
-                              setQuickAddDay("");
-                            }}
-                          >
-                            <Check className="h-3 w-3 mr-1" />Add
-                          </Button>
-                          <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={() => setQuickAddTarget(null)}>
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs gap-1"
-                          onClick={() => { setQuickAddTarget(meal); setQuickAddDay(""); setQuickAddType("dinner"); }}
-                        >
-                          <Plus className="h-3 w-3" />
-                          Add to Plan
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Saved Grocery Lists section */}
-            <div className="mt-6 pt-5 border-t">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base font-medium flex items-center gap-2">
+            {/* Saved Grocery Lists — collapsible */}
+            <div className="border rounded-lg overflow-hidden">
+              <button
+                className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left"
+                onClick={() => setSavedGroceryExpanded(v => !v)}
+              >
+                <div className="flex items-center gap-2">
                   <ShoppingCart className="h-4 w-4 text-pink-500" />
-                  Saved Grocery Lists
-                </h3>
-                <span className="text-sm text-gray-500">{savedGroceryLists.length} saved</span>
-              </div>
-              {savedGroceryLists.length === 0 ? (
-                <div className="text-center py-6 text-gray-500">
-                  <BookmarkCheck className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm font-medium">No saved lists yet</p>
-                  <p className="text-xs mt-1">Go to Grocery List and tap <BookmarkPlus className="h-3 w-3 inline" /> Save List to save your current items.</p>
+                  <span className="font-medium text-sm">Saved Grocery Lists</span>
+                  <Badge variant="secondary" className="text-xs">{savedGroceryLists.length}</Badge>
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  {savedGroceryLists.map((list) => (
-                    <div key={list.id} className="border rounded-lg p-3">
-                      <div className="flex items-start justify-between gap-1 mb-2">
-                        <div>
-                          <p className="font-medium text-sm">{list.name}</p>
-                          <p className="text-xs text-gray-500">{list.items.length} items</p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 text-red-400 hover:text-red-600 shrink-0"
-                          onClick={() => deleteSavedGroceryListMutation.mutate(list.id)}
-                          disabled={deleteSavedGroceryListMutation.isPending}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full h-7 text-xs gap-1"
-                        disabled={loadSavedGroceryListMutation.isPending}
-                        onClick={() => loadSavedGroceryListMutation.mutate(list)}
-                      >
-                        <List className="h-3 w-3" />
-                        Load into List
-                      </Button>
+                {savedGroceryExpanded ? <ChevronDown className="h-4 w-4 text-gray-400" /> : <ChevronRight className="h-4 w-4 text-gray-400" />}
+              </button>
+
+              {savedGroceryExpanded && (
+                <div className="p-3">
+                  {savedGroceryLists.length === 0 ? (
+                    <div className="text-center py-6 text-gray-500">
+                      <BookmarkCheck className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm font-medium">No saved lists yet</p>
+                      <p className="text-xs mt-1">Tap <BookmarkPlus className="h-3 w-3 inline" /> Save List in the Grocery tab to save your current items.</p>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="space-y-2">
+                      {savedGroceryLists.map((list) => (
+                        <div key={list.id} className="border rounded-lg p-3">
+                          <div className="flex items-start justify-between gap-1 mb-2">
+                            <div>
+                              <p className="font-medium text-sm">{list.name}</p>
+                              <p className="text-xs text-gray-500">{list.items.length} items</p>
+                            </div>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-red-400 hover:text-red-600 shrink-0"
+                              onClick={() => deleteSavedGroceryListMutation.mutate(list.id)} disabled={deleteSavedGroceryListMutation.isPending}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <Button size="sm" variant="outline" className="w-full h-7 text-xs gap-1"
+                            disabled={loadSavedGroceryListMutation.isPending} onClick={() => loadSavedGroceryListMutation.mutate(list)}>
+                            <List className="h-3 w-3" />Load into List
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
