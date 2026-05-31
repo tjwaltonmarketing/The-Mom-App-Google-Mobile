@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send, ArrowUpDown, Pencil, X, Bookmark, BookmarkCheck, List } from "lucide-react";
+import { Plus, ShoppingCart, Utensils, Calendar, Trash2, Edit, Check, Share2, Send, ArrowUpDown, Pencil, X, Bookmark, BookmarkCheck, BookmarkPlus, List } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,8 @@ export function MealPlanning() {
   const [editingGroceryItem, setEditingGroceryItem] = useState<{ id: number; quantity: string; category: string } | null>(null);
   const [isSaveMealOpen, setIsSaveMealOpen] = useState(false);
   const [savingMeal, setSavingMeal] = useState<MealPlan | null>(null);
+  const [isSaveListOpen, setIsSaveListOpen] = useState(false);
+  const [saveListName, setSaveListName] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -178,6 +180,58 @@ export function MealPlanning() {
   const [quickAddDay, setQuickAddDay] = useState("");
   const [quickAddType, setQuickAddType] = useState("dinner");
   const [quickAddTarget, setQuickAddTarget] = useState<SavedMeal | null>(null);
+
+  // Saved grocery lists
+  interface SavedGroceryList { id: number; name: string; items: { item: string; quantity: string; category: string }[]; createdAt: string; }
+  const { data: savedGroceryLists = [], refetch: refetchSavedGroceryLists } = useQuery<SavedGroceryList[]>({
+    queryKey: ["/api/saved-grocery-lists"],
+    queryFn: async () => {
+      const response = await authFetch("/api/saved-grocery-lists");
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    },
+    enabled: !isTeenUser && !!teenData,
+  });
+
+  const saveGroceryListMutation = useMutation({
+    mutationFn: async (name: string) => {
+      const items = getPendingGroceries().map((i: GroceryItem) => ({ item: i.item, quantity: i.quantity, category: i.category }));
+      const response = await apiRequest("POST", "/api/saved-grocery-lists", { name, items });
+      return response.json();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/saved-grocery-lists"] });
+      await refetchSavedGroceryLists();
+      setIsSaveListOpen(false);
+      setSaveListName("");
+      toast({ title: "List saved", description: "You can reload it any time from Saved Lists" });
+    },
+    onError: () => toast({ title: "Error", description: "Failed to save list", variant: "destructive" }),
+  });
+
+  const loadSavedGroceryListMutation = useMutation({
+    mutationFn: async (list: SavedGroceryList) => {
+      await Promise.all(list.items.map(item => apiRequest("POST", "/api/grocery-items", { ...item, addedBy: 1 })));
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: [groceryItemsEndpoint] });
+      await refetchGrocery();
+      toast({ title: "List loaded", description: "Items added to your grocery list" });
+    },
+    onError: () => toast({ title: "Error", description: "Failed to load list", variant: "destructive" }),
+  });
+
+  const deleteSavedGroceryListMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("DELETE", `/api/saved-grocery-lists/${id}`);
+      return response.json();
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/saved-grocery-lists"] });
+      await refetchSavedGroceryLists();
+      toast({ title: "Saved list deleted" });
+    },
+  });
 
   const addMealMutation = useMutation({
     mutationFn: async (meal: Omit<MealPlan, 'id' | 'createdAt'>) => {
@@ -857,20 +911,32 @@ export function MealPlanning() {
 
             <div className="space-y-4">
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                   <h4 className="font-medium flex items-center gap-2">
                     <ShoppingCart className="h-4 w-4" />
                     Shopping List ({getPendingGroceries().length} items)
                   </h4>
-                  <Button 
-                    variant={sortByCategory ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => setSortByCategory(!sortByCategory)} 
-                    className="gap-1 text-xs"
-                  >
-                    <ArrowUpDown className="h-3 w-3" />
-                    {sortByCategory ? "Sorted" : "Sort by Category"}
-                  </Button>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <Button 
+                      variant={sortByCategory ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => setSortByCategory(!sortByCategory)} 
+                      className="gap-1 text-xs"
+                    >
+                      <ArrowUpDown className="h-3 w-3" />
+                      {sortByCategory ? "Sorted" : "Sort"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1 text-xs"
+                      disabled={getPendingGroceries().length === 0}
+                      onClick={() => { setSaveListName(""); setIsSaveListOpen(true); }}
+                    >
+                      <BookmarkPlus className="h-3 w-3" />
+                      Save List
+                    </Button>
+                  </div>
                 </div>
                 
                 {sortByCategory ? (
@@ -1083,6 +1149,56 @@ export function MealPlanning() {
                 ))}
               </div>
             )}
+
+            {/* Saved Grocery Lists section */}
+            <div className="mt-6 pt-5 border-t">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base font-medium flex items-center gap-2">
+                  <ShoppingCart className="h-4 w-4 text-pink-500" />
+                  Saved Grocery Lists
+                </h3>
+                <span className="text-sm text-gray-500">{savedGroceryLists.length} saved</span>
+              </div>
+              {savedGroceryLists.length === 0 ? (
+                <div className="text-center py-6 text-gray-500">
+                  <BookmarkCheck className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm font-medium">No saved lists yet</p>
+                  <p className="text-xs mt-1">Go to Grocery List and tap <BookmarkPlus className="h-3 w-3 inline" /> Save List to save your current items.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {savedGroceryLists.map((list) => (
+                    <div key={list.id} className="border rounded-lg p-3">
+                      <div className="flex items-start justify-between gap-1 mb-2">
+                        <div>
+                          <p className="font-medium text-sm">{list.name}</p>
+                          <p className="text-xs text-gray-500">{list.items.length} items</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 text-red-400 hover:text-red-600 shrink-0"
+                          onClick={() => deleteSavedGroceryListMutation.mutate(list.id)}
+                          disabled={deleteSavedGroceryListMutation.isPending}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full h-7 text-xs gap-1"
+                        disabled={loadSavedGroceryListMutation.isPending}
+                        onClick={() => loadSavedGroceryListMutation.mutate(list)}
+                      >
+                        <List className="h-3 w-3" />
+                        Load into List
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </TabsContent>
         </Tabs>
       </CardContent>
@@ -1106,6 +1222,38 @@ export function MealPlanning() {
               >
                 <Bookmark className="h-4 w-4" />
                 {saveMealMutation.isPending ? "Saving…" : "Save"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Save Grocery List Dialog */}
+      <Dialog open={isSaveListOpen} onOpenChange={setIsSaveListOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Save Grocery List</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Give this list a name so you can load it again later. It will save all {getPendingGroceries().length} pending items.
+            </p>
+            <Input
+              placeholder='e.g. "Weekly Essentials" or "BBQ Party"'
+              value={saveListName}
+              onChange={(e) => setSaveListName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && saveListName.trim() && saveGroceryListMutation.mutate(saveListName.trim())}
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => setIsSaveListOpen(false)}>Cancel</Button>
+              <Button
+                className="flex-1 gap-2"
+                disabled={!saveListName.trim() || saveGroceryListMutation.isPending}
+                onClick={() => saveGroceryListMutation.mutate(saveListName.trim())}
+              >
+                <BookmarkPlus className="h-4 w-4" />
+                {saveGroceryListMutation.isPending ? "Saving…" : "Save List"}
               </Button>
             </div>
           </div>
